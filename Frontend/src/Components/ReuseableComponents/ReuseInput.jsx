@@ -14,6 +14,14 @@ const ReuseInput = ({ name, label, required, control, error, placeholder,type, r
                 name={name}
                 control={control}
                 defaultValue=""  // Provide a default value
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    })
+                }}
                 render={({ field }) => (
                     <TextField
                         {...field}

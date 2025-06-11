@@ -27,7 +27,7 @@ const ReuseCountry = ({ name, label, required, control, error, defaultvalue }) =
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.name_np, // Use Nepali name
+                        label: opt.nationality_name, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);
@@ -56,6 +56,15 @@ const ReuseCountry = ({ name, label, required, control, error, defaultvalue }) =
             <Controller
                 name={name}
                 control={control}
+
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    })
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}
@@ -70,6 +79,8 @@ const ReuseCountry = ({ name, label, required, control, error, defaultvalue }) =
                         //         {option.label}
                         //     </Box>
                         // )}
+
+
                         renderInput={(params) => (
                             <TextField
                                 {...params}

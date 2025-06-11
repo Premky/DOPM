@@ -30,9 +30,9 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.name_np, // Use Nepali name
+                        label: opt.city_name_nep, // Use Nepali name
                         value: opt.id, // Use ID as value
-                        state_id: opt.district_id, // Store state_id to filter
+                        state_id: opt.district_Id, // Store state_id to filter
                     }));
                     setMunicipality(formatted);
                 } else {
@@ -69,6 +69,14 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    }),
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}

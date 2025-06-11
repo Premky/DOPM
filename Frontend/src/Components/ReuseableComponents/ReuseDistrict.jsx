@@ -20,7 +20,7 @@ const ReuseDistrict = ({ name, label, required, control, error, selectedState })
     // Fetch district data
     const fetchDistrict = async () => {
         try {
-            const url = `${BASE_URL}/public/get_districts1`;
+            const url = `${BASE_URL}/public/get_districts`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -30,7 +30,7 @@ const ReuseDistrict = ({ name, label, required, control, error, selectedState })
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.name_np, // Use Nepali name
+                        label: opt.dist_name_nep, // Use Nepali name
                         value: opt.id, // Use ID as value
                         state_id: opt.state_id, // Store state_id to filter
                     }));
@@ -69,6 +69,14 @@ const ReuseDistrict = ({ name, label, required, control, error, selectedState })
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    }),
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}

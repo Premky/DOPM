@@ -62,6 +62,14 @@ const ReuseMudda = ({ name, label, required, control, error }) => {
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    })
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}
@@ -71,6 +79,8 @@ const ReuseMudda = ({ name, label, required, control, error }) => {
                         value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                         onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                         sx={{ width: '100%' }}
+
+
 
                         renderInput={(params) => (
                             <TextField

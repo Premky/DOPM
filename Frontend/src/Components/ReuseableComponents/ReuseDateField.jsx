@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
 
-const ReuseDateField = ({ name, label, required, control, error, placeholder }) => {
+const ReuseDateField = ({ name, label, required, control, error, placeholder,onChange: propsOnChange }) => {
     return (
         <>
             <InputLabel id={name}>
@@ -14,6 +14,21 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder }) 
                 name={name}
                 control={control}
                 defaultValue="" // Provide a default value
+
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    }),
+                    validate: (value) => {
+                        if (!value) return true; // Skip pattern check if empty (and not required)
+                        const pattern = /^\d{4}-\d{2}-\d{2}$/;
+                        return pattern.test(value) || 'मिति YYYY-MM-DD ढाँचामा हुनुपर्छ';
+                    },
+                }}
+
                 render={({ field: { onChange, onBlur, value, ref } }) => {
                     const [formattedValue, setFormattedValue] = useState(value || "");
 
@@ -49,7 +64,10 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder }) 
 
                         formatted = formatted.slice(0, 10); // Limit to yyyy-mm-dd
                         setFormattedValue(formatted);
-                        onChange(formatted);
+                        onChange(formatted); // internal RHF update
+                        if (typeof propsOnChange === 'function') {
+                            propsOnChange(formatted); // external prop callback
+                        }
                     };
 
                     return (

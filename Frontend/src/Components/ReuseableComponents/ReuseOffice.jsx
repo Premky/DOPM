@@ -6,9 +6,9 @@ import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
 const ReuseOffice = ({ name, label, required, control, error }) => {
-        // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        // const BASE_URL = localStorage.getItem('BASE_URL');
-        const BASE_URL = useBaseURL();
+    // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // const BASE_URL = localStorage.getItem('BASE_URL');
+    const BASE_URL = useBaseURL();
     const token = localStorage.getItem('token');
 
     // State to store office options
@@ -18,7 +18,7 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
     // Fetch office data
     const fetchOffices = async () => {
         try {
-            const url = `${BASE_URL}/admin/get_offices`;
+            const url = `${BASE_URL}/public/get_offices`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -29,7 +29,7 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt, index) => ({
                         sn: index + 1,
-                        label: opt.name_np,
+                        label: opt.office_name_with_letter_address,
                         value: opt.id,
                     }));
                     setFormattedOptions(formatted);
@@ -63,8 +63,17 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
                 <Controller
                     name={name}
                     control={control}
+                    rules={{
+                        ...(required && {
+                            required: {
+                                value: true,
+                                message: 'यो फिल्ड अनिवार्य छ',
+                            },
+                        })
+                    }}
                     render={({ field: { onChange, value, ref } }) => (
                         <Autocomplete
+                            key={`${name}_${value || ''}`}
                             id={name}
                             options={formattedOptions} // Use fetched districts
                             autoHighlight
@@ -72,11 +81,12 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
                             value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                             onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                             sx={{ width: '100%' }}
-                            // renderOption={(props, option) => (
-                            //     <Box key={option.value} component="li" {...props}>
-                            //         {option.label}
-                            //     </Box>
-                            // )}
+
+                            renderOption={(props, option) => (
+                                <Box component="li" {...props} key={option.value}>
+                                    {option.label}
+                                </Box>
+                            )}
                             renderInput={(params) => (
                                 <TextField
                                     // defaultValue=''

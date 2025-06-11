@@ -18,6 +18,15 @@ const ReuseSelect = ({ name, label, required, control, error, options = [] }) =>
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    })
+                }}
+
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}

@@ -5,10 +5,10 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseLisenceCategory = ({ name, label, required, control, error }) => {
-        // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        // const BASE_URL = localStorage.getItem('BASE_URL');
-        const BASE_URL = useBaseURL();
+const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => {
+    // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // const BASE_URL = localStorage.getItem('BASE_URL');
+    const BASE_URL = useBaseURL();
     const token = localStorage.getItem('token');
 
     // State to store district options
@@ -17,7 +17,7 @@ const ReuseLisenceCategory = ({ name, label, required, control, error }) => {
     // Fetch district data
     const fetchLisenceCategory = async () => {
         try {
-            const url = `${BASE_URL}/public/get_lisence_category`;
+            const url = `${BASE_URL}/bandi/get_bandi`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -27,15 +27,15 @@ const ReuseLisenceCategory = ({ name, label, required, control, error }) => {
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.name_en, // Use Nepali name
+                        label: opt.bandi_name, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);
                 } else {
-                    console.log('No district records found.');
+                    console.log('No bandi records found.');
                 }
             } else {
-                console.log(Error || 'Failed to fetch districts.');
+                console.log(Error || 'Failed to fetch bandi.');
             }
         } catch (error) {
             console.error('Error fetching records:', error);
@@ -56,6 +56,14 @@ const ReuseLisenceCategory = ({ name, label, required, control, error }) => {
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    })
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}
@@ -65,11 +73,11 @@ const ReuseLisenceCategory = ({ name, label, required, control, error }) => {
                         value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                         onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                         sx={{ width: '100%' }}
-                        renderOption={(props, option) => (
-                            <Box key={option.value} component="li" {...props}>
-                                {option.label}
-                            </Box>
-                        )}
+                        // renderOption={(props, option) => (
+                        //     <Box key={option.value} component="li" {...props}>
+                        //         {option.label}
+                        //     </Box>
+                        // )}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -90,4 +98,4 @@ const ReuseLisenceCategory = ({ name, label, required, control, error }) => {
     );
 };
 
-export default ReuseLisenceCategory;
+export default ReuseBandi;

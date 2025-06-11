@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseAccidentReason = ({ name, label, required, control, error, reason_type }) => {
+const ReuseEntryType = ({ name, label, required, control, error, reason_type }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -15,9 +15,9 @@ const ReuseAccidentReason = ({ name, label, required, control, error, reason_typ
     const [formattedOptions, setFormattedOptions] = useState([]);
 
 
-    const fetchAccidentReasons = async () => {
+    const fetchEntryTypes = async () => {
         try {
-            const url = `${BASE_URL}/public/get_accident_reasons/${reason_type}`; // Adjusted URL to include reason_type
+            const url = `${BASE_URL}/public/get_entry_types/`; // Adjusted URL to include reason_type
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true
@@ -33,10 +33,10 @@ const ReuseAccidentReason = ({ name, label, required, control, error, reason_typ
                     }));
                     setFormattedOptions(formatted);
                 } else {
-                    console.log('No country records found.');
+                    console.log('No entry types records found.');
                 }
             } else {
-                console.log(Error || 'Failed to fetch countries.');
+                console.log(Error || 'Failed to fetch entry types.');
             }
         } catch (error) {
             console.error('Error fetching records:', error);
@@ -44,7 +44,7 @@ const ReuseAccidentReason = ({ name, label, required, control, error, reason_typ
     };
 
     useEffect(() => {
-        fetchAccidentReasons();
+        fetchEntryTypes();
     }, []);
 
     return (
@@ -87,4 +87,4 @@ const ReuseAccidentReason = ({ name, label, required, control, error, reason_typ
     );
 };
 
-export default ReuseAccidentReason;
+export default ReuseEntryType;

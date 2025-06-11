@@ -6,8 +6,8 @@ import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
 const ReuseState = ({ name, label, required, control, error }) => {
-        // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        // const BASE_URL = localStorage.getItem('BASE_URL');
+    // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL(); // Custom hook to get the base URL
     const token = localStorage.getItem('token');
 
@@ -27,7 +27,7 @@ const ReuseState = ({ name, label, required, control, error }) => {
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.name_np, // Use Nepali name
+                        label: opt.state_name_np, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);
@@ -56,20 +56,23 @@ const ReuseState = ({ name, label, required, control, error }) => {
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    }),
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}
-                        options={formattedOptions} // Use fetched districts
+                        options={formattedOptions}
                         autoHighlight
-                        getOptionLabel={(option) => option.label || ''} // Prevents crashes if `label` is missing
-                        value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
-                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
+                        getOptionLabel={(option) => option.label || ''}
+                        value={formattedOptions.find((option) => option.value === value) || null}
+                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')}
                         sx={{ width: '100%' }}
-                        // renderOption={(props, option) => (
-                        //     <Box key={option.value} component="li" {...props}>
-                        //         {option.label}
-                        //     </Box>
-                        // )}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -79,13 +82,14 @@ const ReuseState = ({ name, label, required, control, error }) => {
                                 fullWidth
                                 margin="normal"
                                 error={!!error}
-                                helperText={error?.message || ""}
+                                helperText={error?.message || ''}
                                 required={required}
                             />
                         )}
                     />
                 )}
             />
+
         </>
     );
 };
