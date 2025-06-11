@@ -27,9 +27,10 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.bandi_name, // Use Nepali name
-                        value: opt.id, // Use ID as value
+                        label: `${opt.bandi_name?.trim()} (${opt.id})`,
+                        value: opt.id,
                     }));
+
                     setFormattedOptions(formatted);
                 } else {
                     console.log('No bandi records found.');
@@ -73,11 +74,11 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
                         value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                         onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                         sx={{ width: '100%' }}
-                        // renderOption={(props, option) => (
-                        //     <Box key={option.value} component="li" {...props}>
-                        //         {option.label}
-                        //     </Box>
-                        // )}
+                        renderOption={(props, option) => (
+                            <Box key={option.value} component="li" {...props}>
+                                {option.label}
+                            </Box>
+                        )}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
