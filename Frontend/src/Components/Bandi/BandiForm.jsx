@@ -65,37 +65,37 @@ const BandiForm = () => {
     };
 
 
-    const calculateDateDetails = (startDateStr, endDateStr) => {
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
+const calculateDateDetails = (startDate, endDate) => {
+    if (!(startDate instanceof Date) || !(endDate instanceof Date)) return null;
 
-        if (isNaN(startDate) || isNaN(endDate)) return null;
+    let totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+    if (totalDays < 0) totalDays = 0;
 
-        let totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
-        if (totalDays < 0) totalDays = 0;
+    let years = endDate.getFullYear() - startDate.getFullYear();
+    let months = endDate.getMonth() - startDate.getMonth();
+    let days = endDate.getDate() - startDate.getDate();
 
-        let years = endDate.getFullYear() - startDate.getFullYear();
-        let months = endDate.getMonth() - startDate.getMonth();
-        let days = endDate.getDate() - startDate.getDate();
+    if (days < 0) {
+        months--;
+        const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+        days += prevMonth.getDate();
+    }
 
-        if (days < 0) {
-            months--;
-            const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
-            days += prevMonth.getDate();
-        }
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
 
-        if (months < 0) {
-            years--;
-            months += 12;
-        }
-
-        return {
-            years,
-            months,
-            days,
-            totalDays,
-        };
+    return {
+        years,
+        months,
+        days,
+        totalDays,
     };
+};
+
+
+
 
     // Nepali Date
     const npToday = new NepaliDate();
@@ -173,9 +173,7 @@ const BandiForm = () => {
         }
     }
 
-    const ram = () => {
-        console.log('prem')
-    }
+
     return (
         <>
             <Box sx={{ flexGrow: 1, margin: 2 }}>
@@ -548,9 +546,16 @@ const BandiForm = () => {
                             </Grid2>
 
                             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                <ReuseOffice
+                                <ReuseSelect
                                     name='no_punravedn_office'
                                     label='पुनरावेदन नपरेको कार्यालय'
+                                    options={[
+                                        { label: 'सर्वोच्च अदालत', value: 'सर्वोच्च अदालत' },
+                                        { label: 'जि.स.व.का.', value: 'जि.स.व.का.' },
+                                        { label: 'उ.स.व.का.', value: 'उ.स.व.का.' },
+                                        { label: 'महान्यायाधिवक्ताको कार्यालय', value: 'महान्यायाधिवक्ताको कार्यालय' },
+                                        { label: 'वि.स.व.का.', value: 'वि.स.व.का.' }
+                                    ]}
                                     required={true}
                                     control={control}
                                     error={errors.no_punravedn_office}

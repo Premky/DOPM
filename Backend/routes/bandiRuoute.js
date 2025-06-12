@@ -135,7 +135,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         dob,age,district_id,province,gapa_napa_id,wardno,bidesh_nagarik_address_details,arrest_date,kaid_date,
         release_date, mudda_phesala_antim_office_name,
         mudda_phesala_antim_office_district,
-        mudda_phesala_antim_office_date,punarabedan_office_name,punarabedan_office_district,
+        mudda_phesala_antim_office_date, punarabedan_office_name,punarabedan_office_district,
         punarabedan_office_ch_no,punarabedan_office_date,jariwana_amount_fixed,
         kashtipurti_amount_fixed,
         bigo_and_kosh_amount_fixed,

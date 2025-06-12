@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Box, Button, Divider, Grid2, IconButton, InputLabel, Typography } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
 import NepaliDate from 'nepali-datetime'
+import { calculateDateDetails } from '../../../Utils/dateCalculator';
 import ReuseSelect from '../ReuseableComponents/ReuseSelect';
 import ReuseParoleCount from '../ReuseableComponents/ReuseParoleCount';
 import ReuseDateField from '../ReuseableComponents/ReuseDateField';
@@ -31,9 +32,16 @@ const ParoleForm = () => {
     const arrestDate = watch('arrest_date');
     const kaidDate = watch('kaid_date');
     const releaseDate = watch('release_date');
+    const selectedIs_fine = watch("is_fine");
+    const selectedIs_fine_paid = watch("is_fine_paid");
+    const selectedIs_compensation = watch("is_compensation");
+    const selectedIs_compensation_paid = watch("is_compensation_paid");
+    const selectedIs_bigo = watch("is_bigo");
+    const selectedIs_bigo_paid = watch("is_bigo_paid");
 
     const bandi_name_id = watch('bandi_name');
     const bandi_dob = watch('bandi_dob');
+    const selectedno_punravedn_office = watch('no_punravedn_office');
 
     // Nepali Date
     const npToday = new NepaliDate();
@@ -49,52 +57,17 @@ const ParoleForm = () => {
             const todayAd = new NepaliDate(formattedDateNp).getDateObject();
 
             const kaidDuration = calculateDateDetails(arrestAd, releaseAd);
-            const bhuktanDuration = calculateDateDetails(todayAd, arrestAd);
-            const berujuDuration = calculateDateDetails(releaseAd, todayAd);
+            const bhuktanDuration = calculateDateDetails(arrestAd, todayAd, kaidDuration);
+            const berujuDuration = calculateDateDetails(todayAd, releaseAd, kaidDuration);
 
             setCalcKaidDuration(kaidDuration);
             setCalcBhuktanDuration(bhuktanDuration);
             setCalcBerujuDuration(berujuDuration);
 
-            const kaidDurPer=(bhuktanDuration.totalDays/kaidDuration.totalDays)*100
-            const berujuPer=(berujuDuration.totalDays/kaidDuration.totalDays)*100
-            console.log(kaidDurPer, berujuPer)
+            console.log('kaidDurPer', berujuDuration.percentage)
         }
     };
-
-
-    const calculateDateDetails = (startDateStr, endDateStr) => {
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
-
-        if (isNaN(startDate) || isNaN(endDate)) return null;
-
-        let totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
-        if (totalDays < 0) totalDays = 0;
-
-        let years = endDate.getFullYear() - startDate.getFullYear();
-        let months = endDate.getMonth() - startDate.getMonth();
-        let days = endDate.getDate() - startDate.getDate();
-
-        if (days < 0) {
-            months--;
-            const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
-            days += prevMonth.getDate();
-        }
-
-        if (months < 0) {
-            years--;
-            months += 12;
-        }
-
-        return {
-            years,
-            months,
-            days,
-            totalDays,
-        };
-    };
-
+    
 
     const fetchData = async (url, params = {}) => {
         try {
@@ -139,7 +112,15 @@ const ParoleForm = () => {
                     setValue('mudda_id', result.data.mudda_id || '');
                     setValue('mudda_no', result.data.mudda_no || '');
                     setValue('wardno', result.data.wardno || '');
-                    setValue('no_punravedn_office', result.data.no_punravedn_office || '');
+                    setValue('mudda_phesala_antim_office_id', result.data.mudda_phesala_antim_office_id || '');
+                    setValue('mudda_phesala_antim_office_date', result.data.mudda_phesala_antim_office_date || '');
+                    setValue('punarabedan_office_name', result.data.punarabedan_office_name || '');
+                    setValue('punarabedan_office_district', result.data.punarabedan_office_district || '');
+                    setValue('punarabedan_office_date', result.data.punarabedan_office_date || '');
+                    setValue('jariwana_amount_fixed', result.data.jariwana_amount_fixed || '');
+                    setValue('jariwana_amount_deoposite_district', result.data.jariwana_amount_deoposite_district || '');
+                    setValue('is_fine_paid', result.data.is_fine_paid || '');
+
                 } else {
                     setSelectedBandi({});
                     setValue('bandi_dob', '');
@@ -149,7 +130,14 @@ const ParoleForm = () => {
                     setValue('mudda_id', '');
                     setValue('mudda_no', '');
                     setValue('wardno', '');
-                    setValue('no_punravedn_office', '');
+                    setValue('mudda_phesala_antim_office_id', '');
+                    setValue('mudda_phesala_antim_office_date', '');
+                    setValue('punarabedan_office_name', '');
+                    setValue('punarabedan_office_district', '');
+                    setValue('punarabedan_office_date', '');
+                    setValue('jariwana_amount_fixed', '');
+                    setValue('jariwana_amount_deoposite_district', '');
+                    setValue('is_fine_paid', '');
                 }
             }
         };
@@ -355,7 +343,7 @@ const ParoleForm = () => {
                                     required={true}
                                     control={control}
                                     error={errors.kaid_date}
-                                    />
+                                />
                             </Grid2>
 
                             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -382,21 +370,21 @@ const ParoleForm = () => {
                                 <Grid2 size={{ xs: 12, sm: 4 }}>
                                     <div>
                                         <p>भुक्तान अवधि </p>
-                                        {`${calcBhuktanDuration?.years || 0} | ${calcBhuktanDuration?.months || 0} | ${calcBhuktanDuration?.days || 0}`}
+                                        {`${calcBhuktanDuration?.years || 0} | ${calcBhuktanDuration?.months || 0} | ${calcBhuktanDuration?.days || 0} `}
                                     </div>
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4 }}>
                                     <div>
                                         <p>बाँकी अवधि </p>
-                                        {`${calcBerujuDuration?.years || 0} | ${calcBerujuDuration?.months || 0} | ${calcBerujuDuration?.days || 0}`}
+                                        {`${calcBerujuDuration?.years || 0} | ${calcBerujuDuration?.months || 0} | ${calcBerujuDuration?.bhuktanDurationper || 0}`}
                                     </div>
                                 </Grid2>
                             </Grid2>
 
                             <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
-                                {calcKaidDuration.totalDays},
+                                {/* {calcKaidDuration.totalDays},
                                 {calcBhuktanDuration.totalDays},
-                                {calcBerujuDuration.totalDays},
+                                {calcBerujuDuration.totalDays}, */}
                                 <ReuseInput
                                     name='kaid_bhuktan_percentage'
                                     label='भुक्तान अवधी र प्रतिशत'
@@ -417,79 +405,357 @@ const ParoleForm = () => {
                                 />
                             </Grid2>
 
-                            <Grid2 container spacing={1}>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseOffice
-                                        name='last_faisala_office'
-                                        label='मुद्दाको अन्तिम कारवाही गर्ने निकाय'
-                                        required={true}
-                                        control={control}
-                                        error={errors.last_faisala_office}
-                                    />
-                                </Grid2>
 
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseDateField
-                                        name='last_faisala_date'
-                                        label='फैसला मिति'
-                                        placeholder='YYYY-MM-DD'
-                                        required={true}
-                                        control={control}
-                                        error={errors.last_faisala_date}
-                                    />
-                                </Grid2>
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <ReuseOffice
+                                    name='mudda_phesala_antim_office_id'
+                                    label='मुद्दाको अन्तिम कारवाही गर्ने निकाय'
+                                    required={true}
+                                    control={control}
+                                    error={errors.mudda_phesala_antim_office_id}
+                                />
                             </Grid2>
+
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <ReuseDateField
+                                    name='mudda_phesala_antim_office_date'
+                                    label='फैसला मिति'
+                                    placeholder='YYYY-MM-DD'
+                                    required={true}
+                                    control={control}
+                                    error={errors.mudda_phesala_antim_office_date}
+                                />
+                            </Grid2>
+
                             <Grid2 container spacing={1}>
                                 <Grid2 size={{ xs: 12 }}>
                                     पुनरावेदन नपरेको प्रमाण
                                 </Grid2>
 
                                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseOffice
-                                        name='no_punravedn_office'
+                                    <ReuseSelect
+                                        name='punarabedan_office_name'
                                         label='पुनरावेदन नपरेको कार्यालय'
+                                        options={[
+                                            { label: 'सर्वोच्च अदालत', value: 'सर्वोच्च अदालत' },
+                                            { label: 'जि.स.व.का.', value: 'जि.स.व.का.' },
+                                            { label: 'उ.स.व.का.', value: 'उ.स.व.का.' },
+                                            { label: 'महान्यायाधिवक्ताको कार्यालय', value: 'महान्यायाधिवक्ताको कार्यालय' },
+                                            { label: 'वि.स.व.का.', value: 'वि.स.व.का.' }
+                                        ]}
                                         required={true}
                                         control={control}
-                                        error={errors.no_punravedn_office}
+                                        error={errors.punarabedan_office_name}
                                     />
                                 </Grid2>
 
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseDistrict
-                                        name='no_punravedn_district'
-                                        label='पुनरावेदन नपरेको जिल्ला'
-                                        required={true}
-                                        control={control}
-                                        error={errors.no_punravedn_district}
-                                    />
-                                </Grid2>
+                                {selectedno_punravedn_office !== 'सर्वोच्च अदालत' && (
+                                    <>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDistrict
+                                                name='punarabedan_office_district'
+                                                label='पुनरावेदन नपरेको जिल्ला'
+                                                required={true}
+                                                control={control}
+                                                error={errors.punarabedan_office_district}
+                                            />
+                                        </Grid2>
+                                    </>
+                                )}
 
                                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
-                                        name='no_punravedn_cn'
+                                        name='punarabedan_office_ch_no'
                                         label='च.नं.'
+                                        defaultValue={selectedBandi.punarabedan_office_ch_no}
                                         required={true}
                                         control={control}
-                                        error={errors.no_punravedn_cn}
+                                        error={errors.punarabedan_office_ch_no}
                                     />
                                 </Grid2>
 
                                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDateField
-                                        name='no_punravedn_date'
+                                        name='punarabedan_office_date'
                                         label='प्रमाण मिति'
                                         placeholder='YYYY-MM-DD'
                                         required={true}
                                         control={control}
-                                        error={errors.no_punravedn_date}
+                                        error={errors.punarabedan_office_date}
                                     />
                                 </Grid2>
                             </Grid2>
+                            <Grid2 container spacing={1}>
+                                <Grid2 size={{ xs: 12 }}>
+                                    जरिवाना रकम तोकिएको छ वा छैं‍न
+                                </Grid2>
 
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseSelect
+                                        name='jariwana_amount_fixed'
+                                        label='छ/छैन'
+                                        options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: 0 }]}
+                                        required={true}
+                                        control={control}
+                                        error={errors.jariwana_amount_fixed}
+                                    />
+                                </Grid2>
+                                {selectedIs_fine === 1 && (
+                                    <>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                name='jariwana_amount_deoposite_amount'
+                                                label='रकम'
+                                                defaultValue={selectedBandi.jariwana_amount_deoposite_amount}
+                                                required={true}
+                                                control={control}
+                                                error={errors.jariwana_amount_deoposite_amount}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseSelect
+                                                name='jariwana_amount_deposite'
+                                                label='तिरेको छ/छैन'
+                                                options={[{ label: 'छ', value: 'छ' }, { label: 'छैन', value: 'छैन' }]}
+                                                // options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: 0 }]}
+                                                required={true}
+                                                control={control}
+                                                error={errors.jariwana_amount_deposite}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseOffice
+                                                name='jariwana_amount_deoposite_office'
+                                                label='जरिवाना तिरेको कार्यालय'
+                                                required={true}
+                                                control={control}
+                                                error={errors.jariwana_amount_deoposite_office}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDistrict
+                                                name='jariwana_amount_deoposite_district'
+                                                label='जरिवाना तिरेको जिल्ला'
+                                                required={true}
+                                                control={control}
+                                                error={errors.jariwana_amount_deoposite_district}
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                name='jariwana_amount_deoposite_office_ch_no'
+                                                label='च.नं.'
+                                                required={true}
+                                                control={control}
+                                                error={errors.jariwana_amount_deoposite_office_ch_no}
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDateField
+                                                name='jariwana_amount_deoposite_office_date'
+                                                label='जरिवाना तिरेको मिति'
+                                                placeholder='YYYY-MM-DD'
+                                                required={true}
+                                                control={control}
+                                                error={errors.jariwana_amount_deoposite_office_date}
+                                            />
+                                        </Grid2>
+                                    </>
+                                )}
+                            </Grid2>
+
+                            <Grid2 container spacing={1}>
+                                <Grid2 size={{ xs: 12 }}>
+                                    क्षतिपुर्ती रकम तोकिएको छ वा छैं‍न
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseSelect
+                                        name='kashtipurti_amount_fixed'
+                                        label='छ/छैन'
+                                        options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                                        required={true}
+                                        control={control}
+                                        error={errors.kashtipurti_amount_fixed}
+                                    />
+                                </Grid2>
+
+                                {selectedIs_compensation == 1 && (
+                                    <>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                name='kashtipurti_amount_deoposite_amount'
+                                                label='रकम'
+                                                required={true}
+                                                control={control}
+                                                error={errors.compensation_amt}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseSelect
+                                                name='kashtipurti_amount_deposite'
+                                                label='तिरेको छ/छैन'
+                                                options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                                                required={true}
+                                                control={control}
+                                                error={errors.kashtipurti_amount_deposite}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseOffice
+                                                name='kashtipurti_amount_deoposite_office'
+                                                label='क्षतिपुर्ती तिरेको कार्यालय'
+                                                required={true}
+                                                control={control}
+                                                error={errors.kashtipurti_amount_deoposite_office}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDistrict
+                                                name='kashtipurti_amount_deoposite_district'
+                                                label='क्षतिपुर्ती तिरेको जिल्ला'
+                                                required={true}
+                                                control={control}
+                                                error={errors.kashtipurti_amount_deoposite_district}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                name='kashtipurti_amount_deoposite_office_ch_no'
+                                                label='च.नं.'
+                                                required={true}
+                                                control={control}
+                                                error={errors.kashtipurti_amount_deoposite_office_ch_no}
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDateField
+                                                name='kashtipurti_amount_deoposite_office_date'
+                                                label='क्षतिपुर्ती तिरेको मिति'
+                                                placeholder='YYYY-MM-DD'
+                                                required={true}
+                                                control={control}
+                                                error={errors.kashtipurti_amount_deoposite_office_date}
+                                            />
+                                        </Grid2>
+                                    </>
+                                )}
+                            </Grid2>
+
+                            <Grid2 container spacing={1}>
+                                <Grid2 size={{ xs: 12 }}>
+                                    बिगो रकम तोकिएको छ वा छैं‍न
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseSelect
+                                        name='bigo_and_kosh_amount_fixed'
+                                        label='छ/छैन'
+                                        options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                                        required={true}
+                                        control={control}
+                                        error={errors.bigo_and_kosh_amount_fixed}
+                                    />
+                                </Grid2>
+
+                                {selectedIs_bigo == 1 && (
+                                    <>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                name='bigo_and_kosh_amount_deoposite_amount'
+                                                label='रकम'
+                                                required={true}
+                                                control={control}
+                                                error={errors.compensation_amt}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseSelect
+                                                name='bigo_and_kosh_amount_deposite'
+                                                label='तिरेको छ/छैन'
+                                                options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                                                required={true}
+                                                control={control}
+                                                error={errors.bigo_and_kosh_amount_deposite}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseOffice
+                                                name='bigo_and_kosh_amount_deoposite_office'
+                                                label='बिगो तिरेको कार्यालय'
+                                                required={true}
+                                                control={control}
+                                                error={errors.bigo_and_kosh_amount_deoposite_office}
+                                            />
+                                        </Grid2>
+
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDistrict
+                                                name='bigo_and_kosh_amount_deoposite_district'
+                                                label='बिगो तिरेको जिल्ला'
+                                                required={true}
+                                                control={control}
+                                                error={errors.bigo_paid_office_district}
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                name='bigo_and_kosh_amount_deoposite_office_ch_no'
+                                                label='च.नं.'
+                                                required={true}
+                                                control={control}
+                                                error={errors.bigo_and_kosh_amount_deoposite_office_ch_no}
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseDateField
+                                                name='bigo_and_kosh_amount_deoposite_office_date'
+                                                label='बिगो तिरेको मिति'
+                                                placeholder='YYYY-MM-DD'
+                                                required={true}
+                                                control={control}
+                                                error={errors.bigo_and_kosh_amount_deoposite_office_date}
+                                            />
+                                        </Grid2>
+                                    </>
+                                )}
+
+                            </Grid2>
+                        </Grid2>
+
+                        <Grid2 container spacing={1}>
+
+                            <ReuseInput
+                                name='old_birami_asakt_status'
+                                label='बृद्ध, रोगी वा अशक्त भए सो समेत उल्लेख गर्ने'
+                                // required={true}
+                                defaultValue={selectedBandi.old_birami_asakt_status}
+                                control={control}
+                                error={errors.old_birami_asakt_status}
+                            />
 
                         </Grid2>
 
+
+
                     </Grid2>
+                    <div className="col-12">
+                        <button type="submit" className="btn btn-primary" disabled={isLoading} onClick={handleSubmit(onFormSubmit)} >
+                            {/* {loading ? 'Submitting...' : editing ? 'Update Employee' : 'Add Employee'} */}submit
+                        </button>
+                        <div className="col mb-3">
+                            {/* <button className='btn btn-danger' onClick={handleClear}>Clear</button> */}
+                        </div>
+                    </div>
                 </form>
             </Box >
         </>
