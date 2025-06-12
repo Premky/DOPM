@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Import axios
-import { InputLabel, TextField, Autocomplete, Grid2 } from '@mui/material';
+import axios from 'axios';
+import { Autocomplete, Box, Button, Divider, Grid2, IconButton, InputLabel, TextField, Typography } from '@mui/material'
 import { Controller } from 'react-hook-form';
-import { Box } from '@mui/material';
-import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
+import { useBaseURL } from '../../Context/BaseURLProvider';
 
-const ReuseMudda = ({ name, label, required, control, error }) => {
-    // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    // const BASE_URL = localStorage.getItem('BASE_URL');
+const ReuseMudda = ({ name, label, required, control, error, defaultValue, setValue }) => {
     const BASE_URL = useBaseURL();
     const token = localStorage.getItem('token');
 
-    // State to store district options
     const [formattedOptions, setFormattedOptions] = useState([]);
 
-
+    // console.log(value);
     const fetchMudda = async () => {
         try {
             const url = `${BASE_URL}/public/get_mudda`;
@@ -27,8 +23,8 @@ const ReuseMudda = ({ name, label, required, control, error }) => {
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.mudda_name, // Use Nepali name
-                        value: opt.id, // Use ID as value
+                        label: opt.mudda_name,
+                        value: opt.id,
                     }));
                     setFormattedOptions(formatted);
                 } else {
@@ -46,14 +42,23 @@ const ReuseMudda = ({ name, label, required, control, error }) => {
         fetchMudda();
     }, []);
 
+    useEffect(() => {
+        if (formattedOptions.length && defaultValue) {
+            const matched = formattedOptions.find(opt => String(opt.value) === String(defaultValue));
+            if (matched) {
+                setValue(name, matched.value); // 👈 this ensures UI shows correct default
+            }
+        }
+    }, [formattedOptions, defaultValue, name, setValue]);
+
     return (
         <>
             <InputLabel id={name}>
                 <Grid2 container alignItems="center">
-                    <Grid2 xs={12} sm={6} md={6} >
+                    <Grid2 xs={12} sm={6} md={6}>
                         {label}
                     </Grid2>
-                    <Grid2 xs={12} sm={6} md={6} >
+                    <Grid2 xs={12} sm={6} md={6}>
                         {required && <span style={{ color: 'red' }}>*</span>}
                     </Grid2>
                 </Grid2>
@@ -62,26 +67,28 @@ const ReuseMudda = ({ name, label, required, control, error }) => {
             <Controller
                 name={name}
                 control={control}
+                defaultValue=""
                 rules={{
                     ...(required && {
                         required: {
                             value: true,
                             message: 'यो फिल्ड अनिवार्य छ',
                         },
-                    })
+                    }),
                 }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}
-                        options={formattedOptions} // Use fetched districts
+                        options={formattedOptions}
                         autoHighlight
-                        getOptionLabel={(option) => option.label || ''} // Prevents crashes if `label` is missing
-                        value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
-                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
-                        sx={{ width: '100%' }}
-
-
-
+                        getOptionLabel={(option) => option.label || ''}
+                        isOptionEqualToValue={(option, val) => option.value === val}
+                        value={
+                            formattedOptions.find((option) => String(option.value) === String(value)) || null
+                        }
+                        onChange={(_, newValue) => {
+                            onChange(newValue ? newValue.value : '');
+                        }}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -91,7 +98,7 @@ const ReuseMudda = ({ name, label, required, control, error }) => {
                                 fullWidth
                                 margin="normal"
                                 error={!!error}
-                                helperText={error?.message || ""}
+                                helperText={error?.message || ''}
                                 required={required}
                             />
                         )}

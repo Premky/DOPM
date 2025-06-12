@@ -9,11 +9,14 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import NepaliDate from 'nepali-datetime';
+import dateConverter from 'nepali-datetime/dateConverter';
+
 
 import verifyToken from '../middlewares/verifyToken.js';
 
+
 const router = express.Router();
-const query = promisify(con.query).bind(con);
+// const query = promisify(con.query).bind(con);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -25,42 +28,232 @@ const fy_date = fy + '-04-01'
 // console.log(fy_date)
 
 //गाडीका विवरणहरुः नाम सुची
-router.post('/add_vehicle', verifyToken, async (req, res) => {
-    const active_office = req.userOffice;
-    const user_id = req.userId;
-    console.log(active_office, user_id)
+// Promisify specific methods
+const queryAsync = promisify(con.query).bind(con);
+const beginTransactionAsync = promisify(con.beginTransaction).bind(con);
+const commitAsync = promisify(con.commit).bind(con);
+const rollbackAsync = promisify(con.rollback).bind(con);
+const query = promisify(con.query).bind(con);
 
+// Convert BS to AD
+// const adDate = bs.toGregorian('2081-03-01'); // Output: { year: 2024, month: 6, day: 14 }
+
+// English to Nepali date conversion
+const [npYear, npMonth, npDay] = dateConverter.englishToNepali(2023, 5, 27);
+
+// Nepali to English date conversion
+async function bs2ad1(date) {
+    const bsdob = new NepaliDate(date)
+    const addob = bsdob.formatEnglishDate('YYYY-MM-DD')
+    return addob;
+}
+
+async function calculateAge(birthDateBS) {
+    // Convert BS to AD
+    const nepaliDate = new NepaliDate(birthDateBS);
+    const adDate = nepaliDate.getDateObject(); // Converts to JavaScript Date
+
+    // Get current date
+    const currentDate = new Date();
+
+    // Calculate age
+    let age = currentDate.getFullYear() - adDate.getFullYear();
+    const m = currentDate.getMonth() - adDate.getMonth();
+
+    // Adjust age if birthday hasn't occurred yet this year
+    if (m < 0 || (m === 0 && currentDate.getDate() < adDate.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+
+
+
+
+
+
+async function generateUniqueBandiId() {
+    const maxAttempts = 10;
+
+    for (let i = 0; i < maxAttempts; i++) {
+        const randId = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+        const result = await queryAsync(
+            `SELECT office_bandi_id FROM bandies WHERE office_bandi_id = ?`,
+            [randId]
+        );
+
+        if (result.length === 0) {
+            return randId; // Unique ID
+        }
+    }
+
+    throw new Error("Unable to generate a unique bandi ID after multiple attempts.");
+}
+
+router.get('/get_random_bandi_id', async (req, res) => {
+    const rand_bandi_id = await generateUniqueBandiId();
+    console.log(rand_bandi_id)
+    return res.json({ Status: true, Result: rand_bandi_id })
+})
+
+router.post('/create_bandi', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
+    console.log(req.body)
+    const rand_bandi_id = await generateUniqueBandiId();
+
+    console.log('chkrandom:', rand_bandi_id);
     const {
-        vehicle_np, vehicle_en
+        cn, cn_date, regd, regd_date, file, dakhila_date, entry_type, bandi_type, bandi_name, gender, bandi_dob, nagrik, nationality, arrest_date,
+        kaid_date, release_date, kaid_duration, beruju_duration, last_faisala_date, no_punaravedn_district, no_punravedn_cn,
+        remarks, office, last_faisala_office, no_punaravedn_office, no_punravedn_date,
+        state_id, district_id, municipality_id, ward, bideshi_nagrik_address,
+        is_fine, fine_amt, is_fine_paid, fine_paid_office_district, fine_paid_cn, fine_paid_date, fine_paid_office,
+        is_compensation, compensation_amt, is_compensation_paid, compensation_paid_office_district, compensation_paid_cn, compensation_paid_date, compensation_paid_office,
+        is_bigo, bigo_amt, is_bigo_paid, bigo_paid_office_district, bigo_paid_cn, bigo_paid_date, bigo_paid_office
     } = req.body;
+    const age = await calculateAge(bandi_dob);
 
-    const created_by = user_id; // Adjust this to dynamically handle creator if needed
-    console.log(created_by)
-
-    const sql = `INSERT INTO tango_vehicles (
-        name_np, name_en
-    ) VALUES (?)`;
-
-    const values = [
-        vehicle_np, vehicle_en
+    const bandiRecord = [
+        regd, regd_date, entry_type, bandi_type, nagrik, nationality, bandi_name, gender,
+        bandi_dob, age, district_id, state_id, municipality_id, ward, bideshi_nagrik_address,
+        arrest_date, kaid_date, release_date, last_faisala_office, "last_faisala_district", last_faisala_date,
+        no_punaravedn_office, no_punaravedn_district, no_punravedn_cn, no_punravedn_date,
+        is_fine, is_compensation, is_bigo,
+        remarks
     ];
+    // , office, active_office, user_id
+    // DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(), pi.dob_ad)), '%Y')+0 AS age
 
     try {
-        const result = await query(sql, [values]);
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error('Database error', err);
-        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+        await beginTransactionAsync();
+        // 1. Insert into bandi_records
+        const insertBandiInfoSQL = `
+        INSERT INTO bandies (office_bandi_id, entry_date, entry_type, bandi_type_id, citizen_id,nationality_id,bandi_name,gender,
+        dob,age,district_id,province,gapa_napa_id,wardno,bidesh_nagarik_address_details,arrest_date,kaid_date,
+        release_date, mudda_phesala_antim_office_name,
+        mudda_phesala_antim_office_district,
+        mudda_phesala_antim_office_date,punarabedan_office_name,punarabedan_office_district,
+        punarabedan_office_ch_no,punarabedan_office_date,jariwana_amount_fixed,
+        kashtipurti_amount_fixed,
+        bigo_and_kosh_amount_fixed,
+        remarks) VALUES (?)`;
+
+        // INSERT INTO bandies (
+        //     date, state_id, district_id, municipality_id, ward, road_name,
+        //     accident_location, accident_time, death_male, death_female, death_boy, death_girl, death_other,
+        //     gambhir_male, gambhir_female, gambhir_boy, gambhir_girl, gambhir_other,
+        //     general_male, general_female, general_boy, general_girl, general_other,
+        //     animal_death, animal_injured, est_amount, damage_vehicle, txt_accident_reason, remarks, office_id, created_by
+        //     ) VALUES (?)`;
+
+        const bandiResult = await queryAsync(insertBandiInfoSQL, [bandiRecord]);
+        const bandi_id = bandiResult.insertId;
+
+        //2. Insert into fine table 
+        const fineRecord = [
+            bandi_id, 1, fine_amt, is_fine_paid, fine_paid_office_district, fine_paid_cn, fine_paid_date, fine_paid_office,
+        ]
+        const compensationRecord = [
+            bandi_id, 2, compensation_amt, is_compensation_paid, compensation_paid_office_district, compensation_paid_cn, compensation_paid_date, compensation_paid_office,
+        ]
+        const bigoRecord = [
+            bandi_id, 3, bigo_amt, is_bigo_paid, bigo_paid_office_district, bigo_paid_cn, bigo_paid_date, bigo_paid_office
+        ]
+
+        const insertFines = `INSERT INTO bandi_fine_table(bandi_id, fine_type_id, amount, is_paid,  
+                            paid_district_id, paid_cn, paid_date, paid_office_id) VALUES(?,?,?,?,?,?,?,?)`;
+
+        await queryAsync(insertFines, fineRecord)
+        await queryAsync(insertFines, compensationRecord)
+        await queryAsync(insertFines, bigoRecord)
+
+        // 3. Insert involved vehicles
+        const muddaEntries = Object.entries(req.body).filter(([key]) =>
+            key.startsWith("mudda_")
+        );
+
+        for (const [key, bandi_id] of muddaEntries) {
+            const muddaIndex = key.split('_')[2];
+            const muddaKey = `mudda_${muddaIndex}`;
+            const mudda = req.body[muddaKey] || "";
+            const mudda_noKey = `mudda_no_${muddaIndex}`;
+            const mudda_no = req.body[mudda_noKey] || "";
+            const vadiKey = `vadi_${muddaIndex}`;
+            const vadi = req.body[vadiKey] || "";
+            const is_mainKey = `is_main_mudda_${muddaIndex}`;
+            const is_main_mudda = req.body[is_mainKey] || "";
+
+            const insertMuddaSQL = `
+                INSERT INTO bandi_mudda (
+                    bandi_id, mudda_id,mudda_no, wadi, is_main
+                ) VALUES (?, ?, ?,?, ?)`;
+            await queryAsync(insertMuddaSQL, [bandi_id, mudda, mudda_no, vadi, is_main_mudda]);
+        }
+
+        await commitAsync(); // Commit the transaction
+
+        return res.json({
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
     }
 });
 
-router.get('/vehicles', async (req, res) => {
-    const sql = `SELECT * FROM tango_vehicles`;
+router.get('/get_bandi', async (req, res) => {
+    const sql = `SELECT b.*, bm.*, m.mudda_name FROM bandies b
+                LEFT JOIN bandi_mudda bm ON b.id=bm.bandi_id 
+                LEFT JOIN muddas m ON bm.mudda_id=m.id
+                WHERE bm.is_main=1`;
     con.query(sql, (err, result) => {
         if (err) return res.json({ Status: false, Error: "Query Error" })
         return res.json({ Status: true, Result: result })
     })
 })
+
+router.get('/get_selected_bandi/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT b.*, bm.*, m.mudda_name 
+        FROM bandies b
+        LEFT JOIN bandi_mudda bm ON b.id = bm.bandi_id 
+        LEFT JOIN muddas m ON bm.mudda_id = m.id
+        WHERE b.id = ? AND bm.is_main = 1
+    `;
+
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi not found" });
+        }
+
+        const bandi = result[0];
+
+        // 🟢 Calculate age from BS DOB
+        const age = await calculateAge(bandi.dob); // Assuming dob is BS like '2080-01-10'
+        bandi.age = age;
+        // console.log(age)
+
+        return res.json({ Status: true, Result: bandi });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
 
 router.put('/update_vehicle/:id', async (req, res) => {
     const id = req.params.id;
@@ -577,4 +770,4 @@ router.get('/users', verifyToken, (req, res) => {
     })
 })
 
-export { router as arrestedVehicleRouter }
+export { router as bandiRouter }

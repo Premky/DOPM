@@ -16,6 +16,7 @@ import errorHandler from './middlewares/errorHandler.js';
 import { authRouter } from './routes/authRoute.js';
 import { publicRouter } from './routes/publicRoutes.js';
 import { employeRouter } from './routes/employeRoute.js';
+import { bandiRouter } from './routes/bandiRuoute.js';
 
 
 
@@ -73,7 +74,7 @@ const hardOrigins = [
     'http://localhost:5173',
     'https://kptpo.onrender.com',
     'https://kptpo-backend.onrender.com',
-    'http://192.168.18.15:5173'
+    'http://192.168.18.13:5173'
 ];
 
 app.use(cors({
@@ -105,6 +106,7 @@ app.use('/Uploads', express.static(path.join(__dirname, 'Public', 'Uploads')));
 app.use('/auth', authRouter);
 app.use('/public', publicRouter);
 app.use('/emp', employeRouter);
+app.use('/bandi', bandiRouter);
 
 
 // Error handler

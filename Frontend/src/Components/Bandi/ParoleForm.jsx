@@ -1,0 +1,499 @@
+import React, { useEffect, useState, useTransition } from 'react'
+import { useBaseURL } from '../../Context/BaseURLProvider';
+import axios from 'axios'
+import { Box, Button, Divider, Grid2, IconButton, InputLabel, Typography } from '@mui/material'
+import { useForm, Controller } from 'react-hook-form'
+import NepaliDate from 'nepali-datetime'
+import ReuseSelect from '../ReuseableComponents/ReuseSelect';
+import ReuseParoleCount from '../ReuseableComponents/ReuseParoleCount';
+import ReuseDateField from '../ReuseableComponents/ReuseDateField';
+import ReuseBandi from '../ReuseableComponents/ReuseBandi';
+import ReuseInput from '../ReuseableComponents/ReuseInput';
+import ReuseDistrict from '../ReuseableComponents/ReuseDistrict';
+import ReuseState from '../ReuseableComponents/ReuseState';
+import ReuseMunicipality from '../ReuseableComponents/ReuseMunicipality';
+import ReuseMudda from '../ReuseableComponents/ReuseMudda';
+import ReuseOffice from '../ReuseableComponents/ReuseOffice';
+
+
+const ParoleForm = () => {
+    const BASE_URL = useBaseURL();
+    const { register, handleSubmit, reset, setValue, watch, formState: { errors }, control } = useForm();
+    const [editing, setEditing] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [isLoading, startTransition] = useTransition();
+    const [calcKaidDuration, setCalcKaidDuration] = useState();
+    const [calcBhuktanDuration, setCalcBhuktanDuration] = useState();
+    const [calcBerujuDuration, setCalcBerujuDuration] = useState();
+
+    const selectedState = watch("state_id"); // Get the selected state value
+    const selectedDistrict = watch("district_id"); // Get the selected district value
+    const arrestDate = watch('arrest_date');
+    const kaidDate = watch('kaid_date');
+    const releaseDate = watch('release_date');
+
+    const bandi_name_id = watch('bandi_name');
+    const bandi_dob = watch('bandi_dob');
+
+    // Nepali Date
+    const npToday = new NepaliDate();
+    const formattedDateNp = npToday.format('YYYY-MM-DD');
+    const day = npToday.getDay();
+    const weekDays = ['आइतवार', 'सोमवार', 'मङ्‍गलवार', 'बुधवार', 'बिहिवार', 'शुक्रवार', 'शनिवार'];
+    const dayName = weekDays[day];
+
+    const calculateKaidDuration = () => {
+        if (arrestDate && releaseDate) {
+            const arrestAd = new NepaliDate(arrestDate).getDateObject(); // Convert BS → JS Date
+            const releaseAd = new NepaliDate(releaseDate).getDateObject();
+            const todayAd = new NepaliDate(formattedDateNp).getDateObject();
+
+            const kaidDuration = calculateDateDetails(arrestAd, releaseAd);
+            const bhuktanDuration = calculateDateDetails(todayAd, arrestAd);
+            const berujuDuration = calculateDateDetails(releaseAd, todayAd);
+
+            setCalcKaidDuration(kaidDuration);
+            setCalcBhuktanDuration(bhuktanDuration);
+            setCalcBerujuDuration(berujuDuration);
+
+            const kaidDurPer=(bhuktanDuration.totalDays/kaidDuration.totalDays)*100
+            const berujuPer=(berujuDuration.totalDays/kaidDuration.totalDays)*100
+            console.log(kaidDurPer, berujuPer)
+        }
+    };
+
+
+    const calculateDateDetails = (startDateStr, endDateStr) => {
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        if (isNaN(startDate) || isNaN(endDate)) return null;
+
+        let totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+        if (totalDays < 0) totalDays = 0;
+
+        let years = endDate.getFullYear() - startDate.getFullYear();
+        let months = endDate.getMonth() - startDate.getMonth();
+        let days = endDate.getDate() - startDate.getDate();
+
+        if (days < 0) {
+            months--;
+            const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+            days += prevMonth.getDate();
+        }
+
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        return {
+            years,
+            months,
+            days,
+            totalDays,
+        };
+    };
+
+
+    const fetchData = async (url, params = {}) => {
+        try {
+            setLoading(true);
+
+            const response = await axios.get(url, {
+                params,
+                withCredentials: true,
+            });
+
+            const { Status, Result, Error } = response.data;
+
+            if (Status) {
+                return { success: true, data: Result };
+            } else {
+                console.error(Error || 'Failed to fetch records');
+                return { success: false, data: null };
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return { success: false, data: null };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const [selectedBandi, setSelectedBandi] = useState({});
+    useEffect(() => {
+        const fetch = async () => {
+            if (bandi_name_id) {
+                const url = `${BASE_URL}/bandi/get_selected_bandi/${bandi_name_id}`;
+                const result = await fetchData(url);
+                if (result.success && result.data) {
+                    setSelectedBandi(result.data);
+                    console.log(selectedBandi)
+
+                    // 👇 Set other values manually
+                    setValue('bandi_dob', result.data.dob || '');
+                    setValue('state_id', result.data.province || '');
+                    setValue('district_id', result.data.district_id || '');
+                    setValue('gapa_napa_id', result.data.gapa_napa_id || '');
+                    setValue('mudda_id', result.data.mudda_id || '');
+                    setValue('mudda_no', result.data.mudda_no || '');
+                    setValue('wardno', result.data.wardno || '');
+                    setValue('no_punravedn_office', result.data.no_punravedn_office || '');
+                } else {
+                    setSelectedBandi({});
+                    setValue('bandi_dob', '');
+                    setValue('state_id', 0);
+                    setValue('district_id', 0);
+                    setValue('gapa_napa_id', 0);
+                    setValue('mudda_id', '');
+                    setValue('mudda_no', '');
+                    setValue('wardno', '');
+                    setValue('no_punravedn_office', '');
+                }
+            }
+        };
+        fetch();
+    }, [bandi_name_id, BASE_URL, setValue]);
+
+
+    const onFormSubmit = async (data) => {
+        // console.log('Form Data:', data);
+        try {
+            const url = editing ? `${BASE_URL}/bandi/update_bandi/${currentData.id}` :
+                `${BASE_URL}/bandi/create_bandi`;
+            const method = editing ? 'PUT' : 'POST';
+            const response = await axios({
+                method,
+                url,
+                data,
+                // headers: {Authorization: `Bearer ${token}`,"Content-Type": "multipart/form-data",},
+                withCredentials: true
+            });
+            const { Status, Result, Error } = response.data;
+            if (Status) {
+                alert('Data submitted successfully!');
+
+                reset(); // Reset the form after successful submission
+                setEditing(false); // Reset editing state
+                fetchAccidentRecords(); // Fetch updated records
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('An error occurred while submitting the form.');
+        }
+    }
+    return (
+        <>
+            <Box sx={{ flexGrow: 1, margin: 2 }}>
+                <form onSubmit={handleSubmit(onFormSubmit)}>
+                    <Grid2>
+                        <h4>प्यारोल दाखिला</h4>
+                    </Grid2>
+
+                    <Grid2 container spacing={1}>
+
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseParoleCount
+                                name='payrole_no_id'
+                                label='प्यारोल संख्या'
+                                required={true}
+                                control={control}
+                                error={errors.payrole_no_id}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseDateField
+                                name='payrole_ganana_date'
+                                label='गणना मिति'
+                                placeholder={'YYYY-MM-DD'}
+                                required={true}
+                                control={control}
+                                error={errors.payrole_calculation_date}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseDateField
+                                name='payrole_entry_date'
+                                label='दाखिला मिति'
+                                placeholder={'YYYY-MM-DD'}
+                                required={true}
+                                control={control}
+                                error={errors.dakhila_date}
+                            />
+                        </Grid2>
+
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseBandi
+                                name='bandi_name'
+                                label='बन्दीको नाम'
+                                required={true}
+                                control={control}
+                                error={errors.bandi_name}
+                            />
+                        </Grid2>
+
+                        <Grid2 container size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid2 size={{ xs: 9, sm: 9, md: 9 }}>
+                                <ReuseDateField
+                                    name='bandi_dob'
+                                    label='जन्म मिती'
+                                    placeholder={'YYYY-MM-DD'}
+                                    defaultValue={selectedBandi.dob}
+                                    required={true}
+                                    control={control}
+                                    error={errors.bandi_dob}
+                                />
+                            </Grid2>
+
+                            <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
+                                <ReuseInput
+                                    name='age'
+                                    label='जन्म मिती'
+                                    defaultValue={selectedBandi.age}
+                                    required={true}
+                                    control={control}
+                                    error={errors.age}
+                                />
+                            </Grid2>
+
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseState
+                                name='state_id'
+                                label='प्रदेश'
+                                required={true}
+                                control={control}
+                                error={errors.state_id}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseDistrict
+                                name='district_id'
+                                label='जिल्ला'
+                                required={true}
+                                control={control}
+                                error={errors.district_id}
+                            />
+                        </Grid2>
+                        <Grid2 container size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid2 size={{ xs: 9, sm: 9, md: 9 }}>
+                                <ReuseMunicipality
+                                    name='gapa_napa_id'
+                                    label='गाउँपालिका/नगरपालिका'
+                                    required={true}
+                                    control={control}
+                                    error={errors.gapa_napa_id}
+                                    selectedDistrict={watch('district_id')}
+                                />
+                            </Grid2>
+                            <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
+                                <ReuseInput
+                                    name='wardno'
+                                    label='वडा नं.'
+                                    defaultValue={selectedBandi.wardno}
+                                    required={true}
+                                    control={control}
+                                    error={errors.wardno}
+                                />
+                            </Grid2>
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseMudda
+                                name='mudda_id'
+                                label='मुददा'
+                                required={true}
+                                control={control}
+                                error={errors.mudda_id}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
+                            <ReuseInput
+                                name='mudda_no'
+                                label='मुद्दा नं.'
+                                defaultValue={selectedBandi.mudda_no}
+                                required={true}
+                                control={control}
+                                error={errors.mudda_no}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
+                            <ReuseInput
+                                name='wadi'
+                                label='मुद्दा नं.'
+                                defaultValue={selectedBandi.wadi}
+                                required={true}
+                                control={control}
+                                error={errors.wadi}
+                            />
+                        </Grid2>
+
+                        <Grid2 container spacing={1}>
+                            <Grid2 size={{ xs: 12 }}>
+                                हिरासत, छुट्टिजाने, जम्मा सजाय
+                            </Grid2>
+
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <ReuseDateField
+                                    name='arrest_date'
+                                    label='हिरासत परेको मिति'
+                                    placeholder={'YYYY-MM-DD'}
+                                    defaultValue={selectedBandi.arrest_date}
+                                    required={true}
+                                    control={control}
+                                    error={errors.arrest_date}
+                                    onChange={calculateKaidDuration} // ✅ this triggers the diff calc
+                                />
+                            </Grid2>
+
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <ReuseDateField
+                                    name='kaid_date'
+                                    label='कैद वा थुनामा परेको मिति'
+                                    placeholder={'YYYY-MM-DD'}
+                                    defaultValue={selectedBandi.kaid_date}
+                                    required={true}
+                                    control={control}
+                                    error={errors.kaid_date}
+                                    />
+                            </Grid2>
+
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <ReuseDateField
+                                    name='release_date'
+                                    label='छुटीजाने मिति'
+                                    placeholder={'YYYY-MM-DD'}
+                                    defaultValue={selectedBandi.release_date}
+                                    required={true}
+                                    control={control}
+                                    error={errors.release_date}
+                                    onChange={calculateKaidDuration}
+                                />
+                            </Grid2>
+
+                            <Grid2 container size={{ xs: 12, sm: 6, md: 3 }} onClick={calculateKaidDuration}>
+                                <Grid2 size={{ xs: 12, sm: 4 }}>
+                                    <div>
+                                        <p>कैद अवधि </p>
+                                        {`${calcKaidDuration?.years || 0} | ${calcKaidDuration?.months || 0} | ${calcKaidDuration?.days || 0}`}
+                                    </div>
+
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, sm: 4 }}>
+                                    <div>
+                                        <p>भुक्तान अवधि </p>
+                                        {`${calcBhuktanDuration?.years || 0} | ${calcBhuktanDuration?.months || 0} | ${calcBhuktanDuration?.days || 0}`}
+                                    </div>
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, sm: 4 }}>
+                                    <div>
+                                        <p>बाँकी अवधि </p>
+                                        {`${calcBerujuDuration?.years || 0} | ${calcBerujuDuration?.months || 0} | ${calcBerujuDuration?.days || 0}`}
+                                    </div>
+                                </Grid2>
+                            </Grid2>
+
+                            <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
+                                {calcKaidDuration.totalDays},
+                                {calcBhuktanDuration.totalDays},
+                                {calcBerujuDuration.totalDays},
+                                <ReuseInput
+                                    name='kaid_bhuktan_percentage'
+                                    label='भुक्तान अवधी र प्रतिशत'
+                                    defaultValue={selectedBandi.kaid_bhuktan_percentage}
+                                    required={true}
+                                    control={control}
+                                    error={errors.kaid_bhuktan_percentage}
+                                />
+                            </Grid2>
+                            <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
+                                <ReuseInput
+                                    name='banki_bhuktan_percentage'
+                                    label='बाँकी अवधी र प्रतिशत'
+                                    defaultValue={selectedBandi.banki_bhuktan_percentage}
+                                    required={true}
+                                    control={control}
+                                    error={errors.banki_bhuktan_percentage}
+                                />
+                            </Grid2>
+
+                            <Grid2 container spacing={1}>
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseOffice
+                                        name='last_faisala_office'
+                                        label='मुद्दाको अन्तिम कारवाही गर्ने निकाय'
+                                        required={true}
+                                        control={control}
+                                        error={errors.last_faisala_office}
+                                    />
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseDateField
+                                        name='last_faisala_date'
+                                        label='फैसला मिति'
+                                        placeholder='YYYY-MM-DD'
+                                        required={true}
+                                        control={control}
+                                        error={errors.last_faisala_date}
+                                    />
+                                </Grid2>
+                            </Grid2>
+                            <Grid2 container spacing={1}>
+                                <Grid2 size={{ xs: 12 }}>
+                                    पुनरावेदन नपरेको प्रमाण
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseOffice
+                                        name='no_punravedn_office'
+                                        label='पुनरावेदन नपरेको कार्यालय'
+                                        required={true}
+                                        control={control}
+                                        error={errors.no_punravedn_office}
+                                    />
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseDistrict
+                                        name='no_punravedn_district'
+                                        label='पुनरावेदन नपरेको जिल्ला'
+                                        required={true}
+                                        control={control}
+                                        error={errors.no_punravedn_district}
+                                    />
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseInput
+                                        name='no_punravedn_cn'
+                                        label='च.नं.'
+                                        required={true}
+                                        control={control}
+                                        error={errors.no_punravedn_cn}
+                                    />
+                                </Grid2>
+
+                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseDateField
+                                        name='no_punravedn_date'
+                                        label='प्रमाण मिति'
+                                        placeholder='YYYY-MM-DD'
+                                        required={true}
+                                        control={control}
+                                        error={errors.no_punravedn_date}
+                                    />
+                                </Grid2>
+                            </Grid2>
+
+
+                        </Grid2>
+
+                    </Grid2>
+                </form>
+            </Box >
+        </>
+    )
+}
+
+export default ParoleForm

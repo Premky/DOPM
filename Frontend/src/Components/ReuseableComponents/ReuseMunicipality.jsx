@@ -1,62 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { InputLabel, TextField, Autocomplete } from '@mui/material';
 import { Controller } from 'react-hook-form';
-import { Box } from '@mui/material';
-import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
+import { useBaseURL } from '../../Context/BaseURLProvider';
 
 const ReuseMunicipality = ({ name, label, required, control, error, selectedDistrict }) => {
-        // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        // const BASE_URL = localStorage.getItem('BASE_URL');
-        const BASE_URL = useBaseURL();
+    const BASE_URL = useBaseURL();
     const token = localStorage.getItem('token');
 
-    // State to store Municipality options
-    const [formattedOptions, setFormattedOptions] = useState([]);
-
     const [municipality, setMunicipality] = useState([]);
-    const [filteredMunicipality, setFilteredMunicipality] = useState([]);
 
-    // Fetch Municipality data
-    const fetchMunicipality = async () => {
-        try {
-            const url = `${BASE_URL}/public/get_municipalities`;
-            const response = await axios.get(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+    // Fetch Municipality data once
+    useEffect(() => {
+        const fetchMunicipality = async () => {
+            try {
+                const url = `${BASE_URL}/public/get_municipalities`;
+                const response = await axios.get(url, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            const { Status, Result, Error } = response.data;
+                const { Status, Result, Error } = response.data;
 
-            if (Status) {
-                if (Array.isArray(Result) && Result.length > 0) {
+                if (Status) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.city_name_nep, // Use Nepali name
-                        value: opt.id, // Use ID as value
-                        state_id: opt.district_Id, // Store state_id to filter
+                        label: opt.city_name_nep,
+                        value: opt.id,
+                        state_id: opt.district_Id,
                     }));
                     setMunicipality(formatted);
                 } else {
-                    console.log('No Municipality records found.');
+                    console.error(Error || 'Failed to fetch Municipality.');
                 }
-            } else {
-                console.log(Error || 'Failed to fetch Municipality.');
+            } catch (error) {
+                console.error('Error fetching municipalities:', error);
             }
-        } catch (error) {
-            console.error('Error fetching records:', error);
-        }
-    };
+        };
 
-    useEffect(() => {
         fetchMunicipality();
-    }, []);
+    }, [BASE_URL, token]);
 
-    // Filter Municipalitys when selectedDistrict changes
-    useEffect(() => {
+    // Filter municipalities based on selectedDistrict
+    const filteredMunicipality = useMemo(() => {
         if (selectedDistrict) {
-            setFilteredMunicipality(municipality.filter(d => d.state_id === selectedDistrict));
-        } else {
-            setFilteredMunicipality([]);
+            return municipality.filter(d => d.state_id === selectedDistrict);
         }
+        return municipality;
     }, [selectedDistrict, municipality]);
 
     return (
@@ -77,35 +65,38 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
                         },
                     }),
                 }}
-                render={({ field: { onChange, value, ref } }) => (
-                    <Autocomplete
-                        id={name}
-                        options={filteredMunicipality} // Use fetched Municipalitys
-                        autoHighlight
-                        getOptionLabel={(option) => option.label || ''} // Prevents crashes if `label` is missing
-                        value={filteredMunicipality.find((option) => option.value === value) || null} // Ensure selected value matches
-                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
-                        sx={{ width: '100%' }}
-                        // renderOption={(props, option) => (
-                        //     <Box key={option.value} component="li" {...props}>
-                        //         {option.label}
-                        //     </Box>
-                        // )}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                inputRef={ref}
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                margin="normal"
-                                error={!!error}
-                                helperText={error?.message || ""}
-                                required={required}
-                            />
-                        )}
-                    />
-                )}
+                render={({ field: { onChange, value, ref } }) => {
+                    const selectedOption = municipality.find((option) => option.value === value) || null;
+
+                    if (value && !selectedOption) {
+                        console.warn(`Municipality with ID ${value} not found in fetched options`);
+                    }
+
+                    return (
+                        <Autocomplete
+                            id={name}
+                            options={filteredMunicipality}
+                            autoHighlight
+                            getOptionLabel={(option) => option.label || ''}
+                            value={selectedOption}
+                            onChange={(_, newValue) => onChange(newValue ? newValue.value : '')}
+                            sx={{ width: '100%' }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    inputRef={ref}
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    margin="normal"
+                                    error={!!error}
+                                    helperText={error?.message || ''}
+                                    required={required}
+                                />
+                            )}
+                        />
+                    );
+                }}
             />
         </>
     );

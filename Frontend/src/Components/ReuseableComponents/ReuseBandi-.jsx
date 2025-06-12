@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 import { InputLabel, TextField, Autocomplete } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseEntryType = ({ name, label, required, control, error, reason_type }) => {
+const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -14,29 +14,33 @@ const ReuseEntryType = ({ name, label, required, control, error, reason_type }) 
     // State to store district options
     const [formattedOptions, setFormattedOptions] = useState([]);
 
-
-    const fetchEntryTypes = async () => {
+    // Fetch district data
+    const fetchLisenceCategory = async () => {
         try {
-            const url = `${BASE_URL}/public/get_entry_types/`; // Adjusted URL to include reason_type
+            const url = `${BASE_URL}/bandi/get_bandi`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
-                withCredentials: true
             });
 
             const { Status, Result, Error } = response.data;
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result.map((opt) => ({
-                        label: opt.name_np, // Use Nepali name
-                        value: opt.id, // Use ID as value
-                    }));
+                    const formatted = Result.map((opt) => {
+                        const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
+                        return {
+                            label: `${opt.id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_id}`,
+                            value: opt.id,
+                        };
+                    });
+
                     setFormattedOptions(formatted);
-                } else {
-                    console.log('No entry types records found.');
+                }
+                else {
+                    console.log('No bandi records found.');
                 }
             } else {
-                console.log(Error || 'Failed to fetch entry types.');
+                console.log(Error || 'Failed to fetch bandi.');
             }
         } catch (error) {
             console.error('Error fetching records:', error);
@@ -44,7 +48,7 @@ const ReuseEntryType = ({ name, label, required, control, error, reason_type }) 
     };
 
     useEffect(() => {
-        fetchEntryTypes();
+        fetchLisenceCategory();
     }, []);
 
     return (
@@ -57,6 +61,14 @@ const ReuseEntryType = ({ name, label, required, control, error, reason_type }) 
             <Controller
                 name={name}
                 control={control}
+                rules={{
+                    ...(required && {
+                        required: {
+                            value: true,
+                            message: 'यो फिल्ड अनिवार्य छ',
+                        },
+                    })
+                }}
                 render={({ field: { onChange, value, ref } }) => (
                     <Autocomplete
                         id={name}
@@ -66,6 +78,11 @@ const ReuseEntryType = ({ name, label, required, control, error, reason_type }) 
                         value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                         onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                         sx={{ width: '100%' }}
+                        renderOption={(props, option) => (
+                            <Box key={`${option.value}-${option.label}`} component="li" {...props}>
+                                {option.label}
+                            </Box>
+                        )}
 
                         renderInput={(params) => (
                             <TextField
@@ -87,4 +104,4 @@ const ReuseEntryType = ({ name, label, required, control, error, reason_type }) 
     );
 };
 
-export default ReuseEntryType;
+export default ReuseBandi;

@@ -16,6 +16,7 @@ const query = promisify(con.query).bind(con);
 
 const router = express.Router();
 
+
 router.post("/create_accident", verifyToken, async (req, res) => {
     const { username, office_id } = req.user;
 

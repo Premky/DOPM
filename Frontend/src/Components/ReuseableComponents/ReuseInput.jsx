@@ -2,7 +2,7 @@ import React from 'react';
 import { InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
 
-const ReuseInput = ({ name, label, required, control, error, placeholder,type, readonly,length }) => {
+const ReuseInput = ({ name, label, required, control, error, placeholder,type, readonly,length, defaultValue }) => {
     return (
         <>
             <InputLabel id={name}>
@@ -37,6 +37,7 @@ const ReuseInput = ({ name, label, required, control, error, placeholder,type, r
                         type={type||'text'}
                         readOnly={readonly}
                         inputProps={{ maxLength: length || 255 }} // Set max length                        }}
+                        value={defaultValue}
                     />
                 )}
             />

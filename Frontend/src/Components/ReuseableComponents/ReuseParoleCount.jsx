@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => {
+const ReuseParoleCount = ({ name, label, required, control, error, defaultvalue }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -18,7 +18,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     // Fetch office data
     const fetchOffices = async () => {
         try {
-            const url = `${BASE_URL}/bandi/get_bandi`;
+            const url = `${BASE_URL}/public/get_parole_nos`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -27,16 +27,11 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result
-                        // .filter(opt => opt?.bandi_name)
-                        .filter(opt => opt?.id && opt?.bandi_name)
-                        .map((opt) => {
-                            const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
-                            return {
-                                label: `${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}`,
-                                value: opt.bandi_id,
-                            };
-                        });
+                    // console.log(Result)
+                    const formatted = Result.map((opt) => ({
+                        label: opt.payrole_no_name, // Use Nepali name
+                        value: opt.id, // Use ID as value
+                    }));
 
                     setFormattedOptions(formatted);
                 } else {
@@ -123,4 +118,4 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     );
 };
 
-export default ReuseBandi;
+export default ReuseParoleCount;

@@ -242,7 +242,7 @@ router.post('/logout', (req, res) => {
 
 // Session Validation Route
 router.get('/session', verifyToken, (req, res) => {
-    console.log(req.user)
+    // console.log('session', req.user)
     if (!req.user) return res.status(401).json({ loggedIn: false });
 
     const { name_en, username, email, is_staff, is_active, last_login, join_date, office_id, office_np, office_en } = req.user;

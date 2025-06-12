@@ -41,6 +41,7 @@ const BandiForm = () => {
     const [bandiType, setBandiType] = useState([]);
     const [muddaCount, setMuddaCount] = useState(1);
     const [calcKaidDuration, setCalcKaidDuration] = useState();
+    const [calcBhuktanDuration, setCalcBhuktanDuration] = useState();
     const [calcBerujuDuration, setCalcBerujuDuration] = useState();
 
     const arrestDate = watch('arrest_date');
@@ -49,11 +50,17 @@ const BandiForm = () => {
 
     const calculateKaidDuration = () => {
         if (arrestDate && releaseDate) {
-            const kaidduration = calculateDateDetails(arrestDate, releaseDate);
-            setCalcKaidDuration(kaidduration)
-            const berujuduration = calculateDateDetails(releaseDate, formattedDateNp);
-            setCalcBerujuDuration(berujuduration)
-            console.log(formattedDateNp)
+            const arrestAd = new NepaliDate(arrestDate).getDateObject(); // Convert BS → JS Date
+            const releaseAd = new NepaliDate(releaseDate).getDateObject();
+            const todayAd = new NepaliDate(formattedDateNp).getDateObject();
+
+            const kaidDuration = calculateDateDetails(arrestAd, releaseAd);
+            const bhuktanDuration = calculateDateDetails(todayAd, arrestAd);
+            const berujuDuration = calculateDateDetails(releaseAd, todayAd);
+
+            setCalcKaidDuration(kaidDuration);
+            setCalcBhuktanDuration(bhuktanDuration);
+            setCalcBerujuDuration(berujuDuration);
         }
     };
 
@@ -258,7 +265,7 @@ const BandiForm = () => {
                             <ReuseSelect
                                 name='entry_type'
                                 label='दाखिला किसिम'
-                                options={[{label:'नयाँ बन्दी थप', value:'1'}, {label:'सरुवा भई आएको', value:'5'}]}
+                                options={[{ label: 'नयाँ बन्दी थप', value: '1' }, { label: 'सरुवा भई आएको', value: '5' }]}
                                 required={true}
                                 control={control}
                                 error={errors.entry_type}

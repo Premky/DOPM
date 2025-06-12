@@ -22,7 +22,7 @@ const current_date = new NepaliDate().format('YYYY-MM-DD');
 const fy = new NepaliDate().format('YYYY'); //Support for filter
 const fy_date = fy + '-04-01'
 // console.log(current_date);
-router.get("/get_office", verifyToken, async(req, res)=>{
+router.get("/get_offices", async(req, res)=>{
     const sql = `SELECT * from offices ORDER BY office_name_with_letter_address`; 
     try {
         const result = await query(sql);
@@ -44,8 +44,38 @@ router.get('/get_office1', async(req, res)=>{
     }
 });
 
+router.get('/get_parole_nos/', async (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT * FROM payrole_nos`;
+
+    con.query(sql, (err, result) => {
+        // console.log(result)
+        if (err) return res.json({ Status: false, Error: "Query Error" })
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Parole Nos not found" });
+        }
+        return res.json({ Status: true, Result: result })
+    })
+
+})
+
+router.get('/get_parole_status/', async (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT * FROM parole_status`;
+
+    con.query(sql, id, (err, result) => {
+        if (err) return res.json({ Status: false, Error: "Query Error" })
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Parole Status not found" });
+        }
+        return res.json({ Status: true, Result: result[0] })
+    })
+
+})
+
+
 router.get('/get_countries', async(req, res)=>{
-    const sql = `SELECT * from np_country ORDER BY name_np`; 
+    const sql = `SELECT * from nationalities`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})
@@ -56,7 +86,7 @@ router.get('/get_countries', async(req, res)=>{
 });
 
 router.get('/get_states', async(req, res)=>{
-    const sql = `SELECT * from np_states ORDER BY name_np`; 
+    const sql = `SELECT * from np_states ORDER BY state_name_np`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})
@@ -67,7 +97,7 @@ router.get('/get_states', async(req, res)=>{
 });
 
 router.get('/get_districts', async(req, res)=>{
-    const sql = `SELECT * from np_districts ORDER BY name_np`; 
+    const sql = `SELECT * from districts ORDER BY dist_name_nep`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})
@@ -78,7 +108,7 @@ router.get('/get_districts', async(req, res)=>{
 });
 
 router.get('/get_municipalities', async(req, res)=>{
-    const sql = `SELECT * from np_municipalities ORDER BY name_np`; 
+    const sql = `SELECT * from gapa_napa ORDER BY id`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})

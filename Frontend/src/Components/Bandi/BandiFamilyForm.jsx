@@ -143,7 +143,7 @@ const BandiFamilyForm = () => {
                         <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
                             <ReuseDistrict
                                 name='issue_district'
-                                label='जिल्ला'
+                                label='जारी जिल्ला'
                                 required={false}
                                 control={control}
                                 error={errors.issue_district}
@@ -153,6 +153,7 @@ const BandiFamilyForm = () => {
                         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                             <ReuseInput name='relative_name'
                                 label='नजिकको आफन्तको नाम'
+                                required={true}
                                 control={control}
                                 error={errors.relative_name}
                             />
@@ -203,38 +204,39 @@ const BandiFamilyForm = () => {
                                         error={errors.no_of_children}
                                     />
                                 </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseInput name='father_name'
-                                        label='बाबुको नामथर'
-                                        required={true}
-                                        control={control}
-                                        error={errors.father_name}
-                                    />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseInput name='mother_name'
-                                        label='आमाको नामथर'
-                                        required={true}
-                                        control={control}
-                                        error={errors.mother_name}
-                                    />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseInput name='grand_father_name'
-                                        label='बाजेको नामथर'
-                                        required={true}
-                                        control={control}
-                                        error={errors.grand_father_name}
-                                    />
-                                </Grid2>
-                            </>)}
+                            </>
+                        )}
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseInput name='father_name'
+                                label='बाबुको नामथर'
+                                required={true}
+                                control={control}
+                                error={errors.father_name}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseInput name='mother_name'
+                                label='आमाको नामथर'
+                                required={true}
+                                control={control}
+                                error={errors.mother_name}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseInput name='grand_father_name'
+                                label='बाजेको नामथर'
+                                required={true}
+                                control={control}
+                                error={errors.grand_father_name}
+                            />
+                        </Grid2>
                     </Grid2>
 
-                    
-                    
-                    
 
-                    
+
+
+
+
                     <div className="col-12">
                         <button type="submit" className="btn btn-primary" disabled={isLoading} onClick={handleSubmit(onFormSubmit)} >
                             {/* {loading ? 'Submitting...' : editing ? 'Update Employee' : 'Add Employee'} */}submit
@@ -244,7 +246,7 @@ const BandiFamilyForm = () => {
                         </div>
                     </div>
                 </form>
-            </Box>
+            </Box >
 
         </>
     )

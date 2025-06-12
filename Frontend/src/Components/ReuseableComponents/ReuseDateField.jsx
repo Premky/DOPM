@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
 
-const ReuseDateField = ({ name, label, required, control, error, placeholder,onChange: propsOnChange }) => {
+const ReuseDateField = ({ name, label, required, control, error, placeholder, onChange: propsOnChange, defaultValue }) => {
+    // console.log(defaultValue)
     return (
         <>
             <InputLabel id={name}>
@@ -13,7 +14,7 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder,onC
             <Controller
                 name={name}
                 control={control}
-                defaultValue="" // Provide a default value
+                defaultValue={defaultValue} // Provide a default value
 
                 rules={{
                     ...(required && {
@@ -55,8 +56,8 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder,onC
                                 month = "12";
                             }
                             // Validate day
-                            if (parseInt(day, 10) > 31) {
-                                day = "31";
+                            if (parseInt(day, 10) > 32) {
+                                day = "32";
                             }
 
                             formatted = `${year}-${month}-${day}`;
@@ -81,8 +82,8 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder,onC
                             error={!!error}
                             helperText={error?.message || ""}
                             required={required}
-                            placeholder={placeholder}
-                            value={formattedValue}
+                            placeholder={defaultValue||placeholder}
+                            value={defaultValue||formattedValue}
                             onChange={handleInputChange}
                             onBlur={onBlur}
                             inputProps={{ maxLength: 10 }}

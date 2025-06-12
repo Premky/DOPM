@@ -20,6 +20,9 @@ import AssignApps from './Components/AdminPanel/User/AssignApps';
 import Dashboard from './Components/Dashboard/Dashboard';
 import BandiForm from './Components/Bandi/BandiForm';
 import BandiFamilyForm from './Components/Bandi/BandiFamilyForm';
+import PrisionerReleaseForm from './Components/Bandi/PrisionerReleaseForm';
+import BandiReleaseForm from './Components/Bandi/BandiReleaseForm';
+import ParoleForm from './Components/Bandi/ParoleForm';
 
 function App() {
   return (
@@ -31,7 +34,8 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes */}
-            <Route path='/' element={<BandiFamilyForm />}/>
+            <Route path='/' element={<ParoleForm />}/>
+            {/* <Route path='/' element={<BandiReleaseForm />}/> */}
             {/* <Route path='/' element={<BandiForm />}/> */}
 
             <Route path='/' element={<ProtectedRoute />}>
