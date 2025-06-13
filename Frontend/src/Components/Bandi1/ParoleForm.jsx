@@ -32,11 +32,11 @@ const ParoleForm = () => {
     const arrestDate = watch('arrest_date');
     const kaidDate = watch('kaid_date');
     const releaseDate = watch('release_date');
-    const selectedIs_fine = watch("is_fine");
+    const selected_jariwana_amount_fixed = watch("jariwana_amount_fixed");
     const selectedIs_fine_paid = watch("is_fine_paid");
-    const selectedIs_compensation = watch("is_compensation");
+    const selectedkashtipurti_amount_fixed = watch("kashtipurti_amount_fixed");
     const selectedIs_compensation_paid = watch("is_compensation_paid");
-    const selectedIs_bigo = watch("is_bigo");
+    const selectedbigo_and_kosh_amount_fixed = watch("bigo_and_kosh_amount_fixed");
     const selectedIs_bigo_paid = watch("is_bigo_paid");
 
     const bandi_name_id = watch('bandi_name');
@@ -64,10 +64,10 @@ const ParoleForm = () => {
             setCalcBhuktanDuration(bhuktanDuration);
             setCalcBerujuDuration(berujuDuration);
 
-            console.log('kaidDurPer', berujuDuration.percentage)
+            console.log('kaidDurPer', berujuDuration)
         }
     };
-    
+
 
     const fetchData = async (url, params = {}) => {
         try {
@@ -366,25 +366,29 @@ const ParoleForm = () => {
                                         {`${calcKaidDuration?.years || 0} | ${calcKaidDuration?.months || 0} | ${calcKaidDuration?.days || 0}`}
                                     </div>
 
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 4 }}>
+                                </Grid2><Grid2 size={{ xs: 12, sm: 4 }}>
                                     <div>
-                                        <p>भुक्तान अवधि </p>
-                                        {`${calcBhuktanDuration?.years || 0} | ${calcBhuktanDuration?.months || 0} | ${calcBhuktanDuration?.days || 0} `}
+                                        <p>भुक्तान अवधि</p>
+                                        {calcBhuktanDuration
+                                            ? `${calcBhuktanDuration.years || 0} | ${calcBhuktanDuration.months || 0} | ${calcBhuktanDuration.days || 0} (${calcBhuktanDuration.percentage || 0} %)`
+                                            : "N/A"}
                                     </div>
                                 </Grid2>
+
                                 <Grid2 size={{ xs: 12, sm: 4 }}>
                                     <div>
-                                        <p>बाँकी अवधि </p>
-                                        {`${calcBerujuDuration?.years || 0} | ${calcBerujuDuration?.months || 0} | ${calcBerujuDuration?.bhuktanDurationper || 0}`}
+                                        <p>बाँकी अवधि</p>
+                                        {calcBerujuDuration
+                                            ? calcBerujuDuration.years > 0
+                                                ? `${calcBerujuDuration.years || 0} | ${calcBerujuDuration.months || 0} | ${calcBerujuDuration.days || 0} (${calcBerujuDuration.percentage || 0} %)`
+                                                : `${calcBerujuDuration.totalDays || 0} दिन (${calcBerujuDuration.percentage || 0} %)`
+                                            : "N/A"}
                                     </div>
                                 </Grid2>
+
                             </Grid2>
 
-                            <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
-                                {/* {calcKaidDuration.totalDays},
-                                {calcBhuktanDuration.totalDays},
-                                {calcBerujuDuration.totalDays}, */}
+                            {/* <Grid2 size={{ xs: 3, sm: 3, md: 3 }}>
                                 <ReuseInput
                                     name='kaid_bhuktan_percentage'
                                     label='भुक्तान अवधी र प्रतिशत'
@@ -403,7 +407,7 @@ const ParoleForm = () => {
                                     control={control}
                                     error={errors.banki_bhuktan_percentage}
                                 />
-                            </Grid2>
+                            </Grid2> */}
 
 
                             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -500,13 +504,13 @@ const ParoleForm = () => {
                                         error={errors.jariwana_amount_fixed}
                                     />
                                 </Grid2>
-                                {selectedIs_fine === 1 && (
+                                {selected_jariwana_amount_fixed === 1 && (
                                     <>
                                         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                             <ReuseInput
                                                 name='jariwana_amount_deoposite_amount'
                                                 label='रकम'
-                                                defaultValue={selectedBandi.jariwana_amount_deoposite_amount}
+                                                defaultValue={selectedBandi?.jariwana_amount_deoposite_amount || ""}
                                                 required={true}
                                                 control={control}
                                                 error={errors.jariwana_amount_deoposite_amount}
@@ -583,7 +587,7 @@ const ParoleForm = () => {
                                     />
                                 </Grid2>
 
-                                {selectedIs_compensation == 1 && (
+                                {selectedkashtipurti_amount_fixed == 1 && (
                                     <>
                                         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                             <ReuseInput
@@ -665,7 +669,7 @@ const ParoleForm = () => {
                                     />
                                 </Grid2>
 
-                                {selectedIs_bigo == 1 && (
+                                {selectedbigo_and_kosh_amount_fixed == 1 && (
                                     <>
                                         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                             <ReuseInput

@@ -18,12 +18,13 @@ import UserCheck from './Components/Auth/middlewares/UserCheck';
 import CreateUser from './Components/AdminPanel/User/CreateUser';
 import AssignApps from './Components/AdminPanel/User/AssignApps';
 import Dashboard from './Components/Dashboard/Dashboard';
-import BandiForm from './Components/Bandi/BandiForm';
-import BandiFamilyForm from './Components/Bandi/BandiFamilyForm';
-import PrisionerReleaseForm from './Components/Bandi/PrisionerReleaseForm';
-import BandiReleaseForm from './Components/Bandi/BandiReleaseForm';
-import ParoleForm from './Components/Bandi/ParoleForm';
+// import BandiForm from './Components/Bandi/BandiForm';
+// import BandiFamilyForm from './Components/Bandi/BandiFamilyForm';
+// import PrisionerReleaseForm from './Components/Bandi/PrisionerReleaseForm';
+// import BandiReleaseForm from './Components/Bandi/BandiReleaseForm';
+// import ParoleForm from './Components/Bandi/ParoleForm';
 
+import BandiPersonForm from './Components/Bandi/BandiPersonForm';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -34,11 +35,13 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes */}
-            <Route path='/' element={<ParoleForm />}/>
+            <Route path='/' element={<BandiPersonForm/>}/>
+
+            {/* <Route path='/' element={<ParoleForm />}/> */}
             {/* <Route path='/' element={<BandiReleaseForm />}/> */}
             {/* <Route path='/' element={<BandiForm />}/> */}
 
-            <Route path='/' element={<ProtectedRoute />}>
+            {/* <Route path='/' element={<ProtectedRoute />}>
               <Route path='/' element={<CombinedNavBar />}>
                 <Route path='/sadmin' element={<SuperAdmin />}>
                   <Route path='branch' element={<OfficeBranchPage />} />
@@ -59,7 +62,7 @@ function App() {
                 </Route>
 
               </Route>
-            </Route>
+            </Route> */}
           </Routes>
         </BrowserRouter>
       </Suspense>

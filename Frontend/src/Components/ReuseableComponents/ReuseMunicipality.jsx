@@ -27,6 +27,7 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
                         value: opt.id,
                         state_id: opt.district_Id,
                     }));
+
                     setMunicipality(formatted);
                 } else {
                     console.error(Error || 'Failed to fetch Municipality.');
@@ -71,16 +72,22 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
                     if (value && !selectedOption) {
                         console.warn(`Municipality with ID ${value} not found in fetched options`);
                     }
-
                     return (
                         <Autocomplete
                             id={name}
                             options={filteredMunicipality}
                             autoHighlight
                             getOptionLabel={(option) => option.label || ''}
+                            isOptionEqualToValue={(option, value) => option.value === value.value}
                             value={selectedOption}
                             onChange={(_, newValue) => onChange(newValue ? newValue.value : '')}
                             sx={{ width: '100%' }}
+                            renderOption={(props, option) => (
+                                // Ensure key is unique (use the ID)
+                                <li {...props} key={option.value}>
+                                    {option.label}
+                                </li>
+                            )}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -95,6 +102,8 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
                                 />
                             )}
                         />
+
+
                     );
                 }}
             />

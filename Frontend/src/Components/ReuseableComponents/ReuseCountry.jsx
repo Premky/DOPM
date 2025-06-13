@@ -56,6 +56,7 @@ const ReuseCountry = ({ name, label, required, control, error, defaultvalue }) =
             <Controller
                 name={name}
                 control={control}
+                defaultValue={defaultvalue}
 
                 rules={{
                     ...(required && {
