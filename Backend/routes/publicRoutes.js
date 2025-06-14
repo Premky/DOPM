@@ -73,9 +73,34 @@ router.get('/get_parole_status/', async (req, res) => {
 
 })
 
+router.get('/get_id_cards/', async (req, res) => {
+    const sql = `SELECT * FROM govt_id_types`;
+
+    con.query(sql, (err, result) => {
+        if (err) return res.json({ Status: false, Error: "Query Error" })
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Parole Status not found" });
+        }
+        return res.json({ Status: true, Result: result})
+    })
+})
+
+router.get('/get_relations/', async (req, res) => {
+    const sql = `SELECT * FROM relationships`;
+
+    con.query(sql, (err, result) => {
+        if (err) return res.json({ Status: false, Error: "Query Error" })
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Relationship not found" });
+        }
+        return res.json({ Status: true, Result: result})
+    })
+
+})
+
 
 router.get('/get_countries', async(req, res)=>{
-    const sql = `SELECT * from nationalities`; 
+    const sql = `SELECT * from np_country ORDER BY id`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})
@@ -86,7 +111,7 @@ router.get('/get_countries', async(req, res)=>{
 });
 
 router.get('/get_states', async(req, res)=>{
-    const sql = `SELECT * from np_states ORDER BY state_name_np`; 
+    const sql = `SELECT * from np_state ORDER BY state_id`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})
@@ -97,7 +122,7 @@ router.get('/get_states', async(req, res)=>{
 });
 
 router.get('/get_districts', async(req, res)=>{
-    const sql = `SELECT * from districts ORDER BY dist_name_nep`; 
+    const sql = `SELECT * from np_district ORDER BY did`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})
@@ -108,7 +133,7 @@ router.get('/get_districts', async(req, res)=>{
 });
 
 router.get('/get_municipalities', async(req, res)=>{
-    const sql = `SELECT * from gapa_napa ORDER BY id`; 
+    const sql = `SELECT * from np_city ORDER BY cid`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})

@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseCountry = ({ name, label, required, readonly, control, error, defaultvalue }) => {
+const ReuseIdCards = ({ name, label, required, readonly, control, error, defaultvalue }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -15,9 +15,9 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
     const [formattedOptions, setFormattedOptions] = useState([]);
 
 
-    const fetchCountry = async () => {
+    const fetchIdCard = async () => {
         try {
-            const url = `${BASE_URL}/public/get_countries`;
+            const url = `${BASE_URL}/public/get_id_cards`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -25,14 +25,15 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
             const { Status, Result, Error } = response.data;
 
             if (Status) {
+                // console.log(Result)
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.country_name_np, // Use Nepali name
+                        label: opt.govt_id_name_np, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);
                 } else {
-                    console.log('No country records found.');
+                    console.log('No id Card records found.');
                 }
             } else {
                 console.log(Error || 'Failed to fetch countries.');
@@ -43,7 +44,7 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
     };
 
     useEffect(() => {
-        fetchCountry();
+        fetchIdCard();
     }, []);
 
     return (
@@ -107,4 +108,4 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
     );
 };
 
-export default ReuseCountry;
+export default ReuseIdCards;

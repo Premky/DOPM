@@ -28,7 +28,7 @@ const ReuseState = ({ name, label, required, control, error }) => {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
                         label: opt.state_name_np, // Use Nepali name
-                        value: opt.id, // Use ID as value
+                        value: opt.state_id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);
                 } else {

@@ -24,6 +24,8 @@ import NepaliDateConverter from 'nepali-date-converter';
 const current_date = new NepaliDate().format('YYYY-MM-DD');
 const fy = new NepaliDate().format('YYYY'); //Support for filter
 const fy_date = fy + '-04-01'
+
+import { bs2ad } from '../utils/bs2ad.js';
 // console.log(current_date);
 // console.log(fy_date)
 
@@ -41,12 +43,7 @@ const query = promisify(con.query).bind(con);
 // English to Nepali date conversion
 const [npYear, npMonth, npDay] = dateConverter.englishToNepali(2023, 5, 27);
 
-// Nepali to English date conversion
-async function bs2ad1(date) {
-    const bsdob = new NepaliDate(date)
-    const addob = bsdob.formatEnglishDate('YYYY-MM-DD')
-    return addob;
-}
+
 
 async function calculateAge(birthDateBS) {
     // Convert BS to AD
@@ -79,7 +76,7 @@ async function generateUniqueBandiId() {
     for (let i = 0; i < maxAttempts; i++) {
         const randId = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
         const result = await queryAsync(
-            `SELECT office_bandi_id FROM bandies WHERE office_bandi_id = ?`,
+            `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [randId]
         );
 
@@ -97,7 +94,7 @@ router.get('/get_random_bandi_id', async (req, res) => {
     return res.json({ Status: true, Result: rand_bandi_id })
 })
 
-router.post('/create_bandi', verifyToken, async (req, res) => {
+router.post('/create_bandi1', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
@@ -212,11 +209,154 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
     }
 });
 
+router.post('/create_bandi', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
+    // console.log(req.body)
+    const {
+        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, age, married_status, photo_path,
+        bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks,
+        id_card_type, card_no, card_issue_district_id, card_issue_date,
+        nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details,
+        hirasat_date_bs, thuna_date_bs, release_date_bs,
+        is_bigo, is_bigo_paid, bigo_amt, bigo_paid_cn, bigo_paid_date, bigo_paid_office, bigo_paid_office_district,
+        is_compensation, is_compensation_paid, compensation_amt, compensation_paid_cn, compensation_paid_date, compensation_paid_office, compensation_paid_office_district,
+        is_fine_fixed, is_fine_paid, fine_amt, fine_paid_cn, fine_paid_date, fine_paid_office, fine_paid_office_district,
+        punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date,
+    } = req.body;
+
+
+
+    const dob_ad = await bs2ad(dob);
+    const hirasatdatead = await bs2ad(hirasat_date_bs);
+
+    console.log('hirasat:', hirasatdatead)
+
+    const bandiPerson = [
+        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path,
+        bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks];
+
+    try {
+        await beginTransactionAsync();
+        // 1. Insert into bandi_records
+        const insertBandiInfoSQL = `
+        INSERT INTO bandi_person(
+        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path, 
+        bandi_education, height, weight, bandi_huliya, remarks) VALUES (?)`;
+
+        const bandiResult = await queryAsync(insertBandiInfoSQL, [bandiPerson]);
+        const bandi_id = bandiResult.insertId;
+
+        // 2. Insert into bandi_kaid_detao;s
+        const hirasatDateAd = await bs2ad(hirasat_date_bs);
+        const thunaDateAd = await bs2ad(thuna_date_bs);
+        const releaseDateAd = await bs2ad(thuna_date_bs);
+
+        const kaidDetails = [bandi_id, hirasat_date_bs, hirasatDateAd, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd]
+        const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_date_bs, hirasat_date_ad, thuna_date_bs, 
+                                    thuna_date_ad, release_date_bs, release_date_ad) VALUES(?)`;
+        await queryAsync(insertKaidDetails, [kaidDetails])
+
+        // 3. Insert into bandi_card_details
+        const cardRecord = [bandi_id, id_card_type, card_no, card_issue_district_id, card_issue_date]
+        const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_no, card_issue_district, card_issue_date) VALUES(?)`;
+        await queryAsync(insertCardDetails, [cardRecord])
+
+        //4. Insert into bandi_address_details:
+        const addressRecord = [bandi_id, nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details]
+        const insertAddressRecord = `INSERT INTO bandi_address(bandi_id, nationality_id, province_id, district_id,
+                                    gapa_napa_id, wardno, bidesh_nagarik_address_details) VALUES(?)`;
+        await queryAsync(insertAddressRecord, [addressRecord])
+
+        // 5. Insert involved mudda
+        const muddaEntries = Object.entries(req.body).filter(([key]) =>
+            key.startsWith("mudda_")
+        );
+
+        // Get all keys that start with 'mudda_id_' and extract unique indexes
+        const muddaIndexes = new Set(
+            Object.keys(req.body)
+                .filter(key => key.startsWith('mudda_id_'))
+                .map(key => key.split('_')[2]) // extract the index part
+        );
+
+        for (const muddaIndex of muddaIndexes) {
+            const mudda_id = req.body[`mudda_id_${muddaIndex}`] || '';
+            const mudda_no = req.body[`mudda_no_${muddaIndex}`] || '';
+            const is_last_mudda = req.body[`is_last_mudda_${muddaIndex}`] || '';
+            const is_main_mudda = req.body[`is_main_mudda_${muddaIndex}`] || '';
+            const mudda_condition = req.body[`mudda_condition_${muddaIndex}`] || '';
+            const mudda_district = req.body[`mudda_district_${muddaIndex}`] || '';
+            const mudda_office = req.body[`mudda_office_${muddaIndex}`] || '';
+            const vadi = req.body[`vadi_${muddaIndex}`] || '';
+            const mudda_phesala_date = req.body[`mudda_phesala_date_${muddaIndex}`] || '';
+
+            const muddaRecord = [bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda, mudda_condition,
+                mudda_district, mudda_office, mudda_phesala_date]
+            const insertMuddaSQL = `
+            INSERT INTO bandi_mudda_details (
+                bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
+                mudda_condition, mudda_phesala_antim_office_district,
+                mudda_phesala_antim_office_id, mudda_phesala_antim_office_date
+            ) VALUES (?)`;
+
+            await queryAsync(insertMuddaSQL, [muddaRecord]);
+        }
+
+        //6. Insert into fine table 
+        const fineRecord = [
+            bandi_id, 'जरिवाना', is_fine_fixed, fine_amt, is_fine_paid, fine_paid_office_district, fine_paid_cn, fine_paid_date, fine_paid_office,
+        ]
+        const compensationRecord = [
+            bandi_id, 'क्षतिपुर्ती', is_compensation, compensation_amt, is_compensation_paid, compensation_paid_office_district,
+            compensation_paid_cn, compensation_paid_date, compensation_paid_office,
+        ]
+        const bigoRecord = [
+            bandi_id, 'विगो तथा कोष', is_bigo, bigo_amt, is_bigo_paid, bigo_paid_office_district, bigo_paid_cn, bigo_paid_date, bigo_paid_office
+        ]
+        const insertFines = `INSERT INTO bandi_fine_details(
+        bandi_id, fine_type, amount_fixed, deposit_amount, amount_deposited, deposit_district,  
+                        deposit_ch_no, deposit_date, deposit_office) VALUES(?)`;
+
+        await queryAsync(insertFines, [fineRecord])
+        await queryAsync(insertFines, [compensationRecord])
+        await queryAsync(insertFines, [bigoRecord])
+
+        const punrabednRecord = [
+            bandi_id, punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date
+        ]
+        const insertpunrabedn = `INSERT INTO bandi_punarabedan_details(
+           bandi_id, punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date) VALUES(?)`;
+        await queryAsync(insertpunrabedn, [punrabednRecord])
+
+
+        await commitAsync(); // Commit the transaction
+
+        return res.json({
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
+    }
+});
+
 router.get('/get_bandi', async (req, res) => {
-    const sql = `SELECT b.*, bm.*, m.mudda_name FROM bandies b
-                LEFT JOIN bandi_mudda bm ON b.id=bm.bandi_id 
-                LEFT JOIN muddas m ON bm.mudda_id=m.id
-                WHERE bm.is_main=1`;
+    const sql = `SELECT b.*, bmd.*, m.mudda_name FROM bandi_person b
+                LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id 
+                LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
+                LEFT JOIN relationships r ON bri. 
+                WHERE bmd.is_main_mudda=1`;
     con.query(sql, (err, result) => {
         if (err) return res.json({ Status: false, Error: "Query Error" })
         return res.json({ Status: true, Result: result })

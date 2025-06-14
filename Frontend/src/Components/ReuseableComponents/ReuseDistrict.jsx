@@ -30,8 +30,8 @@ const ReuseDistrict = ({ name, label, required, control, error, selectedState })
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.dist_name_nep, // Use Nepali name
-                        value: opt.id, // Use ID as value
+                        label: opt.district_name_np, // Use Nepali name
+                        value: opt.did, // Use ID as value
                         state_id: opt.state_id, // Store state_id to filter
                     }));
                     setDistricts(formatted);
