@@ -15,9 +15,9 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
     const [formattedOptions, setFormattedOptions] = useState([]);
 
 
-    const fetchCountry = async () => {
+    const fetchRelations = async () => {
         try {
-            const url = `${BASE_URL}/public/get_countries`;
+            const url = `${BASE_URL}/public/get_relations`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -27,15 +27,15 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.country_name_np, // Use Nepali name
+                        label: opt.relation_np, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);
                 } else {
-                    console.log('No country records found.');
+                    console.log('No relations records found.');
                 }
             } else {
-                console.log(Error || 'Failed to fetch countries.');
+                console.log(Error || 'Failed to fetch relations.');
             }
         } catch (error) {
             console.error('Error fetching records:', error);
@@ -43,7 +43,7 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
     };
 
     useEffect(() => {
-        fetchCountry();
+        fetchRelations();
     }, []);
 
     return (

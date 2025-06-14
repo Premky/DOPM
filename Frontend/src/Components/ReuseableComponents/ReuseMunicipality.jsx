@@ -23,9 +23,9 @@ const ReuseMunicipality = ({ name, label, required, control, error, selectedDist
 
                 if (Status) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.city_name_nep,
-                        value: opt.id,
-                        state_id: opt.district_Id,
+                        label: opt.city_name_np,
+                        value: opt.cid,
+                        state_id: opt.district_id,
                     }));
 
                     setMunicipality(formatted);

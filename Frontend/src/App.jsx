@@ -25,6 +25,7 @@ import Dashboard from './Components/Dashboard/Dashboard';
 // import ParoleForm from './Components/Bandi/ParoleForm';
 
 import BandiPersonForm from './Components/Bandi/BandiPersonForm';
+import BandiFamilyForm from './Components/Bandi/BandiFamilyForm';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -35,7 +36,8 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes */}
-            <Route path='/' element={<BandiPersonForm/>}/>
+            {/* <Route path='/' element={<BandiPersonForm/>}/> */}
+            <Route path='/' element={<BandiFamilyForm/>}/>
 
             {/* <Route path='/' element={<ParoleForm />}/> */}
             {/* <Route path='/' element={<BandiReleaseForm />}/> */}

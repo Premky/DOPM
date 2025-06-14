@@ -33,8 +33,8 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
                         .map((opt) => {
                             const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
                             return {
-                                label: `${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}`,
-                                value: opt.bandi_id,
+                                label: `${opt.id} | ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}`,
+                                value: opt.id,
                             };
                         });
 
