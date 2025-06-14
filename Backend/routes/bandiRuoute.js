@@ -351,17 +351,53 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 });
 
 router.get('/get_bandi', async (req, res) => {
-    const sql = `SELECT b.*, bmd.*, m.mudda_name FROM bandi_person b
+    const sql = `SELECT b.*, b.id AS bandi_office_id,  bmd.*, m.mudda_name FROM bandi_person b
                 LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id 
                 LEFT JOIN muddas m ON bmd.mudda_id=m.id
                 LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
-                LEFT JOIN relationships r ON bri. 
+                LEFT JOIN relationships r ON bri.relation_id=r.id
                 WHERE bmd.is_main_mudda=1`;
     con.query(sql, (err, result) => {
         if (err) return res.json({ Status: false, Error: "Query Error" })
         return res.json({ Status: true, Result: result })
     })
 })
+
+router.get('/get_bandi/:id', async (req, res) => {
+    const { id } = req.params;
+    console.log('Fetching bandi with ID:', id);
+
+    // m.mudda_name,
+    // LEFT JOIN muddas m ON bmd.mudda_id = m.id
+    // LEFT JOIN bandi_mudda_details bmd ON b.id = bmd.bandi_id AND bmd.is_main_mudda = 1
+    const sql = `
+        SELECT 
+            b.*, b.id AS bandi_office_id, 
+            bri.relative_name,
+            bri.relative_address,
+            bri.contact_no AS relative_contact,
+            r.relation_np,
+            bmd.*,
+            m.mudda_name
+        FROM bandi_person b
+        LEFT JOIN bandi_relative_info bri ON b.id = bri.bandi_id
+        LEFT JOIN relationships r ON bri.relation_id = r.id
+        LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id
+        LEFT JOIN muddas m ON m.id=bmd.mudda_id
+        WHERE b.id = ? AND bmd.is_main_mudda=1;
+    `;
+
+    con.query(sql, [id], (err, result) => {
+        // console.log(result)
+        if (err) {
+            console.error('Query Error:', err);
+            return res.json({ Status: false, Error: "Query Error" });
+        }
+
+        return res.json({ Status: true, Result: result });
+    });
+});
+
 
 router.get('/get_selected_bandi/:id', async (req, res) => {
     const { id } = req.params;
@@ -379,14 +415,11 @@ router.get('/get_selected_bandi/:id', async (req, res) => {
         if (result.length === 0) {
             return res.json({ Status: false, Error: "Bandi not found" });
         }
-
         const bandi = result[0];
-
         // 🟢 Calculate age from BS DOB
         const age = await calculateAge(bandi.dob); // Assuming dob is BS like '2080-01-10'
         bandi.age = age;
         // console.log(age)
-
         return res.json({ Status: true, Result: bandi });
     } catch (err) {
         console.error(err);
@@ -394,6 +427,76 @@ router.get('/get_selected_bandi/:id', async (req, res) => {
     }
 });
 
+router.get('/get_bandi_family/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bri.* , r.relation_np
+        FROM bandi_relative_info bri
+        LEFT JOIN relationships r ON bri.relation_id=r.id
+        WHERE bandi_id = ?
+    `;
+
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi Family not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.post('/create_bandi_family', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
+    // console.log(req.body)
+    const {
+        office_bandi_id, bandi_name, bandi_relative_address, bandi_relative_contact_no, bandi_relative_name, bandi_relative_relation, bandi_number_of_children
+    } = req.body;
+
+    
+    try {
+        await beginTransactionAsync();
+        let sql=''
+        let values=''
+        if (bandi_number_of_children) {
+            values = [bandi_name, bandi_relative_relation, bandi_number_of_children]
+            sql = `
+            INSERT INTO bandi_relative_info(
+            bandi_id, relation_id,  no_of_children) VALUES (?)`;
+        } else {
+            values = [bandi_name, bandi_relative_name, bandi_relative_relation, bandi_relative_address, bandi_relative_contact_no];
+            sql = `
+            INSERT INTO bandi_relative_info(
+            bandi_id, relative_name, relation_id,  relative_address, contact_no) VALUES (?)`;
+        }
+
+
+        const result = await queryAsync(sql, [values]);
+        const bandi_id = result.insertId;
+
+        await commitAsync(); // Commit the transaction
+
+        return res.json({
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
+    }
+});
 
 router.put('/update_vehicle/:id', async (req, res) => {
     const id = req.params.id;

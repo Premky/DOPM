@@ -36,8 +36,8 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes */}
-            {/* <Route path='/' element={<BandiPersonForm/>}/> */}
-            <Route path='/' element={<BandiFamilyForm/>}/>
+            <Route path='/' element={<BandiPersonForm/>}/>
+            {/* <Route path='/' element={<BandiFamilyForm/>}/> */}
 
             {/* <Route path='/' element={<ParoleForm />}/> */}
             {/* <Route path='/' element={<BandiReleaseForm />}/> */}

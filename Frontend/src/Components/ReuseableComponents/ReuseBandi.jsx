@@ -30,14 +30,13 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
                     const formatted = Result
                         // .filter(opt => opt?.bandi_name)
                         .filter(opt => opt?.id && opt?.bandi_name)
-                        .map((opt) => {
+                        .map((opt,index) => {
                             const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
                             return {
-                                label: `${opt.id} | ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}`,
-                                value: opt.id,
+                                label: ` ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index+1} `,
+                                value: opt.bandi_office_id,
                             };
                         });
-
                     setFormattedOptions(formatted);
                 } else {
                     console.log('No records found.');
@@ -52,9 +51,6 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
         }
     }
 
-    useEffect(() => {
-        fetchOffices();
-    }, []);
     useEffect(() => {
         fetchOffices();
     }, []);

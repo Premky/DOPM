@@ -19,6 +19,8 @@ import ReuseMudda from '../ReuseableComponents/ReuseMudda';
 import ReuseOffice from '../ReuseableComponents/ReuseOffice';
 import ReuseDateField from '../ReuseableComponents/ReuseDateField';
 import ReuseIdCards from '../ReuseableComponents/ReuseIdCards';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 
 const BandiPersonForm = () => {
@@ -34,6 +36,7 @@ const BandiPersonForm = () => {
   });
   const npToday = new NepaliDate();
   const formattedDateNp = npToday.format('YYYY-MM-DD');
+  const navigate=useNavigate();
 
   const [muddaCount, setMuddaCount] = useState(1);
   const [age, setAge] = useState();
@@ -128,9 +131,11 @@ const BandiPersonForm = () => {
       });
       const { Status, Result, Error } = response.data;
       if (Status) {
-        alert('Data submitted successfully!');
-
+        Swal.fire('थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success')
+        // alert('Data submitted successfully!');
+        
         reset(); // Reset the form after successful submission
+        // navigate('/view_saved_record/:${}')
         setEditing(false); // Reset editing state
         fetchAccidentRecords(); // Fetch updated records
       }

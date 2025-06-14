@@ -23,6 +23,7 @@ const BandiFamilyForm = () => {
     const BASE_URL = useBaseURL();
     const { register, handleSubmit, reset, setValue, watch, formState: { errors }, control } = useForm();
     const [editing, setEditing] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [isLoading, startTransition] = useTransition();
 
     const selectedState = watch("state_id"); // Get the selected state value
@@ -67,8 +68,33 @@ const BandiFamilyForm = () => {
         }
     };
 
+    const fetchKaidi = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${BASE_URL}/bandi/get_bandi`);
+
+            const { Status, Result, Error } = response.data;
+
+            if (Status && Array.isArray(Result) && Result.length > 0) {
+                // const formatted = Result.map((opt) => ({
+                //     label: opt.name_np,
+                //     value: opt.id,
+                // }));
+                // console.log(Result)
+                setFormattedOptions(Result);
+            } else {
+                console.log(Error || 'No records found.');
+            }
+        } catch (error) {
+            console.error('Error fetching records:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchBandiType();
+        fetchKaidi();
     }, []);
 
 

@@ -47,9 +47,7 @@ const BandiReleaseForm = () => {
                 params,
                 withCredentials: true,
             });
-
             const { Status, Result, Error } = response.data;
-
             if (Status) {
                 return { success: true, data: Result };
             } else {
