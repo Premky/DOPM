@@ -120,15 +120,15 @@ const OfficeForm = () => {
                                 control={control}
                                 error={errors.name_np}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                       <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                             <ReuseInput
                                 name='name_en'
                                 label='Office Name (In English)'
                                 control={control}
                                 error={errors.name_en}
                             />
-                        </Grid2>
+                        </Grid2>                  </Grid2>
+       
                         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}> {/* Use 'xs' instead of 'size' */}
                             <ReuseState
                                 required

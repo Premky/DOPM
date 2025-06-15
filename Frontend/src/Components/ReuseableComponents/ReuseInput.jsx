@@ -12,6 +12,7 @@ const ReuseInput = ({
   type,
   readonly,
   length,
+  maxLength,
 }) => {
   return (
     <>
@@ -34,6 +35,7 @@ const ReuseInput = ({
         render={({ field }) => (
           <TextField
             {...field}
+            value={field.value ?? ''} // <== this is important
             id={name}
             variant="outlined"
             size="small"
@@ -45,7 +47,7 @@ const ReuseInput = ({
             placeholder={placeholder}
             type={type || 'text'}
             InputProps={{ readOnly: readonly }}
-            inputProps={{ maxLength: length || 255 }}
+            inputProps={{ maxLength: maxLength || 255 }}
           />
         )}
       />

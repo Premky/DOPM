@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useTransition } from 'react'
-import { useBaseURL } from '../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { Button } from '@mui/material';
@@ -7,18 +7,18 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { Grid } from '@mui/material';
 import NepaliDate from 'nepali-datetime';
 
-import { calculateAge } from '../../../Utils/ageCalculator';
-import { calculateDateDetails } from '../../../Utils/dateCalculator';
-import ReuseInput from '../ReuseableComponents/ReuseInput';
-import ReuseSelect from '../ReuseableComponents/ReuseSelect';
-import ReuseCountry from '../ReuseableComponents/ReuseCountry';
-import ReuseDistrict from '../ReuseableComponents/ReuseDistrict';
-import ReuseMunicipality from '../ReuseableComponents/ReuseMunicipality';
-import ReuseState from '../ReuseableComponents/ReuseState';
-import ReuseMudda from '../ReuseableComponents/ReuseMudda';
-import ReuseOffice from '../ReuseableComponents/ReuseOffice';
-import ReuseDateField from '../ReuseableComponents/ReuseDateField';
-import ReuseIdCards from '../ReuseableComponents/ReuseIdCards';
+import { calculateAge } from '../../../../Utils/ageCalculator';
+import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
+import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import ReuseCountry from '../../ReuseableComponents/ReuseCountry';
+import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
+import ReuseMunicipality from '../../ReuseableComponents/ReuseMunicipality';
+import ReuseState from '../../ReuseableComponents/ReuseState';
+import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
+import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
+import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
+import ReuseIdCards from '../../ReuseableComponents/ReuseIdCards';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,7 +36,7 @@ const BandiPersonForm = () => {
   });
   const npToday = new NepaliDate();
   const formattedDateNp = npToday.format('YYYY-MM-DD');
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const [muddaCount, setMuddaCount] = useState(1);
   const [age, setAge] = useState();
@@ -91,59 +91,91 @@ const BandiPersonForm = () => {
 
   const hirasat_date_bs = watch('hirasat_date_bs');
   const release_date_bs = watch('release_date_bs');
+  const hirasat_years = watch('hirasat_years');
+  const hirasat_months = watch('hirasat_months');
+  const hirasat_days = watch('hirasat_days');
 
   useEffect(() => {
     const calculateKaidDuration = () => {
-      console.log('hirasat:', hirasat_date_bs, 'release:', release_date_bs)
       if (hirasat_date_bs && release_date_bs) {
-        const arrestAd = new NepaliDate(hirasat_date_bs).getDateObject();
-        const releaseAd = new NepaliDate(release_date_bs).getDateObject();
-        const todayAd = new NepaliDate(formattedDateNp).getDateObject();
+        const kaidDuration = calculateBSDate(hirasat_date_bs, release_date_bs);
+        const bhuktanDuration = calculateBSDate(hirasat_date_bs, formattedDateNp, kaidDuration);
+        const berujuDuration = calculateBSDate(formattedDateNp, hirasat_date_bs, kaidDuration);
 
-        const kaidDuration = calculateDateDetails(arrestAd, releaseAd);
-        const bhuktanDuration = calculateDateDetails(arrestAd, todayAd, kaidDuration);
-        const berujuDuration = calculateDateDetails(todayAd, releaseAd, kaidDuration);
+        setValue('kaid_duration', `${kaidDuration.years}|${kaidDuration.months}|${kaidDuration.days}`);
 
-        setValue('kaid_duration', `${kaidDuration.years}|${kaidDuration.months}|${kaidDuration.days}` || '');
-        setValue('bhuktan_duration', `${bhuktanDuration.years}|${bhuktanDuration.months}|${bhuktanDuration.days}` || '');
-        setValue('beruju_duration', `${berujuDuration.years}|${berujuDuration.months}|${berujuDuration.days}` || '');
+        // Parse and add kaid and hirasat durations
+        let totalYears = parseFloat(kaidDuration.years || 0) + parseFloat(hirasat_years || 0);
+        let totalMonths = parseFloat(kaidDuration.months || 0) + parseFloat(hirasat_months || 0);
+        let totalDays = parseFloat(kaidDuration.days || 0) + parseFloat(hirasat_days || 0);
+
+        // Normalize days to months
+        if (totalDays >= 30) {
+          totalMonths += Math.floor(totalDays / 30);
+          totalDays = totalDays % 30;
+        }
+
+        // Normalize months to years
+        if (totalMonths >= 12) {
+          totalYears += Math.floor(totalMonths / 12);
+          totalMonths = totalMonths % 12;
+        }
+
+        setValue('total_kaid_duration', `${totalYears}|${totalMonths}|${totalDays}`);
+        setValue('bhuktan_duration', `${bhuktanDuration.years}|${bhuktanDuration.months}|${bhuktanDuration.days}`);
+        setValue('beruju_duration', `${berujuDuration.years}|${berujuDuration.months}|${berujuDuration.days}`);
       }
     };
 
     if (hirasat_date_bs?.length === 10 && release_date_bs?.length === 10) {
       calculateKaidDuration();
     }
+  }, [
+    hirasat_date_bs,
+    release_date_bs,
+    formattedDateNp,
+    hirasat_years,
+    hirasat_months,
+    hirasat_days,
+    setValue,
+  ]);
 
-  }, [hirasat_date_bs, release_date_bs, formattedDateNp]);
 
   const onSubmit = async (data) => {
-    // console.log(data);
     try {
-      const url = editing ? `${BASE_URL}/bandi/update_bandi/${currentData.id}` :
-        `${BASE_URL}/bandi/create_bandi`;
+      const url = editing
+        ? `${BASE_URL}/bandi/update_bandi/${currentData.id}`
+        : `${BASE_URL}/bandi/create_bandi`;
+
       const method = editing ? 'PUT' : 'POST';
+
       const response = await axios({
         method,
         url,
         data,
-        // headers: {Authorization: `Bearer ${token}`,"Content-Type": "multipart/form-data",},
-        withCredentials: true
+        withCredentials: true,
       });
+
       const { Status, Result, Error } = response.data;
+
       if (Status) {
-        Swal.fire('थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success')
-        // alert('Data submitted successfully!');
-        
-        reset(); // Reset the form after successful submission
-        // navigate('/view_saved_record/:${}')
-        setEditing(false); // Reset editing state
-        fetchAccidentRecords(); // Fetch updated records
+        Swal.fire('थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success');
+        console.log(response)
+        const bandi_id = Result;
+        console.log(bandi_id);
+        navigate(`/view_saved_record/${bandi_id}`); // <-- fixed here
+        reset();
+        setEditing(false);
+        fetchAccidentRecords();
+      } else {
+        Swal.fire('त्रुटि!', Error || 'रिकर्ड थप्न सकिएन', 'error');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('An error occurred while submitting the form.');
+      Swal.fire('त्रुटि!', 'डेटा बुझाउँदा समस्या आयो।', 'error');
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -247,7 +279,7 @@ const BandiPersonForm = () => {
           <ReuseInput
             name="bandi_height"
             label="बन्दीको उचाई"
-            required={true}
+            required={false}
             control={control}
             error={errors.bandi_height}
           />
@@ -257,7 +289,7 @@ const BandiPersonForm = () => {
           <ReuseInput
             name="bandi_weight"
             label="बन्दीको तौल"
-            required={true}
+            required={false}
             control={control}
             error={errors.bandi_weight}
           />
@@ -279,30 +311,58 @@ const BandiPersonForm = () => {
           पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरणः
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item container xs={12} sm={6} md={3}>
+          <Grid item xs={12}>हिरासत/थुनामा बसेको अवधी</Grid>
+          <Grid item xs={4}>
+            <ReuseInput
+              name="hirasat_years"
+              label="वर्ष"
+              placeholder='वर्ष'
+              type='number'
+              required={false}
+              control={control}
+              error={errors.hirasat_years}
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <ReuseInput
+              name="hirasat_months"
+              label="महिना "
+              placeholder='महिना'
+              type='number'
+              required={false}
+              control={control}
+              error={errors.hirasat_months}
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <ReuseInput
+              name="hirasat_days"
+              label="दिन"
+              placeholder='दिन'
+              type='number'
+              required={false}
+              control={control}
+              error={errors.hirasat_days}
+            />
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2}>
           <ReuseDateField
             name='hirasat_date_bs'
-            label='हिरासत परेको मिति'
+            label='थुना/कारागार परेको मिती'
             placeholder={'YYYY-MM-DD'}
             // defaultValue={selectedBandi.hirasat_date_bs}
             required={true}
             control={control}
             error={errors.hirasat_date_bs}
           />
+
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseDateField
-            name="thuna_date_bs"
-            label="थुना/कारागार मिती"
-            placeholder='YYYY-DD-MM'
-            required={true}
-            control={control}
-            error={errors.thuna_date_bs}
-          />
-        </Grid>
         {selectedbandi_type === 'कैदी' && (<>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <ReuseDateField
               name="release_date_bs"
               label="छुट्ने मिती"
@@ -313,8 +373,8 @@ const BandiPersonForm = () => {
 
             />
           </Grid>
-          <Grid item container xs={12} sm={6} md={3}>
-            <Grid item xs={4}>
+          <Grid item container xs={12} sm={6} md={5}>
+            <Grid item xs={2}>
               <ReuseInput
                 name="kaid_duration"
                 label="केद अवधी"
@@ -323,8 +383,17 @@ const BandiPersonForm = () => {
                 error={errors.kaid_duration}
               />
             </Grid>
+            <Grid item xs={2}>
+              <ReuseInput
+                name="total_kaid_duration"
+                label="जम्मा केद अवधी"
+                required={false}
+                control={control}
+                error={errors.total_kaid_duration}
+              />
+            </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={2}>
               <ReuseInput
                 name="bhuktan_duration"
                 label="भुक्तान अवधी"
@@ -333,10 +402,19 @@ const BandiPersonForm = () => {
                 error={errors.bhuktan_duration}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={2}>
+              <ReuseInput
+                name="total_bhuktan_duration"
+                label="जम्मा भुक्तान अवधी"
+                required={true}
+                control={control}
+                error={errors.total_bhuktan_duration}
+              />
+            </Grid>
+            <Grid item xs={2}>
               <ReuseInput
                 name="beruju_duration"
-                label="बेरुजु अवधी"
+                label="बाँकी अवधी"
                 required={true}
                 control={control}
                 error={errors.beruju_duration}
@@ -513,7 +591,7 @@ const BandiPersonForm = () => {
             <Grid item xs={12} sm={6} md={3}>
               <ReuseOffice
                 name={`mudda_office_${index + 1}`}
-                label="मुद्दा रहेको कार्यालय"
+                label="मुद्दा रहेको निकाय"
                 required={true}
                 control={control}
                 error={errors[`mudda_office_${index + 1}`]}
@@ -538,7 +616,7 @@ const BandiPersonForm = () => {
                 control={control}
                 options={[
                   { label: 'चालु', value: 1 },
-                  { label: 'बेचालु', value: 0 },
+                  { label: 'अन्तिम भएको', value: 0 },
                 ]}
                 error={errors[`mudda_condition_${index + 1}`]}
               />
@@ -581,7 +659,7 @@ const BandiPersonForm = () => {
                   { label: 'होइन', value: 0 },
                   { label: 'हो', value: 1 },
                 ]}
-                error={errors[`is_main_mudda_${index + 1}`]}
+                error={errors[`is_last_mudda_${index + 1}`]}
               />
             </Grid>
 
@@ -624,6 +702,7 @@ const BandiPersonForm = () => {
               name='is_fine_fixed'
               label='छ/छैन'
               options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+              defaultValue='0'
               required={true}
               control={control}
               error={errors.is_fine_fixed}
@@ -655,7 +734,7 @@ const BandiPersonForm = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <ReuseOffice
                   name='fine_paid_office'
-                  label='जरिवाना तिरेको कार्यालय'
+                  label='जरिवाना तिरेको निकाय'
                   required={true}
                   control={control}
                   error={errors.fine_paid_office}
@@ -704,6 +783,7 @@ const BandiPersonForm = () => {
               name='is_compensation'
               label='छ/छैन'
               options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+              defaultValue='0'
               required={true}
               control={control}
               error={errors.is_compensation}
@@ -736,7 +816,7 @@ const BandiPersonForm = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <ReuseOffice
                   name='compensation_paid_office'
-                  label='क्षतिपुर्ती तिरेको कार्यालय'
+                  label='क्षतिपुर्ती तिरेको निकाय'
                   required={true}
                   control={control}
                   error={errors.compensation_paid_office}
@@ -787,6 +867,7 @@ const BandiPersonForm = () => {
               name='is_bigo'
               label='छ/छैन'
               options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+              defaultValue='0'
               required={true}
               control={control}
               error={errors.is_bigo}
@@ -819,7 +900,7 @@ const BandiPersonForm = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <ReuseOffice
                   name='bigo_paid_office'
-                  label='बिगो तिरेको कार्यालय'
+                  label='बिगो तिरेको निकाय'
                   required={true}
                   control={control}
                   error={errors.bigo_paid_office}
@@ -866,7 +947,7 @@ const BandiPersonForm = () => {
             <ReuseOffice
               name='punarabedan_office_id'
               label='पुनरावेदनमा नपरेको कार्यालय'
-              required={true}
+              required={false}
               control={control}
               error={errors.punarabedan_office_id}
             />
@@ -876,7 +957,7 @@ const BandiPersonForm = () => {
             <ReuseDistrict
               name='punarabedan_office_district'
               label='पुनरावेदनमा नपरेको कार्यालयको जिल्ला'
-              required={true}
+              required={false}
               control={control}
               error={errors.punarabedan_office_district}
             />
@@ -886,7 +967,7 @@ const BandiPersonForm = () => {
             <ReuseInput
               name='punarabedan_office_ch_no'
               label='पुनरावेदनमा नपरेको प्रमाणको च.नं.'
-              required={true}
+              required={false}
               control={control}
               error={errors.punarabedan_office_ch_no}
             />
@@ -896,7 +977,7 @@ const BandiPersonForm = () => {
             <ReuseDateField
               name='punarabedan_office_date'
               label='पुनरावेदनमा नपरेको प्रमाणको पत्र मिति'
-              required={true}
+              required={false}
               control={control}
               error={errors.punarabedan_office_date}
             />

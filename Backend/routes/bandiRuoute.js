@@ -94,121 +94,6 @@ router.get('/get_random_bandi_id', async (req, res) => {
     return res.json({ Status: true, Result: rand_bandi_id })
 })
 
-router.post('/create_bandi1', verifyToken, async (req, res) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.id;
-    // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
-    console.log(req.body)
-    const rand_bandi_id = await generateUniqueBandiId();
-
-    console.log('chkrandom:', rand_bandi_id);
-    const {
-        cn, cn_date, regd, regd_date, file, dakhila_date, entry_type, bandi_type, bandi_name, gender, bandi_dob, nagrik, nationality, arrest_date,
-        kaid_date, release_date, kaid_duration, beruju_duration, last_faisala_date, no_punaravedn_district, no_punravedn_cn,
-        remarks, office, last_faisala_office, no_punaravedn_office, no_punravedn_date,
-        state_id, district_id, municipality_id, ward, bideshi_nagrik_address,
-        is_fine, fine_amt, is_fine_paid, fine_paid_office_district, fine_paid_cn, fine_paid_date, fine_paid_office,
-        is_compensation, compensation_amt, is_compensation_paid, compensation_paid_office_district, compensation_paid_cn, compensation_paid_date, compensation_paid_office,
-        is_bigo, bigo_amt, is_bigo_paid, bigo_paid_office_district, bigo_paid_cn, bigo_paid_date, bigo_paid_office
-    } = req.body;
-    const age = await calculateAge(bandi_dob);
-
-    const bandiRecord = [
-        regd, regd_date, entry_type, bandi_type, nagrik, nationality, bandi_name, gender,
-        bandi_dob, age, district_id, state_id, municipality_id, ward, bideshi_nagrik_address,
-        arrest_date, kaid_date, release_date, last_faisala_office, "last_faisala_district", last_faisala_date,
-        no_punaravedn_office, no_punaravedn_district, no_punravedn_cn, no_punravedn_date,
-        is_fine, is_compensation, is_bigo,
-        remarks
-    ];
-    // , office, active_office, user_id
-    // DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(), pi.dob_ad)), '%Y')+0 AS age
-
-    try {
-        await beginTransactionAsync();
-        // 1. Insert into bandi_records
-        const insertBandiInfoSQL = `
-        INSERT INTO bandies (office_bandi_id, entry_date, entry_type, bandi_type_id, citizen_id,nationality_id,bandi_name,gender,
-        dob,age,district_id,province,gapa_napa_id,wardno,bidesh_nagarik_address_details,arrest_date,kaid_date,
-        release_date, mudda_phesala_antim_office_name,
-        mudda_phesala_antim_office_district,
-        mudda_phesala_antim_office_date, punarabedan_office_name,punarabedan_office_district,
-        punarabedan_office_ch_no,punarabedan_office_date,jariwana_amount_fixed,
-        kashtipurti_amount_fixed,
-        bigo_and_kosh_amount_fixed,
-        remarks) VALUES (?)`;
-
-        // INSERT INTO bandies (
-        //     date, state_id, district_id, municipality_id, ward, road_name,
-        //     accident_location, accident_time, death_male, death_female, death_boy, death_girl, death_other,
-        //     gambhir_male, gambhir_female, gambhir_boy, gambhir_girl, gambhir_other,
-        //     general_male, general_female, general_boy, general_girl, general_other,
-        //     animal_death, animal_injured, est_amount, damage_vehicle, txt_accident_reason, remarks, office_id, created_by
-        //     ) VALUES (?)`;
-
-        const bandiResult = await queryAsync(insertBandiInfoSQL, [bandiRecord]);
-        const bandi_id = bandiResult.insertId;
-
-        //2. Insert into fine table 
-        const fineRecord = [
-            bandi_id, 1, fine_amt, is_fine_paid, fine_paid_office_district, fine_paid_cn, fine_paid_date, fine_paid_office,
-        ]
-        const compensationRecord = [
-            bandi_id, 2, compensation_amt, is_compensation_paid, compensation_paid_office_district, compensation_paid_cn, compensation_paid_date, compensation_paid_office,
-        ]
-        const bigoRecord = [
-            bandi_id, 3, bigo_amt, is_bigo_paid, bigo_paid_office_district, bigo_paid_cn, bigo_paid_date, bigo_paid_office
-        ]
-
-        const insertFines = `INSERT INTO bandi_fine_table(bandi_id, fine_type_id, amount, is_paid,  
-                            paid_district_id, paid_cn, paid_date, paid_office_id) VALUES(?,?,?,?,?,?,?,?)`;
-
-        await queryAsync(insertFines, fineRecord)
-        await queryAsync(insertFines, compensationRecord)
-        await queryAsync(insertFines, bigoRecord)
-
-        // 3. Insert involved vehicles
-        const muddaEntries = Object.entries(req.body).filter(([key]) =>
-            key.startsWith("mudda_")
-        );
-
-        for (const [key, bandi_id] of muddaEntries) {
-            const muddaIndex = key.split('_')[2];
-            const muddaKey = `mudda_${muddaIndex}`;
-            const mudda = req.body[muddaKey] || "";
-            const mudda_noKey = `mudda_no_${muddaIndex}`;
-            const mudda_no = req.body[mudda_noKey] || "";
-            const vadiKey = `vadi_${muddaIndex}`;
-            const vadi = req.body[vadiKey] || "";
-            const is_mainKey = `is_main_mudda_${muddaIndex}`;
-            const is_main_mudda = req.body[is_mainKey] || "";
-
-            const insertMuddaSQL = `
-                INSERT INTO bandi_mudda (
-                    bandi_id, mudda_id,mudda_no, wadi, is_main
-                ) VALUES (?, ?, ?,?, ?)`;
-            await queryAsync(insertMuddaSQL, [bandi_id, mudda, mudda_no, vadi, is_main_mudda]);
-        }
-
-        await commitAsync(); // Commit the transaction
-
-        return res.json({
-            Status: true,
-            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        });
-
-    } catch (error) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
-
-        console.error("Transaction failed:", error);
-        return res.status(500).json({
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        });
-    }
-});
-
 router.post('/create_bandi', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
@@ -253,8 +138,8 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         const thunaDateAd = await bs2ad(thuna_date_bs);
         const releaseDateAd = await bs2ad(thuna_date_bs);
 
-        const kaidDetails = [bandi_id, hirasat_date_bs, hirasatDateAd, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd]
-        const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_date_bs, hirasat_date_ad, thuna_date_bs, 
+        const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd]
+        const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, 
                                     thuna_date_ad, release_date_bs, release_date_ad) VALUES(?)`;
         await queryAsync(insertKaidDetails, [kaidDetails])
 
@@ -334,6 +219,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         await commitAsync(); // Commit the transaction
 
         return res.json({
+            Result: bandi_id,
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         });
@@ -378,12 +264,21 @@ router.get('/get_bandi/:id', async (req, res) => {
             bri.contact_no AS relative_contact,
             r.relation_np,
             bmd.*,
+            bkd.*,
+            ba.wardno, ba.bidesh_nagarik_address_details,
+            country.country_name_np, ns.state_name_np, nd.district_name_np, nc.city_name_np,
             m.mudda_name
         FROM bandi_person b
+        LEFT JOIN bandi_address ba ON b.id=ba.bandi_id
+        LEFT JOIN np_country country ON ba.nationality_id= country.id
+        LEFT JOIN np_state ns ON ba.province_id=ns.state_id
+        LEFT JOIN np_district nd ON ba.district_id=nd.did
+        LEFT JOIN np_city nc ON ba.gapa_napa_id=nc.cid
         LEFT JOIN bandi_relative_info bri ON b.id = bri.bandi_id
         LEFT JOIN relationships r ON bri.relation_id = r.id
         LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id
         LEFT JOIN muddas m ON m.id=bmd.mudda_id
+        LEFT JOIN bandi_kaid_details bkd ON b.id=bkd.bandi_id
         WHERE b.id = ? AND bmd.is_main_mudda=1;
     `;
 
@@ -458,11 +353,11 @@ router.post('/create_bandi_family', verifyToken, async (req, res) => {
         office_bandi_id, bandi_name, bandi_relative_address, bandi_relative_contact_no, bandi_relative_name, bandi_relative_relation, bandi_number_of_children
     } = req.body;
 
-    
+
     try {
         await beginTransactionAsync();
-        let sql=''
-        let values=''
+        let sql = ''
+        let values = ''
         if (bandi_number_of_children) {
             values = [bandi_name, bandi_relative_relation, bandi_number_of_children]
             sql = `
@@ -482,6 +377,7 @@ router.post('/create_bandi_family', verifyToken, async (req, res) => {
         await commitAsync(); // Commit the transaction
 
         return res.json({
+            Result: bandi_id,
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         });
@@ -498,18 +394,98 @@ router.post('/create_bandi_family', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/update_vehicle/:id', async (req, res) => {
+router.get('/get_bandi_id_card/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bid.*, git.govt_id_name_np 
+        FROM bandi_id_card_details bid
+        LEFT JOIN govt_id_types git ON bid.card_type_id=git.id
+        WHERE bandi_id = ?
+    `;
+
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi ID not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.get('/get_bandi_mudda/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bmd.*, m.mudda_name ,
+                o.office_name_nep,
+                nd.district_name_np
+        FROM bandi_mudda_details bmd
+        LEFT JOIN muddas m ON bmd.mudda_id=m.id
+        LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_id=o.id
+        LEFT JOIN np_district nd ON bmd.mudda_phesala_antim_office_district=nd.did
+        WHERE bandi_id = ?
+    `;
+
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi ID not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.get('/get_bandi_fine/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bfd.*, 
+                o.office_name_nep,
+                nd.district_name_np
+        FROM bandi_fine_details bfd
+        LEFT JOIN offices o ON bfd.deposit_office=o.id
+        LEFT JOIN np_district nd ON bfd.deposit_district=nd.did
+        WHERE bandi_id = ?
+    `;
+
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi ID not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.put('/update_bandi_fine/:id', verifyToken, async (req, res) => {
     const id = req.params.id;
+    const user_office_id = req.user.office_id
+    const user_id = req.user.id
     const {
-        vehicle_np, vehicle_en
+        amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
+        deposit_amount, district_name_np, fine_type
     } = req.body;
+    // console.log(req.body)
     const updated_by = 1;
-    const sql = `UPDATE tango_vehicles SET name_np=?, name_en=?  WHERE id=?`;
+    const sql = `UPDATE bandi_fine_details SET amount_fixed=?, amount_deposited=?, deposit_office=?, deposit_district=?, deposit_ch_no=?, 
+    deposit_date=?, deposit_amount=?  WHERE id=?`;
     const values = [
-        vehicle_np, vehicle_en, id
+        amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
+        deposit_amount, id
     ];
     try {
         const result = await query(sql, values);
+        console.log(result)
         return res.json({ Status: true, Result: result });
     } catch (err) {
         console.error('Database error', err);
@@ -517,15 +493,65 @@ router.put('/update_vehicle/:id', async (req, res) => {
     }
 })
 
-router.delete('/delete_vehicle/:id', async (req, res) => {
+router.delete('/delete_bandi_fine/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     console.log(id)
     try {
-        const sql = `DELETE FROM tango_vehicles WHERE id=?`;
+        const sql = `DELETE FROM bandi_fine_details WHERE id=?`;
         const result = await query(sql, id);
         return res.json({ Status: true, Result: 'Record Deleted Successfully!' });
     } catch (err) {
         console.error('Error Deleting Record:', err);
+        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+    }
+})
+
+router.get('/get_bandi_punrabedn/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bpd.*, 
+                o.office_name_nep,
+                nd.district_name_np
+        FROM bandi_punarabedan_details bpd
+        LEFT JOIN offices o ON bpd.punarabedan_office_id=o.id
+        LEFT JOIN np_district nd ON bpd.punarabedan_office_district=nd.did
+        WHERE bandi_id = ?
+    `;
+
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi ID not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.put('/update_bandi_punrabedn/:id', verifyToken, async (req, res) => {
+    const id = req.params.id;
+    const user_office_id = req.user.office_id
+    const user_id = req.user.id
+    const {
+        punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date
+    } = req.body;
+    // console.log(req.body)
+    // const updated_by = 1;
+    const sql = `UPDATE bandi_punarabedan_details SET punarabedan_office_id=?, 
+    punarabedan_office_district=?, punarabedan_office_ch_no=?, punarabedan_office_date=?,
+    updated_by=?, current_office_id=?  WHERE id=?`;
+    const values = [
+        punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date, user_id, user_office_id, id
+    ];
+    try {
+        const result = await query(sql, values);
+        console.log(result)
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error('Database error', err);
         return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
     }
 })

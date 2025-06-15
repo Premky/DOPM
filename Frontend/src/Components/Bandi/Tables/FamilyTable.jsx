@@ -13,13 +13,13 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
-import { useBaseURL } from '../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../Context/BaseURLProvider';
 
 const FamilyTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState([]);
     const [loading, setLoading] = useState(false);
-
+    
     // ✅ Fetch data
     const fetchBandies = async () => {
         try {

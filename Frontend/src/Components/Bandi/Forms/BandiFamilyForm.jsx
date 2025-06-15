@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useTransition } from 'react'
-import { useBaseURL } from '../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { Button, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Grid } from '@mui/material';
-import ReuseBandi from '../ReuseableComponents/ReuseBandi';
-import ReuseRelativeRelations from '../ReuseableComponents/ReuseRelativeRelations'
-import ReuseInput from '../ReuseableComponents/ReuseInput';
-import FamilyTable from './FamilyTable';
+import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
+import ReuseRelativeRelations from '../../ReuseableComponents/ReuseRelativeRelations'
+import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import FamilyTable from '../Tables/FamilyTable';
 
 const BandiFamilyForm = () => {
     const BASE_URL = useBaseURL();
