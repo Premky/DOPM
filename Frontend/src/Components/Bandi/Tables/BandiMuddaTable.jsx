@@ -141,7 +141,7 @@ const BandiMuddaTable = ({ bandi_id }) => {
                                     <TableCell align="center">{opt.mudda_name || ''}</TableCell>
                                     <TableCell align="center">{opt.mudda_no || ''}</TableCell>
                                     <TableCell align="center">{opt.mudda_condition == 1 ? 'चालु' : 'अन्तिम भएको' || ''}</TableCell>
-                                    <TableCell align="center">{opt.office_name_nep}</TableCell>
+                                    <TableCell align="center">{opt.office_name_with_letter_address}</TableCell>
                                     <TableCell align="center">{opt.district_name_np}</TableCell>
                                     <TableCell align="center">{opt.mudda_phesala_antim_office_date}</TableCell>
                                     <TableCell align="center">{opt.is_main_mudda?'हो':'होइन'}</TableCell>

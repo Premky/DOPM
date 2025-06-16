@@ -167,7 +167,18 @@ router.get('/get_mudda', async(req, res)=>{
 });
 
 router.get('/get_payrole_nos', async(req, res)=>{
-    const sql = `SELECT * from payrole_nos ORDER BY id`; 
+    const sql = `SELECT * from payrole_nos ORDER BY -id`; 
+    try{
+        const result = await query(sql);
+        return res.json({Status:true, Result:result})
+    } catch(err){
+        console.error("Database Query Error:", err);
+        res.status(500).json({Status:false, Error:"Internal Server Error"})
+    }
+});
+
+router.get('/get_payrole_status', async(req, res)=>{
+    const sql = `SELECT * from payrole_status ORDER BY id`; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})

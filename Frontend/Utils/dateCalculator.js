@@ -58,39 +58,71 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
   }
 };
 
-
-
-export const calculateDateDetails = (startDate, endDate, referenceDuration = null) => {
-    if (!(startDate instanceof Date) || !(endDate instanceof Date)) return null;
-
-    let totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
-    if (totalDays < 0) totalDays = 0;
-
-    let years = endDate.getFullYear() - startDate.getFullYear();
-    let months = endDate.getMonth() - startDate.getMonth();
-    let days = endDate.getDate() - startDate.getDate();
-
-    if (days < 0) {
-        months--;
-        const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
-        days += prevMonth.getDate();
+export const sumDates = (hirasat_years, hirasat_months, hirasat_days, referenceDuration = null) => {
+  try {
+    let totalYears = parseFloat(referenceDuration.years || 0) + parseFloat(hirasat_years || 0);
+    let totalMonths = parseFloat(referenceDuration.months || 0) + parseFloat(hirasat_months || 0);
+    let totalDays = parseFloat(referenceDuration.days || 0) + parseFloat(hirasat_days || 0);
+  
+    // Normalize days to months
+    if (totalDays >= 30) {
+      totalMonths += Math.floor(totalDays / 30);
+      totalDays = totalDays % 30;
     }
 
-    if (months < 0) {
-        years--;
-        months += 12;
-    }
-
-    let percentage = null;
-    if (referenceDuration && referenceDuration.totalDays > 0) {
-        percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
+    // Normalize months to years
+    if (totalMonths >= 12) {
+      totalYears += Math.floor(totalMonths / 12);
+      totalMonths = totalMonths % 12;
     }
 
     return {
-        years,
-        months,
-        days,
-        totalDays,
-        percentage: percentage ? parseFloat(percentage) : undefined
-    };
+      totalDays: totalDays,
+      totalMonths: totalMonths,
+      totalYears: totalYears
+    }
+  } catch {
+    return {
+      totalDays: 0,
+      totalMonths: 0,
+      totalYears: 0
+    }
+  }
+  // Parse and add kaid and hirasat durations
+
+}
+
+export const calculateDateDetails = (startDate, endDate, referenceDuration = null) => {
+  if (!(startDate instanceof Date) || !(endDate instanceof Date)) return null;
+
+  let totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+  if (totalDays < 0) totalDays = 0;
+
+  let years = endDate.getFullYear() - startDate.getFullYear();
+  let months = endDate.getMonth() - startDate.getMonth();
+  let days = endDate.getDate() - startDate.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  let percentage = null;
+  if (referenceDuration && referenceDuration.totalDays > 0) {
+    percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
+  }
+
+  return {
+    years,
+    months,
+    days,
+    totalDays,
+    percentage: percentage ? parseFloat(percentage) : undefined
+  };
 };

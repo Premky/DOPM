@@ -28,6 +28,7 @@ import BandiPersonForm from './Components/Bandi/Forms/BandiPersonForm';
 import BandiFamilyForm from './Components/Bandi/Forms/BandiFamilyForm';
 import ViewBandi from './Components/Bandi/ViewBandi';
 import PayroleForm from './Components/Bandi/Forms/PayroleForm';
+import PayroleTable from './Components/Bandi/Tables/PayroleTable';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -43,6 +44,7 @@ function App() {
               <Route path='create_bandi_family' element={<BandiFamilyForm />} />
               <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
               <Route path="payrole" element={<PayroleForm />} />
+              <Route path='payrole_table' element={<PayroleTable/>}/>
             </Route>
             
 

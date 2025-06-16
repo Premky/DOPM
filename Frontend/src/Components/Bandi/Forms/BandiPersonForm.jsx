@@ -8,7 +8,7 @@ import { Grid } from '@mui/material';
 import NepaliDate from 'nepali-datetime';
 
 import { calculateAge } from '../../../../Utils/ageCalculator';
-import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
+import { calculateBSDate, calculateDateDetails, sumDates } from '../../../../Utils/dateCalculator';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseCountry from '../../ReuseableComponents/ReuseCountry';
@@ -100,28 +100,17 @@ const BandiPersonForm = () => {
       if (hirasat_date_bs && release_date_bs) {
         const kaidDuration = calculateBSDate(hirasat_date_bs, release_date_bs);
         const bhuktanDuration = calculateBSDate(hirasat_date_bs, formattedDateNp, kaidDuration);
-        const berujuDuration = calculateBSDate(formattedDateNp, hirasat_date_bs, kaidDuration);
+        const berujuDuration = calculateBSDate(formattedDateNp, release_date_bs, kaidDuration);
+
+        const totalkaidDuration = sumDates(hirasat_years, hirasat_months, hirasat_days, kaidDuration)
+        const totalBhuktanDuration = sumDates(hirasat_years, hirasat_months, hirasat_days, bhuktanDuration)
 
         setValue('kaid_duration', `${kaidDuration.years}|${kaidDuration.months}|${kaidDuration.days}`);
 
-        // Parse and add kaid and hirasat durations
-        let totalYears = parseFloat(kaidDuration.years || 0) + parseFloat(hirasat_years || 0);
-        let totalMonths = parseFloat(kaidDuration.months || 0) + parseFloat(hirasat_months || 0);
-        let totalDays = parseFloat(kaidDuration.days || 0) + parseFloat(hirasat_days || 0);
 
-        // Normalize days to months
-        if (totalDays >= 30) {
-          totalMonths += Math.floor(totalDays / 30);
-          totalDays = totalDays % 30;
-        }
 
-        // Normalize months to years
-        if (totalMonths >= 12) {
-          totalYears += Math.floor(totalMonths / 12);
-          totalMonths = totalMonths % 12;
-        }
-
-        setValue('total_kaid_duration', `${totalYears}|${totalMonths}|${totalDays}`);
+        setValue('total_kaid_duration', `${totalkaidDuration.totalYears}|${totalkaidDuration.totalMonths}|${totalkaidDuration.totalDays}`);
+        setValue('total_bhuktan_duration', `${totalBhuktanDuration.totalYears}|${totalBhuktanDuration.totalMonths}|${totalBhuktanDuration.totalDays}`);
         setValue('bhuktan_duration', `${bhuktanDuration.years}|${bhuktanDuration.months}|${bhuktanDuration.days}`);
         setValue('beruju_duration', `${berujuDuration.years}|${berujuDuration.months}|${berujuDuration.days}`);
       }
@@ -304,6 +293,147 @@ const BandiPersonForm = () => {
             error={errors.bandi_huliya}
           />
         </Grid>
+      </Grid>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          कैदीबन्दीको मुद्दा विवरणः
+        </Grid>
+
+        {[...Array(muddaCount)].map((_, index) => (
+          <Grid container item spacing={2} key={index} sx={{ mt: 2 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <ReuseMudda
+                name={`mudda_id_${index + 1}`}
+                label="मुद्दा"
+                required={true}
+                control={control}
+                error={errors[`mudda_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <ReuseInput
+                name={`mudda_no_${index + 1}`}
+                label="मुद्दा नं."
+                required={true}
+                control={control}
+                error={errors[`mudda_no_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <ReuseInput
+                name={`vadi_${index + 1}`}
+                label="वादी वा जाहेरवालाको नाम"
+                required={true}
+                control={control}
+                error={errors[`vadi_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <ReuseOffice
+                name={`mudda_office_${index + 1}`}
+                label="मुद्दा रहेको निकाय"
+                required={true}
+                control={control}
+                error={errors[`mudda_office_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <ReuseDistrict
+                name={`mudda_district_${index + 1}`}
+                label="मुद्दा रहेको जिल्ला"
+                required={true}
+                control={control}
+                error={errors[`mudda_district_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <ReuseSelect
+                name={`mudda_condition_${index + 1}`}
+                label="मुद्दाको अवस्था?"
+                required={true}
+                control={control}
+                options={[
+                  { label: 'चालु', value: 1 },
+                  { label: 'अन्तिम भएको', value: 0 },
+                ]}
+                error={errors[`mudda_condition_${index + 1}`]}
+              />
+            </Grid>
+
+            {selectedbandi_type == 'कैदी' && (
+              <Grid item xs={12} sm={6} md={3}>
+                <ReuseDateField
+                  name={`mudda_phesala_date_${index + 1}`}
+                  label='मुद्दा फैसला मिति'
+                  placeholder={'YYYY-MM-DD'}
+                  required={true}
+                  control={control}
+                  error={errors[`mudda_phesala_date_${index + 1}`]}
+                />
+              </Grid>
+            )}
+
+            <Grid item xs={11} sm={5} md={2}>
+              <ReuseSelect
+                name={`is_main_mudda_${index + 1}`}
+                label="मुख्य मुददा हो/होइन?"
+                required={true}
+                control={control}
+                options={[
+                  { label: 'होइन', value: 0 },
+                  { label: 'हो', value: 1 },
+                ]}
+                error={errors[`is_main_mudda_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={11} sm={5} md={2}>
+              <ReuseSelect
+                name={`is_last_mudda_${index + 1}`}
+                label="अन्तिम मुददा हो/होइन?"
+                required={true}
+                control={control}
+                options={[
+                  { label: 'होइन', value: 0 },
+                  { label: 'हो', value: 1 },
+                ]}
+                error={errors[`is_last_mudda_${index + 1}`]}
+              />
+            </Grid>
+
+            <Grid item xs={1} sm={1} md={1} sx={{ mt: 3 }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="small"
+                type="button"
+                onClick={() => setMuddaCount(muddaCount + 1)}
+              >
+                +
+              </Button>
+            </Grid>
+
+            <Grid item xs={1} sm={1} md={1} sx={{ mt: 3 }}>
+              {muddaCount > 1 && (
+                <Button
+                  variant="contained"
+                  color="warning"
+                  size="small"
+                  type="button"
+                  onClick={() => setMuddaCount(muddaCount - 1)}
+                >
+                  <RemoveIcon />
+                </Button>
+              )}
+            </Grid>
+          </Grid>
+        ))}
       </Grid>
 
       <Grid item container spacing={2}>
@@ -551,146 +681,7 @@ const BandiPersonForm = () => {
         </>}
       </Grid>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          कैदीबन्दीको मुद्दा विवरणः
-        </Grid>
 
-        {[...Array(muddaCount)].map((_, index) => (
-          <Grid container item spacing={2} key={index} sx={{ mt: 2 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <ReuseMudda
-                name={`mudda_id_${index + 1}`}
-                label="मुद्दा"
-                required={true}
-                control={control}
-                error={errors[`mudda_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <ReuseInput
-                name={`mudda_no_${index + 1}`}
-                label="मुद्दा नं."
-                required={true}
-                control={control}
-                error={errors[`mudda_no_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <ReuseInput
-                name={`vadi_${index + 1}`}
-                label="वादी वा जाहेरवालाको नाम"
-                required={true}
-                control={control}
-                error={errors[`vadi_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <ReuseOffice
-                name={`mudda_office_${index + 1}`}
-                label="मुद्दा रहेको निकाय"
-                required={true}
-                control={control}
-                error={errors[`mudda_office_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <ReuseDistrict
-                name={`mudda_district_${index + 1}`}
-                label="मुद्दा रहेको जिल्ला"
-                required={true}
-                control={control}
-                error={errors[`mudda_district_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <ReuseSelect
-                name={`mudda_condition_${index + 1}`}
-                label="मुद्दाको अवस्था?"
-                required={true}
-                control={control}
-                options={[
-                  { label: 'चालु', value: 1 },
-                  { label: 'अन्तिम भएको', value: 0 },
-                ]}
-                error={errors[`mudda_condition_${index + 1}`]}
-              />
-            </Grid>
-
-            {selectedbandi_type == 'कैदी' && (
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDateField
-                  name={`mudda_phesala_date_${index + 1}`}
-                  label='मुद्दा फैसला मिति'
-                  placeholder={'YYYY-MM-DD'}
-                  required={true}
-                  control={control}
-                  error={errors[`mudda_phesala_date_${index + 1}`]}
-                />
-              </Grid>
-            )}
-
-            <Grid item xs={11} sm={5} md={2}>
-              <ReuseSelect
-                name={`is_main_mudda_${index + 1}`}
-                label="मुख्य मुददा हो/होइन?"
-                required={true}
-                control={control}
-                options={[
-                  { label: 'होइन', value: 0 },
-                  { label: 'हो', value: 1 },
-                ]}
-                error={errors[`is_main_mudda_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={11} sm={5} md={2}>
-              <ReuseSelect
-                name={`is_last_mudda_${index + 1}`}
-                label="अन्तिम मुददा हो/होइन?"
-                required={true}
-                control={control}
-                options={[
-                  { label: 'होइन', value: 0 },
-                  { label: 'हो', value: 1 },
-                ]}
-                error={errors[`is_last_mudda_${index + 1}`]}
-              />
-            </Grid>
-
-            <Grid item xs={1} sm={1} md={1} sx={{ mt: 3 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                size="small"
-                type="button"
-                onClick={() => setMuddaCount(muddaCount + 1)}
-              >
-                +
-              </Button>
-            </Grid>
-
-            <Grid item xs={1} sm={1} md={1} sx={{ mt: 3 }}>
-              {muddaCount > 1 && (
-                <Button
-                  variant="contained"
-                  color="warning"
-                  size="small"
-                  type="button"
-                  onClick={() => setMuddaCount(muddaCount - 1)}
-                >
-                  <RemoveIcon />
-                </Button>
-              )}
-            </Grid>
-          </Grid>
-        ))}
-      </Grid>
 
       {selectedbandi_type == 'कैदी' && (<>
         <Grid container spacing={2}>

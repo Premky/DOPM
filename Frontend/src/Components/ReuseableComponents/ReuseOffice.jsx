@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseOffice = ({ name, label, required, control, error }) => {
+const ReuseOffice = ({ name, label, required, control, error,defaultValue, disabled }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -63,6 +63,7 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
                 <Controller
                     name={name}
                     control={control}
+                    defaultValue={defaultValue}
                     rules={{
                         ...(required && {
                             required: {
@@ -81,7 +82,7 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
                             value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                             onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                             sx={{ width: '100%' }}
-
+                            disabled={disabled}
                             renderOption={(props, option) => (
                                 <Box component="li" {...props} key={option.value}>
                                     {option.label}
@@ -99,6 +100,7 @@ const ReuseOffice = ({ name, label, required, control, error }) => {
                                     error={!!error}
                                     helperText={error?.message || ""}
                                     required={required}
+                                    disabled={disabled}
                                 />
                             )}
                         />
