@@ -121,7 +121,7 @@ const BandiPunrabednTable = ({ bandi_id }) => {
                             {fetchedBandies.map((opt, index) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.punarabedan_office_name || ''}</TableCell>
+                                    <TableCell align="center">{opt.office_name_with_letter_address || ''}</TableCell>
                                     <TableCell align="center">{opt.district_name_np||''}</TableCell>
                                     <TableCell align="center">{opt.punarabedan_office_ch_no||''}</TableCell>
                                     <TableCell align="center">{opt.punarabedan_office_date||''}</TableCell>

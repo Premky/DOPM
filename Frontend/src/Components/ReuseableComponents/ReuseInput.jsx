@@ -13,6 +13,7 @@ const ReuseInput = ({
   readonly,
   length,
   maxLength,
+  defaultValue,
 }) => {
   return (
     <>
@@ -24,6 +25,7 @@ const ReuseInput = ({
       <Controller
         name={name}
         control={control}
+        defaultValue={defaultValue}
         rules={{
           ...(required && {
             required: {
@@ -45,6 +47,7 @@ const ReuseInput = ({
             helperText={error?.message || ''}
             required={required}
             placeholder={placeholder}
+            defaultValue={defaultValue}
             type={type || 'text'}
             InputProps={{ readOnly: readonly }}
             inputProps={{ maxLength: maxLength || 255 }}

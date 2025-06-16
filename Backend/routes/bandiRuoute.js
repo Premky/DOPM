@@ -104,7 +104,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks,
         id_card_type, card_no, card_issue_district_id, card_issue_date,
         nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details,
-        hirasat_date_bs, thuna_date_bs, release_date_bs,
+        hirasat_date_bs, thuna_date_bs, release_date_bs,hirasat_years, hirasat_months, hirasat_days,
         is_bigo, is_bigo_paid, bigo_amt, bigo_paid_cn, bigo_paid_date, bigo_paid_office, bigo_paid_office_district,
         is_compensation, is_compensation_paid, compensation_amt, compensation_paid_cn, compensation_paid_date, compensation_paid_office, compensation_paid_office_district,
         is_fine_fixed, is_fine_paid, fine_amt, fine_paid_cn, fine_paid_date, fine_paid_office, fine_paid_office_district,
@@ -134,9 +134,9 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         const bandi_id = bandiResult.insertId;
 
         // 2. Insert into bandi_kaid_detao;s
-        const hirasatDateAd = await bs2ad(hirasat_date_bs);
-        const thunaDateAd = await bs2ad(thuna_date_bs);
-        const releaseDateAd = await bs2ad(thuna_date_bs);
+        // const hirasatDateAd = await bs2ad(hirasat_date_bs);
+        const thunaDateAd = await bs2ad(hirasat_date_bs);
+        const releaseDateAd = await bs2ad(release_date_bs);
 
         const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd]
         const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, 
@@ -238,10 +238,32 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 });
 
 
+// bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
+// bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
 router.get('/get_bandi', async (req, res) => {
     const sql = `SELECT b.*, b.id AS bandi_office_id, TIMESTAMPDIFF(YEAR, b.dob_ad, CURDATE()) AS current_age,  bmd.*, m.mudda_name,
                 nc.country_name_np, ns.state_name_np, nd.district_name_np, nci.city_name_np, ba.wardno, ba.bidesh_nagarik_address_details,
-                 p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.current_office_id, p.id AS payrole_id
+                 p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.current_office_id, p.id AS payrole_id,p.dopmremark,
+                 bpdo.office_name_with_letter_address AS punarabedan_office, bpdnd.district_name_np AS punarabedan_district, bpd.punarabedan_office_ch_no, punarabedan_office_date,
+                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days, bkd.thuna_date_bs, bkd.release_date_bs,
+                 -- Fine type 1 (e.g., जरिवाना)
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.amount_fixed END) AS jariwana_fixed,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.amount_deposited END) AS deposited_jariwana,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfdo.office_name_with_letter_address END) AS deposited_jariwana_office,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.deposit_date END) AS deposited_jariwana_date,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.deposit_ch_no END) AS deposited_jariwana_ch_no,
+                 -- Fine type 2 (e.g., क्षतिपुर्ती)
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.amount_fixed END) AS compensation_fixed,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.amount_deposited END) AS deposited_compensation,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfdo.office_name_with_letter_address END) AS deposited_compensation_office,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.deposit_date END) AS deposited_compensation_date,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.deposit_ch_no END) AS deposited_compensation_ch_no,
+                 -- Fine type 3 (e.g., विगो तथा कोष)
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.amount_fixed END) AS bigo_fixed,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.amount_deposited END) AS deposited_bigo,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfdo.office_name_with_letter_address END) AS deposited_bigo_office,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.deposit_date END) AS deposited_bigo_date,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.deposit_ch_no END) AS deposited_bigo_ch_no
                 FROM bandi_person b
                 LEFT JOIN bandi_address ba ON b.id=ba.bandi_id
                 LEFT JOIN np_country nc ON ba.nationality_id = nc.id
@@ -252,7 +274,13 @@ router.get('/get_bandi', async (req, res) => {
                 LEFT JOIN muddas m ON bmd.mudda_id=m.id
                 LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
                 LEFT JOIN relationships r ON bri.relation_id=r.id
-
+                LEFT JOIN bandi_punarabedan_details bpd ON b.id=bpd.bandi_id
+                LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
+                LEFT JOIN np_district bpdnd ON bpd.punarabedan_office_district =bpdnd.did
+                LEFT JOIN bandi_kaid_details bkd ON b.id=bkd.bandi_id
+                LEFT JOIN bandi_fine_details bfd ON b.id=bfd.bandi_id
+                LEFT JOIN offices bfdo ON bfd.deposit_office=bfdo.id
+                LEFT JOIN np_district bfdnd ON bfd.deposit_district =bfdnd.did
                 LEFT JOIN payroles p ON b.id=p.bandi_id
                 WHERE bmd.is_main_mudda=1`;
     con.query(sql, (err, result) => {
@@ -269,31 +297,48 @@ router.get('/get_bandi/:id', async (req, res) => {
     // LEFT JOIN muddas m ON bmd.mudda_id = m.id
     // LEFT JOIN bandi_mudda_details bmd ON b.id = bmd.bandi_id AND bmd.is_main_mudda = 1
     const sql = `
-        SELECT 
-            b.*, b.id AS bandi_office_id, 
-            bri.relative_name,
-            bri.relative_address,
-            bri.contact_no AS relative_contact,
-            r.relation_np,
-            bmd.*,
-            bkd.*,
-            ba.wardno, ba.bidesh_nagarik_address_details,
-            country.country_name_np, ns.state_name_np, nd.district_name_np, nc.city_name_np,
-            m.mudda_name
-            p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.current_office_id, p.id AS payrole_id
-        FROM bandi_person b
-        LEFT JOIN bandi_address ba ON b.id=ba.bandi_id
-        LEFT JOIN np_country country ON ba.nationality_id= country.id
-        LEFT JOIN np_state ns ON ba.province_id=ns.state_id
-        LEFT JOIN np_district nd ON ba.district_id=nd.did
-        LEFT JOIN np_city nc ON ba.gapa_napa_id=nc.cid
-        LEFT JOIN bandi_relative_info bri ON b.id = bri.bandi_id
-        LEFT JOIN relationships r ON bri.relation_id = r.id
-        LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id
-        LEFT JOIN muddas m ON m.id=bmd.mudda_id
-        LEFT JOIN bandi_kaid_details bkd ON b.id=bkd.bandi_id
-        LEFT JOIN payroles p ON b.id=p.bandi_id
-        WHERE b.id = ? AND bmd.is_main_mudda=1;
+        SELECT b.*, b.id AS bandi_office_id, TIMESTAMPDIFF(YEAR, b.dob_ad, CURDATE()) AS current_age,  bmd.*, m.mudda_name,
+                nc.country_name_np, ns.state_name_np, nd.district_name_np, nci.city_name_np, ba.wardno, ba.bidesh_nagarik_address_details,
+                 p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.current_office_id, p.id AS payrole_id,p.dopmremark,
+                 bpdo.office_name_with_letter_address AS punarabedan_office, bpdnd.district_name_np AS punarabedan_district, bpd.punarabedan_office_ch_no, punarabedan_office_date,
+                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days, bkd.thuna_date_bs, bkd.release_date_bs,
+                 -- Fine type 1 (e.g., जरिवाना)
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.amount_fixed END) AS jariwana_fixed,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.amount_deposited END) AS deposited_jariwana,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfdo.office_name_with_letter_address END) AS deposited_jariwana_office,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.deposit_date END) AS deposited_jariwana_date,
+                MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.deposit_ch_no END) AS deposited_jariwana_ch_no,
+                 -- Fine type 2 (e.g., क्षतिपुर्ती)
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.amount_fixed END) AS compensation_fixed,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.amount_deposited END) AS deposited_compensation,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfdo.office_name_with_letter_address END) AS deposited_compensation_office,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.deposit_date END) AS deposited_compensation_date,
+                MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.deposit_ch_no END) AS deposited_compensation_ch_no,
+                 -- Fine type 3 (e.g., विगो तथा कोष)
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.amount_fixed END) AS bigo_fixed,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.amount_deposited END) AS deposited_bigo,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfdo.office_name_with_letter_address END) AS deposited_bigo_office,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.deposit_date END) AS deposited_bigo_date,
+                MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.deposit_ch_no END) AS deposited_bigo_ch_no
+                FROM bandi_person b
+                LEFT JOIN bandi_address ba ON b.id=ba.bandi_id
+                LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+                LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+                LEFT JOIN np_district nd ON ba.district_id = nd.did
+                LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+                LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id 
+                LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
+                LEFT JOIN relationships r ON bri.relation_id=r.id
+                LEFT JOIN bandi_punarabedan_details bpd ON b.id=bpd.bandi_id
+                LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
+                LEFT JOIN np_district bpdnd ON bpd.punarabedan_office_district =bpdnd.did
+                LEFT JOIN bandi_kaid_details bkd ON b.id=bkd.bandi_id
+                LEFT JOIN bandi_fine_details bfd ON b.id=bfd.bandi_id
+                LEFT JOIN offices bfdo ON bfd.deposit_office=bfdo.id
+                LEFT JOIN np_district bfdnd ON bfd.deposit_district =bfdnd.did
+                LEFT JOIN payroles p ON b.id=p.bandi_id
+                WHERE bmd.is_main_mudda=1 AND b.id=?;
     `;
 
     con.query(sql, [id], (err, result) => {
@@ -550,7 +595,7 @@ router.get('/get_bandi_punrabedn/:id', async (req, res) => {
     const { id } = req.params;
     const sql = `
         SELECT bpd.*, 
-                o.office_name_nep,
+                o.office_name_with_letter_address,
                 nd.district_name_np
         FROM bandi_punarabedan_details bpd
         LEFT JOIN offices o ON bpd.punarabedan_office_id=o.id
@@ -702,15 +747,16 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
     const {
         dopmremark, status, payrole_id
     } = req.body;
+    // console.log('dopmremark',status)
     // console.log(req.body)
     const updated_by = 1;
-    const sql = `UPDATE payroles SET dopmremark=?, status=? WHERE id=?`;
+    const sql = `UPDATE payroles SET dopmremark=?, status=? WHERE id=?;`;
     const values = [
         dopmremark, status, id
     ];
     try {
         const result = await query(sql, values);
-        console.log(result)
+        // console.log(result)
         return res.json({ Status: true, Result: result });
     } catch (err) {
         console.error('Database error', err);

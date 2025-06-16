@@ -21,7 +21,7 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
   } = useForm({
     defaultValues: {
       status: "",
-      dopmremarks: "",
+      dopmremark: "",
     },
   });
 
@@ -29,7 +29,7 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
   useEffect(() => {
     if (data) {
       reset({
-        dopmremarks: data?.dopmremarks || "",
+        dopmremark: data?.dopmremark || "",
         status: data?.status || "",
       });
     }
@@ -74,12 +74,13 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
 
           <Grid item xs={12}>
             <TextField
-              {...register("dopmremarks")}
+              {...register("dopmremark")}
               label="कैफियत"
+              defaultValue={data?.dopmremark}
               fullWidth
               multiline
               rows={3}
-              error={!!errors.dopmremarks}
+              error={!!errors.dopmremark}
             />
           </Grid>
 
@@ -88,7 +89,7 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
               select
               label="प्यारोल पास / फेल"
               fullWidth
-              defaultValue=""
+              defaultValue={data?.status}
               {...register("status", { required: true })}
               error={!!errors.status}
               helperText={errors.status ? "चयन गर्नुहोस्" : ""}

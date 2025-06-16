@@ -152,7 +152,7 @@ const BandiPersonForm = () => {
         console.log(response)
         const bandi_id = Result;
         console.log(bandi_id);
-        navigate(`/view_saved_record/${bandi_id}`); // <-- fixed here
+        navigate(`/bandi/view_saved_record/${bandi_id}`); // <-- fixed here
         reset();
         setEditing(false);
         fetchAccidentRecords();
@@ -449,6 +449,7 @@ const BandiPersonForm = () => {
               label="वर्ष"
               placeholder='वर्ष'
               type='number'
+              defaultValue={0}
               required={false}
               control={control}
               error={errors.hirasat_years}
@@ -460,6 +461,7 @@ const BandiPersonForm = () => {
               label="महिना "
               placeholder='महिना'
               type='number'
+              defaultValue={0}
               required={false}
               control={control}
               error={errors.hirasat_months}
@@ -470,6 +472,7 @@ const BandiPersonForm = () => {
               name="hirasat_days"
               label="दिन"
               placeholder='दिन'
+              defaultValue={0}
               type='number'
               required={false}
               control={control}

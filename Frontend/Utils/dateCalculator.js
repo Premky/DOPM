@@ -38,12 +38,15 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
       percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
     }
 
+    const formattedDuration=years+'|'+months+'|'+days
+
     return {
       years,
       months,
       days,
       totalDays,
-      percentage: percentage ? parseFloat(percentage) : undefined
+      percentage: percentage ? parseFloat(percentage) : undefined,
+      formattedDuration
     };
   } catch (err) {
     console.error("Error in calculateBSDate:", err);

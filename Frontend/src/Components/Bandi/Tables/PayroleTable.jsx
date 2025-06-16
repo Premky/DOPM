@@ -8,10 +8,14 @@ import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
 import ReusePayroleStatus from '../../ReuseableComponents/ReusePayroleStatus';
 import PayroleStatusModal from '../Dialogs/PayroleStatusModal';
 import Swal from 'sweetalert2';
+import { calculateBSDate } from '../../../../Utils/dateCalculator';
+import NepaliDate from 'nepali-datetime';
 
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
+    const npToday = new NepaliDate();
+    const formattedDateNp = npToday.format('YYYY-MM-DD');
     useEffect(() => {
         setValue('searchOffice', authState.office_id | '')
     }, [authState]);
@@ -45,6 +49,7 @@ const PayroleTable = () => {
                 setAllKaidi(Result);
                 setFilteredKaidi(Result);
                 //To fetch Muddas for each kaidi
+                console.log(allKaidi)
                 const muddaResponses = await Promise.all(
                     Result.map((kaidi) => fetchMuddas(kaidi.id))
                 );
@@ -214,11 +219,21 @@ const PayroleTable = () => {
                             return (
                                 <React.Fragment key={data.id}>
 
-                                    <TableRow>
-                                        <TableCell sx={{ position: 'sticky', left: 0, backgroundColor: 'white', zIndex: 3 }} rowSpan={kaidiMuddas.length || 1}>
+                                    <TableRow sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
+                                        <TableCell sx={{
+                                            position: 'sticky', left: 0,
+                                            // backgroundColor: 'white',
+                                            backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
+                                            zIndex: 3
+                                        }} rowSpan={kaidiMuddas.length || 1}>
                                             {index + 1}
                                         </TableCell>
-                                        <TableCell sx={{ position: 'sticky', left: 50, backgroundColor: 'white', zIndex: 3 }} rowSpan={kaidiMuddas.length || 1}>
+                                        <TableCell sx={{ 
+                                            position: 'sticky', left: 50,
+                                            // backgroundColor: 'white',
+                                            backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
+                                            zIndex: 3
+                                            }} rowSpan={kaidiMuddas.length || 1}>
                                             {data.id} <br />{data.bandi_name}<br />
                                             {data.nationality === 'स्वदेशी'
                                                 ? `${data.city_name_np}-${data.wardno},${data.district_name_np},${data.state_name_np},${data.country_name_np}`
@@ -229,20 +244,36 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.nationality}</TableCell>
                                         <TableCell >{kaidiMuddas[0]?.mudda_name || ''}</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.vadi || ''}</TableCell>
-                                        <TableCell>{kaidiMuddas[0]?.office_name_nep || ''} <br />
+                                        <TableCell>{kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
                                             {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
                                         </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{kaidiMuddas[0]?.punarawedan_praman || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{kaidiMuddas[0]?.thuna_miti || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{kaidiMuddas[0]?.tokiyeko_kaid || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{kaidiMuddas[0]?.chhutti_miti || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.mudda_name || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payarol_kaid || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.rogi_status || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{kaidiMuddas[0]?.jarivana_praman || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.sifarish_karan || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.kaifiyat || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopmremarks || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br/>
+                                            {calculateBSDate(data.thuna_date_bs, data.release_date_bs).percentage || ''}
+                                        </TableCell>
+
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br/>
+                                            {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''}
+                                        </TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br/>
+                                            {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''}
+                                        </TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {`${data.punarabedan_office}को च.नं. ${data.punarabedan_office_ch_no} मिति ${data.punarabedan_office_date} गतेको पत्रानुसार ।` || ''}
+                                        </TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {data.deposited_jariwana_office && data.deposited_jariwana_ch_no && data.deposited_jariwana_date
+                                                ? `${data.deposited_jariwana_office}को च.नं. ${data.deposited_jariwana_ch_no} मिति ${data.deposited_jariwana_date} गतेको पत्रानुसार ।`
+                                                : ''}
+                                        </TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopmremark || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             <Button
                                                 variant="contained"
@@ -255,12 +286,10 @@ const PayroleTable = () => {
                                     </TableRow>
 
                                     {kaidiMuddas.slice(1).map((mudda, i) => (
-                                        <TableRow key={`mudda-${data.id}-${i}`}>
-
+                                        <TableRow key={`mudda-${data.id}-${i}`} sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
                                             <TableCell>{mudda.mudda_name}</TableCell>
                                             <TableCell>{mudda.jaherwala}</TableCell>
                                             <TableCell>{mudda.antim_nikaya_faisala_miti}</TableCell>
-                                            <TableCell>{mudda.punarawedan_praman}</TableCell>
 
                                         </TableRow>
                                     ))}
