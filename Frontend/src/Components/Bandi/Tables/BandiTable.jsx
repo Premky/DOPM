@@ -50,7 +50,6 @@ const BandiTable = ({bandi_id}) => {
                 <Grid item xs={12}>
                     <TableContainer>
                         <Table size='small' border={1}>
-
                             <TableRow>
                                 <TableCell>बन्दी आई.डि.</TableCell>
                                 <TableCell>{fetchedBandi.bandi_id}</TableCell>

@@ -9,9 +9,11 @@ import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useAuth } from '../../../Context/AuthContext';
 const PayroleForm = () => {
   const BASE_URL = useBaseURL();
-  
+  const { state: authState } = useAuth();
+
   const {
     handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm({
       defaultValues: {
@@ -20,8 +22,8 @@ const PayroleForm = () => {
       },
     });
 
-    const [loading, setLoading]=useState(false);
-    const [editing, setEditing]=useState(false);
+  const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   // Watch Variables
   const payrole_no = watch('payrole_no');
@@ -116,14 +118,19 @@ const PayroleForm = () => {
                 required={true}
                 control={control}
                 error={errors.bandi_id}
+                current_office = {authState.office_np}
               />
             </Grid2>
           </Grid2>
           <Grid2 container spacing={2}>
-            <ViewBandi bandi={bandi_id} /> <br />
+            {bandi_id ?
+              <>
+                <ViewBandi bandi={bandi_id} /> <br />
+              </> : <></>
+            }
           </Grid2>
           <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12}}>
+            <Grid2 size={{ xs: 12 }}>
               <ReuseInput
                 name='other_details'
                 label="बृद्ध, रोगी, वा अशक्त भए सो समेत उल्लेख गर्ने"
@@ -132,7 +139,7 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.other_details} />
             </Grid2>
-            <Grid2 size={{ xs: 12}}>
+            <Grid2 size={{ xs: 12 }}>
               <ReuseInput
                 name='payrole_reason'
                 label="प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण"
@@ -141,7 +148,7 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.payrole_reason} />
             </Grid2>
-            <Grid2 size={{ xs: 12}}>
+            <Grid2 size={{ xs: 12 }}>
               <ReuseInput
                 name='payrole_remarks'
                 label="कैफियत"

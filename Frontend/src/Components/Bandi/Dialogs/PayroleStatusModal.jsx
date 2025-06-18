@@ -20,7 +20,7 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      status: "",
+      pyarole_rakhan_upayukat: "",
       dopmremark: "",
     },
   });
@@ -30,7 +30,7 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
     if (data) {
       reset({
         dopmremark: data?.dopmremark || "",
-        status: data?.status || "",
+        pyarole_rakhan_upayukat: data?.pyarole_rakhan_upayukat || "",
       });
     }
   }, [data, reset]);
@@ -89,13 +89,13 @@ const PayroleStatusModal = ({ open, onClose, data, kaidimuddas, onSave }) => {
               select
               label="प्यारोल पास / फेल"
               fullWidth
-              defaultValue={data?.status}
-              {...register("status", { required: true })}
-              error={!!errors.status}
-              helperText={errors.status ? "चयन गर्नुहोस्" : ""}
+              defaultValue={data?.pyarole_rakhan_upayukat}
+              {...register("pyarole_rakhan_upayukat", { required: true })}
+              error={!!errors.pyarole_rakhan_upayukat}
+              helperText={errors.pyarole_rakhan_upayukat ? "चयन गर्नुहोस्" : ""}
             >
-              <MenuItem value="1">पास</MenuItem>
-              <MenuItem value="0">फेल</MenuItem>
+              <MenuItem value="छ">पास</MenuItem>
+              <MenuItem value="छैन">फेल</MenuItem>
             </TextField>
           </Grid>
         </Grid>

@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, FormControl, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
+import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
@@ -12,20 +12,16 @@ import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import exportToExcel from '../Exports/ExcelPayrole';
 import '../../../index.css'
-import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
-import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
-import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-import ReuseInput from '../../ReuseableComponents/ReuseInput';
-import { CheckBox } from '@mui/icons-material';
-import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import { useNavigate } from 'react-router-dom';
 
-const PayroleTable = () => {
+const AllBandiTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
+    const navigate = useNavigate();
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format('YYYY-MM-DD');
     useEffect(() => {
-        setValue('searchOffice', authState.office_id || '')
+        setValue('searchOffice', authState.office_id | '')
     }, [authState]);
     const {
         handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm({
@@ -50,7 +46,7 @@ const PayroleTable = () => {
         setLoading(true);
         try {
             // console.log('Bandi ID:', bandinameId)
-            const response = await axios.get(`${BASE_URL}/bandi/get_payroles`, { withCredentials: true });
+            const response = await axios.get(`${BASE_URL}/bandi/get_bandi`);
             const { Status, Result, Error } = response.data;
             // console.log(Result)
             if (Status && Array.isArray(Result)) {
@@ -105,71 +101,22 @@ const PayroleTable = () => {
     //Watch Variables:
     const searchOffice = watch('searchOffice');
     const searchpayroleStatus = watch('searchPayroleStatus');
-    const searchpyarole_rakhan_upayukat = watch('pyarole_rakhan_upayukat');
-    const searchpayrole_no_id = watch('payrole_no_id');
-    const searchmudda_id = watch('mudda_id');
-    const searchbandi_name = watch('bandi_name');
-    const searchchecked = watch('checked');
-    const searchis_checked = watch('is_checked');
     //Watch Variables
 
     useEffect(() => {
-        console.log(searchOffice)
-        if (!searchOffice) return; // Wait until searchOffice is set
-
         let filtered = allKaidi;
-        console.log(filtered)
-        filtered = filtered.filter(a => a.current_office_id === searchOffice);
+        // console.log(filtered)
+
+        if (searchOffice) {
+            filtered = filtered.filter(a => a.current_office_id === searchOffice);
+        }
 
         if (searchpayroleStatus) {
             filtered = filtered.filter(a => a.status === searchpayroleStatus);
         }
-        if (searchpyarole_rakhan_upayukat) {
-            filtered = filtered.filter(a => a.pyarole_rakhan_upayukat === searchpyarole_rakhan_upayukat);
-        }
-        if (searchpayrole_no_id) {
-            filtered = filtered.filter(a => a.payrole_no_id === searchpayrole_no_id);
-        }
-        if (searchmudda_id) {
-            filtered = filtered.filter(a => a.mudda_id === searchmudda_id);
-        }
-        if (searchbandi_name) {
-            filtered = filtered.filter(a =>
-                a.bandi_name && a.bandi_name.includes(searchbandi_name)
-            );
-        }
-        if (searchis_checked) {
-            const chkvalue = parseInt(searchis_checked);
-            filtered = filtered.filter(a => a.is_checked === chkvalue);
-        }
 
         setFilteredKaidi(filtered);
-    }, [
-        searchOffice,
-        searchpayroleStatus,
-        allKaidi,
-        searchpyarole_rakhan_upayukat,
-        searchpayrole_no_id,
-        searchmudda_id,
-        searchbandi_name,
-        searchis_checked
-    ]);
-
-
-
-    const handleCheckboxChange = async (id, newValue) => {
-        // console.log(newValue)
-        try {
-            await axios.put(`${BASE_URL}/bandi/update_is_payrole_checked/${id}`, {
-                is_checked: newValue
-            }, { withCredentials: true });
-            fetchKaidi();
-            // Optionally update local state or re-fetch
-        } catch (err) {
-            console.error('Update failed:', err);
-        }
-    };
-
+    }, [searchOffice, searchpayroleStatus, allKaidi]);
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
@@ -205,59 +152,21 @@ const PayroleTable = () => {
                 <p>Welcome {authState.user} from {authState.office_np}</p>
                 <Grid2 container={2}>
                     <Grid2 size={{ xs: 12, sm: 4 }}>
-                        <ReuseKaragarOffice
+                        <ReuseOffice
                             name='searchOffice'
-                            label='कार्यालय'
+                            label='Office'
                             control={control}
 
                             disabled={authState.office_id >= 3}
                         />
                     </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    <Grid2 size={{ xs: 12, sm: 4 }}>
                         <ReusePayroleStatus
                             name='searchPayroleStatus'
-                            label='अवस्था'
+                            label='Status'
                             control={control}
                         />
                     </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
-                        <ReuseSelect
-                            name='pyarole_rakhan_upayukat'
-                            label='पास/फेल'
-                            options={[{ label: 'सबै', value: '' }, { label: 'पास', value: 'छ' }, { label: 'फेल', value: 'छैन' }]}
-                            control={control}
-                        />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
-                        <ReuseSelect
-                            name='is_checked'
-                            label='चेक भए/नभएको'
-                            options={[{ label: 'सबै', value: '' }, { label: 'छ', value: '1' }, { label: 'छैन', value: '0' }]}
-                            control={control}
-                        />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
-                        <ReusePayroleNos
-                            name='payrole_no_id'
-                            label='प्यारोल संख्या'
-                            control={control}
-                        />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <ReuseMudda
-                            name='mudda_id'
-                            label='मुद्दा'
-                            control={control}
-                        />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <ReuseInput
-                            name='bandi_name'
-                            label='कैदी/बन्दीको नाम'
-                            control={control}
-                        />
-                    </Grid2>
-
                     <Grid2 size={{ xs: 12, sm: 4 }}>
                         <Button onClick={() => exportToExcel(filteredKaidi, fetchedMuddas)} variant="outlined" color="primary" sx={{ m: 1 }}>
                             एक्सेल निर्यात
@@ -269,19 +178,6 @@ const PayroleTable = () => {
                 <Table size='small' stickyHeader border={1}>
                     <TableHead>
                         <TableRow >
-                            <TableCell
-                                className='table_head_bg'
-                                sx={{
-                                    position: 'sticky',
-                                    left: 0,
-                                    backgroundColor: 'blue',
-                                    zIndex: 3, // header + sticky column priority
-                                    minWidth: 60
-                                }}
-
-                            >
-                                चेक भए/नभएको?
-                            </TableCell>
                             <TableCell
                                 className='table_head_bg'
                                 sx={{
@@ -330,28 +226,16 @@ const PayroleTable = () => {
                     <TableBody>
 
                         {filteredKaidi.map((data, index) => {
-                            const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
+                            const kaidiMuddas = fetchedMuddas[data.id] || [];
 
                             return (
                                 <React.Fragment key={data.id}>
 
-                                    <TableRow sx={{ backgroundColor: data.pyarole_rakhan_upayukat === 'छ' ? '#bbeba4' : '#f9d1d5' }}>
-                                        <TableCell sx={{
-                                            position: 'sticky', left: 0,
-                                            backgroundColor: data.pyarole_rakhan_upayukat === 'छ' ? '#bbeba4' : '#f9d1d5',
-                                            zIndex: 3
-                                        }} rowSpan={kaidiMuddas.length || 1}>
-                                            <Checkbox
-                                                key={data.payrole_id}
-                                                checked={data.is_checked}
-                                                onChange={() => handleCheckboxChange(data.payrole_id, !data.is_checked)}
-                                            />
-
-                                        </TableCell>
+                                    <TableRow sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
                                         <TableCell sx={{
                                             position: 'sticky', left: 0,
                                             // backgroundColor: 'white',
-                                            backgroundColor: data.pyarole_rakhan_upayukat === 'छ' ? '#bbeba4' : '#f9d1d5',
+                                            backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
                                             zIndex: 3
                                         }} rowSpan={kaidiMuddas.length || 1}>
                                             {index + 1}
@@ -359,7 +243,7 @@ const PayroleTable = () => {
                                         <TableCell sx={{
                                             position: 'sticky', left: 50,
                                             // backgroundColor: 'white',
-                                            backgroundColor: data.pyarole_rakhan_upayukat === 'छ' ? '#bbeba4' : '#f9d1d5',
+                                            backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
                                             zIndex: 3
                                         }} rowSpan={kaidiMuddas.length || 1}>
                                             {data.id} <br />{data.bandi_name}<br />
@@ -369,14 +253,12 @@ const PayroleTable = () => {
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} >{data.current_age}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य'}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np}</TableCell>
-
-                                        <TableCell >{kaidiMuddas[0]?.mudda_name || ''}<br/>{kaidiMuddas[0]?.mudda_no || ''}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.nationality}</TableCell>
+                                        <TableCell >{kaidiMuddas[0]?.mudda_name || ''}</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.vadi || ''}</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
                                             {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
                                         </TableCell>
-
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br />
@@ -393,28 +275,27 @@ const PayroleTable = () => {
                                             {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {`${data.office_name_with_letter_address}को च.नं. ${data.punarabedan_office_ch_no} मिति ${data.punarabedan_office_date} गतेको पत्रानुसार ।` || ''}
+                                            {`${data.punarabedan_office}को च.नं. ${data.punarabedan_office_ch_no} मिति ${data.punarabedan_office_date} गतेको पत्रानुसार ।` || ''}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {data.fine_summary}
+                                            {data.deposited_jariwana_office && data.deposited_jariwana_ch_no && data.deposited_jariwana_date
+                                                ? `${data.deposited_jariwana_office}को च.नं. ${data.deposited_jariwana_ch_no} मिति ${data.deposited_jariwana_date} गतेको पत्रानुसार ।`
+                                                : ''}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopmremark || ''}</TableCell>
+                                        
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopmremark || ''} </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            <Button
-                                                variant="contained"
-                                                color='success'
-                                                onClick={() => handleEdit(data)}
-                                            >
-                                                कैफियत
+                                            <Button onClick={() => navigate(`/bandi/view_saved_record/${data.id}`)}>
+                                                View
                                             </Button>
                                         </TableCell>
                                     </TableRow>
 
                                     {kaidiMuddas.slice(1).map((mudda, i) => (
-                                        <TableRow key={`mudda-${data.id}-${i}`} sx={{ backgroundColor: data.pyarole_rakhan_upayukat === 'छ' ? '#bbeba4' : '#f9d1d5' }}>
+                                        <TableRow key={`mudda-${data.id}-${i}`} sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
                                             <TableCell>{mudda.mudda_name}</TableCell>
                                             <TableCell>{mudda.jaherwala}</TableCell>
                                             <TableCell>{mudda.antim_nikaya_faisala_miti}</TableCell>
@@ -433,4 +314,4 @@ const PayroleTable = () => {
     )
 }
 
-export default PayroleTable
+export default AllBandiTable

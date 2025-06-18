@@ -4,13 +4,11 @@ import { InputLabel, TextField, Autocomplete } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
-import { useAuth } from '../../Context/AuthContext';
 
-const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => {
+const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue, disabled }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
-    const { state: authState } = useAuth();
     const token = localStorage.getItem('token');
 
     // State to store office options
@@ -20,13 +18,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     // Fetch office data
     const fetchOffices = async () => {
         try {
-            let url;
-            if (authState.office_id) {
-                url = `${BASE_URL}/bandi/get_bandi_name_for_select/${authState.office_id}`;
-            } else {
-                url = `${BASE_URL}/bandi/get_bandi_name_for_select`;
-            }
-
+            const url = `${BASE_URL}/public/get_offices`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -35,16 +27,12 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result
-                        // .filter(opt => opt?.bandi_name)
-                        .filter(opt => opt?.id && opt?.bandi_name)
-                        .map((opt, index) => {
-                            const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
-                            return {
-                                label: ` ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index + 1} `,
-                                value: opt.bandi_office_id,
-                            };
-                        });
+                    const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3);
+                    const formatted = filtered.map((opt, index) => ({
+                        sn: index + 1,
+                        label: opt.office_name_with_letter_address,
+                        value: opt.id,
+                    }));
                     setFormattedOptions(formatted);
                 } else {
                     console.log('No records found.');
@@ -62,6 +50,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     useEffect(() => {
         fetchOffices();
     }, []);
+
     return (
         <>
             <InputLabel id={name}>
@@ -75,6 +64,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
                 <Controller
                     name={name}
                     control={control}
+                    defaultValue={defaultValue}
                     rules={{
                         ...(required && {
                             required: {
@@ -93,17 +83,12 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
                             value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                             onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                             sx={{ width: '100%' }}
-
-                            renderOption={(props, option) => {
-                                const { key, ...rest } = props; // separate out the key
-                                return (
-                                    <Box key={`${option.value}-${option.label}`} component="li" {...rest}>
-                                        {option.label}
-                                    </Box>
-                                );
-                            }}
-
-
+                            disabled={disabled}
+                            renderOption={(props, option) => (
+                                <Box component="li" {...props} key={option.value}>
+                                    {option.label}
+                                </Box>
+                            )}
                             renderInput={(params) => (
                                 <TextField
                                     // defaultValue=''
@@ -116,6 +101,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
                                     error={!!error}
                                     helperText={error?.message || ""}
                                     required={required}
+                                    disabled={disabled}
                                 />
                             )}
                         />
@@ -127,4 +113,4 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     );
 };
 
-export default ReuseBandi;
+export default ReuseKaragarOffice;

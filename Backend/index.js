@@ -74,7 +74,7 @@ const hardOrigins = [
     'http://localhost:5173',
     'https://kptpo.onrender.com',
     'https://kptpo-backend.onrender.com',
-    'http://192.168.18.13:5173'
+    'http://192.168.18.24:5173'
 ];
 
 app.use(cors({

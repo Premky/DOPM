@@ -2,7 +2,7 @@ import { useState, Suspense, lazy } from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from './Context/AuthContext';
 import ProtectedRoute from './Context/ProtectedRoute';
-
+import './index.css'
 // Lazy-loaded components
 const Login = lazy(() => import('./Components/Auth/Login'));
 // const Sidenav = lazy(() => import('./Components/Nav/Sidenav'));
@@ -29,6 +29,9 @@ import BandiFamilyForm from './Components/Bandi/Forms/BandiFamilyForm';
 import ViewBandi from './Components/Bandi/ViewBandi';
 import PayroleForm from './Components/Bandi/Forms/PayroleForm';
 import PayroleTable from './Components/Bandi/Tables/PayroleTable';
+import CombinedNav from './Components/Nav/CombinedNav';
+import BandiTable from './Components/Bandi/Tables/BandiTable';
+import AllBandiTable from './Components/Bandi/Tables/AllBandiTable';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -39,45 +42,37 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes */}
-            <Route path='/bandi'>
-              <Route path='create_bandi' element={<BandiPersonForm />} />
-              <Route path='create_bandi_family' element={<BandiFamilyForm />} />
-              <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
-              <Route path="payrole" element={<PayroleForm />} />
-              <Route path='payrole_table' element={<PayroleTable/>}/>
+            <Route path='/' element={<CombinedNav />}>
+              <Route path='/bandi'>
+                <Route path='bandi_details' element={<AllBandiTable/>}/>
+                <Route path='create_bandi' element={<BandiPersonForm />} />
+                <Route path='create_bandi_family' element={<BandiFamilyForm />} />
+                <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+              </Route>
+              <Route path='/payrole'>
+                <Route path="create_payrole" element={<PayroleForm />} />
+                <Route path='payrole_table' element={<PayroleTable />} />
+              </Route>
             </Route>
-            
+
 
             {/* <Route path='/' element={<ParoleForm />}/> */}
             {/* <Route path='/' element={<BandiReleaseForm />}/> */}
             {/* <Route path='/' element={<BandiForm />}/> */}
 
-            {/* <Route path='/' element={<ProtectedRoute />}>
-              <Route path='/' element={<CombinedNavBar />}>
-                <Route path='/sadmin' element={<SuperAdmin />}>
-                  <Route path='branch' element={<OfficeBranchPage />} />
-                  <Route path='users' element={<Users />} />
-                  <Route path='office' element={<Office />} />
-                </Route>
-
-                <Route path ='/su' element={<SuperAdmin />}>
-                  <Route index element={<CreateUser/>} />
-                  <Route path='apps' element={<AssignApps/>}/>
-                  <Route path='branch' element={<OfficeBranchPage />} />
-                  <Route path='office' element={<Office />} />
-                  <Route path='users' element={<Users />} />
-                </Route>
-
-                <Route path='/dashboard' element={<Dashboard />}>
-                  
-                </Route>
-
-              </Route>
+            {/* {/* <Route path='/' element={<ProtectedRoute />}> */}
+            {/* <Route path='/' element={<CombinedNavBar />}> */}
+            {/* <Route path='/sadmin' element={<SuperAdmin />}>
+              <Route path='branch' element={<OfficeBranchPage />} />
+              <Route path='users' element={<Users />} />
+              <Route path='office' element={<Office />} />
             </Route> */}
-          </Routes>
-        </BrowserRouter>
-      </Suspense>
-    </AuthProvider>
+          {/* </Route> */}
+          {/* </Route> */}
+        </Routes>
+      </BrowserRouter>
+    </Suspense >
+    </AuthProvider >
   );
 }
 
