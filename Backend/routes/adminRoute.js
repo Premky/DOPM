@@ -70,7 +70,7 @@ router.put("/update_branch_name/:id", async (req, res) => {
 });
 
 router.get('/get_branch_name', async (req, res) => {
-    const sql = `SELECT * FROM branch ORDER BY name_np`;
+    const sql = `SELECT * FROM branch`;
     try {
         const result = await query(sql);
         return res.json({ Status: true, Result: result })

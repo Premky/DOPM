@@ -36,14 +36,14 @@ router.post("/create_user", async (req, res) => {
             return res.status(400).json({ message: "पासवर्डहरू मिलेन।" });
         }
 
-        const existingUser = await query("SELECT id FROM users WHERE username = ?", [username]);
+        const existingUser = await query("SELECT id FROM users WHERE user_login_id = ?", [username]);
         if (existingUser.length > 0) {
             return res.status(400).json({ message: "यो प्रयोगकर्ता नाम पहिल्यै अवस्थित छ।" });
         }
 
         const hashedPassword = await hashPassword(password);
         const sql = `
-            INSERT INTO users (name, username, usertype, password, office_id, branch_id, is_active) 
+            INSERT INTO users (user_name, user_login_id, usertype, password, office_id, branch_id, is_active) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
         try {
@@ -63,15 +63,15 @@ router.post("/create_user", async (req, res) => {
 router.get('/get_users', async (req, res) => {
     const sql = `SELECT 
             u.*, 
-            ut.name_en AS en_usertype, 
-            o.name_np AS office_name, 
-            b.name_np AS branch_name
+            ut.usertype_en, 
+            o.office_name_with_letter_address, 
+            b.branch_np
         FROM 
             users u
         LEFT JOIN 
             usertypes ut ON u.usertype = ut.id
         LEFT JOIN 
-            office o ON u.office_id = o.id
+            offices o ON u.office_id = o.id
         LEFT JOIN 
             branch b ON u.branch_id = b.id
         ORDER BY 
@@ -87,11 +87,11 @@ router.get('/get_users', async (req, res) => {
 });
 
 // Update User Route
-router.put('/update_user/:userid', async (req, res) => {
+router.put('/update_user/:userid', verifyToken, async (req, res) => {
     const { userid } = req.params;
     const { name_np, username, usertype, password, repassword, office, branch, is_active } = req.body;
 
-    if (!name_np || !username || !password || !repassword || !office) {
+    if (!username || !name_np || !password || !repassword || !office) {
         return res.status(400).json({ message: "सबै फिल्डहरू आवश्यक छन्।" });
     }
 
@@ -99,14 +99,14 @@ router.put('/update_user/:userid', async (req, res) => {
         return res.status(400).json({ message: "पासवर्डहरू मिलेन।" });
     }
 
-    const existingUser = await query("SELECT id FROM users WHERE username = ?", [userid]);
+    const existingUser = await query("SELECT id FROM users WHERE user_login_id = ?", [userid]);
     if (existingUser.length === 0) {
         return res.status(400).json({ message: "यो प्रयोगकर्ता अवस्थित छैन।" });
     }
 
     const hashedPassword = await hashPassword(password);
     const sql = `
-        UPDATE users SET name=?, username=?, usertype=?, password=?, office_id=?, branch_id=?, is_active=? WHERE username=?`;
+        UPDATE users SET user_name=?, user_login_id=?, usertype=?, password=?, office_id=?, branch_id=?, is_active=? WHERE user_login_id=?`;
 
     try {
         const result = await query(sql, [name_np, username, usertype, hashedPassword, office, branch, is_active, userid]);

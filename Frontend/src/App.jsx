@@ -45,8 +45,11 @@ function App() {
 
             {/* Protected Routes */}
             <Route path='/' element={<CombinedNav />}>
+              <Route path="/admin">
+                <Route path='create_user' element={<CreateUser />} />
+              </Route>
               <Route path='/bandi'>
-                <Route path='bandi_details' element={<AllBandiTable/>}/>
+                <Route path='bandi_details' element={<AllBandiTable />} />
                 <Route path='create_bandi' element={<BandiPersonForm />} />
                 <Route path='create_bandi_family' element={<BandiFamilyForm />} />
                 <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
@@ -71,11 +74,11 @@ function App() {
               <Route path='users' element={<Users />} />
               <Route path='office' element={<Office />} />
             </Route> */}
-          {/* </Route> */}
-          {/* </Route> */}
-        </Routes>
-      </BrowserRouter>
-    </Suspense >
+            {/* </Route> */}
+            {/* </Route> */}
+          </Routes>
+        </BrowserRouter>
+      </Suspense >
     </AuthProvider >
   );
 }

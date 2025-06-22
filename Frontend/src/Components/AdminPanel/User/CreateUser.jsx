@@ -14,12 +14,13 @@ import ReusableTable from '../../ReuseableComponents/ReuseTable';
 import ReuseBranch from '../../ReuseableComponents/ReuseBranch';
 import { Navigate } from 'react-router-dom';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 
 const CreateUser = () => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
-    
+
     const token = localStorage.getItem('token');
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format('YYYY-MM-DD');
@@ -41,7 +42,7 @@ const CreateUser = () => {
             const { Status, Result, Error } = response.data;
             if (Status) {
                 const formatted = Result.map((opt) => ({
-                    label: opt.name_en, // Use Nepali name
+                    label: opt.usertype_en, // Use Nepali name
                     value: opt.id, // Use ID as value
                 }));
                 setUsertypes(formatted);
@@ -112,22 +113,33 @@ const CreateUser = () => {
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-    
+
             const { Status, Result, Error } = response.data;
-    
+
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
+                    console.log(Result)
                     const formatted = Result.map((opt, index) => ({
-                        sn: `${opt.id ?? `branch-${index}`}`,  // Unique key generation
+                        sn: `${opt.id ?? `branch-${index}`}`, // Unique key generation
                         id: index + 1,
-                        name: opt.name,
-                        username: opt.username,
-                        usertype: opt.en_usertype,
-                        office_id: opt.office,
-                        branch_id: opt.branch,
+                        user_name: opt.user_name,
+                        user_login_id: opt.user_login_id,
+                        usertype: opt.usertype,
+                        usertype_en: opt.usertype_en,
+                        office_id: opt.office_id,
+                        office_np: opt.office_name_with_letter_address,
+                        branch_id: opt.branch_id,
+                        branch_np: opt.branch_np,
                         is_active: opt.is_active ? 'छ' : 'छैन',
+                        lastpwchanged:
+                            (90 -
+                                Math.ceil(
+                                    Math.abs(new Date() - new Date(opt.last_password_changed)) /
+                                    (1000 * 60 * 60 * 24)
+                                )) + ' days',
                     }));
-                    
+
+
                     setFormattedOptions(formatted);
                 } else {
                     console.log('No records found.');
@@ -141,21 +153,22 @@ const CreateUser = () => {
             setLoading(false);
         }
     };
-    
+
     // Handle edit action
-    const handleEdit = (row) => {        
+    const handleEdit = (row) => {
         // console.log("Editing user:", row);
         // You can navigate to a different page or open a modal to edit the user        
-        setValue('name_np', row.name);
-        setValue('username', row.username);
-        const matchedUsertype = usertypes.find(ut => ut.label === row.usertype);
+        setValue('name_np', row.user_name);
+        setValue('username', row.user_login_id);
+        const matchedUsertype = usertypes.find(ut => ut.label === row.usertype_en);
+        setValue('usertype', matchedUsertype);
         if (matchedUsertype) {
-            setValue('usertype', matchedUsertype.value);
-            // console.log(matchedUsertype);
+            console.log(matchedUsertype);
         }
+        setValue('usertype', row.usertype)
         // setValue('usertype', row.usertype);
         setValue('office', row.office_id);
-        setValue('branch', row.branch_id);  
+        setValue('branch', row.branch_id);
         setValue('is_active', row.is_active === 'छ' ? '1' : '0');
         setEditing(true);
         // Example: You can pass the row data to a form for editing
@@ -220,16 +233,17 @@ const CreateUser = () => {
             is_active: "",
             usertype: "",
         });
-        
+
     }
     const columns = [
         { field: "id", headerName: "सि.नं." },
-        { field: "name", headerName: "नाम" },
-        { field: "username", headerName: "प्रयोगकर्ता नाम" },
-        { field: "usertype", headerName: "प्रकार" },
-        { field: "office_id", headerName: "कार्यालय" },
-        { field: "branch_id", headerName: "शाखा" },
+        { field: "user_name", headerName: "नाम" },
+        { field: "user_login_id", headerName: "प्रयोगकर्ता नाम" },
+        { field: "usertype_en", headerName: "प्रकार" },
+        { field: "office_np", headerName: "कार्यालय" },
+        { field: "branch_np", headerName: "शाखा" },
         { field: "is_active", headerName: "सक्रय" },
+        { field: "lastpwchanged", headerName: "पासवर्ड परिवर्तन गर्न" },
     ];
 
     useEffect(() => {
@@ -266,6 +280,11 @@ const CreateUser = () => {
                             <ReuseSelect
                                 name='usertype'
                                 label='प्रयोगकर्ताको प्रकार'
+                                //     options= [
+                                // {label: 'Admin', value: 'admin' },
+                                // {label: 'User', value: 'user' },
+                                // {label: 'Moderator', value: 'moderator' }
+                                // ];
                                 control={control}
                                 error={errors.usertype}
                                 required
@@ -273,7 +292,7 @@ const CreateUser = () => {
                             />
                         </Grid2>
                         <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
-                            <ReuseOffice
+                            <ReuseKaragarOffice
                                 name='office'
                                 label='कार्यालय'
                                 control={control}
@@ -288,7 +307,7 @@ const CreateUser = () => {
                                 control={control}
                                 error={errors.office}
                                 options={usertypes}
-                                required
+                                required={true}
                             />
                         </Grid2>
                         <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>

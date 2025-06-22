@@ -208,16 +208,26 @@ router.get('/get_accident_types/', async(req, res)=>{
     }
 });
 
-router.get('/get_accident_reasons/', async(req, res)=>{
-    const {reason_type} = req.params;
-    const sql = `SELECT * FROM accident_reasons ar 
-                ORDER BY reason_type`; 
+router.get('/get_usertypes/', async(req, res)=>{
+    // const {reason_type} = req.params;
+    const sql = `SELECT * FROM usertypes;`; 
     try{
-        const result = await query(sql, [reason_type]);
+        const result = await query(sql);
         return res.json({Status:true, Result:result})
     } catch(err){
         console.error("Database Query Error:", err);
         res.status(500).json({Status:false, Error:"Internal Server Error"})
+    }
+});
+
+router.get('/get_branch_name', async (req, res) => {
+    const sql = `SELECT * FROM branch`;
+    try {
+        const result = await query(sql);
+        return res.json({ Status: true, Result: result })
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        res.status(500).json({ Status: false, Error: "Internal Server Error" })
     }
 });
 

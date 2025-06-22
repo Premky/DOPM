@@ -17,7 +17,7 @@ const ReuseBranch = ({ name, label, required, control, error, selectedValue }) =
         const fetchBranches = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${BASE_URL}/admin/get_branch_name`, {
+                const response = await axios.get(`${BASE_URL}/public/get_branch_name`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -25,7 +25,7 @@ const ReuseBranch = ({ name, label, required, control, error, selectedValue }) =
 
                 if (Status && Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.name_np,
+                        label: opt.branch_np,
                         value: opt.id,
                     }));
                     setFormattedOptions(formatted);
