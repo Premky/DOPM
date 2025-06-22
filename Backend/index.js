@@ -18,8 +18,6 @@ import { publicRouter } from './routes/publicRoutes.js';
 import { employeRouter } from './routes/employeRoute.js';
 import { bandiRouter } from './routes/bandiRuoute.js';
 
-
-
 dotenv.config();
 
 const app = express();
@@ -27,62 +25,23 @@ const port = process.env.PORT || 3003;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware
-app.use(helmet());
-app.use(express.json());
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Session setup
-// app.use(session({
-//     secret: process.env.JWT_SECRET || 'jwt_prem_ko_secret_key',
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//         httpOnly: true,
-//         secure: process.env.NODE_ENV === 'production', 
-//         maxAge: 24 * 60 * 60 * 1000, 
-//         httpOnly: true,
-//         sameSite: 'None',
-//     }
-// }));
-
-app.use(session({
-    secret: process.env.JWT_SECRET || 'jwt_prem_ko_secret_key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: true, // only over HTTPS
-      sameSite: 'none', // allow cross-site cookies
-      maxAge: 24 * 60 * 60 * 1000
-    }
-  }));
-
-  
-// Logging
-if (process.env.NODE_ENV !== 'production') {
-    app.use(morgan('dev'));
-} else {
-    app.use(morgan('tiny'));
-}
-
-app.use(compression());
-
-// CORS setup
+// ------------------- ✅ CORS FIRST -------------------
 const hardOrigins = [
-    'https://10.5.60.151',
     'http://10.5.60.151',
-    'https://10.5.60.151:5173',
     'http://10.5.60.151:5173',
+    'https://10.5.60.151',
+    'https://10.5.60.151:5173',
     'http://localhost:5173',
     'http://192.168.18.24:5173',
     'https://kptpo.onrender.com'
 ];
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : hardOrigins;
+
 app.use(cors({
     origin: (origin, callback) => {
-        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || hardOrigins;
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -93,34 +52,63 @@ app.use(cors({
     credentials: true,
 }));
 
-// Rate Limiting
+// ✅ Preflight support for CORS
+app.options('*', cors());
+
+// ------------------- ✅ Middleware -------------------
+app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// ------------------- ✅ Session AFTER CORS -------------------
+app.use(session({
+    secret: process.env.JWT_SECRET || 'jwt_prem_ko_secret_key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // ✅ Secure only in production
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ safer fallback
+        maxAge: 24 * 60 * 60 * 1000
+    }
+}));
+
+// ------------------- ✅ Logging & Compression -------------------
+if (process.env.NODE_ENV !== 'production') {
+    app.use(morgan('dev'));
+} else {
+    app.use(morgan('tiny'));
+}
+app.use(compression());
+
+// ------------------- ✅ Rate Limiting (Optional) -------------------
 const limiter = rateLimit({
-    windowMs: 10 * 60 * 1000, 
+    windowMs: 10 * 60 * 1000,
     max: 100,
     message: 'Too many requests from this IP, please try again later.'
 });
 // app.use(limiter);
 
-// Static files
+// ------------------- ✅ Static Files -------------------
 app.use(express.static('Public'));
 app.use('/Uploads', express.static(path.join(__dirname, 'Public', 'Uploads')));
 
-// Routes
+// ------------------- ✅ Routes -------------------
 app.use('/auth', authRouter);
 app.use('/public', publicRouter);
 app.use('/emp', employeRouter);
 app.use('/bandi', bandiRouter);
 
-
-// Error handler
+// ------------------- ✅ Error Handler -------------------
 app.use(errorHandler);
 
-// Server start
+// ------------------- ✅ Server Start -------------------
 app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);
 });
 
-// Graceful shutdown
+// ------------------- ✅ Graceful Shutdown -------------------
 process.on('SIGINT', () => {
     console.log('👋 Server shutting down...');
     process.exit();
