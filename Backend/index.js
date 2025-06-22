@@ -29,8 +29,10 @@ const __dirname = path.dirname(__filename);
 const hardOrigins = [
     'http://10.5.60.151',
     'http://10.5.60.151:5173',
+    'http://10.5.60.151:5174',
     'https://10.5.60.151',
     'https://10.5.60.151:5173',
+    'https://10.5.60.151:5174',
     'http://localhost:5173',
     'http://192.168.18.24:5173',
     'https://kptpo.onrender.com'
