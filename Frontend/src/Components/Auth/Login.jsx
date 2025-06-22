@@ -54,7 +54,7 @@ const Login = () => {
     return (
         <>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '5%' }}>
-                <img src='/np_police_logo.png' alt='Nepal Police Logo' height='150px' />
+                <img src='/nepal_gov_logo.png' alt='Nepal Police Logo' height='120px' />
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="loginPage">
 
@@ -65,23 +65,23 @@ const Login = () => {
                         </FormControl>
                         <br />
                         <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
-                        <InputLabel htmlFor="password">Password</InputLabel>
-                        <OutlinedInput
-                            id="password"
-                            label="Password"
-                            type={showPassword ? 'text' : 'password'}
-                            onChange={(e) => setValues({ ...values, password: e.target.value })}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton onClick={handleClickShowPassword} edge="end">
-                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
-                        />
-                    </FormControl>
-                    <Button variant="contained" type="submit" fullWidth>Login</Button>
-                    <Toaster />
+                            <InputLabel htmlFor="password">Password</InputLabel>
+                            <OutlinedInput
+                                id="password"
+                                label="Password"
+                                type={showPassword ? 'text' : 'password'}
+                                onChange={(e) => setValues({ ...values, password: e.target.value })}
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={handleClickShowPassword} edge="end">
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                }
+                            /> <br />
+                            <Button variant="contained" type="submit" fullWidth>Login</Button>
+                        </FormControl>
+                        <Toaster />
                     </form>
                 </div>
             </Box>

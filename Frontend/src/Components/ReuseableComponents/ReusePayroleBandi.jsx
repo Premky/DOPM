@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { InputLabel, TextField, Autocomplete } from '@mui/material';
@@ -6,7 +8,7 @@ import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 import { useAuth } from '../../Context/AuthContext';
 
-const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => {
+const ReusePayroleBandi = ({ name, label, required, control, error, defaultvalue }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -18,18 +20,20 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     const [loading, setLoading] = useState(true);
 
     // Fetch office data
-    const fetchOffices = async () => {
+    // Fetch district data
+    const fetchPayroleBandi = async () => {
         try {
             let url;
             if (authState.office_id) {
-                url = `${BASE_URL}/bandi/get_bandi_name_for_select/${authState.office_id}`;
+                url = `${BASE_URL}/bandi/get_accepted_payroles/${authState.office_id}`;
             } else {
-                url = `${BASE_URL}/bandi/get_bandi_name_for_select`;
             }
+            url = `${BASE_URL}/bandi/get_accepted_payroles`;
 
-            const response = axios.get(`${BASE_URL}/bandi/get_accepted_payrole`,{}, {
+            const response = await axios.get(url, {
                 withCredentials: true
-            });
+            },
+            );
 
             const { Status, Result, Error } = response.data;
 
@@ -58,9 +62,8 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
             setLoading(false);
         }
     }
-
     useEffect(() => {
-        fetchOffices();
+        fetchPayroleBandi();
     }, []);
     return (
         <>
@@ -127,4 +130,4 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
     );
 };
 
-export default ReuseBandi;
+export default ReusePayroleBandi;

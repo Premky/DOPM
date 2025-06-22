@@ -32,7 +32,9 @@ const CombinedNav = ({ user }) => {
       defaultPath: '/payrole',
       submenu: [
         { name: 'प्यारोल थप', path: '/payrole/create_payrole' },
-        { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' }
+        { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
+        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log'},
+        { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table'}
       ]
     }
   ];

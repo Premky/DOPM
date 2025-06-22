@@ -10,6 +10,7 @@ import { useBaseURL } from '../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
+import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 const PayroleForm = () => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
@@ -30,8 +31,22 @@ const PayroleForm = () => {
   const bandi_id = watch('bandi_id');
   // End of Watch Variables
 
+  const [bandi, setBandi] = useState(null)
+  const fetchBandi = async () => {
+    try {
+      const bandies = await axios.get(`${BASE_URL}/bandi/get_bandi/${bandi_id}`, {
+        withCredentials: true
+      });
+      setBandi(bandies.data.Result[0])
+      setValue('mudda_id', bandi.mudda_id||'')
+      console.log(bandi)
+      // console.log(bandies.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   useEffect(() => {
-    console.log(bandi_id)
+    fetchBandi();
   }, [bandi_id])
 
   const onFormSubmit = async (data) => {
@@ -111,6 +126,15 @@ const PayroleForm = () => {
               />
             </Grid2>
 
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }} hidden>
+              <ReuseMudda
+                name='mudda_id'
+                label='मुददा'
+                required={true}
+                control={control}
+                error={errors.mudda_id}
+              />
+            </Grid2>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseBandi
                 name='bandi_id'
@@ -118,9 +142,18 @@ const PayroleForm = () => {
                 required={true}
                 control={control}
                 error={errors.bandi_id}
-                current_office = {authState.office_np}
+                current_office={authState.office_np}
               />
             </Grid2>
+          </Grid2>
+          <Grid2 container spacing={2}>
+            {bandi?.payrole_id?
+              <>
+                <Grid2 sx={{color:'red'}}>
+                यो कैदीको प्यारोल अगाडी नै आवेदन गरी सकेको
+                </Grid2>
+              </> : <></>
+            }
           </Grid2>
           <Grid2 container spacing={2}>
             {bandi_id ?
@@ -153,14 +186,16 @@ const PayroleForm = () => {
                 name='payrole_remarks'
                 label="कैफियत"
                 // defaultValue={band_rand_id}
-                required={true}
+                required={false}
                 control={control}
                 error={errors.payrole_remarks} />
             </Grid2>
           </Grid2>
           <Grid2 container spacing={2}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-              <Button variant="contained" type='save'>Submit</Button>
+              <Button variant="contained" type='save'
+                disabled={bandi?.payrole_id || ''} // Disable if payrole_id is falsy
+              >Submit</Button>
             </Grid2>
           </Grid2>
         </form>

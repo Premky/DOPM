@@ -112,7 +112,7 @@ const BandiIDTable = ({ bandi_id }) => {
             preConfirm: () => {
                 return {
                     govt_id_name_np: document.getElementById('swal-relation').value,
-                    govt_id_name_np: document.getElementById('swal-relation').value,
+                    // govt_id_name_np: document.getElementById('swal-relation').value,
                     card_no: document.getElementById('swal-name').value,
                     card_issue_district: document.getElementById('swal-address').value,
                     card_issue_date: document.getElementById('swal-contact').value

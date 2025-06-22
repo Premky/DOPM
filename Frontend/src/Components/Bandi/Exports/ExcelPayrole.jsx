@@ -79,8 +79,8 @@ const exportToExcel = async (filteredKaidi, fetchedMuddas) => {
                 mIndex === 0 ? data.thuna_date_bs : '',
                 mIndex === 0 ? `${kaidDuration.formattedDuration}` : '',
                 mIndex === 0 ? data.release_date_bs : '',
-                mIndex === 0 ? `${bhuktanDuration.formattedDuration}\n${bhuktanDuration.percentage}` : '',
-                mIndex === 0 ? `${bakiDuration.formattedDuration}\n${bakiDuration.percentage}` : '',
+                mIndex === 0 ? `${bhuktanDuration.formattedDuration}\n${bhuktanDuration.percentage}%` : '',
+                mIndex === 0 ? `${bakiDuration.formattedDuration}\n${bakiDuration.percentage}%` : '',
                 mIndex === 0
                     ? data.fine_summary : '',
                 mIndex === 0 ? data.other_details || '' : '',

@@ -249,7 +249,7 @@ const getBandiQuery1 = `
         bmd.bandi_id,bmd.mudda_id, bmd.mudda_no, bmd.vadi, bmd.mudda_condition,bmd.mudda_phesala_antim_office_date,bmd.is_last_mudda, bmd.is_main_mudda , 
         m.mudda_name,
         nc.country_name_np, ns.state_name_np, nd.district_name_np, nci.city_name_np, ba.wardno, ba.bidesh_nagarik_address_details,
-        p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.current_office_id, p.id AS payrole_id, p.dopmremark,
+        p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.created_office, p.id AS payrole_id, pr.dopmremark,
         p.pyarole_rakhan_upayukat, p.payrole_no_id, p.is_checked,
         bpdo.office_name_with_letter_address AS punarabedan_office, bpdnd.district_name_np AS punarabedan_district, bpd.punarabedan_office_ch_no, punarabedan_office_date,
         bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days, bkd.thuna_date_bs, bkd.release_date_bs,
@@ -287,7 +287,9 @@ const getBandiQuery1 = `
     LEFT JOIN offices bfdo ON bfd.deposit_office=bfdo.id
     LEFT JOIN np_district bfdnd ON bfd.deposit_district =bfdnd.did
     LEFT JOIN payroles p ON b.id=p.bandi_id
-    LEFT JOIN offices po ON p.current_office_id=po.id
+    LEFT JOIN offices po ON p.created_office=po.id
+    LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
+    LEFT JOIN payrole_decisions pd ON p.id=pd.pd.payrole_id
     WHERE bmd.is_main_mudda=1
 // `;
 
@@ -340,11 +342,12 @@ const getBandiQuery = `
     p.remark,
     p.status AS payrole_status,
     p.user_id,
-    p.current_office_id,
+    p.created_office,
     p.payrole_no_id,
     p.payrole_entery_date,
-    p.dopmremark,
-    p.pyarole_rakhan_upayukat,
+    pr.dopmremark,
+    pr.pyarole_rakhan_upayukat,
+    pr.is_checked,
     po.office_name_with_letter_address AS current_payrole_office,
 
     -- Fine Summary
@@ -367,7 +370,9 @@ LEFT JOIN bandi_punarabedan_details bpd ON b.id = bpd.bandi_id
 LEFT JOIN offices BPDO ON bpd.punarabedan_office_id = bpdo.id
 
 LEFT JOIN payroles p ON b.id = p.bandi_id
-LEFT JOIN offices po ON p.current_office_id = po.id
+LEFT JOIN offices po ON p.created_office = po.id
+LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
+LEFT JOIN payrole_decisions pd ON p.id=pd.payrole_id
 
 -- Fine Summary Subquery
 LEFT JOIN (
@@ -416,14 +421,32 @@ router.get('/get_bandi/:id', async (req, res) => {
     });
 });
 
-router.get('/get_bandi_name_for_select', async (req, res) => {
-    // const active_office = req.user.office_id;
+
+
+router.get('/get_bandi_name_for_select', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
     // console.log(active_office)
     // const user_id = req.user.id;
-    const sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id, m.mudda_name from bandi_person bp
-                LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
-                LEFT JOIN muddas m ON bmd.mudda_id=m.id
-                WHERE bmd.is_main_mudda=1 `;
+    let sql = ''
+    if (active_office <= 2) {
+        sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id,
+                        m.mudda_name, 
+                        p.id AS payrole_id 
+                    FROM bandi_person bp
+                        LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id 
+                        LEFT JOIN muddas m ON bmd.mudda_id=m.id  
+                        LEFT JOIN payroles p ON bp.id=p.bandi_id
+                     WHERE bmd.is_main_mudda=1`;
+    } else {
+        sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id,
+                        p.id AS payrole_id, 
+                        m.mudda_name 
+                    FROM bandi_person bp
+                        LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
+                        LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                        JOIN payroles p ON bp.id=bandi_id
+                    WHERE bmd.is_main_mudda=1 WHERE bp.current_office_id=${active_office}`;
+    }
     try {
         const result = await queryAsync(sql); // Use promise-wrapped query
 
@@ -435,7 +458,7 @@ router.get('/get_bandi_name_for_select', async (req, res) => {
         const age = await calculateAge(bandi.dob); // Assuming dob is BS like '2080-01-10'
         bandi.age = age;
         // console.log(age)
-        return res.json({ Status: true, Result: bandi });
+        return res.json({ Status: true, Result: result });
     } catch (err) {
         console.error(err);
         return res.json({ Status: false, Error: "Query Error" });
@@ -755,7 +778,7 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const {
-        bandi_id, payrole_no, payrole_count_date, payrole_entry_date, other_details,
+        bandi_id, payrole_no, mudda_id, payrole_count_date, payrole_entry_date, other_details,
         payrole_reason, payrole_remarks, payrole_niranay_no, payrole_decision_date,
         payrole_granted_letter_no, payrole_granted_letter_date, pyarole_rakhan_upayukat,
         dopmremark
@@ -783,6 +806,7 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
         } else {
             values = [
                 payrole_no_bandi_id,
+                mudda_id,
                 payrole_count_date,
                 payrole_entry_date,
                 payrole_reason,
@@ -792,13 +816,15 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
                 payrole_no,
                 bandi_id,
                 user_id,
+                user_id,
+                active_office,
                 active_office
             ];
             sql = `
                 INSERT INTO payroles(
-        payrole_no_bandi_id, ganana_date, payrole_entery_date, payrole_reason,
-        other_details, remark, status, payrole_no_id, bandi_id, user_id, current_office_id
-    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        payrole_no_bandi_id,payrole_mudda_id, ganana_date, payrole_entery_date, payrole_reason,
+        other_details, remark, status, payrole_no_id, bandi_id, user_id, created_by, created_office
+    ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
         `;
 
             const result = await queryAsync(sql, values);
@@ -845,7 +871,7 @@ SELECT * FROM(
 SELECT * FROM(
     ${getBandiQuery}
 ) AS sub
-            WHERE sub.payrole_no_id IS NOT NULL AND sub.current_office_id = ?
+            WHERE sub.payrole_no_id IS NOT NULL AND sub.created_office = ?
 
     `;
     }
@@ -862,31 +888,217 @@ SELECT * FROM(
     }
 });
 
+router.get('/get_accepted_payroles', verifyToken, async (req, res) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
+
+    try {
+        const baseQuery = `
+      SELECT 
+        p.*, 
+        bp.bandi_name, 
+        m.mudda_name
+      FROM payroles p
+      LEFT JOIN bandi_person bp ON p.bandi_id = bp.id
+      LEFT JOIN muddas m ON p.payrole_mudda_id = m.id
+      WHERE p.status = 4
+    `;
+
+        let finalQuery = baseQuery;
+        let queryParams = [];
+
+        // Restrict results for lower-level offices (office_id >= 2)
+        if (user_office_id > 2) {
+            finalQuery += ` AND (p.created_office = ? OR p.updated_office = ?)`;
+            queryParams = [user_office_id, user_office_id];
+        }
+
+        // console.log(finalQuery)
+
+        const result = await queryAsync(finalQuery, queryParams);
+
+        if (!result.length) {
+            return res.json({ Status: false, Error: 'No payrole records found' });
+        }
+
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error('Error fetching accepted payroles:', err);
+        return res.status(500).json({ Status: false, Error: 'Internal server error' });
+    }
+});
 
 router.put('/update_payrole/:id', verifyToken, async (req, res) => {
-    const id = req.params.id;
-    // console.log('payrole_id', id)
-    const user_office_id = req.user.office_id
-    const user_id = req.user.id
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
     const {
-        dopmremark, pyarole_rakhan_upayukat, payrole_id
+        dopmremark,
+        pyarole_rakhan_upayukat,
+        payrole_id,
+        is_checked,
+        payrole_niranay_no,
+        payrole_decision_date,
+        payrole_granted_letter_no,
+        payrole_granted_letter_date,
+        result,
+        arre, thuna_date_bs
     } = req.body;
-    // console.log('dopmremark',status)
-    console.log(req.body)
-    const updated_by = 1;
-    const sql = `UPDATE payroles SET dopmremark =?, pyarole_rakhan_upayukat =? WHERE id =?; `;
-    const values = [
-        dopmremark, pyarole_rakhan_upayukat, id
-    ];
+
+
+
     try {
-        const result = await query(sql, values);
-        // console.log(result)
-        return res.json({ Status: true, Result: result });
+        let sql = '';
+        let values = [];
+
+        const existingReviews = await query(`SELECT * FROM payrole_reviews WHERE payrole_id = ?`, [payrole_id]);
+
+        if ((user_office_id === 1 || user_office_id === 2)) {
+            if (pyarole_rakhan_upayukat) {
+                if (existingReviews.length > 0) {
+                    sql = `
+                UPDATE payrole_reviews 
+                SET pyarole_rakhan_upayukat = ?, dopmremark = ?, reviewed_by = ?, reviewed_office_id = ?
+                WHERE payrole_id = ?`;
+                    values = [pyarole_rakhan_upayukat, dopmremark, user_id, user_office_id, payrole_id];
+                } else {
+                    sql = `
+                INSERT INTO payrole_reviews (payrole_id, pyarole_rakhan_upayukat, dopmremark, reviewed_by, reviewed_office_id)
+                VALUES (?, ?, ?, ?, ?)`;
+                    values = [payrole_id, pyarole_rakhan_upayukat, dopmremark, user_id, user_office_id];
+                }
+            } else if (is_checked) {
+                if (existingReviews.length > 0) {
+                    sql = `
+                UPDATE payrole_reviews SET is_checked = ? WHERE payrole_id = ?`;
+                    values = [is_checked, payrole_id];
+                } else {
+                    sql = `
+                INSERT INTO payrole_reviews (payrole_id, is_checked, reviewed_by, reviewed_office_id)
+                VALUES (?, ?, ?, ?)`;
+                    values = [payrole_id, is_checked, user_id, user_office_id];
+                }
+            }
+        } else {
+            if (payrole_decision_date || payrole_granted_letter_no) {
+                if (existingReviews.length > 0) {
+                    console.log('updated')
+                    sql = `
+                UPDATE payrole_decisions 
+                SET payrole_niranay_no = ?, payrole_decision_date = ?, payrole_granted_letter_no = ?, payrole_granted_letter_date = ?, result=?
+                WHERE payrole_id = ?`;
+                    values = [payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no, payrole_granted_letter_date, result, payrole_id];
+                } else {
+                    console.log('inserted')
+                    sql = `
+                INSERT INTO payrole_decisions (payrole_id, mudda_id, arrest_date, release_date, payrole_nos, 
+                payrole_decision_date, payrole_granted_court, payrole_granted_aadesh_date, 
+                payrole_granted_letter_no, payrole_granted_letter_date, payrole_result, payrole_decision_remark,
+                kaid_bhuktan_duration, kaid_bhuktan_percentage, baki_kaid_duration, baki_kaid_percent, 
+                decision_updated_by, decision_updated_office)
+                VALUES (?, ?, ?, ?, ?, ?)`;
+                    values = [payrole_id, mudda_id, arrest_date, release_date, payrole_nos,
+                        payrole_decision_date, payrole_granted_court, payrole_granted_aadesh_date,
+                        payrole_granted_letter_no, payrole_granted_letter_date, payrole_result, payrole_decision_remark,
+                        kaid_bhuktan_duration, kaid_bhuktan_percentage, baki_kaid_duration, baki_kaid_percent,
+                        user_id, user_office_id];
+                }
+            }
+        }
+
+
+        const queryResult = await query(sql, values);
+        return res.json({ Status: true, Result: queryResult });
+
     } catch (err) {
         console.error('Database error', err);
         return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
     }
-})
+});
+
+router.put('/update_payrole_decision/:id', verifyToken, async (req, res) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
+    const {
+        payrole_id,
+        mudda_id,
+        payrole_niranay_no,
+        payrole_decision_date,
+        payrole_granted_letter_no,
+        payrole_granted_letter_date,
+        result,
+        release_date_bs, thuna_date_bs,
+        hajir_current_date, hajir_status, hajir_next_date, hajir_office
+    } = req.body;
+
+    console.log('result', req.body)
+
+    try {
+        let sql = '';
+        let values = [];
+
+        const existingReviews = await query(`SELECT * FROM payrole_decisions WHERE payrole_id = ?`, [payrole_id]);
+
+        if ((user_office_id === 1 || user_office_id === 2)) {
+            console.log('This is for admin office only')
+
+        } else {
+            if (payrole_decision_date || payrole_granted_letter_no) {
+                if (existingReviews.length > 0) {
+                    console.log('updated')
+                    sql = `
+                UPDATE payrole_decisions 
+                SET payrole_niranay_no = ?,  payrole_decision_date = ?, payrole_granted_letter_no = ?, payrole_granted_letter_date = ?, result=?
+                WHERE payrole_id = ?`;
+                    values = [payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no, payrole_granted_letter_date, result, payrole_id];
+                } else {
+                    console.log('inserted')
+                    sql = `
+                INSERT INTO payrole_decisions (payrole_id, payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no, 
+                payrole_granted_letter_date, result, decided_by, decision_update_office )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+                    values = [payrole_id, payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no,
+                        payrole_granted_letter_date, result, user_id, user_office_id];
+                }
+                const logSql = `INSERT INTO payrole_logs(payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office)
+                    VALUES=?`
+                const logValue = [payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office]
+            }
+        }
+        try {
+            await beginTransactionAsync();
+            //1. Insert 
+            const firstQuery = await queryAsync(sql, values);
+
+            //2. Insert/Update Status
+            const statusSql = `UPDATE payroles set status=?, updated_by=?, updated_office=?`
+            const secondQuery = await queryAsync(statusSql, [result, user_id, user_office_id])
+
+            // 3. Log Query
+            if (hajir_current_date) {
+                const thirdQuery = await queryAsync(sql, values);
+            }
+            await commitAsync();
+            return res.json({
+                Status: true,
+                message: "प्यारोल विवरण सफलतापूर्वक सुरक्षित गरियो।"
+            });
+        } catch (error) {
+            await rollbackAsync();
+            console.error("Transaction failed:", error);
+            return res.status(500).json({
+                Status: false,
+                Error: error.message,
+                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            });
+        }
+
+    } catch (err) {
+        console.error('Database error', err);
+        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+    }
+});
+
+
 router.put('/update_is_payrole_checked/:id', verifyToken, async (req, res) => {
     const id = req.params.id;
     console.log('payrole_id', id)
@@ -911,30 +1123,185 @@ router.put('/update_is_payrole_checked/:id', verifyToken, async (req, res) => {
         return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
     }
 })
-
-
-
-router.get('/kasur_data', verifyToken, async (req, res) => {
-    const active_office = req.user.office;
-    // console.log('kasur_office', active_office)
-    if (!active_office) {
-        return res.json({ Status: false, Error: "Office ID is missing in token. Please relogin" });
+router.put('/update_payrole_status/:id', verifyToken, async (req, res) => {
+    const id = req.params.id;
+    console.log('payrole_id', id)
+    const user_office_id = req.user.office_id
+    const user_id = req.user.id
+    const { value } = req.body;
+    console.log('dopmremark', value)
+    console.log(req.body)
+    const updated_by = 1;
+    const sql = `UPDATE payroles SET status = ? WHERE id =?; `;
+    const values = [value, id];
+    try {
+        const result = await query(sql, values);
+        // console.log(result)
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error('Database error', err);
+        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
     }
-    const sql = `SELECT dk.*, tp.name_np AS kasur_np, tp.name_en AS kasur_en 
-            FROM tango_daily_kasur dk
-            LEFT JOIN tango_punishment_list tp 
-            ON dk.kasur_id = tp.id
-            WHERE office_id =?
-    ORDER BY dk.id desc
-            `;
-    con.query(sql, [active_office], (err, result) => {
-        if (err) {
-            console.error('Error fetching kasur data:', err);
-            return res.json({ Status: false, Error: "Query Error" })
-        }
-        return res.json({ Status: true, Result: result })
-    })
 })
+
+router.put('/update_payrole_logs/:id', verifyToken, async (req, res) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
+    const {
+        payrol_id,
+        hajir_current_date,
+        hajir_status,
+        hajir_next_date,
+        hajir_office,
+        no_hajir_reason,
+        no_hajir_mudda,
+        no_hajir_mudda_district,
+        no_hajir_reason_office_type,
+        no_hajir_reason_office_id,
+        no_hajir_reason_office_name,
+        no_hajir_is_pratibedan,
+        no_hajir_is_aadesh,
+        hajir_remarks
+    } = req.body;
+
+
+
+    try {
+        let sql = '';
+        let values = [];
+
+        if (hajir_status == '2') {
+            console.log("अनुपस्थित")
+        }
+
+
+        const queryResult = await query(sql, values);
+        return res.json({ Status: true, Result: queryResult });
+
+    } catch (err) {
+        console.error('Database error', err);
+        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+    }
+});
+
+router.post('/create_payrole_maskebari_count', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
+    try {
+        // Add active_user and active_office to the request body
+        req.body.created_by = active_user;
+        req.body.created_office = active_office;
+        const keys = Object.keys(req.body);
+        const values = Object.values(req.body);
+        const placeholders = keys.map(() => '?').join(', ');
+        const sql = `INSERT INTO payrole_maskebari (${keys.join(', ')}) VALUES (${placeholders})`;
+        const result = await query(sql, values);
+        console.log(result)
+        res.status(201).json({ id: result.insertId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+const getMaskebariQuery = `SELECT 
+                        year_bs, 
+                        month_bs,
+                        oo.office_name_with_letter_address AS office_name,
+                        os.office_name_with_letter_address AS created_office_name,
+                        MAX(pm.id) AS id, -- or MIN(id), or NULL if not needed
+                        MAX(pm.office_id) AS office_id, -- or NULL
+                        SUM(pm.total_decision_count_male) AS total_decision_count_male,
+                        SUM(pm.total_decision_count_female) AS total_decision_count_female,
+                        SUM(pm.total_decision_count_other) AS total_decision_count_other,
+                        SUM(pm.total_decision_count) AS total_decision_count,
+                        SUM(pm.total_payrole_count_male) AS total_payrole_count_male,
+                        SUM(pm.total_payrole_count_female) AS total_payrole_count_female,
+                        SUM(pm.total_payrole_count_other) AS total_payrole_count_other,
+                        SUM(pm.total_payrole_count) AS total_payrole_count,
+                        SUM(pm.total_no_from_court_count_male) AS total_no_from_court_count_male,
+                        SUM(pm.total_no_from_court_count_female) AS total_no_from_court_count_female,
+                        SUM(pm.total_no_from_court_count_other) AS total_no_from_court_count_other,
+                        SUM(pm.total_no_from_court_count) AS total_no_from_court_count,
+                        SUM(pm.total_bhuktan_count_male) AS total_bhuktan_count_male,
+                        SUM(pm.total_bhuktan_count_female) AS total_bhuktan_count_female,
+                        SUM(pm.total_bhuktan_count_other) AS total_bhuktan_count_other,
+                        SUM(pm.total_bhuktan_count) AS total_bhuktan_count,
+                        SUM(pm.total_current_payrole_count_male) AS total_current_payrole_count_male,
+                        SUM(pm.total_current_payrole_count_female) AS total_current_payrole_count_female,
+                        SUM(pm.total_current_payrole_count_other) AS total_current_payrole_count_other,
+                        SUM(pm.total_current_payrole_count) AS total_current_payrole_count,
+                        SUM(pm.total_in_district_wise_count_male) AS total_in_district_wise_count_male,
+                        SUM(pm.total_in_district_wise_count_female) AS total_in_district_wise_count_female,
+                        SUM(pm.total_in_district_wise_count_other) AS total_in_district_wise_count_other,
+                        SUM(pm.total_in_district_wise_count) AS total_in_district_wise_count,
+                        SUM(pm.total_out_district_wise_count_male) AS total_out_district_wise_count_male,
+                        SUM(pm.total_out_district_wise_count_female) AS total_out_district_wise_count_female,
+                        SUM(pm.total_out_district_wise_count_other) AS total_out_district_wise_count_other,
+                        SUM(pm.total_out_district_wise_count) AS total_out_district_wise_count,
+                        SUM(pm.total_no_payrole_count_male) AS total_no_payrole_count_male,
+                        SUM(pm.total_no_payrole_count_female) AS total_no_payrole_count_female,
+                        SUM(pm.total_no_payrole_count_other) AS total_no_payrole_count_other,
+                        SUM(pm.total_no_payrole_count) AS total_no_payrole_count,
+                        SUM(pm.total_payrole_regulation_female) AS total_payrole_regulation_female,
+                        SUM(pm.total_payrole_regulation_male) AS total_payrole_regulation_male,
+                        SUM(pm.total_payrole_regulation_other) AS total_payrole_regulation_other,
+                        SUM(pm.total_payrole_regulation) AS total_payrole_regulation,
+                        GROUP_CONCAT(remarks SEPARATOR '; ') AS remarks
+                    FROM payrole_maskebari pm
+                    LEFT JOIN offices oo ON pm.office_id = oo.id
+                    LEFT JOIN offices os ON pm.created_office = os.id
+`
+
+router.get('/payrole_maskebari_count', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    let sql = '';
+    let params = '';
+    try {
+        if (active_office <= 2) {
+            sql = `${getMaskebariQuery}                     
+                    GROUP BY year_bs, month_bs, office_id
+                    ORDER BY year_bs DESC, month_bs;`
+            params = []
+        } else {
+            console.log('clientRoute')
+            sql = `${getMaskebariQuery} WHERE created_office=? 
+                    GROUP BY year_bs, month_bs, office_id
+                    ORDER BY year_bs DESC, month_bs; `
+            params = [active_office]
+        }
+        const result = await query(sql, params);
+        res.status(200).json({ Status: true, Result: result });
+    } catch (err) {
+        console.error('GET Error:', err);
+        res.status(500).json({ Status: false, error: err.message });
+    }
+});
+
+router.put('/create_payrole_maskebari_count/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
+
+    try {
+        // Add updated_by and updated_office to the request body
+        req.body.updated_by = active_user;
+        // req.body.updated_office = active_office;
+
+        const keys = Object.keys(req.body);
+        const values = Object.values(req.body);
+
+        const setClause = keys.map(key => `${key} = ?`).join(', ');
+        const sql = `UPDATE payrole_maskebari SET ${setClause} WHERE id = ?`;
+
+        values.push(id); // Add ID at the end for WHERE clause
+
+        const result = await query(sql, values);
+        res.status(200).json({ message: 'Updated successfully', affectedRows: result.affectedRows });
+    } catch (err) {
+        console.error('Update Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 router.delete('/delete_kasurs/:id', async (req, res) => {
     const { id } = req.params;

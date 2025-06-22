@@ -32,6 +32,8 @@ import PayroleTable from './Components/Bandi/Tables/PayroleTable';
 import CombinedNav from './Components/Nav/CombinedNav';
 import BandiTable from './Components/Bandi/Tables/BandiTable';
 import AllBandiTable from './Components/Bandi/Tables/AllBandiTable';
+import PayroleMakebari from './Components/Bandi/Tables/PayroleMakebari';
+import PayroleLogForm from './Components/Bandi/Forms/PayroleLogForm';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -52,6 +54,8 @@ function App() {
               <Route path='/payrole'>
                 <Route path="create_payrole" element={<PayroleForm />} />
                 <Route path='payrole_table' element={<PayroleTable />} />
+                <Route path='maskebari_table' element={<PayroleMakebari />} />
+                <Route path='payrole_log' element={<PayroleLogForm />} />
               </Route>
             </Route>
 

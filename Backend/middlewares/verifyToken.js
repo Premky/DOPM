@@ -5,8 +5,10 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const headertoken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(' ')[1] : null;
 
+    
     const token = cookietoken || headertoken;
 
+    // console.log(token)
     if (!token) {
         return res.status(401).json({ message: "Unauthorized: No token provided" });
     }
@@ -30,6 +32,7 @@ const verifyToken = (req, res, next) => {
 
         const { exp, iat, ...userData } = decoded;
         // console.log("User Data:", userData);
+
         const refreshedToken = jwt.sign(userData, process.env.JWT_SECRET, {
             expiresIn: '1d',
         });
