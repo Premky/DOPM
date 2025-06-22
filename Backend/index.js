@@ -71,10 +71,10 @@ app.use(compression());
 
 // CORS setup
 const hardOrigins = [
-    'http://10.5.60.151',
-    'http://10.5.60.151:5173',
     'https://10.5.60.151',
+    'http://10.5.60.151',
     'https://10.5.60.151:5173',
+    'http://10.5.60.151:5173',
     'http://localhost:5173',
     'http://192.168.18.24:5173',
     'https://kptpo.onrender.com'
