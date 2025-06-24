@@ -276,57 +276,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 // bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
 // bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
 
-//Get Bandi Query:
-const getBandiQuery1 = `
-    SELECT b.id, b.bandi_type, b.nationality, b.bandi_name, b.gender, b.dob, b.dob_ad, b.age,b.married_status,b.photo_path, b.bandi_education, 
-        b.height, b.weight,b.bandi_huliya, b.remarks, b.status AS bandi_status, b.is_active, b.bandi_activity_id,
-        TIMESTAMPDIFF(YEAR, b.dob_ad, CURDATE()) AS current_age,  
-        bmd.bandi_id,bmd.mudda_id, bmd.mudda_no, bmd.vadi, bmd.mudda_condition,bmd.mudda_phesala_antim_office_date,bmd.is_last_mudda, bmd.is_main_mudda , 
-        m.mudda_name,
-        nc.country_name_np, ns.state_name_np, nd.district_name_np, nci.city_name_np, ba.wardno, ba.bidesh_nagarik_address_details,
-        p.payrole_reason, p.other_details, p.remark, p.status, p.user_id, p.created_office, p.id AS payrole_id, pr.dopmremark,
-        p.pyarole_rakhan_upayukat, p.payrole_no_id, p.is_checked,
-        bpdo.office_name_with_letter_address AS punarabedan_office, bpdnd.district_name_np AS punarabedan_district, bpd.punarabedan_office_ch_no, punarabedan_office_date,
-        bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days, bkd.thuna_date_bs, bkd.release_date_bs,
-        MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.amount_fixed END) AS jariwana_fixed,
-        MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.amount_deposited END) AS deposited_jariwana,
-        MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfdo.office_name_with_letter_address END) AS deposited_jariwana_office,
-        MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.deposit_date END) AS deposited_jariwana_date,
-        MAX(CASE WHEN bfd.fine_type = 'जरिवाना' THEN bfd.deposit_ch_no END) AS deposited_jariwana_ch_no,
-        MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.amount_fixed END) AS compensation_fixed,
-        MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.amount_deposited END) AS deposited_compensation,
-        MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfdo.office_name_with_letter_address END) AS deposited_compensation_office,
-        MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.deposit_date END) AS deposited_compensation_date,
-        MAX(CASE WHEN bfd.fine_type = 'क्षतिपुर्ती' THEN bfd.deposit_ch_no END) AS deposited_compensation_ch_no,
-        MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.amount_fixed END) AS bigo_fixed,
-        MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.amount_deposited END) AS deposited_bigo,
-        MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfdo.office_name_with_letter_address END) AS deposited_bigo_office,
-        MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.deposit_date END) AS deposited_bigo_date,
-        MAX(CASE WHEN bfd.fine_type = 'विगो तथा कोष' THEN bfd.deposit_ch_no END) AS deposited_bigo_ch_no,
-        po.office_name_with_letter_address AS current_payrole_office
-    FROM bandi_person b
-    LEFT JOIN bandi_address ba ON b.id=ba.bandi_id
-    LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-    LEFT JOIN np_state ns ON ba.province_id = ns.state_id
-    LEFT JOIN np_district nd ON ba.district_id = nd.did
-    LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
-    LEFT JOIN bandi_mudda_details bmd ON b.id=bmd.bandi_id 
-    LEFT JOIN muddas m ON bmd.mudda_id=m.id
-    LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
-    LEFT JOIN relationships r ON bri.relation_id=r.id
-    LEFT JOIN bandi_punarabedan_details bpd ON b.id=bpd.bandi_id
-    LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
-    LEFT JOIN np_district bpdnd ON bpd.punarabedan_office_district =bpdnd.did
-    LEFT JOIN bandi_kaid_details bkd ON b.id=bkd.bandi_id
-    LEFT JOIN bandi_fine_details bfd ON b.id=bfd.bandi_id
-    LEFT JOIN offices bfdo ON bfd.deposit_office=bfdo.id
-    LEFT JOIN np_district bfdnd ON bfd.deposit_district =bfdnd.did
-    LEFT JOIN payroles p ON b.id=p.bandi_id
-    LEFT JOIN offices po ON p.created_office=po.id
-    LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-    LEFT JOIN payrole_decisions pd ON p.id=pd.pd.payrole_id
-    WHERE bmd.is_main_mudda=1
-// `;
+
 
 const getBandiQuery = `
     SELECT 
@@ -1330,8 +1280,8 @@ router.post('/create_payrole_maskebari_count', verifyToken, async (req, res) => 
 const getMaskebariQuery = `SELECT 
                         year_bs, 
                         month_bs,
-                        oo.office_name_with_letter_address AS office_name,
-                        os.office_name_with_letter_address AS created_office_name,
+                        MAX(oo.office_name_with_letter_address) AS office_name,
+                        MAX(os.office_name_with_letter_address) AS created_office_name,
                         MAX(pm.id) AS id, -- or MIN(id), or NULL if not needed
                         MAX(pm.office_id) AS office_id, -- or NULL
                         SUM(pm.total_decision_count_male) AS total_decision_count_male,
