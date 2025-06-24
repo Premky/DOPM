@@ -1479,7 +1479,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     } else {
         console.log('clientRoute')
         sql = `${baseSql} WHERE 
-      bp.current_office_id = ? AND bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1
+      bp.current_office_id = ? AND bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1 AND
       bp.is_active = 1
     GROUP BY 
       m.mudda_name
