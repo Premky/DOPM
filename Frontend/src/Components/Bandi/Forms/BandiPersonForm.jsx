@@ -244,8 +244,8 @@ const BandiPersonForm = () => {
             required={true}
             control={control}
             error={errors.married_status}
-            options={[{ label: 'विवाहित', value: 'married' },
-            { label: 'अविवाहित', value: 'unmarried' },
+            options={[{ label: 'विवाहित', value: 'Married' },
+            { label: 'अविवाहित', value: 'Unmarried' },
             ]}
           />
         </Grid>

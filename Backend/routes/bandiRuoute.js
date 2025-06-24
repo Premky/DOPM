@@ -120,7 +120,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 
     const bandiPerson = [
         bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path,
-        bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks, active_office];
+        bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks, user_id, user_id, active_office];
 
     try {
         await beginTransactionAsync();
@@ -128,15 +128,15 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         const insertBandiInfoSQL = `
         INSERT INTO bandi_person(
         bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path, 
-        bandi_education, height, weight, bandi_huliya, remarks, current_office_id) VALUES (?)`;
+        bandi_education, height, weight, bandi_huliya, remarks, created_by, updated_by, current_office_id) VALUES (?)`;
 
         const bandiResult = await queryAsync(insertBandiInfoSQL, [bandiPerson]);
         const bandi_id = bandiResult.insertId;
 
         // 2. Insert into bandi_kaid_detao;s
         // const hirasatDateAd = await bs2ad(hirasat_date_bs);
-        let thunaDateAd = '0000-00-00'
-        let releaseDateAd = '0000-00-00'
+        let thunaDateAd = '1900-01-01'
+        let releaseDateAd = '1900-01-01'
         if (hirasat_date_bs) {
             thunaDateAd = await bs2ad(hirasat_date_bs);
         }
@@ -144,13 +144,15 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
             releaseDateAd = await bs2ad(release_date_bs);
         }
 
-        const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd]
+        const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd,
+            user_id, user_id, active_office
+        ]
         const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, 
-                                    thuna_date_ad, release_date_bs, release_date_ad) VALUES(?)`;
+                                    thuna_date_ad, release_date_bs, release_date_ad, created_by, updated_by, current_office_id) VALUES(?)`;
         await queryAsync(insertKaidDetails, [kaidDetails])
 
         // 3. Insert into bandi_card_details
-        const cardRecord = [bandi_id, id_card_type, card_no, card_issue_district_id, card_issue_date]
+        const cardRecord = [bandi_id, id_card_type, card_no, card_issue_district_id, card_issue_date, user_id]
         const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_no, card_issue_district, card_issue_date) VALUES(?)`;
         await queryAsync(insertCardDetails, [cardRecord])
 
@@ -352,7 +354,7 @@ LEFT JOIN muddas m ON bmd.mudda_id = m.id
 LEFT JOIN bandi_kaid_details bkd ON b.id = bkd.bandi_id
 
 LEFT JOIN bandi_punarabedan_details bpd ON b.id = bpd.bandi_id
-LEFT JOIN offices BPDO ON bpd.punarabedan_office_id = bpdo.id
+LEFT JOIN offices bpdo ON bpd.punarabedan_office_id = bpdo.id
 
 LEFT JOIN payroles p ON b.id = p.bandi_id
 LEFT JOIN offices po ON p.created_office = po.id
