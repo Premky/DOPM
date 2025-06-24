@@ -153,7 +153,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 
         // 3. Insert into bandi_card_details
         const cardRecord = [bandi_id, id_card_type, card_no, card_issue_district_id, card_issue_date, user_id]
-        const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_no, card_issue_district, card_issue_date) VALUES(?)`;
+        const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_no, card_issue_district, card_issue_date, created_by) VALUES(?)`;
         await queryAsync(insertCardDetails, [cardRecord])
 
         //4. Insert into bandi_address_details:
