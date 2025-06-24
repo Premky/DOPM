@@ -1489,7 +1489,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
       TotalArrestedInDateRange > 0 OR 
       TotalReleasedInDateRange > 0
     ORDER BY m.mudda_name ASC`
-        params = [startDate, endDate, startDate, endDate, officeId];
+        params = [startDate, endDate, startDate, endDate, active_office];
     }
 
     try {
