@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 import NepaliDate from 'nepali-datetime';
 import dateConverter from 'nepali-datetime/dateConverter';
 
-
+import { calculateBSDate } from '../utils/dateCalculator.js';
 import verifyToken from '../middlewares/verifyToken.js';
 
 
@@ -135,8 +135,14 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 
         // 2. Insert into bandi_kaid_detao;s
         // const hirasatDateAd = await bs2ad(hirasat_date_bs);
-        const thunaDateAd = await bs2ad(hirasat_date_bs);
-        const releaseDateAd = await bs2ad(release_date_bs);
+        let thunaDateAd = '0000-00-00'
+        let releaseDateAd = '0000-00-00'
+        if (hirasat_date_bs) {
+            thunaDateAd = await bs2ad(hirasat_date_bs);
+        }
+        if (release_date_bs) {
+            releaseDateAd = await bs2ad(release_date_bs);
+        }
 
         const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd]
         const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, 
@@ -216,6 +222,35 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
            bandi_id, punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date) VALUES(?)`;
         await queryAsync(insertpunrabedn, [punrabednRecord])
 
+        // 7. Insert Family Details
+        const family = req.body.family || [];
+
+        if (family.length > 0) {
+            const insertFamilySQL = `
+                INSERT INTO bandi_relative_info (
+                bandi_id,
+                relative_name,
+                relation_id,
+                relative_address,
+                no_of_children,
+                is_dependent,
+                contact_no
+                )
+                VALUES ?
+            `;
+
+            const familyValues = family.map(item => [
+                bandi_id,
+                item.bandi_relative_name || null,
+                item.bandi_relative_relation || null,
+                item.bandi_relative_address || null,
+                item.bandi_number_of_children || null,
+                0,
+                item.bandi_relative_contact_no || null
+            ]);
+
+            await queryAsync(insertFamilySQL, [familyValues]);
+        }
 
         await commitAsync(); // Commit the transaction
 
@@ -916,7 +951,7 @@ router.get('/get_accepted_payroles', verifyToken, async (req, res) => {
         // console.log(finalQuery)
 
         const result = await queryAsync(finalQuery, queryParams);
-
+        console.log('acceptedpayrole', user_office_id)
         if (!result.length) {
             return res.json({ Status: false, Error: 'No payrole records found' });
         }
@@ -941,8 +976,24 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
         payrole_granted_letter_no,
         payrole_granted_letter_date,
         result,
-        arre, thuna_date_bs
+        arre,
+        thuna_date_bs,
+
+        // Missing ones:
+        mudda_id,
+        arrest_date,
+        release_date,
+        payrole_nos,
+        payrole_granted_court,
+        payrole_granted_aadesh_date,
+        payrole_result,
+        payrole_decision_remark,
+        kaid_bhuktan_duration,
+        kaid_bhuktan_percentage,
+        baki_kaid_duration,
+        baki_kaid_percent,
     } = req.body;
+
 
 
 
@@ -1015,86 +1066,159 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/update_payrole_decision/:id', verifyToken, async (req, res) => {
+router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
+
     const {
-        payrole_id,
         mudda_id,
-        payrole_niranay_no,
+        // arrest_date,
+        thuna_date_bs,
+        release_date_bs,
+        payrole_id,
+        dopmremark,
+        hajir_current_date_bs,
+        hajir_next_date_bs,
+        hajir_office,
         payrole_decision_date,
-        payrole_granted_letter_no,
+        payrole_decision_remark,
+        payrole_granted_aadesh_date,
+        payrole_granted_court,
         payrole_granted_letter_date,
-        result,
-        release_date_bs, thuna_date_bs,
-        hajir_current_date, hajir_status, hajir_next_date, hajir_office
+        payrole_granted_letter_no,
+        payrole_nos,
+        payrole_result,
+        pyarole_rakhan_upayukat,
     } = req.body;
 
-    console.log('result', req.body)
+    let arrest_date = '0000-00-00';
+    if (!arrest_date || !thuna_date_bs) {
+        arrest_date = '0000-00-00';
+    }
+
+    const total_kaid = calculateBSDate(arrest_date, release_date_bs)
+
+    const bhuktan_duration = calculateBSDate(arrest_date, current_date, total_kaid)
+    const kaid_bhuktan_duration = bhuktan_duration.formattedDuration || 0;
+    const kaid_bhuktan_percentage = bhuktan_duration.percentage || 0;
+    const baki_duration = calculateBSDate(current_date, release_date_bs, total_kaid)
+    const baki_kaid_duration = baki_duration.formattedDuration || 0;
+    const baki_kaid_percent = baki_duration.percentage || 0;
 
     try {
-        let sql = '';
-        let values = [];
+        await beginTransactionAsync();
 
-        const existingReviews = await query(`SELECT * FROM payrole_decisions WHERE payrole_id = ?`, [payrole_id]);
+        const existing = await queryAsync(
+            `SELECT * FROM payrole_decisions WHERE payrole_id = ?`,
+            [payrole_id]
+        );
 
-        if ((user_office_id === 1 || user_office_id === 2)) {
-            console.log('This is for admin office only')
+        if (existing.length > 0) {
+            const sql = `
+        UPDATE payrole_decisions
+        SET
+          mudda_id = ?,
+          arrest_date = ?,
+          release_date = ?,
+          payrole_nos = ?,
+          payrole_decision_date = ?,
+          payrole_granted_court = ?,
+          payrole_granted_aadesh_date = ?,
+          payrole_granted_letter_no = ?,
+          payrole_granted_letter_date = ?,
+          payrole_result = ?,
+          payrole_decision_remark = ?,
+          kaid_bhuktan_duration = ?,
+          kaid_bhuktan_percentage = ?,
+          baki_kaid_duration = ?,
+          baki_kaid_percent = ?,
+          decision_updated_by = ?,
+          decision_updated_office = ?
+        WHERE payrole_id = ?
+      `;
 
+            const values = [
+                mudda_id,
+                arrest_date,
+                release_date_bs,
+                payrole_nos,
+                payrole_decision_date,
+                payrole_granted_court,
+                payrole_granted_aadesh_date,
+                payrole_granted_letter_no,
+                payrole_granted_letter_date,
+                payrole_result,
+                payrole_decision_remark,
+                kaid_bhuktan_duration,
+                kaid_bhuktan_percentage,
+                baki_kaid_duration,
+                baki_kaid_percent,
+                user_id,
+                user_office_id,
+                payrole_id,
+            ];
+
+            await queryAsync(sql, values);
         } else {
-            if (payrole_decision_date || payrole_granted_letter_no) {
-                if (existingReviews.length > 0) {
-                    console.log('updated')
-                    sql = `
-                UPDATE payrole_decisions 
-                SET payrole_niranay_no = ?,  payrole_decision_date = ?, payrole_granted_letter_no = ?, payrole_granted_letter_date = ?, result=?
-                WHERE payrole_id = ?`;
-                    values = [payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no, payrole_granted_letter_date, result, payrole_id];
-                } else {
-                    console.log('inserted')
-                    sql = `
-                INSERT INTO payrole_decisions (payrole_id, payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no, 
-                payrole_granted_letter_date, result, decided_by, decision_update_office )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-                    values = [payrole_id, payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no,
-                        payrole_granted_letter_date, result, user_id, user_office_id];
-                }
-                const logSql = `INSERT INTO payrole_logs(payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office)
-                    VALUES=?`
-                const logValue = [payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office]
-            }
-        }
-        try {
-            await beginTransactionAsync();
-            //1. Insert 
-            const firstQuery = await queryAsync(sql, values);
+            const insertSql = `
+        INSERT INTO payrole_decisions (
+          payrole_id, mudda_id, arrest_date, release_date, payrole_nos,
+          payrole_decision_date, payrole_granted_court, payrole_granted_aadesh_date,
+          payrole_granted_letter_no, payrole_granted_letter_date, payrole_result,
+          payrole_decision_remark, kaid_bhuktan_duration, kaid_bhuktan_percentage,
+          baki_kaid_duration, baki_kaid_percent, decision_updated_by, decision_updated_office
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+            const insertValues = [
+                payrole_id,
+                mudda_id,
+                arrest_date,
+                release_date_bs,
+                payrole_nos,
+                payrole_decision_date,
+                payrole_granted_court,
+                payrole_granted_aadesh_date,
+                payrole_granted_letter_no,
+                payrole_granted_letter_date,
+                payrole_result,
+                payrole_decision_remark,
+                kaid_bhuktan_duration,
+                kaid_bhuktan_percentage,
+                baki_kaid_duration,
+                baki_kaid_percent,
+                user_id,
+                user_office_id,
+            ];
 
-            //2. Insert/Update Status
-            const statusSql = `UPDATE payroles set status=?, updated_by=?, updated_office=?`
-            const secondQuery = await queryAsync(statusSql, [result, user_id, user_office_id])
-
-            // 3. Log Query
-            if (hajir_current_date) {
-                const thirdQuery = await queryAsync(sql, values);
-            }
-            await commitAsync();
-            return res.json({
-                Status: true,
-                message: "प्यारोल विवरण सफलतापूर्वक सुरक्षित गरियो।"
-            });
-        } catch (error) {
-            await rollbackAsync();
-            console.error("Transaction failed:", error);
-            return res.status(500).json({
-                Status: false,
-                Error: error.message,
-                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-            });
+            await queryAsync(insertSql, insertValues);
         }
 
-    } catch (err) {
-        console.error('Database error', err);
-        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+        if (hajir_current_date_bs) {
+            const logSql = `
+        INSERT INTO payrole_logs (
+          payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office
+        ) VALUES (?, ?, ?, ?, ?)
+      `;
+
+            const logValues = [
+                payrole_id,
+                hajir_current_date_bs,
+                1,
+                hajir_next_date_bs,
+                hajir_office,
+            ];
+
+            await queryAsync(logSql, logValues);
+        }
+
+        await queryAsync(`UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id])
+
+        await commitAsync();
+        return res.json({ Status: true, Message: "Updated successfully" });
+    } catch (error) {
+        await rollbackAsync();
+        console.error("Payrole update error:", error);
+        return res.status(500).json({ Status: false, Error: "Internal Server Error" });
     }
 });
 
@@ -1302,6 +1426,85 @@ router.put('/create_payrole_maskebari_count/:id', verifyToken, async (req, res) 
         res.status(500).json({ error: err.message });
     }
 });
+
+router.get('/get_prisioners_count', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const { startDate, endDate } = req.query;
+    console.log(req.query)
+    const baseSql = `
+    SELECT 
+        o.office_name_with_letter_address AS office_name,
+      m.mudda_name,
+      COUNT(bp.id) AS Total,
+
+      -- कैदी
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+
+      -- थुनुवा
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+
+      -- 65+ उम्र
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+
+      -- गिरफ्तारी / छुटे
+      SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
+      SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+
+    FROM bandi_person bp
+    LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+    LEFT JOIN offices o ON bp.current_office_id=o.id
+    LEFT JOIN muddas m ON bmd.mudda_id = m.id
+    LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id   
+  `;
+    let sql = ''
+    let params = ''
+
+    if (active_office <= 2) {
+        sql = `${baseSql}                     
+    WHERE bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1
+    GROUP BY m.mudda_name, office_name
+    HAVING 
+      KaidiTotal > 0 OR 
+      ThunuwaTotal > 0 OR 
+      TotalArrestedInDateRange > 0 OR 
+      TotalReleasedInDateRange > 0
+    ORDER BY m.mudda_name ASC`
+
+        params = [startDate, endDate, startDate, endDate];
+    } else {
+        console.log('clientRoute')
+        sql = `${baseSql} WHERE 
+      bp.current_office_id = ? AND bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1
+      bp.is_active = 1
+    GROUP BY 
+      m.mudda_name
+    HAVING 
+      KaidiTotal > 0 OR 
+      ThunuwaTotal > 0 OR 
+      TotalArrestedInDateRange > 0 OR 
+      TotalReleasedInDateRange > 0
+    ORDER BY m.mudda_name ASC`
+        params = [startDate, endDate, startDate, endDate, officeId];
+    }
+
+    try {
+        const result = await query(sql, params);
+        res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        res.status(500).json({ Status: false, Error: "Internal Server Error" });
+    }
+});
+
+
+
+
+
 
 router.delete('/delete_kasurs/:id', async (req, res) => {
     const { id } = req.params;

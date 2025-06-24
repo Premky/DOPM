@@ -19,6 +19,7 @@ import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import ReuseIdCards from '../../ReuseableComponents/ReuseIdCards';
+import ReuseRelativeRelations from '../../ReuseableComponents/ReuseRelativeRelations'
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,6 +40,7 @@ const BandiPersonForm = () => {
   const navigate = useNavigate();
 
   const [muddaCount, setMuddaCount] = useState(1);
+  const [familyCount, setFamilyCount] = useState(1);
   const [age, setAge] = useState();
   const [editing, setEditing] = useState(false);
 
@@ -51,6 +53,7 @@ const BandiPersonForm = () => {
   const selectedIs_compensation = watch("is_compensation");
   const selectedIs_bigo = watch("is_bigo");
   const bsdob = watch("dob");
+  const bandiRelation = watch('bandi_relative_relation')
 
   const testVariable = watch('office_bandi_id');
   // console.log('office_bandi_id', testVariable)
@@ -131,6 +134,7 @@ const BandiPersonForm = () => {
 
 
   const onSubmit = async (data) => {
+    console.log(data);
     try {
       const url = editing
         ? `${BASE_URL}/bandi/update_bandi/${currentData.id}`
@@ -294,8 +298,9 @@ const BandiPersonForm = () => {
           />
         </Grid>
       </Grid>
+      <hr />
 
-      <Grid container spacing={2}>
+      <Grid container spacing={0}>
         <Grid item xs={12}>
           कैदीबन्दीको मुद्दा विवरणः
         </Grid>
@@ -435,7 +440,7 @@ const BandiPersonForm = () => {
           </Grid>
         ))}
       </Grid>
-
+      <hr />
       <Grid item container spacing={2}>
         <Grid item xs={12}>
           पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरणः
@@ -556,7 +561,7 @@ const BandiPersonForm = () => {
           </Grid>
         </>)}
       </Grid>
-
+      <hr />
       <Grid item container spacing={2}>
         <Grid item xs={12}>
           कैदीबन्दीको परिचयपत्रको विवरणः
@@ -603,7 +608,7 @@ const BandiPersonForm = () => {
           />
         </Grid>
       </Grid>
-
+      <hr />
       <Grid container spacing={2}>
         <Grid item xs={2}>
           कैदीबन्दीको ठेगानाः
@@ -683,7 +688,100 @@ const BandiPersonForm = () => {
           </Grid>
         </>}
       </Grid>
+      <hr />
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          पारिवारीक विवरणः
+        </Grid>
+        {[...Array(familyCount)].map((_, index) => {
+          const currentRelation = watch(`family[${index}].bandi_relative_relation`);
 
+          return (
+            <Grid item container xs={12} key={index}>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseRelativeRelations
+                  name={`family[${index}].bandi_relative_relation`}
+                  label="बन्दीसंगको नाता"
+                  required={true}
+                  control={control}
+                  error={errors?.family?.[index]?.bandi_relative_relation}
+                />
+              </Grid>
+
+              {parseInt(currentRelation) === 6 ? (
+                <Grid item xs={12} sm={6} md={2}>
+                  <ReuseInput
+                    name={`family[${index}].bandi_number_of_children`}
+                    label="छोरा/छोरी (संख्या)"
+                    type="number"
+                    required={true}
+                    control={control}
+                    error={errors?.family?.[index]?.bandi_number_of_children}
+                  />
+                </Grid>
+              ) : (
+                <>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <ReuseInput
+                      name={`family[${index}].bandi_relative_name`}
+                      label="नामथर"
+                      required={true}
+                      control={control}
+                      error={errors?.family?.[index]?.bandi_relative_name}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <ReuseInput
+                      name={`family[${index}].bandi_relative_address`}
+                      label="ठेगाना"
+                      required={true}
+                      control={control}
+                      error={errors?.family?.[index]?.bandi_relative_address}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <ReuseInput
+                      name={`family[${index}].bandi_relative_contact_no`}
+                      label="सम्पर्क नं."
+                      type="number"
+                      required={true}
+                      control={control}
+                      error={errors?.family?.[index]?.bandi_relative_contact_no}
+                    />
+                  </Grid>
+                </>
+              )}
+
+              <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="small"
+                  type="button"
+                  onClick={() => setFamilyCount(familyCount + 1)}
+                >
+                  +
+                </Button>
+              </Grid>
+
+              <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
+                {familyCount > 1 && (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    type="button"
+                    onClick={() => setFamilyCount(familyCount - 1)}
+                  >
+                    <RemoveIcon />
+                  </Button>
+                )}
+              </Grid>
+            </Grid>
+          );
+        })}
+
+      </Grid>
 
 
       {selectedbandi_type == 'कैदी' && (<>

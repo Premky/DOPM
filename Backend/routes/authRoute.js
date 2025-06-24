@@ -200,7 +200,7 @@ router.post('/login', async (req, res) => {
                 branch_name: user.branch_name,
             };
 
-            const token = jwt.sign(userdetails, process.env.JWT_SECRET, { expiresIn: '1d' });
+            const token = jwt.sign(userdetails, process.env.JWT_SECRET, { expiresIn: '1h' });
 
             // res.cookie('token', token, {
             //     httpOnly: true,
@@ -213,7 +213,7 @@ router.post('/login', async (req, res) => {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // only over HTTPS
                 sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // needed for cross-site cookies
-                maxAge: 24 * 60 * 60 * 1000,
+                maxAge: 60 * 60 * 1000,
             });
 
             req.session.user = { userdetails };

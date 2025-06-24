@@ -112,9 +112,9 @@ const BandiFamilyForm = () => {
                         <TableBody>
                             {selectedKaidi && (
                                 <TableRow>
-                                    <TableCell>{selectedKaidi.office_bandi_id }</TableCell>
+                                    <TableCell>{selectedKaidi.office_bandi_id}</TableCell>
                                     <TableCell>{selectedKaidi.bandi_type}</TableCell>
-                                    <TableCell>{selectedKaidi.bandi_name }</TableCell>
+                                    <TableCell>{selectedKaidi.bandi_name}</TableCell>
                                     <TableCell>{selectedKaidi.nationality || ''}</TableCell>
                                     <TableCell>{selectedKaidi.bandi_name || ''}</TableCell>
                                 </TableRow>
@@ -186,7 +186,7 @@ const BandiFamilyForm = () => {
             </form>
             <Grid container spacing={2}>
                 <Grid item xs={12}>
-                    <FamilyTable bandi_id={bandinameId}/>
+                    <FamilyTable bandi_id={bandinameId} />
                 </Grid>
             </Grid>
         </>

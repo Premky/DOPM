@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 import { useAuth } from '../../Context/AuthContext';
 
-const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => {
+const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -22,14 +22,19 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue }) => 
         try {
             let url;
             if (authState.office_id) {
-                url = `${BASE_URL}/bandi/get_bandi_name_for_select/${authState.office_id}`;
-            } else {
+                if (type == 'acceptedpayrole') {
+                    url = `${BASE_URL}/bandi/get_accepted_payroles`;
+                } else {
+                    url = `${BASE_URL}/bandi/get_bandi_name_for_select/${authState.office_id}`;
+                }
+            }
+            else if (type == 'allbandi') {
                 url = `${BASE_URL}/bandi/get_bandi_name_for_select`;
             }
-
-            const response = axios.get(`${BASE_URL}/bandi/get_accepted_payrole`,{}, {
+            const response = await axios.get(url, {
                 withCredentials: true
             });
+            console.log('officeid',response)
 
             const { Status, Result, Error } = response.data;
 

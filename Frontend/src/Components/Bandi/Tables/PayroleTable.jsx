@@ -298,7 +298,7 @@ return (
             open={karagarSatusDialogOpen}
             onClose={() => setKaragarSatusDialogOpen(false)}
             data={selectedData}
-            onSave={handleKaragarStatusChange}
+            // onSave={handleKaragarStatusChange}
         />
         <Box>
             <p>Welcome {authState.user} from {authState.office_np}</p>

@@ -34,6 +34,7 @@ import BandiTable from './Components/Bandi/Tables/BandiTable';
 import AllBandiTable from './Components/Bandi/Tables/AllBandiTable';
 import PayroleMakebari from './Components/Bandi/Tables/PayroleMakebari';
 import PayroleLogForm from './Components/Bandi/Forms/PayroleLogForm';
+import CountReport from './Components/Bandi/Tables/Counts/CountReport';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -49,6 +50,7 @@ function App() {
                 <Route path='create_user' element={<CreateUser />} />
               </Route>
               <Route path='/bandi'>
+                <Route path='dashboard' element={<CountReport />} />
                 <Route path='bandi_details' element={<AllBandiTable />} />
                 <Route path='create_bandi' element={<BandiPersonForm />} />
                 <Route path='create_bandi_family' element={<BandiFamilyForm />} />

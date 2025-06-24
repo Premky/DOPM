@@ -143,6 +143,7 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.bandi_id}
                 current_office={authState.office_np}
+                type='allbandi'
               />
             </Grid2>
           </Grid2>
