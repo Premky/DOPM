@@ -157,9 +157,9 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         await queryAsync(insertCardDetails, [cardRecord])
 
         //4. Insert into bandi_address_details:
-        const addressRecord = [bandi_id, nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details]
+        const addressRecord = [bandi_id, nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details, active_office]
         const insertAddressRecord = `INSERT INTO bandi_address(bandi_id, nationality_id, province_id, district_id,
-                                    gapa_napa_id, wardno, bidesh_nagarik_address_details) VALUES(?)`;
+                                    gapa_napa_id, wardno, bidesh_nagarik_address_details, current_office_id) VALUES(?)`;
         await queryAsync(insertAddressRecord, [addressRecord])
 
         // 5. Insert involved mudda
