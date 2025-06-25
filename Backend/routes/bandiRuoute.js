@@ -1395,8 +1395,8 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
 
     const baseSql = `
         SELECT 
-            o.office_name_with_letter_address AS office_name,
-            o.id AS office_id,
+            -- o.office_name_with_letter_address AS office_name,
+           -- o.id AS office_id,
             m.mudda_name,
             COUNT(bp.id) AS Total,
 
@@ -1463,7 +1463,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     const finalSql = `
         ${baseSql}
         ${whereClause}
-        GROUP BY m.mudda_name, o.office_name_with_letter_address, o.id
+        GROUP BY m.mudda_name
         HAVING 
             KaidiTotal > 0 OR 
             ThunuwaTotal > 0 OR 
