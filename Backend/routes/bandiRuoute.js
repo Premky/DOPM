@@ -1419,7 +1419,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     if (active_office <= 2) {
         sql = `${baseSql}                     
     WHERE bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1
-    GROUP BY m.mudda_name, office_name
+    GROUP BY m.mudda_name, o.office_name_with_letter_address
     HAVING 
       KaidiTotal > 0 OR 
       ThunuwaTotal > 0 OR 
@@ -1434,7 +1434,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
       bp.current_office_id = ? AND bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1 AND
       bp.is_active = 1
     GROUP BY 
-      m.mudda_name
+      GROUP BY m.mudda_name, o.office_name_with_letter_address
     HAVING 
       KaidiTotal > 0 OR 
       ThunuwaTotal > 0 OR 
