@@ -261,18 +261,18 @@ const AllBandiTable = () => {
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br />
-                                            {calculateBSDate(data.thuna_date_bs, data.release_date_bs).percentage || ''}
+                                            {/* {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br />
+                                            {calculateBSDate(data.thuna_date_bs, data.release_date_bs).percentage || ''} */}
                                         </TableCell>
 
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
-                                            {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''}
+                                            {/* {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
+                                            {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''} */}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
-                                            {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''}
+                                            {/* {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
+                                            {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {`${data.punarabedan_office}को च.नं. ${data.punarabedan_office_ch_no} मिति ${data.punarabedan_office_date} गतेको पत्रानुसार ।` || ''}
