@@ -196,6 +196,7 @@ const BandiPersonForm = () => {
             error={errors.bandi_type}
           />
         </Grid>
+        
         <Grid item xs={12} sm={6} md={3}>
           <ReuseInput
             name="bandi_name"

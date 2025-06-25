@@ -186,12 +186,12 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
             const mudda_phesala_date = req.body[`mudda_phesala_date_${muddaIndex}`] || '';
 
             const muddaRecord = [bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda, mudda_condition,
-                mudda_district, mudda_office, mudda_phesala_date, vadi]
+                mudda_district, mudda_office, mudda_phesala_date, vadi, active_office]
             const insertMuddaSQL = `
             INSERT INTO bandi_mudda_details (
                 bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
                 mudda_condition, mudda_phesala_antim_office_district,
-                mudda_phesala_antim_office_id, mudda_phesala_antim_office_date,vadi
+                mudda_phesala_antim_office_id, mudda_phesala_antim_office_date,vadi, current_office_id
 
             ) VALUES (?)`;
 
@@ -408,7 +408,42 @@ router.get('/get_bandi/:id', async (req, res) => {
     });
 });
 
-
+router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    let sql = '';
+    const baseSQL = `
+                SELECT bp.*,bmd.*,
+                ba.wardno,
+                ba.bidesh_nagarik_address_details,
+                nc.country_name_np,
+                ns.state_name_np,
+                nd.district_name_np,
+                nci.city_name_np,
+                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age
+                FROM 
+                bandi_person bp
+                LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+                LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+                LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+                LEFT JOIN np_district nd ON ba.district_id = nd.did
+                LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+                `;
+    if (active_office < 2) {
+        sql = `${baseSQL}`;
+    } else {
+        sql = `${baseSQL} WHERE bp.current_office_id=${active_office}`
+    }
+    con.query(sql, (err, result) => {
+        // console.log(result)
+        if (err) {
+            console.error('Query Error:', err);
+            return res.json({ Status: false, Error: "Query Error" });
+        }
+        return res.json({ Status: true, Result: result });
+    });
+})
 
 router.get('/get_bandi_name_for_select', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
@@ -594,7 +629,7 @@ router.get('/get_bandi_id_card/:id', async (req, res) => {
     }
 });
 
-router.get('/get_bandi_mudda/',  async (req, res) => {
+router.get('/get_bandi_mudda/', async (req, res) => {
     // const active_office = req.user.office_id;
     const { id } = req.params;
     const sql = `
