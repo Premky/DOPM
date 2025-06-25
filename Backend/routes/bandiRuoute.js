@@ -1382,65 +1382,72 @@ router.put('/create_payrole_maskebari_count/:id', verifyToken, async (req, res) 
 router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const { startDate, endDate } = req.query;
-    console.log(req.query)
+
     const baseSql = `
-    SELECT 
-        o.office_name_with_letter_address AS office_name,
-      m.mudda_name,
-      COUNT(bp.id) AS Total,
+        SELECT 
+            o.office_name_with_letter_address AS office_name,
+            m.mudda_name,
+            COUNT(bp.id) AS Total,
 
-      -- कैदी
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+            -- कैदी
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
 
-      -- थुनुवा
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' THEN 1 ELSE 0 END) AS ThunuwaTotal,
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+            -- थुनुवा
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
 
-      -- 65+ उम्र
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
-      SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+            -- 65+ उम्र
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
 
-      -- गिरफ्तारी / छुटे
-      SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
-      SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+            -- गिरफ्तारी / छुटे
+            SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
+            SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
 
-    FROM bandi_person bp
-    LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
-    LEFT JOIN offices o ON bp.current_office_id=o.id
-    LEFT JOIN muddas m ON bmd.mudda_id = m.id
-    LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id   
-  `;
-    let sql = ''
-    let params = ''
+        FROM bandi_person bp
+        LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+        LEFT JOIN offices o ON bp.current_office_id = o.id
+        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+        LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
+    `;
+
+    let sql = '';
+    let params = [];
 
     if (active_office <= 2) {
-        sql = `${baseSql}                     
-    WHERE bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1
-    GROUP BY m.mudda_name, o.office_name_with_letter_address
-    HAVING 
-      KaidiTotal > 0 OR 
-      ThunuwaTotal > 0 OR 
-      TotalArrestedInDateRange > 0 OR 
-      TotalReleasedInDateRange > 0
-    ORDER BY m.mudda_name ASC`
-
+        // Super admin / head office route
+        sql = `
+            ${baseSql}
+            WHERE bp.is_active = 1 AND bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1
+            GROUP BY m.mudda_name, o.office_name_with_letter_address
+            HAVING 
+                KaidiTotal > 0 OR 
+                ThunuwaTotal > 0 OR 
+                TotalArrestedInDateRange > 0 OR 
+                TotalReleasedInDateRange > 0
+            ORDER BY m.mudda_name ASC
+        `;
         params = [startDate, endDate, startDate, endDate];
     } else {
-        console.log('clientRoute')
-        sql = `${baseSql} WHERE 
-      bp.current_office_id = ? AND bp.is_active = 1 AND bmd.is_main_mudda=1 AND bmd.is_last_mudda=1 AND
-      bp.is_active = 1
-    GROUP BY 
-      GROUP BY m.mudda_name, o.office_name_with_letter_address
-    HAVING 
-      KaidiTotal > 0 OR 
-      ThunuwaTotal > 0 OR 
-      TotalArrestedInDateRange > 0 OR 
-      TotalReleasedInDateRange > 0
-    ORDER BY m.mudda_name ASC`
+        // Client office route
+        sql = `
+            ${baseSql}
+            WHERE 
+                bp.current_office_id = ? AND 
+                bp.is_active = 1 AND 
+                bmd.is_main_mudda = 1 AND 
+                bmd.is_last_mudda = 1
+            GROUP BY m.mudda_name, o.office_name_with_letter_address
+            HAVING 
+                KaidiTotal > 0 OR 
+                ThunuwaTotal > 0 OR 
+                TotalArrestedInDateRange > 0 OR 
+                TotalReleasedInDateRange > 0
+            ORDER BY m.mudda_name ASC
+        `;
         params = [startDate, endDate, startDate, endDate, active_office];
     }
 
@@ -1452,6 +1459,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
         res.status(500).json({ Status: false, Error: "Internal Server Error" });
     }
 });
+
 
 
 
