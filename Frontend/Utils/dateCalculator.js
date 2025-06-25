@@ -2,8 +2,21 @@ import NepaliDate from 'nepali-datetime';
 
 export const calculateBSDate = (startDate, endDate, referenceDuration = null) => {
   try {
+    // Validate input
+    if (!startDate || !endDate) {
+      throw new Error(`Invalid input: startDate="${startDate}", endDate="${endDate}"`);
+    }
+
     const startDate1 = new NepaliDate(startDate);
     const endDate1 = new NepaliDate(endDate);
+
+    // Check if valid NepaliDate objects
+    const startAD = startDate1.getDateObject();
+    const endAD = endDate1.getDateObject();
+
+    if (isNaN(startAD) || isNaN(endAD)) {
+      throw new Error(`Invalid date objects from NepaliDate: start="${startDate}", end="${endDate}"`);
+    }
 
     const startYear = startDate1.year;
     const startMonth = startDate1.month + 1;
@@ -27,18 +40,15 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
       months += 12;
     }
 
-    const startAD = startDate1.getDateObject();
-    const endAD = endDate1.getDateObject();
-
+    // Total days in AD
     let totalDays = Math.floor((endAD - startAD) / (1000 * 60 * 60 * 24));
     if (totalDays < 0) totalDays = 0;
 
+    // Optional percentage calculation
     let percentage = null;
     if (referenceDuration && referenceDuration.totalDays > 0) {
       percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
     }
-
-    const formattedDuration=years+'|'+months+'|'+days
 
     return {
       years,
@@ -46,20 +56,24 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
       days,
       totalDays,
       percentage: percentage ? parseFloat(percentage) : undefined,
-      formattedDuration
+      formattedDuration: `${years} वर्ष, ${months} महिना, ${days} दिन`,
+      rawFormatted: `${years}|${months}|${days}`
     };
+
   } catch (err) {
-    console.error("Error in calculateBSDate:", err);
-    // Return safe fallback object
+    console.error("Error in calculateBSDate:", err.message);
     return {
       years: 0,
       months: 0,
       days: 0,
       totalDays: 0,
-      percentage: 0
+      percentage: 0,
+      formattedDuration: '',
+      rawFormatted: '0|0|0'
     };
   }
 };
+
 
 export const sumDates = (hirasat_years, hirasat_months, hirasat_days, referenceDuration = null) => {
   try {
