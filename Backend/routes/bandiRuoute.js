@@ -1382,11 +1382,21 @@ router.put('/create_payrole_maskebari_count/:id', verifyToken, async (req, res) 
 
 router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const { startDate, endDate } = req.query;
+    const {
+        startDate,
+        endDate,
+        nationality,
+        ageFrom,
+        ageTo,
+        office_id // optional for super admin
+    } = req.query;
+
+    // console.log(req.query)
 
     const baseSql = `
         SELECT 
             o.office_name_with_letter_address AS office_name,
+            o.id AS office_id,
             m.mudda_name,
             COUNT(bp.id) AS Total,
 
@@ -1415,51 +1425,64 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
         LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
     `;
 
-    let sql = '';
-    let params = [];
+    const filters = [];
+    const params = [startDate, endDate, startDate, endDate];
 
-    if (active_office <= 2) {
-        // Super admin / head office route
-        sql = `
-            ${baseSql}
-            WHERE bp.is_active = 1 AND bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1
-            GROUP BY m.mudda_name, o.office_name_with_letter_address
-            HAVING 
-                KaidiTotal > 0 OR 
-                ThunuwaTotal > 0 OR 
-                TotalArrestedInDateRange > 0 OR 
-                TotalReleasedInDateRange > 0
-            ORDER BY m.mudda_name ASC
-        `;
-        params = [startDate, endDate, startDate, endDate];
-    } else {
-        // Client office route
-        sql = `
-            ${baseSql}
-            WHERE 
-                bp.current_office_id = ? AND 
-                bp.is_active = 1 AND 
-                bmd.is_main_mudda = 1 AND 
-                bmd.is_last_mudda = 1
-            GROUP BY m.mudda_name, o.office_name_with_letter_address
-            HAVING 
-                KaidiTotal > 0 OR 
-                ThunuwaTotal > 0 OR 
-                TotalArrestedInDateRange > 0 OR 
-                TotalReleasedInDateRange > 0
-            ORDER BY m.mudda_name ASC
-        `;
-        params = [startDate, endDate, startDate, endDate, active_office];
+    // Shared conditions
+    filters.push("bp.is_active = 1");
+    filters.push("bmd.is_main_mudda = 1");
+    filters.push("bmd.is_last_mudda = 1");
+
+    // Age filter
+    if (ageFrom && ageTo) {
+        filters.push("TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?");
+        params.push(Number(ageFrom), Number(ageTo));
     }
 
+    // Nationality filter
+    if (nationality) {
+        // console.log(nationality)
+        filters.push("bp.nationality = ?");
+        params.push(nationality.trim());
+    }
+
+    // Office filter
+    console.log('office_id', office_id)
+    if (active_office > 2) {
+        // Client office — fixed office
+        filters.push("bp.current_office_id = ?");
+        params.push(active_office);
+    } else if (office_id) {
+        // Optional filter for superadmin
+        filters.push("bp.current_office_id = ?");
+        params.push(office_id);
+    }
+
+    const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : '';
+
+    const finalSql = `
+        ${baseSql}
+        ${whereClause}
+        GROUP BY m.mudda_name, o.office_name_with_letter_address
+        HAVING 
+            KaidiTotal > 0 OR 
+            ThunuwaTotal > 0 OR 
+            TotalArrestedInDateRange > 0 OR 
+            TotalReleasedInDateRange > 0
+        ORDER BY m.mudda_name ASC
+    `;
+
+    console.log(finalSql)
+
     try {
-        const result = await query(sql, params);
+        const result = await query(finalSql, params);
         res.json({ Status: true, Result: result });
     } catch (err) {
         console.error("Database Query Error:", err);
         res.status(500).json({ Status: false, Error: "Internal Server Error" });
     }
 });
+
 
 
 

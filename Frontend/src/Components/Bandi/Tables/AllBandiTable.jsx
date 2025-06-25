@@ -13,6 +13,7 @@ import NepaliDate from 'nepali-datetime';
 import exportToExcel from '../Exports/ExcelPayrole';
 import '../../../index.css'
 import { useNavigate } from 'react-router-dom';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 
 const AllBandiTable = () => {
     const BASE_URL = useBaseURL();
@@ -148,31 +149,126 @@ const AllBandiTable = () => {
                 data={selectedData}
                 onSave={handleSave}
             />
-            <Box>
-                <p>Welcome {authState.user} from {authState.office_np}</p>
-                <Grid2 container={2}>
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
-                        <ReuseOffice
-                            name='searchOffice'
-                            label='Office'
-                            control={control}
+            <Box sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                    Welcome {authState.user} from {authState.office_np}
+                </Typography>
 
-                            disabled={authState.office_id >= 3}
-                        />
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <Grid2 container spacing={2}>
+                        <Grid2 xs={12} sm={4}>
+                            <ReuseOffice
+                                name="searchOffice"
+                                label="Office"
+                                control={control}
+                                disabled={authState.office_id >= 3}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={12} sm={4}>
+                            <ReusePayroleStatus
+                                name="searchPayroleStatus"
+                                label="Status"
+                                control={control}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={12} sm={4}>
+                            {/* <Controller
+                                name="nationality"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label="Nationality"
+                                        variant="outlined"
+                                    />
+                                )}
+                            /> */}
+                            <ReuseSelect
+                                name="nationality"
+                                label='राष्ट्रियता'
+                                options={[
+                                    {label:'स्वदेशी',value:'स्वदेशी'},
+                                    {label:'विदेशी',value:'विदेशी'}
+                                ]}
+                                control={control}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={6} sm={3}>
+                            <Controller
+                                name="startDate"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Start Date (BS)"
+                                        fullWidth
+                                        type="text"
+                                    />
+                                )}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={6} sm={3}>
+                            <Controller
+                                name="endDate"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="End Date (BS)"
+                                        fullWidth
+                                        type="text"
+                                    />
+                                )}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={6} sm={3}>
+                            <Controller
+                                name="ageFrom"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Min Age"
+                                        fullWidth
+                                        type="number"
+                                    />
+                                )}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={6} sm={3}>
+                            <Controller
+                                name="ageTo"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Max Age"
+                                        fullWidth
+                                        type="number"
+                                    />
+                                )}
+                            />
+                        </Grid2>
+
+                        <Grid2 xs={12}>
+                            <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                                रिपोर्ट लिई ल्याउनुहोस्
+                            </Button>
+                            <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
+                                एक्सेल निर्यात
+                            </Button>
+                        </Grid2>
                     </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
-                        <ReusePayroleStatus
-                            name='searchPayroleStatus'
-                            label='Status'
-                            control={control}
-                        />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
-                        <Button onClick={() => exportToExcel(filteredKaidi, fetchedMuddas)} variant="outlined" color="primary" sx={{ m: 1 }}>
-                            एक्सेल निर्यात
-                        </Button>
-                    </Grid2>
-                </Grid2>
+                </form>
             </Box>
             <TableContainer>
                 <Table size='small' stickyHeader border={1}>
@@ -285,7 +381,7 @@ const AllBandiTable = () => {
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
-                                        
+
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopmremark || ''} </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             <Button onClick={() => navigate(`/bandi/view_saved_record/${data.id}`)}>
