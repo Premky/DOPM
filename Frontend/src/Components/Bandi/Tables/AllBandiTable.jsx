@@ -54,9 +54,9 @@ const AllBandiTable = () => {
                 setFilteredKaidi(Result);
                 //To fetch Muddas for each kaidi
                 // console.log(allKaidi)
-                const muddaResponses = await Promise.all(
-                    Result.map((kaidi) => fetchMuddas(kaidi.id))
-                );
+                // const muddaResponses = await Promise.all(
+                //     Result.map((kaidi) => fetchMuddas(kaidi.id))
+                // );
             } else {
                 console.warn(Error || 'No records found.');
                 setAllKaidi([]); // Clear old data
