@@ -1463,7 +1463,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     const finalSql = `
         ${baseSql}
         ${whereClause}
-        GROUP BY m.mudda_name, o.office_name_with_letter_address
+        GROUP BY m.mudda_name, o.office_name_with_letter_address, o.id
         HAVING 
             KaidiTotal > 0 OR 
             ThunuwaTotal > 0 OR 
