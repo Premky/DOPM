@@ -10,6 +10,8 @@ import ReuseDateField from '../../../ReuseableComponents/ReuseDateField'
 import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice'
 import ReusePayroleStatus from '../../../ReuseableComponents/ReusePayroleStatus'
 import ReuseSelect from '../../../ReuseableComponents/ReuseSelect'
+
+import { exportToExcel } from './ExportCountToExcel'
 // import {NepaliDatePicker} from 'nepali-datepicker-reactjs'
 // import 'nepali-datepicker-reactjs/dist/index.css'
 
@@ -102,7 +104,9 @@ const CountReport = () => {
         setTotals(totals);
     };
 
-
+    const ExportCountReport = async()=>{
+        await exportToExcel(startDate, endDate, records, totals, fy, fm, current_date);
+    };
 
     useEffect(() => {
         startTransition(() => {
@@ -114,6 +118,7 @@ const CountReport = () => {
         fetchRecords(formData);
     };
 
+    
     return (
         <>
 
@@ -224,9 +229,9 @@ const CountReport = () => {
                                 <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
                                     रिपोर्ट लिई ल्याउनुहोस्
                                 </Button>
-                                {/* <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
+                                <Button onClick={ExportCountReport} variant="outlined" sx={{ mt: 2, ml: 2 }}>
                                     एक्सेल निर्यात
-                                </Button> */}
+                                </Button>
                             </Grid2>
                         </Grid2>
                     </form>

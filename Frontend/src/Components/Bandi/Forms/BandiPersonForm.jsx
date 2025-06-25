@@ -65,6 +65,7 @@ const BandiPersonForm = () => {
   const genderOptions = [
     { label: 'पुरुष', value: 'male' },
     { label: 'महिला', value: 'female' },
+    { label: 'अन्य', value: 'other' }
   ];
 
   useEffect(() => {
@@ -186,13 +187,13 @@ const BandiPersonForm = () => {
         <Grid item xs={12} sm={6} md={3}>
           <ReuseSelect
             name="bandi_type"
-            label="कैदी/बन्दी"
+            label="बन्दीको प्रकार"
             required={true}
             control={control}
-            error={errors.bandi_type}
             options={[{ label: 'कैदी', value: 'कैदी' },
-            { label: 'बन्दी', value: 'बन्दी' },
+            { label: 'थुनुवा', value: 'थुनुवा' },
             ]}
+            error={errors.bandi_type}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -302,7 +303,7 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={0}>
         <Grid item xs={12}>
-          कैदीबन्दीको मुद्दा विवरणः
+          बन्दीको मुद्दा विवरणः
         </Grid>
 
         {[...Array(muddaCount)].map((_, index) => (
@@ -489,7 +490,7 @@ const BandiPersonForm = () => {
         <Grid item xs={12} sm={6} md={2}>
           <ReuseDateField
             name='hirasat_date_bs'
-            label='थुना/कारागार परेको मिती'
+            label='थुना/कैद परेको मिती'
             placeholder={'YYYY-MM-DD'}
             // defaultValue={selectedBandi.hirasat_date_bs}
             required={true}
@@ -564,7 +565,7 @@ const BandiPersonForm = () => {
       <hr />
       <Grid item container spacing={2}>
         <Grid item xs={12}>
-          कैदीबन्दीको परिचयपत्रको विवरणः
+          बन्दीको परिचयपत्रको विवरणः
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <ReuseIdCards
@@ -611,7 +612,7 @@ const BandiPersonForm = () => {
       <hr />
       <Grid container spacing={2}>
         <Grid item xs={2}>
-          कैदीबन्दीको ठेगानाः
+          बन्दीको ठेगानाः
         </Grid>
         <Grid item xs={10}>
           <Grid item xs={12} sm={6} md={2}>

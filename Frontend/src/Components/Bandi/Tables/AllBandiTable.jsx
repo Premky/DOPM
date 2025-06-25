@@ -150,11 +150,11 @@ const AllBandiTable = () => {
                 onSave={handleSave}
             />
             <Box sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+                {/* <Typography variant="h6" gutterBottom>
                     Welcome {authState.user} from {authState.office_np}
-                </Typography>
+                </Typography> */}
 
-                <form onSubmit={handleSubmit(onSubmit)}>
+                {/* <form onSubmit={handleSubmit(onSubmit)}> */}
                     <Grid2 container spacing={2}>
                         <Grid2 xs={12} sm={4}>
                             <ReuseOffice
@@ -197,7 +197,7 @@ const AllBandiTable = () => {
                             />
                         </Grid2>
 
-                        <Grid2 xs={6} sm={3}>
+                        {/* <Grid2 xs={6} sm={3}>
                             <Controller
                                 name="startDate"
                                 control={control}
@@ -211,9 +211,9 @@ const AllBandiTable = () => {
                                     />
                                 )}
                             />
-                        </Grid2>
+                        </Grid2> */}
 
-                        <Grid2 xs={6} sm={3}>
+                        {/* <Grid2 xs={6} sm={3}>
                             <Controller
                                 name="endDate"
                                 control={control}
@@ -227,9 +227,9 @@ const AllBandiTable = () => {
                                     />
                                 )}
                             />
-                        </Grid2>
+                        </Grid2> */}
 
-                        <Grid2 xs={6} sm={3}>
+                        {/* <Grid2 xs={6} sm={3}>
                             <Controller
                                 name="ageFrom"
                                 control={control}
@@ -257,7 +257,7 @@ const AllBandiTable = () => {
                                     />
                                 )}
                             />
-                        </Grid2>
+                        </Grid2> */}
 
                         <Grid2 xs={12}>
                             <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
@@ -268,7 +268,7 @@ const AllBandiTable = () => {
                             </Button>
                         </Grid2>
                     </Grid2>
-                </form>
+                {/* </form> */}
             </Box>
             <TableContainer>
                 <Table size='small' stickyHeader border={1}>
