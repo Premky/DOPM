@@ -97,7 +97,7 @@ const CreateUser = () => {
         } catch (err) {
             console.error(err);
             Swal.fire({
-                title: response.data.Message,
+                title: err.response.data.message,
                 icon: 'error',
                 draggable: true
             });
