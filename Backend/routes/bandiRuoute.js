@@ -1511,12 +1511,12 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
             SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
 
             -- थुनुवा
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' THEN 1 ELSE 0 END) AS ThunuwaTotal,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
 
             -- 65+ उम्र
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'बन्दी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
             SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
 
             -- गिरफ्तारी / छुटे
@@ -1580,7 +1580,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     console.log(finalSql)
     try {
         const result = await query(finalSql, params);
-        // console.log(result)
+        console.log(result)
         res.json({ Status: true, Result: result });
     } catch (err) {
         console.error("Database Query Error:", err);
