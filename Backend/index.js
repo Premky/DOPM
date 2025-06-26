@@ -100,7 +100,9 @@ const limiter = rateLimit({
 
 // ------------------- ✅ Static Files -------------------
 app.use(express.static('Public'));
-app.use('/Uploads', express.static(path.join(__dirname, 'Public', 'Uploads')));
+// app.use('/Uploads', express.static(path.join(__dirname, 'Public', 'Uploads')));
+// Best choice for your case
+app.use('/uploads', express.static('uploads'));
 
 // ------------------- ✅ Routes -------------------
 app.use('/auth', authRouter);

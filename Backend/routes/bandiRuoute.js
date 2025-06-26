@@ -20,6 +20,8 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+
 import NepaliDateConverter from 'nepali-date-converter';
 const current_date = new NepaliDate().format('YYYY-MM-DD');
 const fy = new NepaliDate().format('YYYY'); //Support for filter
@@ -94,13 +96,57 @@ router.get('/get_random_bandi_id', async (req, res) => {
     return res.json({ Status: true, Result: rand_bandi_id })
 })
 
-router.post('/create_bandi', verifyToken, async (req, res) => {
+//Define storage configuration
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = './uploads/bandi_photos';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const { office_bandi_id, bandi_name } = req.body;
+
+        if (!office_bandi_id || !bandi_name) {
+            return cb(new Error('bandi_id and bandi_name are required'), null);
+        }
+
+        const ext = path.extname(file.originalname);
+        const dateStr = new Date().toISOString().split('T')[0];
+        const safeName = bandi_name.replace(/\s+/g, '_'); //sanitize spaces
+
+        const uniqueName = `${office_bandi_id}_${safeName}_${dateStr}${ext}`;
+        cb(null, uniqueName);
+    }
+});
+
+// File filter (only images allowed)
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (extname && mimetype) return cb(null, true);
+    cb(new Error('Only image files are allowed!'));
+};
+
+//Size limit (1 MB max For now)
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 1 * 1024 * 1024 },
+})
+
+router.post('/create_bandi', verifyToken, upload.single('photo'), async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
     // console.log(req.body)
+    const photo_path = req.file ? `/uploads/bandi_photos/${req.file.filename}` : null;
+    console.log(photo_path)
     const {
-        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, age, married_status, photo_path,
+        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, age, married_status,
         bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks,
         id_card_type, card_no, card_issue_district_id, card_issue_date,
         nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details,
@@ -225,21 +271,31 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
         await queryAsync(insertpunrabedn, [punrabednRecord])
 
         // 7. Insert Family Details
-        const family = req.body.family || [];
+        let family = [];
 
-        if (family.length > 0) {
+        try {
+            family = req.body.family ? JSON.parse(req.body.family) : [];
+        } catch (err) {
+            return res.status(400).json({
+                Status: false,
+                Error: 'Invalid family data format. Expected an array.',
+            });
+        }
+
+
+        if (Array.isArray(family) && family.length > 0) {
             const insertFamilySQL = `
-                INSERT INTO bandi_relative_info (
-                bandi_id,
-                relative_name,
-                relation_id,
-                relative_address,
-                no_of_children,
-                is_dependent,
-                contact_no
-                )
-                VALUES ?
-            `;
+    INSERT INTO bandi_relative_info (
+      bandi_id,
+      relative_name,
+      relation_id,
+      relative_address,
+      no_of_children,
+      is_dependent,
+      contact_no
+    )
+    VALUES ?
+  `;
 
             const familyValues = family.map(item => [
                 bandi_id,
@@ -254,6 +310,7 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
             await queryAsync(insertFamilySQL, [familyValues]);
         }
 
+
         await commitAsync(); // Commit the transaction
 
         return res.json({
@@ -264,6 +321,18 @@ router.post('/create_bandi', verifyToken, async (req, res) => {
 
     } catch (error) {
         await rollbackAsync(); // Rollback the transaction if error occurs
+
+        // Delete the uploaded file 
+        if(req.file){
+            const filePath = path.join(__dirname,'uploads','bandi_photos', req.file.filename);
+            fs.unlink(filePath, (unlinkErr)=>{
+                if(unlinkErr){
+                    console.log('Failed to delete uploaded file:', unlinkErr);
+                }else{
+                    console.log('Uploaded file deleted due to error.');
+                }
+            });
+        }
 
         console.error("Transaction failed:", error);
         return res.status(500).json({
