@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
-import { Grid, Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Button, Grid, Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { calculateAge, inCalculateAge } from '../../../../Utils/ageCalculator';
 
 
-const BandiTable = ({bandi_id}) => {
+const BandiTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
     // const { bandi_id } = useParams();
 
@@ -44,8 +44,13 @@ const BandiTable = ({bandi_id}) => {
     return (
         <>
             <Grid item container spacing={2}>
-                <Grid item xs={12}>
-                   <h3>बन्दी विवरणः</h3>
+                <Grid container item xs={12}>
+                    <Grid>
+                        <h3>बन्दी विवरणः</h3>
+                    </Grid>
+                    <Grid marginTop={2}>
+                        &nbsp; <Button variant='contained' size='small'>Add</Button>
+                    </Grid>
                 </Grid>
                 <Grid item xs={12}>
                     <TableContainer>
@@ -55,7 +60,13 @@ const BandiTable = ({bandi_id}) => {
                                 <TableCell>{fetchedBandi.bandi_id}</TableCell>
                                 <TableCell>कैदी/बन्दी</TableCell>
                                 <TableCell>{fetchedBandi.bandi_type}</TableCell>
-                                <TableCell rowSpan={2} colSpan={2}>Photo</TableCell>
+                                <TableCell rowSpan={5} colSpan={2} align='center'>
+                                    <img
+                                        src={fetchedBandi.photo_path ? `${BASE_URL}${fetchedBandi.photo_path}` : '/default-avatar.png'}
+                                        alt="Bandi"
+                                        style={{ height: 150, width: 150, objectFit: 'cover', borderRadius: 4 }}
+                                    />
+                                </TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>नामथर</TableCell>
@@ -68,12 +79,14 @@ const BandiTable = ({bandi_id}) => {
                                 <TableCell>{fetchedBandi.dob} ({inCalculateAge(fetchedBandi.dob)} वर्ष)</TableCell>
                                 <TableCell>वैवाहिक अवस्था</TableCell>
                                 <TableCell>{fetchedBandi.marital_status}</TableCell>
-                                <TableCell>शेक्षिक योग्यता</TableCell>
-                                <TableCell>{fetchedBandi.bandi_education}</TableCell>
                             </TableRow>
                             <TableRow>
+                                <TableCell>शेक्षिक योग्यता</TableCell>
+                                <TableCell>{fetchedBandi.bandi_education}</TableCell>
                                 <TableCell>उचाई</TableCell>
                                 <TableCell>{fetchedBandi.height}</TableCell>
+                            </TableRow>
+                            <TableRow>
                                 <TableCell>तौल</TableCell>
                                 <TableCell>{fetchedBandi.weight}</TableCell>
                                 <TableCell>हुलिया</TableCell>

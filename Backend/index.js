@@ -28,6 +28,7 @@ const __dirname = path.dirname(__filename);
 // ------------------- ✅ CORS FIRST -------------------
 const hardOrigins = [
     'http://202.45.146.226',
+    'http://localhost:3003',
     'http://202.45.146.226:5173',
     'https://202.45.146.226',
     'https://202.45.146.226:5173',
@@ -57,6 +58,22 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
+
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      // Allow direct browser access (no CORS header sent by <img> from same-origin)
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads')) // ← make sure this path is correct
+);
+
 
 // ✅ Preflight support for CORS
 app.options('*', cors());

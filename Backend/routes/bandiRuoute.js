@@ -500,9 +500,10 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
                 LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
                 `;
     if (active_office < 2) {
-        sql = `${baseSQL}`;
+        sql = `${baseSQL} ORDER BY bp.id DESC`;
     } else {
-        sql = `${baseSQL} WHERE bp.current_office_id=${active_office}`
+        sql = `${baseSQL} WHERE bp.current_office_id=${active_office}
+                        ORDER BY bp.id DESC`
     }
     con.query(sql, (err, result) => {
         // console.log(result)
@@ -1576,8 +1577,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
         ORDER BY m.mudda_name ASC
     `;
 
-    console.log(finalSql)
-
+    // console.log(finalSql)
     try {
         const result = await query(finalSql, params);
         res.json({ Status: true, Result: result });

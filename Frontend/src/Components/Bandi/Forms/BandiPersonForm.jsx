@@ -22,6 +22,7 @@ import ReuseIdCards from '../../ReuseableComponents/ReuseIdCards';
 import ReuseRelativeRelations from '../../ReuseableComponents/ReuseRelativeRelations'
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import ReusePhotoInput from '../../ReuseableComponents/ReusePhotoInput';
 
 
 const BandiPersonForm = () => {
@@ -143,10 +144,27 @@ const BandiPersonForm = () => {
 
       const method = editing ? 'PUT' : 'POST';
 
+      //use formdata compulsary to upload images 
+      const formData = new  FormData();
+
+      //Append all fields except arrays/objects
+      for (const key in data){
+        if(key === 'photo' && data[key]?.[0]){
+          //Handle Photo file (from file input)
+          formData.append('photo', data[key][0]); //if using MUI FileInput, it's usually array
+        }else if(Array.isArray(data[key])){
+          //Handle family array or others
+          formData.append(key, JSON.stringify(data[key]));
+        }else{
+          formData.append(key,data[key])
+        }
+      }
+
       const response = await axios({
         method,
         url,
-        data,
+        data:formData,
+        headers:{'Content-Type':'multipart/form-data',},
         withCredentials: true,
       });
 
@@ -174,129 +192,143 @@ const BandiPersonForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseInput
-            name='office_bandi_id'
-            label="बन्दीको आई.डि."
-            // defaultValue={band_rand_id}
-            required={true}
-            control={control}
-            error={errors.office_bandi_id} />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseSelect
-            name="bandi_type"
-            label="बन्दीको प्रकार"
-            required={true}
-            control={control}
-            options={[{ label: 'कैदी', value: 'कैदी' },
-            { label: 'थुनुवा', value: 'थुनुवा' },
-            ]}
-            error={errors.bandi_type}
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseInput
-            name="bandi_name"
-            label="बन्दीको नाम"
-            required={true}
-            control={control}
-            error={errors.bandi_name}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseSelect
-            name="gender"
-            label="लिङ्ग"
-            required={true}
-            control={control}
-            error={errors.gender}
-            options={genderOptions}
-          />
-        </Grid>
-        <Grid container item xs={12} sm={6} md={3}>
-          <Grid item xs={10} sm={9} md={8}>
-            <ReuseDateField
-              name="dob"
-              label="जन्म मिति (वि.सं.)"
-              readonly={true}
-              required={true}
-              control={control}
-              error={errors.dob}
-            />
-          </Grid>
-          <Grid item xs={2} sm={3} md={4}>
+        <Grid item container xs={9} sm={8} md={10}>
+          <Grid item xs={12} sm={6} md={3}>
             <ReuseInput
-              name="age"
-              label="उमेर"
+              name='office_bandi_id'
+              label="बन्दीको आई.डि."
+              // defaultValue={band_rand_id}
               required={true}
               control={control}
-              error={errors.age}
-              type="number"
+              error={errors.office_bandi_id} />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseSelect
+              name="bandi_type"
+              label="बन्दीको प्रकार"
+              required={true}
+              control={control}
+              options={[{ label: 'कैदी', value: 'कैदी' },
+              { label: 'थुनुवा', value: 'थुनुवा' },
+              ]}
+              error={errors.bandi_type}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseInput
+              name="bandi_name"
+              label="बन्दीको नाम"
+              required={true}
+              control={control}
+              error={errors.bandi_name}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseSelect
+              name="gender"
+              label="लिङ्ग"
+              required={true}
+              control={control}
+              error={errors.gender}
+              options={genderOptions}
+            />
+          </Grid>
+          <Grid container item xs={12} sm={6} md={3}>
+            <Grid item xs={10} sm={9} md={8}>
+              <ReuseDateField
+                name="dob"
+                label="जन्म मिति (वि.सं.)"
+                readonly={true}
+                required={true}
+                control={control}
+                error={errors.dob}
+              />
+            </Grid>
+            <Grid item xs={2} sm={3} md={4}>
+              <ReuseInput
+                name="age"
+                label="उमेर"
+                required={true}
+                control={control}
+                error={errors.age}
+                type="number"
+              />
+            </Grid>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseSelect
+              name="married_status"
+              label="वैवाहिक अवस्था"
+              required={true}
+              control={control}
+              error={errors.married_status}
+              options={[{ label: 'विवाहित', value: 'Married' },
+              { label: 'अविवाहित', value: 'Unmarried' },
+              ]}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseSelect
+              name="bandi_education"
+              label="बन्दीको शैक्षिक योग्यता"
+              options={[
+                { label: 'सामान्य पढ्न लेख्न जान्ने', value: 'सामान्य पढ्न लेख्न जान्ने' },
+                { label: 'आठ सम्म', value: 'आठ सम्म' },
+                { label: 'एस.एल.सी/एस.ई.ई', value: 'एस.एल.सी/एस.ई.ई' },
+                { label: '+२ वा सो सरह', value: '+२ वा सो सरह' },
+                { label: 'स्नातक', value: 'स्नातक' },
+                { label: 'स्नातकोत्तर', value: 'स्नातकोत्तर' },
+              ]}
+              required={true}
+              control={control}
+              error={errors.bandi_education}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseInput
+              name="bandi_height"
+              label="बन्दीको उचाई"
+              required={false}
+              control={control}
+              error={errors.bandi_height}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseInput
+              name="bandi_weight"
+              label="बन्दीको तौल"
+              required={false}
+              control={control}
+              error={errors.bandi_weight}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseInput
+              name="bandi_huliya"
+              label="बन्दीको हुलिया"
+              required={true}
+              control={control}
+              error={errors.bandi_huliya}
             />
           </Grid>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseSelect
-            name="married_status"
-            label="वैवाहिक अवस्था"
+        <Grid item xs={3} sm={4} md={2}>
+
+          <ReusePhotoInput
+            name="photo"
+            label="फोटो"
             required={true}
             control={control}
-            error={errors.married_status}
-            options={[{ label: 'विवाहित', value: 'Married' },
-            { label: 'अविवाहित', value: 'Unmarried' },
-            ]}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseSelect
-            name="bandi_education"
-            label="बन्दीको शैक्षिक योग्यता"
-            options={[
-              { label: 'सामान्य पढ्न लेख्न जान्ने', value: 'सामान्य पढ्न लेख्न जान्ने' },
-              { label: 'आठ सम्म', value: 'आठ सम्म' },
-              { label: 'एस.एल.सी/एस.ई.ई', value: 'एस.एल.सी/एस.ई.ई' },
-              { label: '+२ वा सो सरह', value: '+२ वा सो सरह' },
-              { label: 'स्नातक', value: 'स्नातक' },
-              { label: 'स्नातकोत्तर', value: 'स्नातकोत्तर' },
-            ]}
-            required={true}
-            control={control}
-            error={errors.bandi_education}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseInput
-            name="bandi_height"
-            label="बन्दीको उचाई"
-            required={false}
-            control={control}
-            error={errors.bandi_height}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseInput
-            name="bandi_weight"
-            label="बन्दीको तौल"
-            required={false}
-            control={control}
-            error={errors.bandi_weight}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <ReuseInput
-            name="bandi_huliya"
-            label="बन्दीको हुलिया"
-            required={true}
-            control={control}
-            error={errors.bandi_huliya}
+            error={errors.photo}
           />
         </Grid>
       </Grid>

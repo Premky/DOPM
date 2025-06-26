@@ -89,6 +89,7 @@ router.get('/get_users', async (req, res) => {
 // Update User Route
 router.put('/update_user/:userid', verifyToken, async (req, res) => {
     const { userid } = req.params;
+    console.log(req.body);
     const { name_np, username, usertype, password, repassword, office, branch, is_active } = req.body;
 
     if (!username || !name_np || !password || !repassword || !office) {

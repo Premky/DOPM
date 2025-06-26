@@ -134,8 +134,13 @@ const BandiIDTable = ({ bandi_id }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <h3>कैदीबन्दीको परिचयपत्रको विवरणः</h3>
+            <Grid container item xs={12}>
+                <Grid>
+                    <h3>कैदीबन्दीको पारिवारीको विवरणः</h3>
+                </Grid>
+                <Grid marginTop={2}>
+                    &nbsp; <Button variant='contained' size='small'>Add</Button>
+                </Grid>
             </Grid>
             <Grid item xs={12}>
                 <TableContainer component={Paper}>
