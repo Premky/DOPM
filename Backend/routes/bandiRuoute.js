@@ -1552,16 +1552,20 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     }
 
     // Office filter
-    console.log('office_id', office_id)
+    console.log('office_id', active_office)
     if (active_office > 2) {
         // Client office — fixed office
         filters.push("bp.current_office_id = ?");
         params.push(active_office);
-    } else if (office_id) {
-        // Optional filter for superadmin
-        filters.push("bp.current_office_id = ?");
-        params.push(office_id);
+    } else{
+
+        console.log('Client Office')
     }
+    // else if (office_id) {
+    //     // Optional filter for superadmin
+    //     filters.push("bp.current_office_id = ?");
+    //     params.push(office_id);
+    // }
 
     const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : '';
 
@@ -1577,7 +1581,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
         ORDER BY m.mudda_name ASC
     `;
 
-    console.log(finalSql)
+    // console.log(finalSql)
     try {
         const result = await query(finalSql, params);
         console.log(result)
