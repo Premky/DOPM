@@ -102,6 +102,7 @@ const BandiMuddaTable = ({ bandi_id }) => {
 
 
     const handleSave = async (updatedData) => {
+        console.log(updatedData)
         try {
             await axios.put(`${BASE_URL}/bandi/update_bandi_mudda/${updatedData.id}`, updatedData);
             fetchBandies();
@@ -114,9 +115,15 @@ const BandiMuddaTable = ({ bandi_id }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <h3>कैदीबन्दीको मुद्दाको विवरणः</h3>
+            <Grid container item xs={12}>
+                <Grid>
+                    <h3>कैदीबन्दीको मुद्दाको विवरणः</h3>
+                </Grid>
+                <Grid marginTop={2}>
+                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd(bandi_id)}>Add</Button>
+                </Grid>
             </Grid>
+
             <Grid item xs={12}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
@@ -144,8 +151,8 @@ const BandiMuddaTable = ({ bandi_id }) => {
                                     <TableCell align="center">{opt.office_name_with_letter_address}</TableCell>
                                     <TableCell align="center">{opt.district_name_np}</TableCell>
                                     <TableCell align="center">{opt.mudda_phesala_antim_office_date}</TableCell>
-                                    <TableCell align="center">{opt.is_main_mudda?'हो':'होइन'}</TableCell>
-                                    <TableCell align="center">{opt.is_last_mudda?'हो':'होइन'}</TableCell>
+                                    <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
+                                    <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
 
                                     <TableCell align="center">
                                         <Grid container spacing={2}>

@@ -317,24 +317,20 @@ const AllBandiTable = () => {
                             <TableCell className='table_head_bg'>तोकिएको कैद (वर्ष, महिना, दिन)</TableCell>
                             <TableCell className='table_head_bg'>कैदी पुर्जीमा उल्लेखित छुटि जाने मिती</TableCell>
                             <TableCell className='table_head_bg'>भुक्तान कैद (वर्ष, महिना, दिन र प्रतिशत)</TableCell>
-                            <TableCell className='table_head_bg'>प्यारोलमा राख्नुपर्ने कैद (वर्ष, महिना, दिन र प्रतिशत)</TableCell>
-                            <TableCell className='table_head_bg'>पुनरावेदनमा नपरेको प्रमाण</TableCell>
                             <TableCell className='table_head_bg'>वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने</TableCell>
-                            <TableCell className='table_head_bg'>तोकिएको जरिवाना/विगो तिरेको प्रमाण</TableCell>
-                            <TableCell className='table_head_bg'>प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण</TableCell>
                             <TableCell className='table_head_bg'>कैफियत</TableCell>
-                            <TableCell className='table_head_bg'>कैफियत(विभागबाट)</TableCell>
                             <TableCell className='table_head_bg'>#</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
+
+
 
                         {/* {filteredKaidi.map((data, index) => { */}
                         {filteredKaidi
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((data, index) => {
                                 const kaidiMuddas = fetchedMuddas[data.id] || [];
-
                                 return (
                                     <>
 
@@ -345,8 +341,8 @@ const AllBandiTable = () => {
                                                 backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
                                                 zIndex: 3
                                             }} rowSpan={kaidiMuddas.length || 1}>
-                                                {page*rowsPerPage+index+1} <br />
-                                    
+                                                {page * rowsPerPage + index + 1} <br />
+
                                             </TableCell>
                                             <TableCell sx={{
                                                 position: 'sticky', left: 50,
@@ -354,17 +350,30 @@ const AllBandiTable = () => {
                                                 backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
                                                 zIndex: 3
                                             }} rowSpan={kaidiMuddas.length || 1}>
-                                                {data.id} <br />{data.bandi_name}<br />
+                                                {data.office_bandi_id} <br />
+                                                {data.bandi_name}<br />
+
                                                 {data.nationality === 'स्वदेशी'
                                                     ? `${data.city_name_np}-${data.wardno},${data.district_name_np},${data.state_name_np},${data.country_name_np}`
                                                     : `${data.bidesh_nagarik_address_details},${data.country_name_np}`}
                                             </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1} >{data.current_age}</TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य'}</TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.nationality}</TableCell>
-                                            <TableCell >{kaidiMuddas[0]?.mudda_name || ''}</TableCell>
-                                            <TableCell>{kaidiMuddas[0]?.vadi || ''}</TableCell>
-                                            <TableCell>{kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
+                                            <TableCell rowSpan={kaidiMuddas.length || 1} >
+                                                {data.current_age}
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य'}
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {data.nationality}
+                                            </TableCell>
+                                            <TableCell >
+                                                {kaidiMuddas[0]?.mudda_name || ''}
+                                            </TableCell>
+                                            <TableCell>
+                                                {kaidiMuddas[0]?.vadi || ''}
+                                            </TableCell>
+                                            <TableCell>
+                                                {kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
                                                 {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
@@ -382,19 +391,10 @@ const AllBandiTable = () => {
                                                 {/* {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
                                             {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
                                             </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {`${data.punarabedan_office}को च.नं. ${data.punarabedan_office_ch_no} मिति ${data.punarabedan_office_date} गतेको पत्रानुसार ।` || ''}
-                                            </TableCell>
+
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.deposited_jariwana_office && data.deposited_jariwana_ch_no && data.deposited_jariwana_date
-                                                    ? `${data.deposited_jariwana_office}को च.नं. ${data.deposited_jariwana_ch_no} मिति ${data.deposited_jariwana_date} गतेको पत्रानुसार ।`
-                                                    : ''}
-                                            </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
 
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopmremark || ''} </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                 <Button onClick={() => navigate(`/bandi/view_saved_record/${data.id}`)}>
                                                     View

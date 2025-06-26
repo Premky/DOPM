@@ -14,17 +14,20 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import FamilyModal from '../Dialogs/FamilyModal';
 
 const FamilyTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
 
     // ✅ Fetch data
     const fetchBandies = async () => {
         try {
             const url = `${BASE_URL}/bandi/get_bandi_family/${bandi_id}`;
-            const response = await axios.get(url);
+            const response = await axios.get(url, { withCredentials: true });
 
             const { Status, Result, Error } = response.data;
 
@@ -73,37 +76,36 @@ const FamilyTable = ({ bandi_id }) => {
         }
     };
 
-    // ✅ EDIT handler
-    const handleEdit = async (data) => {
-        const { value: formValues } = await Swal.fire({
-            title: 'संपादन गर्नुहोस्',
-            html:
-                `<input id="swal-relation" class="swal2-input" placeholder="नाता" value="${data.relation_np || ''}">` +
-                `<input id="swal-name" class="swal2-input" placeholder="नामथर" value="${data.relative_name || ''}">` +
-                `<input id="swal-address" class="swal2-input" placeholder="ठेगाना" value="${data.relative_address || ''}">` +
-                `<input id="swal-contact" class="swal2-input" placeholder="सम्पर्क नं." value="${data.contact_no || ''}">`,
-            focusConfirm: false,
-            confirmButtonText: 'अपडेट गर्नुहोस्',  // ✅ Custom button label
-            showCancelButton: true,
-            cancelButtonText: 'रद्द गर्नुहोस्',
-            preConfirm: () => {
-                return {
-                    relation_np: document.getElementById('swal-relation').value,
-                    relative_name: document.getElementById('swal-name').value,
-                    relative_address: document.getElementById('swal-address').value,
-                    contact_no: document.getElementById('swal-contact').value
-                };
-            }
-        });
+    const handleEdit = (data, bandi_id) => {
+        setEditingData(data, bandi_id);
+        setModalOpen(true);
+    };
+    const handleAdd = (bandi_id) => {
+        setEditingData({ bandi_id });
+        setModalOpen(true);
+    };
 
-        if (formValues) {
-            try {
-                await axios.put(`${BASE_URL}/bandi/update_bandi_family/${data.id}`, formValues);
-                fetchBandies();
-                Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
-            } catch (error) {
-                Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
+    const handleSave = async (formData, id) => {
+        try {
+            if (id) {
+                await axios.put(
+                    `${BASE_URL}/bandi/update_bandi_family/${id}`,
+                    formData,
+                    { withCredentials: true }
+                );
+                Swal.fire('सफल भयो !', 'डेटा अपडेट गरियो', 'success');
+            } else {
+                await axios.post(
+                    `${BASE_URL}/bandi/create_bandi_family`,
+                    { ...formData, bandi_id: bandi_id },
+                    { withCredentials: true }
+                );
+                Swal.fire('सफल भयो !', 'नयाँ डेटा थपियो ।', 'success');
             }
+
+            fetchBandies();
+        } catch (error) {
+            Swal.fire('त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error');
         }
     };
 
@@ -115,7 +117,7 @@ const FamilyTable = ({ bandi_id }) => {
                     <h3>कैदीबन्दीको पारिवारीको विवरणः</h3>
                 </Grid>
                 <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small'>Add</Button>
+                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd(bandi_id)}>Add</Button>
                 </Grid>
             </Grid>
             <Grid item xs={12}>
@@ -155,6 +157,12 @@ const FamilyTable = ({ bandi_id }) => {
                     </Table>
                 </TableContainer>
             </Grid>
+            <FamilyModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleSave}
+                editingData={editingData}
+            />
         </Grid>
     );
 };

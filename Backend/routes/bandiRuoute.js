@@ -323,12 +323,12 @@ router.post('/create_bandi', verifyToken, upload.single('photo'), async (req, re
         await rollbackAsync(); // Rollback the transaction if error occurs
 
         // Delete the uploaded file 
-        if(req.file){
-            const filePath = path.join(__dirname,'uploads','bandi_photos', req.file.filename);
-            fs.unlink(filePath, (unlinkErr)=>{
-                if(unlinkErr){
+        if (req.file) {
+            const filePath = path.join(__dirname, 'uploads', 'bandi_photos', req.file.filename);
+            fs.unlink(filePath, (unlinkErr) => {
+                if (unlinkErr) {
                     console.log('Failed to delete uploaded file:', unlinkErr);
-                }else{
+                } else {
                     console.log('Uploaded file deleted due to error.');
                 }
             });
@@ -630,37 +630,64 @@ router.get('/get_bandi_family/:id', async (req, res) => {
 router.post('/create_bandi_family', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-    // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
-    // console.log(req.body)
-    const {
-        office_bandi_id, bandi_name, bandi_relative_address, bandi_relative_contact_no, bandi_relative_name, bandi_relative_relation, bandi_number_of_children
-    } = req.body;
 
+    const { bandi_id, relation_np, relative_name, relative_address, contact_no } = req.body;
+
+    // console.log(req.body)
 
     try {
         await beginTransactionAsync();
         let sql = ''
         let values = ''
-        if (bandi_number_of_children) {
-            values = [bandi_name, bandi_relative_relation, bandi_number_of_children]
-            sql = `
-            INSERT INTO bandi_relative_info(
-        bandi_id, relation_id, no_of_children) VALUES(?)`;
-        } else {
-            values = [bandi_name, bandi_relative_name, bandi_relative_relation, bandi_relative_address, bandi_relative_contact_no];
-            sql = `
-            INSERT INTO bandi_relative_info(
+
+        values = [bandi_id, relative_name, relation_np, relative_address, contact_no];
+        sql = `INSERT INTO bandi_relative_info(
             bandi_id, relative_name, relation_id, relative_address, contact_no) VALUES(?)`;
-        }
-
-
         const result = await queryAsync(sql, [values]);
-        const bandi_id = result.insertId;
-
         await commitAsync(); // Commit the transaction
-
         return res.json({
             Result: bandi_id,
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
+    }
+});
+
+router.put('/update_bandi_family/:id', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    const id = req.params.id;
+    console.log(id)
+    const { relation_np, relative_name, relative_address, contact_no } = req.body;
+
+    // console.log(req.body)
+
+    try {
+        await beginTransactionAsync();
+        let sql = ''
+        let values = ''
+
+        values = [relative_name, relation_np, relative_address, contact_no, id];
+        sql = `
+            UPDATE bandi_relative_info 
+            SET relative_name = ?, relation_id = ?, relative_address = ?, contact_no = ? 
+            WHERE id = ?
+            `;
+
+        const result = await queryAsync(sql, values);
+        await commitAsync(); // Commit the transaction
+        return res.json({
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         });
@@ -696,6 +723,82 @@ router.get('/get_bandi_id_card/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.post('/create_bandi_IdCard', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    const { bandi_id, card_type_id, card_no, card_issue_district, card_issue_date } = req.body;
+
+    // console.log(req.body)
+
+    try {
+        await beginTransactionAsync();
+        let sql = ''
+        let values = ''
+
+        values = [bandi_id, card_type_id, card_no, card_issue_district, card_issue_date];
+        sql = `INSERT INTO bandi_id_card_details(
+            bandi_id, card_type_id, card_no, card_issue_district, card_issue_date) VALUES(?)`;
+        const result = await queryAsync(sql, [values]);
+        await commitAsync(); // Commit the transaction
+        return res.json({
+            Result: bandi_id,
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
+    }
+});
+
+router.put('/update_bandi_IdCard/:id', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const id = req.params.id;
+    // console.log(id)
+    const { card_type_id, card_no, card_issue_district, card_issue_date } = req.body;
+
+    // console.log(req.body)
+
+    try {
+        await beginTransactionAsync();
+        let sql = ''
+        let values = ''
+
+        values = [card_type_id, card_no, card_issue_district, card_issue_date, id];
+        sql = `
+            UPDATE bandi_id_card_details 
+            SET card_type_id=?, card_no=?, card_issue_district=?, card_issue_date = ? 
+            WHERE id = ?
+            `;
+
+        const result = await queryAsync(sql, values);
+        await commitAsync(); // Commit the transaction
+        return res.json({
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
     }
 });
 
@@ -1557,7 +1660,7 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
         // Client office — fixed office
         filters.push("bp.current_office_id = ?");
         params.push(active_office);
-    } else{
+    } else {
 
         console.log('Client Office')
     }

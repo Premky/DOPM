@@ -14,11 +14,14 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import IdCardModal from '../Dialogs/IdCardModal';
 
 const BandiIDTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
 
     // ✅ Fetch data
     const fetchBandies = async () => {
@@ -92,42 +95,36 @@ const BandiIDTable = ({ bandi_id }) => {
     };
 
     // ✅ EDIT handler
-    const handleEdit = async (data) => {
-        // Generate <option> HTML from govtIdOptions
-        const selectOptionsHtml = govtIdOptions.map(opt => `
-        <option value="${opt.id}" ${opt.id === data.card_type_id ? 'selected' : ''}>${opt.govt_id_name_np}</option>
-    `).join('');
+    const handleEdit = (data, bandi_id) => {
+        setEditingData(data, bandi_id);
+        setModalOpen(true);
+    };
+    const handleAdd = (bandi_id) => {
+        setEditingData({ bandi_id });
+        setModalOpen(true);
+    };
 
-        const { value: formValues } = await Swal.fire({
-            title: 'संपादन गर्नुहोस्',
-            html:
-                `<select id="swal-relation" class="swal2-input">${selectOptionsHtml}</select>` +
-                `<input id="swal-name" class="swal2-input" placeholder="नामथर" value="${data.card_no || ''}">` +
-                `<input id="swal-address" class="swal2-input" placeholder="ठेगाना" value="${data.card_issue_district || ''}">` +
-                `<input id="swal-contact" class="swal2-input" placeholder="सम्पर्क नं." value="${data.card_issue_date || ''}">`,
-            focusConfirm: false,
-            confirmButtonText: 'अपडेट गर्नुहोस्',
-            showCancelButton: true,
-            cancelButtonText: 'रद्द गर्नुहोस्',
-            preConfirm: () => {
-                return {
-                    govt_id_name_np: document.getElementById('swal-relation').value,
-                    // govt_id_name_np: document.getElementById('swal-relation').value,
-                    card_no: document.getElementById('swal-name').value,
-                    card_issue_district: document.getElementById('swal-address').value,
-                    card_issue_date: document.getElementById('swal-contact').value
-                };
+    const handleSave = async (formData, id) => {
+        try {
+            if (id) {
+                await axios.put(
+                    `${BASE_URL}/bandi/update_bandi_IdCard/${id}`,
+                    formData,
+                    { withCredentials: true }
+                );
+                Swal.fire('सफल भयो !', 'डेटा अपडेट गरियो', 'success');
+            } else {
+                await axios.post(
+                    `${BASE_URL}/bandi/create_bandi_IdCard`,
+                    { ...formData, bandi_id: bandi_id },
+                    { withCredentials: true }
+                );
+                Swal.fire('सफल भयो !', 'नयाँ डेटा थपियो ।', 'success');
             }
-        });
 
-        if (formValues) {
-            try {
-                await axios.put(`${BASE_URL}/bandi/update_bandi_id_card/${data.id}`, formValues);
-                fetchBandies();
-                Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
-            } catch (error) {
-                Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
-            }
+            fetchBandies();
+        } catch (error) {
+            Swal.fire('त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error');
         }
     };
 
@@ -136,10 +133,10 @@ const BandiIDTable = ({ bandi_id }) => {
         <Grid container spacing={2}>
             <Grid container item xs={12}>
                 <Grid>
-                    <h3>कैदीबन्दीको पारिवारीको विवरणः</h3>
+                    <h3>कैदीबन्दीको परिचय पत्रको विवरणः</h3>
                 </Grid>
                 <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small'>Add</Button>
+                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd(bandi_id)}>Add</Button>
                 </Grid>
             </Grid>
             <Grid item xs={12}>
@@ -179,6 +176,12 @@ const BandiIDTable = ({ bandi_id }) => {
                     </Table>
                 </TableContainer>
             </Grid>
+            <IdCardModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleSave}
+                editingData={editingData}
+            />
         </Grid>
     );
 };
