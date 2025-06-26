@@ -61,8 +61,7 @@ const CountReport = () => {
 
             const response = await axios.get(fullUrl, { withCredentials: true });
 
-            const { Status, Result, Error } = response.data;
-
+            const { Status, Result, Error } = response.data;            
             if (Status) {
                 if (Result?.length > 0) {
                     setRecords(Result);

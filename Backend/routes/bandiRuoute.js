@@ -1577,9 +1577,10 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
         ORDER BY m.mudda_name ASC
     `;
 
-    // console.log(finalSql)
+    console.log(finalSql)
     try {
         const result = await query(finalSql, params);
+        // console.log(result)
         res.json({ Status: true, Result: result });
     } catch (err) {
         console.error("Database Query Error:", err);
