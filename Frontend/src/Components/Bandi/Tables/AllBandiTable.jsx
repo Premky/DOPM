@@ -4,7 +4,7 @@ import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
-import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import ReusePayroleStatus from '../../ReuseableComponents/ReusePayroleStatus';
 import PayroleStatusModal from '../Dialogs/PayroleStatusModal';
 import Swal from 'sweetalert2';
@@ -57,7 +57,7 @@ const AllBandiTable = () => {
 
     //Watch Variables:
     const searchOffice = watch('searchOffice');
-    const searchpayroleStatus = watch('searchPayroleStatus');
+    const nationality = watch('nationality');
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState([]);
@@ -67,7 +67,7 @@ const AllBandiTable = () => {
         setLoading(true);
         try {
             const response = await axios.get(`${BASE_URL}/bandi/get_all_office_bandi`, {
-                params: { page, limit: rowsPerPage,searchOffice },
+                params: { page, limit: rowsPerPage, searchOffice, nationality },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             });
 
@@ -117,7 +117,7 @@ const AllBandiTable = () => {
     useEffect(() => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice]);
+    }, [page, rowsPerPage, searchOffice, nationality]);
 
 
 
@@ -159,7 +159,7 @@ const AllBandiTable = () => {
 
                 {/* <form onSubmit={handleSubmit(onSubmit)}> */}
                 <Grid2 container spacing={2}>
-                    <Grid2 xs={12} sm={4}>
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
@@ -168,31 +168,12 @@ const AllBandiTable = () => {
                         />
                     </Grid2>
 
-                    <Grid2 xs={12} sm={4}>
-                        <ReusePayroleStatus
-                            name="searchPayroleStatus"
-                            label="Status"
-                            control={control}
-                        />
-                    </Grid2>
-
-                    <Grid2 xs={12} sm={4}>
-                        {/* <Controller
-                                name="nationality"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        fullWidth
-                                        label="Nationality"
-                                        variant="outlined"
-                                    />
-                                )}
-                            /> */}
+                    <Grid2 size={{ xs: 12, sm: 1 }}>
                         <ReuseSelect
                             name="nationality"
                             label='राष्ट्रियता'
                             options={[
+                                { label: 'सबै', value: '' },
                                 { label: 'स्वदेशी', value: 'स्वदेशी' },
                                 { label: 'विदेशी', value: 'विदेशी' }
                             ]}
@@ -222,9 +203,9 @@ const AllBandiTable = () => {
                                 <TableCell
                                     className="table_head_bg"
                                     sx={{
-                                        position: 'sticky',                                        
+                                        position: 'sticky',
                                         left: 0,
-                                        top:0,
+                                        top: 0,
                                         backgroundColor: 'blue',
                                         zIndex: 4,
                                         minWidth: 60,
@@ -352,16 +333,27 @@ const AllBandiTable = () => {
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {/* {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br />
-                                            {calculateBSDate(data.thuna_date_bs, data.release_date_bs).percentage || ''} */}
+                                                {data.thuna_date_bs && data.release_date_bs ? (<>
+                                                    {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br />
+                                                    {calculateBSDate(data.thuna_date_bs, data.release_date_bs).percentage || ''}
+                                                </>) : ''}
                                             </TableCell>
 
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {formattedDateNp && data.thuna_date_bs ? (<>
+                                                    {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
+                                                    {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''}
+                                                </>) : ''}
+
                                                 {/* {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
                                             {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''} */}
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {data.release_date_bs && formattedDateNp? (<>
+                                                    {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
+                                                    {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''}
+                                                </>) : ''}
                                                 {/* {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
                                             {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
                                             </TableCell>

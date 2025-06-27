@@ -480,11 +480,27 @@ router.get('/get_bandi/:id', async (req, res) => {
 router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const searchOffice = req.query.searchOffice || 0;
+    const nationality = req.query.nationality || 0;
     const page = parseInt(req.query.page) || 0;
     const limit = parseInt(req.query.limit) || 25;
     const offset = page * limit;
 
-    const baseWhere = active_office >= 2 ? `WHERE bp.current_office_id = ${active_office}` : '';
+    let baseWhere = '';
+    if (searchOffice) {
+        baseWhere = `WHERE bp.current_office_id = ${searchOffice}`;
+    } else if (active_office >= 2) {
+        baseWhere = `WHERE bp.current_office_id = ${active_office}`;
+    }
+
+    if (nationality) {
+        // console.log(nationality)
+        if (baseWhere) {
+            baseWhere += ` AND bp.nationality = '${nationality}'`;  // Note quotes for string
+        } else {
+            baseWhere = `WHERE bp.nationality = '${nationality}'`;
+        }
+
+    }
 
     try {
         // STEP 1: Get paginated bandi IDs
@@ -520,13 +536,17 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
                 bmd_combined.is_last_mudda,
                 bmd_combined.office_name_with_letter_address,
                 bmd_combined.vadi,
-                bmd_combined.mudda_phesala_antim_office_date
+                bmd_combined.mudda_phesala_antim_office_date,
+                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+                bkd.thuna_date_bs, bkd.release_date_bs
+
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
             LEFT JOIN np_state ns ON ba.province_id = ns.state_id
             LEFT JOIN np_district nd ON ba.district_id = nd.did
             LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+            LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id
             LEFT JOIN (
                 SELECT 
                     bmd.bandi_id,
@@ -592,8 +612,6 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
         return res.json({ Status: false, Error: 'Query Error' });
     }
 });
-
-
 
 
 router.get('/get_all_office_bandi1', verifyToken, async (req, res) => {
@@ -1897,6 +1915,8 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
 
         console.log('Client Office')
     }
+
+
     // else if (office_id) {
     //     // Optional filter for superadmin
     //     filters.push("bp.current_office_id = ?");
