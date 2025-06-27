@@ -29,8 +29,9 @@ const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
 
   const {
-    handleSubmit, watch, setValue, register, control, formState: { errors },
+    handleSubmit, watch, setValue, register, reset, control, formState: { errors },
   } = useForm({
+    mode:'onBlur',
     defaultValues: {
       office_bandi_id: '',
       // other fields...
@@ -145,26 +146,26 @@ const BandiPersonForm = () => {
       const method = editing ? 'PUT' : 'POST';
 
       //use formdata compulsary to upload images 
-      const formData = new  FormData();
+      const formData = new FormData();
 
       //Append all fields except arrays/objects
-      for (const key in data){
-        if(key === 'photo' && data[key]?.[0]){
+      for (const key in data) {
+        if (key === 'photo' && data[key]?.[0]) {
           //Handle Photo file (from file input)
           formData.append('photo', data[key][0]); //if using MUI FileInput, it's usually array
-        }else if(Array.isArray(data[key])){
+        } else if (Array.isArray(data[key])) {
           //Handle family array or others
           formData.append(key, JSON.stringify(data[key]));
-        }else{
-          formData.append(key,data[key])
+        } else {
+          formData.append(key, data[key])
         }
       }
 
       const response = await axios({
         method,
         url,
-        data:formData,
-        headers:{'Content-Type':'multipart/form-data',},
+        data: formData,
+        headers: { 'Content-Type': 'multipart/form-data', },
         withCredentials: true,
       });
 
@@ -277,6 +278,7 @@ const BandiPersonForm = () => {
               name="bandi_education"
               label="बन्दीको शैक्षिक योग्यता"
               options={[
+                { label: 'थाहा नभएको', value: 'थाहा नभएको'},
                 { label: 'सामान्य पढ्न लेख्न जान्ने', value: 'सामान्य पढ्न लेख्न जान्ने' },
                 { label: 'आठ सम्म', value: 'आठ सम्म' },
                 { label: 'एस.एल.सी/एस.ई.ई', value: 'एस.एल.सी/एस.ई.ई' },
@@ -777,7 +779,9 @@ const BandiPersonForm = () => {
                     <ReuseInput
                       name={`family[${index}].bandi_relative_contact_no`}
                       label="सम्पर्क नं."
-                      type="number"
+                      onlyDigits={true}
+                      minLength={10}
+                      maxLength={10}
                       required={true}
                       control={control}
                       error={errors?.family?.[index]?.bandi_relative_contact_no}

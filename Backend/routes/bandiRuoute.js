@@ -488,9 +488,9 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     let baseWhere = '';
     if (searchOffice) {
         baseWhere = `WHERE bp.current_office_id = ${searchOffice}`;
-    } else if (active_office==1 || active_office==2) {
-        baseWhere= `WHERE bp.current_office_id=''`;
-    } else{
+    } else if (active_office == 1 || active_office == 2) {
+        baseWhere = `WHERE bp.current_office_id=''`;
+    } else {
         baseWhere = `WHERE bp.current_office_id = ${active_office}`;
     }
 
@@ -503,7 +503,7 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
         }
     }
 
-        if (nationality) {
+    if (nationality) {
         // console.log(nationality)
         if (baseWhere) {
             baseWhere += ` AND bp.nationality = '${nationality}'`;  // Note quotes for string
@@ -776,6 +776,151 @@ router.get('/get_selected_bandi/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+router.get('/get_bandi_address/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT * FROM bandi_address_detail_view 
+        WHERE bandi_id = ?
+    `;
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi Address not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+
+router.put('/update_bandi_address/:id', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    const id = req.params.id;
+    console.log(id)
+    const { bandi_id, nationality_id, province_id, district_id, gapa_napa_id, wardno, bidesh_nagarik_address_details } = req.body;
+
+    // console.log(req.body)
+
+    try {
+        await beginTransactionAsync();
+        let sql = ''
+        let values = ''
+
+        if (nationality_id == 1) {
+            values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, id];
+            sql = `
+                UPDATE bandi_address
+                SET nationality_id = ?, province_id = ?, district_id = ?, gapa_napa_id = ? , wardno=? WHERE id = ?`;
+        } else {
+            values = [nationality_id, bidesh_nagarik_address_details, id];
+            sql = `UPDATE bandi_address SET nationality_id=?, bidesh_nagarik_address_details=? WHERE id =?`
+        }
+
+        const result = await queryAsync(sql, values);
+        await commitAsync(); // Commit the transaction
+        return res.json({
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
+    }
+});
+
+router.get('/get_bandi_kaid_details/:id', async (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bkd.*, bp.bandi_type FROM bandi_kaid_details bkd 
+        LEFT JOIN bandi_person bp ON bkd.bandi_id=bp.id 
+        WHERE bandi_id = ?
+    `;
+    try {
+        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        // console.log(result)
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi Kaid Details not found" });
+        }
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error(err);
+        return res.json({ Status: false, Error: "Query Error" });
+    }
+});
+
+
+router.put('/update_bandi_kaid_details/:id', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    const id = req.params.id;
+    console.log(id)
+    const { bandi_id, bandi_type, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs } = req.body;
+
+    // console.log(req.body)
+    let thunaDateAd = '1900-01-01'
+    let releaseDateAd = '1900-01-01'
+    if (thuna_date_bs) {
+        thunaDateAd = await bs2ad(thuna_date_bs);
+    }
+    if (release_date_bs) {
+        releaseDateAd = await bs2ad(release_date_bs);
+    }
+
+    try {
+        await beginTransactionAsync();
+        let sql1 = ''
+        let values1 = ''
+        let sql2 = ''
+        let values2 = ''
+        if (bandi_type == 'कैदी') {
+            values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,thunaDateAd, release_date_bs,releaseDateAd, id];
+            sql1 = `
+                UPDATE bandi_kaid_details
+                SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?, thuna_date_bs = ? , thuna_date_ad=?,
+                    release_date_bs=?, release_date_ad=?  WHERE id = ?`;
+        } else if(bandi_type=='थुनुवा'){
+            values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,thunaDateAd, id];
+            sql1 = `UPDATE bandi_kaid_details SET hirasat_years=?, hirasat_months=?, hirasat_days=?,
+                    thuna_date_bs=?, thuna_date_ad=? WHERE id =?`
+        }
+
+        await queryAsync(sql1, values1);
+
+        sql2=`UPDATE bandi_person SET bandi_type=? WHERE id=?`
+        values2=[bandi_type, bandi_id]
+        await queryAsync(sql2, values2);
+
+        await commitAsync(); // Commit the transaction
+        return res.json({
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        });
     }
 });
 

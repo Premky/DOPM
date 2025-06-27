@@ -35,10 +35,13 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await axios.get(`${BASE_URL}/auth/session`, { withCredentials: true });
             if (response.data.loggedIn) {
+                // console.log(response.data)
                 const authData = {
                     user: response.data.user.username,
                     office_np: response.data.user.office_np,
                     office_id: response.data.user.office_id,
+                    usertype_en: response.data.user.usertype_en,
+                    usertype_np: response.data.user.usertype_np,
                     valid: true,
                 };
                 dispatch({ type: "LOGIN", payload: authData });

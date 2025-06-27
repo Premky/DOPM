@@ -89,7 +89,7 @@ router.get('/get_users', async (req, res) => {
 // Update User Route
 router.put('/update_user/:userid', verifyToken, async (req, res) => {
     const { userid } = req.params;
-    console.log(req.body);
+    // console.log(req.body);
     const { name_np, username, usertype, password, repassword, office, branch, is_active } = req.body;
 
     if (!username || !name_np || !password || !repassword || !office) {
@@ -149,7 +149,8 @@ router.delete('/delete_user/:id', async (req, res) => {
 // Login Route
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    console.log(req.body)
+    // console.log(req.body)
+    console.log(username);
     const validation = validateLoginInput(username, password);
     if (!validation.isValid) {
         return res.status(400).json({ loginStatus: false, Error: validation.message });
@@ -158,9 +159,10 @@ router.post('/login', async (req, res) => {
     const fetchUserQuery = `
         SELECT DISTINCT u.*,
                         o.office_name_nep AS office_np, o.office_name_eng AS office_en,                     
-                        o.id AS office_id
+                        o.id AS office_id, ut.usertype_en, ut.usertype_np
                         FROM users u
-                        LEFT JOIN offices o ON u.office_id = o.id    
+                        LEFT JOIN offices o ON u.office_id = o.id
+                        LEFT JOIN usertypes ut ON u.usertype=ut.id    
                         WHERE u.user_login_id = ?`;
                         // , b.name_np AS branch_name
                 // LEFT JOIN branch b ON u.branch_id = b.id
@@ -182,7 +184,7 @@ router.post('/login', async (req, res) => {
                 return res.status(401).json({ loginStatus: false, Error: "Invalid username or password" });
             }
 
-
+            // console.log('user', user)
 
             const userdetails = {
                 id: user.id,
@@ -192,13 +194,15 @@ router.post('/login', async (req, res) => {
                 user_permission: user.user_permission,
                 is_staff: user.is_staff,
                 is_active: user.is_active,
-                is_superuser: user.issuperusere,
+                is_superuser: user.issuperuser,
                 last_login: user.last_login,
                 join_date: user.join_date,
                 office_id: user.office_id,
                 office_np: user.office_np,
                 office_en: user.office_en,
                 branch_name: user.branch_name,
+                usertype_en: user.usertype_en, 
+                usertype_np: user.usertype_np
             };
 
             const token = jwt.sign(userdetails, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -246,7 +250,7 @@ router.get('/session', verifyToken, (req, res) => {
     // console.log('session', req.user)
     if (!req.user) return res.status(401).json({ loggedIn: false });
 
-    const { name_en, username, email, is_staff, is_active, last_login, join_date, office_id, office_np, office_en } = req.user;
+    const { name_en, username, email, is_staff, is_active, last_login, join_date, office_id, office_np, office_en, usertype_en, usertype_np } = req.user;
 
     return res.json({
         loggedIn: true,
@@ -258,7 +262,8 @@ router.get('/session', verifyToken, (req, res) => {
             is_active, 
             last_login, 
             join_date, 
-            office_id, office_np, office_en
+            office_id, office_np, office_en,
+            usertype_en, usertype_np
         }
     });
 });

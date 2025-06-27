@@ -3,19 +3,22 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../../Context/AuthContext";
 
 const SuperAdmin = () => {
-    const { state } = useAuth();
-    
-    console.log("Auth State:", state); // Debugging
+    const { state, loading } = useAuth();
 
-    // Ensure user exists before checking role
-    const userRole = state.user?.role || state.role || state.usertype; 
+    if (loading) return <div>Loading...</div>; // Don't check anything until loading is done
 
-    // Redirect if not authenticated
     if (!state.valid) return <Navigate to="/login" replace />;
 
-    // Redirect if user is not Superuser
-    if (userRole == "Admin" || userRole == "सुपरयुजर") return <Outlet /> ;
-console.log("User Role:", userRole); // Debugging
+    const userRole = state.role || state.usertype_en || state.usertype_np;
+
+    console.log("Auth State:", state);
+    console.log("User Role:", userRole);
+
+    // Check for Superadmin role
+    if (userRole === "Superadmin" || userRole === "सुपरएडमिन") {
+        return <Outlet />;
+    }
+
     return <Navigate to="/login" replace />;
 };
 

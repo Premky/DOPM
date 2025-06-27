@@ -6,6 +6,8 @@ import BandiIDTable from './Tables/BandiIDTable'
 import BandiMuddaTable from './Tables/BandiMuddaTable'
 import BandiFineTable from './Tables/BandiFineTable'
 import BandiPunrabednTable from './Tables/BandiPunrabednTable.jsx'
+import BandiAddressTable from './Tables/BandiAddressTable.jsx'
+import BandiKaidTable from './Tables/BandiKaidTable.jsx'
 
 const ViewBandi = ({ bandi }) => {
     const params = useParams();
@@ -15,6 +17,8 @@ const ViewBandi = ({ bandi }) => {
     return (
         <>
             <BandiTable bandi_id={bandi_id} />
+            <BandiKaidTable bandi_id={bandi_id}/>
+            <BandiAddressTable bandi_id={bandi_id}/>
             <FamilyTable bandi_id={bandi_id} />
             <BandiIDTable bandi_id={bandi_id} />
             <BandiMuddaTable bandi_id={bandi_id} />

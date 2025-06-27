@@ -89,12 +89,7 @@ const BandiTable = ({ bandi_id }) => {
                                 <TableCell>हुलिया</TableCell>
                                 <TableCell>{fetchedBandi.bandi_huliya}</TableCell>
                             </TableRow>
-                            <TableRow>
-                                <TableCell>ठेगाना</TableCell>
-                                <TableCell>
-                                    {fetchedBandi.district_name_np},{fetchedBandi.city_name_np}-{fetchedBandi.wardno},{fetchedBandi.country_name_np}
-                                </TableCell>
-                            </TableRow>
+
                             <TableRow>
                                 <TableCell>हिरासत/पक्राउ परेको मिती</TableCell>
                                 <TableCell>{fetchedBandi.hirasat_date_bs}</TableCell>

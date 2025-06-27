@@ -1,92 +1,88 @@
-import { useState, Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import { AuthProvider, useAuth } from './Context/AuthContext';
-import ProtectedRoute from './Context/ProtectedRoute';
-import './index.css'
+import { AuthProvider } from './Context/AuthContext';
+
 // Lazy-loaded components
 const Login = lazy(() => import('./Components/Auth/Login'));
-// const Sidenav = lazy(() => import('./Components/Nav/Sidenav'));
-const CombinedNavBar = lazy(() => import('./Components/Nav/CombinedNavBar'));
-const Users = lazy(() => import('./Components/AdminPanel/User/CreateUser'));
+const CombinedNav = lazy(() => import('./Components/Nav/CombinedNav'));
+const CreateUser = lazy(() => import('./Components/AdminPanel/User/CreateUser'));
 const OfficeBranchPage = lazy(() => import('./Components/AdminPanel/Office/OfficeBranchPage'));
 const Office = lazy(() => import('./Components/AdminPanel/Office/OfficeForm'));
 
-// Middleware Components
-import SuperAdmin from './Components/Auth/middlewares/SuperAdmin';
-import AdminCheck from './Components/Auth/middlewares/AdminCheck';
-import UserCheck from './Components/Auth/middlewares/UserCheck';
-import CreateUser from './Components/AdminPanel/User/CreateUser';
-import AssignApps from './Components/AdminPanel/User/AssignApps';
-import Dashboard from './Components/Dashboard/Dashboard';
-// import BandiForm from './Components/Bandi/BandiForm';
-// import BandiFamilyForm from './Components/Bandi/BandiFamilyForm';
-// import PrisionerReleaseForm from './Components/Bandi/PrisionerReleaseForm';
-// import BandiReleaseForm from './Components/Bandi/BandiReleaseForm';
-// import ParoleForm from './Components/Bandi/ParoleForm';
+const AdminCheck = lazy(() => import('./Components/Auth/middlewares/AdminCheck'));
+const LoggedIn = lazy(() => import('./Components/Auth/middlewares/LoggedIn'));
 
-import BandiPersonForm from './Components/Bandi/Forms/BandiPersonForm';
-import BandiFamilyForm from './Components/Bandi/Forms/BandiFamilyForm';
-import ViewBandi from './Components/Bandi/ViewBandi';
-import PayroleForm from './Components/Bandi/Forms/PayroleForm';
-import PayroleTable from './Components/Bandi/Tables/PayroleTable';
-import CombinedNav from './Components/Nav/CombinedNav';
-import BandiTable from './Components/Bandi/Tables/BandiTable';
-import AllBandiTable from './Components/Bandi/Tables/AllBandiTable';
-import PayroleMakebari from './Components/Bandi/Tables/PayroleMakebari';
-import PayroleLogForm from './Components/Bandi/Forms/PayroleLogForm';
-import CountReport from './Components/Bandi/Tables/Counts/CountReport';
-import LoggedIn from './Components/Auth/middlewares/LoggedIn';
+const CountReport = lazy(() => import('./Components/Bandi/Tables/Counts/CountReport'));
+const AllBandiTable = lazy(() => import('./Components/Bandi/Tables/AllBandiTable'));
+const BandiPersonForm = lazy(() => import('./Components/Bandi/Forms/BandiPersonForm'));
+const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
+const ViewBandi = lazy(() => import('./Components/Bandi/ViewBandi'));
+
+const PayroleMakebari = lazy(() => import('./Components/Bandi/Tables/PayroleMakebari'));
+const PayroleForm = lazy(() => import('./Components/Bandi/Forms/PayroleForm'));
+const PayroleTable = lazy(() => import('./Components/Bandi/Tables/PayroleTable'));
+const PayroleLogForm = lazy(() => import('./Components/Bandi/Forms/PayroleLogForm'));
+
+import { Outlet } from 'react-router-dom';
+
+// Layout component to wrap protected routes with navigation
+const ProtectedLayout = () => <CombinedNav />;
+
+// Layout component that just renders child routes
+const OutletLayout = () => <Outlet />;
+
 function App() {
   return (
-    <AuthProvider> {/* Move AuthProvider to wrap everything */}
+    <AuthProvider>
       <Suspense fallback={<div>Loading...</div>}>
         <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
+
+            {/* Public Route */}
             <Route path="/login" element={<Login />} />
 
-            {/* Protected Routes */}
-            <Route path='/' element={<CombinedNav />}>
+            {/* Protected Routes with Navigation */}
+            <Route element={<ProtectedLayout />}> 
+
+              {/* Admin routes wrapped with AdminCheck */}
               <Route element={<AdminCheck />}>
-                <Route path="/admin">
-                  <Route path='create_user' element={<CreateUser />} />
+                <Route path="admin">
+                  <Route path="create_user" element={<CreateUser />} />
+                  <Route path="branch" element={<OfficeBranchPage />} />
+                  <Route path="office" element={<Office />} />
                 </Route>
               </Route>
 
-              {/* <Route element={<LoggedIn />}> */}
-                <Route path='/bandi'>
-                  <Route path='dashboard' element={<CountReport />} />
-                  <Route path='bandi_details' element={<AllBandiTable />} />
-                  <Route path='create_bandi' element={<BandiPersonForm />} />
-                  <Route path='create_bandi_family' element={<BandiFamilyForm />} />
+              {/* Routes wrapped with LoggedIn middleware */}
+              <Route element={<LoggedIn />}>
+                {/* Bandis Routes */}
+                <Route path="bandi" element={<OutletLayout />}>
+                  <Route index element={<CountReport />} />
+                  <Route path="dashboard" element={<CountReport />} />
+                  <Route path="bandi_details" element={<AllBandiTable />} />
+                  <Route path="create_bandi" element={<BandiPersonForm />} />
+                  <Route path="create_bandi_family" element={<BandiFamilyForm />} />
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                 </Route>
-                <Route path='/payrole'>
+
+                {/* Payrole Routes */}
+                <Route path="payrole" element={<OutletLayout />}>
+                  <Route index element={<PayroleMakebari />} />
                   <Route path="create_payrole" element={<PayroleForm />} />
-                  <Route path='payrole_table' element={<PayroleTable />} />
-                  <Route path='maskebari_table' element={<PayroleMakebari />} />
-                  <Route path='payrole_log' element={<PayroleLogForm />} />
+                  <Route path="payrole_table" element={<PayroleTable />} />
+                  <Route path="maskebari_table" element={<PayroleMakebari />} />
+                  <Route path="payrole_log" element={<PayroleLogForm />} />
                 </Route>
-              {/* </Route> */}
+              </Route>
 
+              {/* Catch all for unknown routes */}
+              <Route path="*" element={<h2>Page not found</h2>} />
             </Route>
-            {/* <Route path='/' element={<ParoleForm />}/> */}
-            {/* <Route path='/' element={<BandiReleaseForm />}/> */}
-            {/* <Route path='/' element={<BandiForm />}/> */}
 
-            {/* {/* <Route path='/' element={<ProtectedRoute />}> */}
-            {/* <Route path='/' element={<CombinedNavBar />}> */}
-            {/* <Route path='/sadmin' element={<SuperAdmin />}>
-              <Route path='branch' element={<OfficeBranchPage />} />
-              <Route path='users' element={<Users />} />
-              <Route path='office' element={<Office />} />
-            </Route> */}
-            {/* </Route> */}
-            {/* </Route> */}
           </Routes>
         </BrowserRouter>
-      </Suspense >
-    </AuthProvider >
+      </Suspense>
+    </AuthProvider>
   );
 }
 
