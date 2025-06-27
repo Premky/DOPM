@@ -2,22 +2,26 @@ import NepaliDate from 'nepali-datetime';
 
 export const calculateBSDate = (startDate, endDate, referenceDuration = null) => {
   try {
-    // Validate input
+    // Step 1: Check if both inputs exist
     if (!startDate || !endDate) {
-      throw new Error(`Invalid input: startDate="${startDate}", endDate="${endDate}"`);
+      throw new Error(`Missing input: ${!startDate ? 'startDate is missing' : ''} ${!endDate ? 'endDate is missing' : ''}`);
     }
 
-    const startDate1 = new NepaliDate(startDate);
-    const endDate1 = new NepaliDate(endDate);
-
-    // Check if valid NepaliDate objects
-    const startAD = startDate1.getDateObject();
-    const endAD = endDate1.getDateObject();
-
-    if (isNaN(startAD) || isNaN(endAD)) {
-      throw new Error(`Invalid date objects from NepaliDate: start="${startDate}", end="${endDate}"`);
+    // Step 2: Attempt to parse dates
+    let startDate1, endDate1;
+    try {
+      startDate1 = new NepaliDate(startDate);
+    } catch (e) {
+      throw new Error(`Invalid startDate format: "${startDate}"`);
     }
 
+    try {
+      endDate1 = new NepaliDate(endDate);
+    } catch (e) {
+      throw new Error(`Invalid endDate format: "${endDate}"`);
+    }
+
+    // Duration calculation
     const startYear = startDate1.year;
     const startMonth = startDate1.month + 1;
     const startDay = startDate1.day;
@@ -40,14 +44,27 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
       months += 12;
     }
 
-    // Total days in AD
-    let totalDays = Math.floor((endAD - startAD) / (1000 * 60 * 60 * 24));
-    if (totalDays < 0) totalDays = 0;
+    const startAD = startDate1.getDateObject();
+    const endAD = endDate1.getDateObject();
 
-    // Optional percentage calculation
-    let percentage = null;
-    if (referenceDuration && referenceDuration.totalDays > 0) {
-      percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
+    // Step 3: Validate the converted JS Date objects
+    if (isNaN(startAD)) {
+      throw new Error(`startDate "${startDate}" could not be converted to a valid Date`);
+    }
+    if (isNaN(endAD)) {
+      throw new Error(`endDate "${endDate}" could not be converted to a valid Date`);
+    }
+
+    let totalDays = '';
+    let percentage = '';
+    if (isNaN(startAD) || isNaN(endAD)) {
+      totalDays = Math.floor((endAD - startAD) / (1000 * 60 * 60 * 24));
+      if (totalDays < 0) totalDays = 0;
+
+      percentage = null;
+      if (referenceDuration && referenceDuration.totalDays > 0) {
+        percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
+      }
     }
 
     return {
@@ -61,7 +78,7 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
     };
 
   } catch (err) {
-    console.error("Error in calculateBSDate:", err.message);
+    console.error("🚨 Error in calculateBSDate:", err.message);
     return {
       years: 0,
       months: 0,
@@ -75,12 +92,13 @@ export const calculateBSDate = (startDate, endDate, referenceDuration = null) =>
 };
 
 
+
 export const sumDates = (hirasat_years, hirasat_months, hirasat_days, referenceDuration = null) => {
   try {
     let totalYears = parseFloat(referenceDuration.years || 0) + parseFloat(hirasat_years || 0);
     let totalMonths = parseFloat(referenceDuration.months || 0) + parseFloat(hirasat_months || 0);
     let totalDays = parseFloat(referenceDuration.days || 0) + parseFloat(hirasat_days || 0);
-  
+
     // Normalize days to months
     if (totalDays >= 30) {
       totalMonths += Math.floor(totalDays / 30);

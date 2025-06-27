@@ -488,7 +488,9 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     let baseWhere = '';
     if (searchOffice) {
         baseWhere = `WHERE bp.current_office_id = ${searchOffice}`;
-    } else if (active_office >= 2) {
+    } else if (active_office==1 || active_office==2) {
+        baseWhere= `WHERE bp.current_office_id=''`;
+    } else{
         baseWhere = `WHERE bp.current_office_id = ${active_office}`;
     }
 

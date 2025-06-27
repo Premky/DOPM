@@ -306,10 +306,11 @@ const AllBandiTable = () => {
                                                 rowSpan={kaidiMuddas.length || 1}
                                             >
                                                 {data.office_bandi_id} <br />
-                                                {data.bandi_name}<br />
+                                                <b>{data.bandi_name}</b><br />
 
                                                 {data.nationality === 'स्वदेशी'
-                                                    ? `${data.city_name_np}-${data.wardno},${data.district_name_np},${data.state_name_np},${data.country_name_np}`
+                                                    ? `${data.city_name_np}-${data.wardno},${data.district_name_np},
+                                                        ${data.state_name_np},${data.country_name_np}`
                                                     : `${data.bidesh_nagarik_address_details},${data.country_name_np}`}
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1} >
