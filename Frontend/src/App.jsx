@@ -35,6 +35,7 @@ import AllBandiTable from './Components/Bandi/Tables/AllBandiTable';
 import PayroleMakebari from './Components/Bandi/Tables/PayroleMakebari';
 import PayroleLogForm from './Components/Bandi/Forms/PayroleLogForm';
 import CountReport from './Components/Bandi/Tables/Counts/CountReport';
+import LoggedIn from './Components/Auth/middlewares/LoggedIn';
 function App() {
   return (
     <AuthProvider> {/* Move AuthProvider to wrap everything */}
@@ -46,25 +47,29 @@ function App() {
 
             {/* Protected Routes */}
             <Route path='/' element={<CombinedNav />}>
-              <Route path="/admin">
-                <Route path='create_user' element={<CreateUser />} />
+              <Route element={<AdminCheck />}>
+                <Route path="/admin">
+                  <Route path='create_user' element={<CreateUser />} />
+                </Route>
               </Route>
-              <Route path='/bandi'>
-                <Route path='dashboard' element={<CountReport />} />
-                <Route path='bandi_details' element={<AllBandiTable />} />
-                <Route path='create_bandi' element={<BandiPersonForm />} />
-                <Route path='create_bandi_family' element={<BandiFamilyForm />} />
-                <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+
+              <Route element={<LoggedIn />}>
+                <Route path='/bandi'>
+                  <Route path='dashboard' element={<CountReport />} />
+                  <Route path='bandi_details' element={<AllBandiTable />} />
+                  <Route path='create_bandi' element={<BandiPersonForm />} />
+                  <Route path='create_bandi_family' element={<BandiFamilyForm />} />
+                  <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+                </Route>
+                <Route path='/payrole'>
+                  <Route path="create_payrole" element={<PayroleForm />} />
+                  <Route path='payrole_table' element={<PayroleTable />} />
+                  <Route path='maskebari_table' element={<PayroleMakebari />} />
+                  <Route path='payrole_log' element={<PayroleLogForm />} />
+                </Route>
               </Route>
-              <Route path='/payrole'>
-                <Route path="create_payrole" element={<PayroleForm />} />
-                <Route path='payrole_table' element={<PayroleTable />} />
-                <Route path='maskebari_table' element={<PayroleMakebari />} />
-                <Route path='payrole_log' element={<PayroleLogForm />} />
-              </Route>
+
             </Route>
-
-
             {/* <Route path='/' element={<ParoleForm />}/> */}
             {/* <Route path='/' element={<BandiReleaseForm />}/> */}
             {/* <Route path='/' element={<BandiForm />}/> */}
