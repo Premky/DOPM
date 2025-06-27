@@ -499,7 +499,15 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
         } else {
             baseWhere = `WHERE bp.nationality = '${nationality}'`;
         }
+    }
 
+        if (nationality) {
+        // console.log(nationality)
+        if (baseWhere) {
+            baseWhere += ` AND bp.nationality = '${nationality}'`;  // Note quotes for string
+        } else {
+            baseWhere = `WHERE bp.nationality = '${nationality}'`;
+        }
     }
 
     try {

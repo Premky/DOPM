@@ -159,7 +159,7 @@ const AllBandiTable = () => {
 
                 {/* <form onSubmit={handleSubmit(onSubmit)}> */}
                 <Grid2 container spacing={2}>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    <Grid2 size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
@@ -168,7 +168,7 @@ const AllBandiTable = () => {
                         />
                     </Grid2>
 
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="nationality"
                             label='राष्ट्रियता'
