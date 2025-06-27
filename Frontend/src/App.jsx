@@ -53,7 +53,7 @@ function App() {
                 </Route>
               </Route>
 
-              <Route element={<LoggedIn />}>
+              {/* <Route element={<LoggedIn />}> */}
                 <Route path='/bandi'>
                   <Route path='dashboard' element={<CountReport />} />
                   <Route path='bandi_details' element={<AllBandiTable />} />
@@ -67,7 +67,7 @@ function App() {
                   <Route path='maskebari_table' element={<PayroleMakebari />} />
                   <Route path='payrole_log' element={<PayroleLogForm />} />
                 </Route>
-              </Route>
+              {/* </Route> */}
 
             </Route>
             {/* <Route path='/' element={<ParoleForm />}/> */}
