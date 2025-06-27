@@ -74,30 +74,42 @@ const BandiPunrabednTable = ({ bandi_id }) => {
         }
     };
 
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
 
     const handleEdit = (data) => {
-        setSelectedData(data);
-        setEditDialogOpen(true);
+        setEditingData(data);
+        setModalOpen(true);
+    };
+    const handleAdd = (bandi_id) => {
+        setEditingData({ bandi_id });
+        setModalOpen(true);
     };
 
-
-    const handleSave = async (updatedData) => {
+    const handleSave = async (formData, id) => {
         try {
-            await axios.put(
-                `${BASE_URL}/bandi/update_bandi_punrabedn/${updatedData.id}`,
-                updatedData,
-                { withCredentials: true } // ✅ Fix: wrap inside object
-            );
+            if (id) {
+                await axios.put(
+                    `${BASE_URL}/bandi/update_bandi_punrabedn/${id}`,
+                    formData,
+                    { withCredentials: true } // ✅ Fix: wrap inside object
+                );
+                fetchBandies();
+                Swal.fire('सफल भयो !', 'डेटा अपडेट गरियो', 'success');
+            } else {
+                await axios.post(
+                    `${BASE_URL}/bandi/create_bandi_punrabedn`,
+                    { ...formData, bandi_id: bandi_id },
+                    { withCredentials: true }
+                );
+                Swal.fire('सफल भयो !', 'नयाँ डेटा थपियो ।', 'success');
+            }
             fetchBandies();
-            Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
-        } catch (err) {
-            Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
+        } catch (error) {
+            // Swal.fire('त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error');
+            Swal.fire('त्रुटि!', `${error}`, 'error');
         }
     };
-
-
 
     return (
         <Grid container spacing={2}>
@@ -122,9 +134,9 @@ const BandiPunrabednTable = ({ bandi_id }) => {
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
                                     <TableCell align="center">{opt.office_name_with_letter_address || ''}</TableCell>
-                                    <TableCell align="center">{opt.district_name_np||''}</TableCell>
-                                    <TableCell align="center">{opt.punarabedan_office_ch_no||''}</TableCell>
-                                    <TableCell align="center">{opt.punarabedan_office_date||''}</TableCell>
+                                    <TableCell align="center">{opt.district_name_np || ''}</TableCell>
+                                    <TableCell align="center">{opt.punarabedan_office_ch_no || ''}</TableCell>
+                                    <TableCell align="center">{opt.punarabedan_office_date || ''}</TableCell>
 
                                     <TableCell align="center">
                                         <Grid container spacing={2}>
@@ -155,9 +167,9 @@ const BandiPunrabednTable = ({ bandi_id }) => {
                 </TableContainer>
                 {/* 🔽 Insert this right after your TableContainer or at the end of return */}
                 <PunrabednDialog
-                    open={editDialogOpen}
-                    onClose={() => setEditDialogOpen(false)}
-                    data={selectedData}
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    editingData={editingData}
                     onSave={handleSave}
                 />
 

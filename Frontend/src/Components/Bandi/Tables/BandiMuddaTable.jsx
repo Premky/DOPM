@@ -92,26 +92,41 @@ const BandiMuddaTable = ({ bandi_id }) => {
         }
     };
 
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
 
     const handleEdit = (data) => {
-        setSelectedData(data);
-        setEditDialogOpen(true);
+        setEditingData(data);
+        setModalOpen(true);
+    };
+    const handleAdd = (bandi_id) => {
+        setEditingData({ bandi_id });
+        setModalOpen(true);
     };
 
-
-    const handleSave = async (updatedData) => {
-        console.log(updatedData)
-        try {
-            await axios.put(`${BASE_URL}/bandi/update_bandi_mudda/${updatedData.id}`, updatedData);
-            fetchBandies();
-            Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
-        } catch (err) {
-            Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
-        }
-    };
-
+    const handleSave = async (formData, id) => {
+            try {
+                if (id) {
+                    await axios.put(
+                        `${BASE_URL}/bandi/update_bandi_mudda/${id}`,
+                        formData,
+                        { withCredentials: true }
+                    );
+                    Swal.fire('सफल भयो !', 'डेटा अपडेट गरियो', 'success');
+                } else {
+                    await axios.post(
+                        `${BASE_URL}/bandi/create_bandi_mudda`,
+                        { ...formData, bandi_id: bandi_id },
+                        { withCredentials: true }
+                    );
+                    Swal.fire('सफल भयो !', 'नयाँ डेटा थपियो ।', 'success');
+                }
+    
+                fetchBandies();
+            } catch (error) {
+                Swal.fire('त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error');
+            }
+        };
 
     return (
         <Grid container spacing={2}>
@@ -183,12 +198,11 @@ const BandiMuddaTable = ({ bandi_id }) => {
                 </TableContainer>
                 {/* 🔽 Insert this right after your TableContainer or at the end of return */}
                 <MuddaEditDialog
-                    open={editDialogOpen}
-                    onClose={() => setEditDialogOpen(false)}
-                    data={selectedData}
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    editingData={editingData}
                     onSave={handleSave}
                 />
-
             </Grid>
         </Grid>
     );

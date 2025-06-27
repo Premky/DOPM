@@ -48,9 +48,6 @@ const BandiTable = ({ bandi_id }) => {
                     <Grid>
                         <h3>बन्दी विवरणः</h3>
                     </Grid>
-                    <Grid marginTop={2}>
-                        &nbsp; <Button variant='contained' size='small'>Add</Button>
-                    </Grid>
                 </Grid>
                 <Grid item xs={12}>
                     <TableContainer>
@@ -58,7 +55,7 @@ const BandiTable = ({ bandi_id }) => {
                             <TableRow>
                                 <TableCell>बन्दी आई.डि.</TableCell>
                                 <TableCell>{fetchedBandi.bandi_id}</TableCell>
-                                <TableCell>कैदी/बन्दी</TableCell>
+                                <TableCell>बन्दी प्रकार</TableCell>
                                 <TableCell>{fetchedBandi.bandi_type}</TableCell>
                                 <TableCell rowSpan={5} colSpan={2} align='center'>
                                     <img
@@ -76,7 +73,7 @@ const BandiTable = ({ bandi_id }) => {
                             </TableRow>
                             <TableRow>
                                 <TableCell>जन्म मिति/उमेरः</TableCell>
-                                <TableCell>{fetchedBandi.dob} ({inCalculateAge(fetchedBandi.dob)} वर्ष)</TableCell>
+                                <TableCell>{fetchedBandi.dob} ({fetchedBandi.current_age} वर्ष)</TableCell>
                                 <TableCell>वैवाहिक अवस्था</TableCell>
                                 <TableCell>{fetchedBandi.marital_status}</TableCell>
                             </TableRow>

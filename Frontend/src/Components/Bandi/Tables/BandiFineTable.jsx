@@ -165,7 +165,7 @@ const BandiFineTable = ({ bandi_id }) => {
                 <FineEditDialog
                     open={editDialogOpen}
                     onClose={() => setEditDialogOpen(false)}
-                    data={selectedData}
+                    editingData={selectedData}
                     onSave={handleSave}
                 />
 

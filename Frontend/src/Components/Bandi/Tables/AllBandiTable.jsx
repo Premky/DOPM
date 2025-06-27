@@ -55,20 +55,28 @@ const AllBandiTable = () => {
         status: '',
     });
 
+    //Watch Variables:
+    const searchOffice = watch('searchOffice');
+    const searchpayroleStatus = watch('searchPayroleStatus');
+    //Watch Variables
+
     const [allKaidi, setAllKaidi] = useState([]);
     const [filteredKaidi, setFilteredKaidi] = useState([]);
+    const [totalKaidi, setTotalKaidi] = useState(0);
     const fetchKaidi = async () => {
         setLoading(true);
         try {
             const response = await axios.get(`${BASE_URL}/bandi/get_all_office_bandi`, {
+                params: { page, limit: rowsPerPage,searchOffice },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             });
 
             const { Status, Result, Error } = response.data;
-            // console.log(Result)
+            // console.log(response.data)
             if (Status && Array.isArray(Result)) {
                 setAllKaidi(Result);
                 setFilteredKaidi(Result);
+                setTotalKaidi(response.data.TotalCount);  //Total Count 
             } else {
                 console.warn(Error || 'No records found.');
                 setAllKaidi([]);
@@ -97,7 +105,7 @@ const AllBandiTable = () => {
                     grouped[bandiId].push(mudda);
                 });
                 setFetchedMuddas(grouped); // grouped is now an object like { 1: [mudda1, mudda2], 2: [mudda1] }
-                // console.log(fetchedMuddas)
+                console.log(fetchedMuddas)
             } else {
                 console.warn(Error || 'Failed to fetch mudda.');
                 setFetchedMuddas({});
@@ -109,23 +117,10 @@ const AllBandiTable = () => {
     useEffect(() => {
         fetchKaidi();
         fetchMuddas();
-    }, []);
+    }, [page, rowsPerPage, searchOffice]);
 
-    //Watch Variables:
-    const searchOffice = watch('searchOffice');
-    const searchpayroleStatus = watch('searchPayroleStatus');
-    //Watch Variables
 
-    // useEffect(() => {
-    //     let filtered = allKaidi;
-    //     // console.log(filtered)
 
-    //     if (searchOffice) {
-    //         filtered = filtered.filter(a => a.current_office_id === searchOffice);
-    //     }
-
-    //     setFilteredKaidi(filtered);
-    // }, [searchOffice, searchpayroleStatus, allKaidi]);
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
@@ -205,67 +200,7 @@ const AllBandiTable = () => {
                         />
                     </Grid2>
 
-                    {/* <Grid2 xs={6} sm={3}>
-                            <Controller
-                                name="startDate"
-                                control={control}
-                                defaultValue=""
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Start Date (BS)"
-                                        fullWidth
-                                        type="text"
-                                    />
-                                )}
-                            />
-                        </Grid2> */}
 
-                    {/* <Grid2 xs={6} sm={3}>
-                            <Controller
-                                name="endDate"
-                                control={control}
-                                defaultValue=""
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="End Date (BS)"
-                                        fullWidth
-                                        type="text"
-                                    />
-                                )}
-                            />
-                        </Grid2> */}
-
-                    {/* <Grid2 xs={6} sm={3}>
-                            <Controller
-                                name="ageFrom"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Min Age"
-                                        fullWidth
-                                        type="number"
-                                    />
-                                )}
-                            />
-                        </Grid2>
-
-                        <Grid2 xs={6} sm={3}>
-                            <Controller
-                                name="ageTo"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Max Age"
-                                        fullWidth
-                                        type="number"
-                                    />
-                                )}
-                            />
-                        </Grid2> */}
 
                     <Grid2 xs={12}>
                         <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
@@ -278,63 +213,98 @@ const AllBandiTable = () => {
                 </Grid2>
                 {/* </form> */}
             </Box>
-            <TableContainer>
-                <Table size='small' stickyHeader border={1}>
-                    <TableHead>
-                        <TableRow >
-                            <TableCell
-                                className='table_head_bg'
-                                sx={{
-                                    position: 'sticky',
-                                    left: 0,
-                                    backgroundColor: 'blue',
-                                    zIndex: 3, // header + sticky column priority
-                                    minWidth: 60
-                                }}
+            <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
 
-                            >
-                                सि.नं.
-                            </TableCell>
-                            <TableCell
-                                className='table_head_bg'
-                                sx={{
-                                    position: 'sticky',
-                                    left: 50, // width of previous sticky column
-                                    backgroundColor: 'blue',
-                                    zIndex: 3,
-                                    minWidth: 250
-                                }}
-                            >
-                                कैदीको नामथर स्थायी ठेगाना
-                            </TableCell>
-                            <TableCell className='table_head_bg'>उमेर</TableCell>
-                            <TableCell className='table_head_bg'>लिङ्ग</TableCell>
-                            <TableCell className='table_head_bg'>राष्ट्रियता</TableCell>
-                            <TableCell className='table_head_bg'>मुद्दा</TableCell>
-                            <TableCell className='table_head_bg'>जाहेरवाला</TableCell>
-                            <TableCell className='table_head_bg'>मुद्दा अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति</TableCell>
-                            <TableCell className='table_head_bg'>थुना/कैदमा परेको मिति</TableCell>
-                            <TableCell className='table_head_bg'>तोकिएको कैद (वर्ष, महिना, दिन)</TableCell>
-                            <TableCell className='table_head_bg'>कैदी पुर्जीमा उल्लेखित छुटि जाने मिती</TableCell>
-                            <TableCell className='table_head_bg'>भुक्तान कैद (वर्ष, महिना, दिन र प्रतिशत)</TableCell>
-                            <TableCell className='table_head_bg'>वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने</TableCell>
-                            <TableCell className='table_head_bg'>कैफियत</TableCell>
-                            <TableCell className='table_head_bg'>#</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
+                <TableContainer sx={{ maxHeight: '100%', overflowY: 'auto' }}>
+                    <Table size="small" stickyHeader border={1}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell
+                                    className="table_head_bg"
+                                    sx={{
+                                        position: 'sticky',                                        
+                                        left: 0,
+                                        top:0,
+                                        backgroundColor: 'blue',
+                                        zIndex: 4,
+                                        minWidth: 60,
+                                    }}
+                                >
+                                    सि.नं.
+                                </TableCell>
+                                <TableCell
+                                    className="table_head_bg"
+                                    sx={{
+                                        position: 'sticky',
+                                        top: 0,
+                                        left: 60, // ← match width of first sticky column
+                                        backgroundColor: 'blue',
+                                        zIndex: 4,
+                                        minWidth: 250,
+                                    }}
+                                >
+                                    कैदीको नामथर स्थायी ठेगाना
+                                </TableCell>
+                                <TableCell
+                                    className="table_head_bg"
+                                    sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
+                                >
+                                    उमेर
+                                </TableCell>
+                                <TableCell
+                                    className="table_head_bg"
+                                    sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
+                                >
+                                    लिङ्ग
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    राष्ट्रियता
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    मुद्दा
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    जाहेरवाला
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    मुद्दा अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    थुना/कैदमा परेको मिति
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    तोकिएको कैद (वर्ष, महिना, दिन)
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    कैदी पुर्जीमा उल्लेखित छुटि जाने मिती
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    भुक्तान कैद (वर्ष, महिना, दिन र प्रतिशत)
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    कैफियत
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    #
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
 
 
 
-                        {/* {filteredKaidi.map((data, index) => { */}
-                        {filteredKaidi
-                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            .map((data, index) => {
+                            {filteredKaidi.map((data, index) => {
+                                {/* {filteredKaidi
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((data, index) => { */}
                                 const kaidiMuddas = fetchedMuddas[data.id] || [];
                                 return (
                                     <>
 
-                                        <TableRow sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }} key={data.id}>
+                                        <TableRow sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }} key={index * data.id}>
                                             <TableCell sx={{
                                                 position: 'sticky', left: 0,
                                                 // backgroundColor: 'white',
@@ -342,14 +312,18 @@ const AllBandiTable = () => {
                                                 zIndex: 3
                                             }} rowSpan={kaidiMuddas.length || 1}>
                                                 {page * rowsPerPage + index + 1} <br />
+                                                {data.id}
 
                                             </TableCell>
-                                            <TableCell sx={{
-                                                position: 'sticky', left: 50,
-                                                // backgroundColor: 'white',
-                                                backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
-                                                zIndex: 3
-                                            }} rowSpan={kaidiMuddas.length || 1}>
+                                            <TableCell
+                                                sx={{
+                                                    position: 'sticky',
+                                                    left: 60, // ✅ should match header exactly
+                                                    backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
+                                                    zIndex: 3,
+                                                }}
+                                                rowSpan={kaidiMuddas.length || 1}
+                                            >
                                                 {data.office_bandi_id} <br />
                                                 {data.bandi_name}<br />
 
@@ -412,18 +386,22 @@ const AllBandiTable = () => {
                                     </>
                                 );
                             })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[25, 50, 100, 500]}
-                component="div"
-                count={filteredKaidi.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-            />
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
+                <Box sx={{ mt: 'auto' }}>
+                    <TablePagination
+                        rowsPerPageOptions={[25, 50, 100, 500]}
+                        component="div"
+                        count={totalKaidi}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </Box>
+            </Box>
         </>
     )
 }

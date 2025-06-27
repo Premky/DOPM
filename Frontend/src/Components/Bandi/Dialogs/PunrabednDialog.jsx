@@ -9,7 +9,7 @@ import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
-const PunrabednDialog = ({ open, onClose, data, onSave }) => {
+const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
     const {
         control,
         handleSubmit,
@@ -17,31 +17,29 @@ const PunrabednDialog = ({ open, onClose, data, onSave }) => {
         formState: { errors },
         reset, // 👈 this will reset the form with new data
     } = useForm({
-        defaultValues: data || {}, // initially empty
+        defaultValues: editingData || {}, // initially empty
     });
-    // console.log(data)
-    // ⏱ Update form values when `data` changes
-    useEffect(() => {
-        if (data) {
-            reset(data); // ⬅️ important!
-        }
-    }, [data, reset]);
 
-    const onSubmit = (formValues) => {
-        console.log(formValues)
-        onSave({ ...data, ...formValues }); // merge original ID & values
+    useEffect(() => {
+        if (editingData) {
+            reset(editingData); // ⬅️ important!
+        }
+    }, [editingData, reset]);
+
+    const onSubmit = (data) => {
+        onSave(data, editingData?.id);
         onClose();
-    };
+    }
 
     const mudda_condition = watch('mudda_condition')
     const amount_deposited = watch('amount_deposited')
     const amount_fixed = watch('amount_fixed')
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
             <DialogTitle>पुनरावेदनमा नपरेको प्रमाण विवरण संपादित गर्नुहोस्</DialogTitle>
             <DialogContent>
                 <Grid2 container spacing={2}>
-                    <Grid2 xs={12} sm={6}>
+                    <Grid2 size={{ xs: 12}}>
                         <ReuseOffice
                             name='punarabedan_office_id'
                             label="कार्यालय"
@@ -50,7 +48,7 @@ const PunrabednDialog = ({ open, onClose, data, onSave }) => {
                             error={errors.punarabedan_office_id}
                         />
                     </Grid2>
-                    <Grid2 xs={12} sm={6}>
+                    <Grid2 size={{ xs: 12}}>
                         <ReuseDistrict
                             name='punarabedan_office_district'
                             label="फैसला भएको जिल्ला"
@@ -60,7 +58,7 @@ const PunrabednDialog = ({ open, onClose, data, onSave }) => {
                         />
                     </Grid2>
 
-                    <Grid2 xs={12} sm={6}>
+                    <Grid2 size={{ xs: 12, sm: 6 }}>
                         <ReuseInput
                             name='punarabedan_office_ch_no'
                             label="च.नं."
@@ -73,7 +71,7 @@ const PunrabednDialog = ({ open, onClose, data, onSave }) => {
                             error={errors.punarabedan_office_ch_no}
                         />
                     </Grid2>
-                    <Grid2 xs={12} sm={6}>
+                    <Grid2 size={{ xs: 12, sm: 6 }}>
                         <ReuseDateField
                             name='punarabedan_office_date'
                             label="मिति"

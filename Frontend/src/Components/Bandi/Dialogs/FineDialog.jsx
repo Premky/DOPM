@@ -9,7 +9,7 @@ import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
-const FineEditDialog = ({ open, onClose, data, onSave }) => {
+const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
     const {
         control,
         handleSubmit,
@@ -17,18 +17,17 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
         formState: { errors },
         reset, // 👈 this will reset the form with new data
     } = useForm({
-        defaultValues: data || {}, // initially empty
+        defaultValues: editingData || {}, // initially empty
     });
-    // console.log(data)
-    // ⏱ Update form values when `data` changes
-    useEffect(() => {
-        if (data) {
-            reset(data); // ⬅️ important!
-        }
-    }, [data, reset]);
 
-    const onSubmit = (formValues) => {
-        onSave({ ...data, ...formValues }); // merge original ID & values
+    useEffect(() => {
+        if (editingData) {
+            reset({ ...editingData }); // ⬅️ important!
+        }
+    }, [editingData, reset]);
+
+    const onSubmit = (data) => {
+        onSave(data, editingData?.id);
         onClose();
     };
 
@@ -36,11 +35,13 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
     const amount_deposited = watch('amount_deposited')
     const amount_fixed = watch('amount_fixed')
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-            <DialogTitle>जरिवाना/क्षतिपुर्ती/बिगो विवरण सम्पादन गर्नुहोस्</DialogTitle>
+         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+            <DialogTitle>जरिवाना/क्षतिपुर्ती/बिगो विवरण {editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
+                    <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden />
+
                 <Grid2 container spacing={2}>
-                    <Grid2 xs={12} md={12}>
+                    <Grid2 size={{ xs: 12, sm: 4 }}>
                         <ReuseInput
                             name="fine_type"
                             label="जरिवाना/क्षतिपुर्ती/बिगो"
@@ -49,7 +50,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                             error={errors.fine_type}
                         />
                     </Grid2>
-                    <Grid2 xs={12} sm={6}>
+                    <Grid2 size={{ xs: 12, sm: 4 }}>
                         <ReuseSelect
                             name='amount_fixed'
                             label='छ/छैन'
@@ -61,7 +62,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                     </Grid2>
                     {amount_fixed == 1 && (
                         <>
-                            <Grid2 xs={12} sm={6}>
+                            <Grid2 size={{ xs: 12, sm: 4 }}>
                                 <ReuseSelect
                                     name='amount_deposited'
                                     label='तिरेको छ/छैन'
@@ -72,7 +73,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                                 />
                             </Grid2>
                             {amount_deposited == 1 && (<>
-                                <Grid2 xs={12} sm={6}>
+                                <Grid2 size={{ xs: 12, sm: 6 }}>
                                     <ReuseOffice
                                         name='deposit_office'
                                         label="कार्यालय"
@@ -81,7 +82,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                                         error={errors.deposit_office}
                                     />
                                 </Grid2>
-                                <Grid2 xs={12} sm={6}>
+                                <Grid2 size={{ xs: 12, sm: 6 }}>
                                     <ReuseDistrict
                                         name='deposit_district'
                                         label="फैसला भएको जिल्ला"
@@ -91,7 +92,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                                     />
                                 </Grid2>
 
-                                <Grid2 xs={12} sm={6}>
+                                <Grid2 size={{ xs: 12, sm: 4 }}>
                                     <ReuseInput
                                         name='deposit_ch_no'
                                         label="च.नं."
@@ -104,7 +105,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                                         error={errors.deposit_ch_no}
                                     />
                                 </Grid2>
-                                <Grid2 xs={12} sm={6}>
+                                <Grid2 size={{ xs: 12, sm: 4 }}>
                                     <ReuseDateField
                                         name='deposit_date'
                                         label="मिति"
@@ -116,7 +117,7 @@ const FineEditDialog = ({ open, onClose, data, onSave }) => {
                                 </Grid2>
                             </>)}
 
-                            <Grid2 xs={12} sm={6}>
+                            <Grid2 size={{ xs: 12, sm: 4 }}>
                                 <ReuseInput
                                     name='deposit_amount'
                                     label="रकम"
