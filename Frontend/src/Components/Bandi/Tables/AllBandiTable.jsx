@@ -160,7 +160,7 @@ const AllBandiTable = () => {
                 {/* <form onSubmit={handleSubmit(onSubmit)}> */}
                 <Grid2 container spacing={2}>
                     <Grid2 xs={12} sm={4}>
-                        <ReuseOffice
+                        <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
                             control={control}
