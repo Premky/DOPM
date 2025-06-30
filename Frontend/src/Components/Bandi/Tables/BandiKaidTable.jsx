@@ -114,7 +114,7 @@ const BandiKaidTable = ({ bandi_id }) => {
         <Grid container spacing={2}>
             <Grid container item xs={12}>
                 <Grid>
-                    <h3>कैदीबन्दीको हालको ठेगानाः</h3>
+                    <h3>कैदीबन्दीको कैद विवरणः</h3>
                 </Grid>
                 <Grid marginTop={2}>
                     {/* &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd(bandi_id)}>Add</Button> */}
