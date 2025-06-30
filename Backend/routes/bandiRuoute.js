@@ -479,6 +479,8 @@ router.get('/get_bandi/:id', async (req, res) => {
 
 router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
+    const selectedOffice = req.query.selected_office || 0;
+    console.log(selectedOffice)
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
     const page = parseInt(req.query.page) || 0;
@@ -486,20 +488,17 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     const offset = page * limit;
 
     let baseWhere = '';
-    if (searchOffice) {
-        baseWhere = `WHERE bp.current_office_id = ${searchOffice}`;
-    } else if (active_office == 1 || active_office == 2) {
-        baseWhere = `WHERE bp.current_office_id=''`;
-    } else {
-        baseWhere = `WHERE bp.current_office_id = ${active_office}`;
-    }
 
-    if (nationality) {
-        // console.log(nationality)
-        if (baseWhere) {
-            baseWhere += ` AND bp.nationality = '${nationality}'`;  // Note quotes for string
+
+    if (selectedOffice) {
+        baseWhere += ` WHERE bp.current_office_id=${selectedOffice}`
+    } else {
+        if (searchOffice) {
+            baseWhere = `WHERE bp.current_office_id = ${searchOffice}`;
+        } else if (active_office == 1 || active_office == 2) {
+            baseWhere = `WHERE bp.current_office_id=''`;
         } else {
-            baseWhere = `WHERE bp.nationality = '${nationality}'`;
+            baseWhere = `WHERE bp.current_office_id = ${active_office}`;
         }
     }
 
@@ -623,70 +622,141 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     }
 });
 
-
 router.get('/get_all_office_bandi1', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
+    const searchOffice = req.query.searchOffice || 0;
+    const nationality = req.query.nationality || 0;
     const page = parseInt(req.query.page) || 0;
     const limit = parseInt(req.query.limit) || 25;
     const offset = page * limit;
 
-    const baseSQL = `
-        SELECT bp.*, bmd.*, ba.wardno, ba.bidesh_nagarik_address_details,
-               nc.country_name_np, ns.state_name_np, nd.district_name_np,
-               nci.city_name_np, m.mudda_name, m.id as mudda_id,
-               TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age
-        FROM bandi_person bp
-        LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
-        LEFT JOIN muddas m ON bmd.mudda_id = m.id
-        LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-        LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-        LEFT JOIN np_state ns ON ba.province_id = ns.state_id
-        LEFT JOIN np_district nd ON ba.district_id = nd.did
-        LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
-    `;
+    let baseWhere = '';
+    if (searchOffice) {
+        baseWhere = `WHERE bp.current_office_id = ${searchOffice}`;
+    } else if (active_office == 1 || active_office == 2) {
+        baseWhere = `WHERE bp.current_office_id=''`;
+    } else {
+        baseWhere = `WHERE bp.current_office_id = ${active_office}`;
+    }
 
-    let sql = active_office < 2
-        ? `${baseSQL} ORDER BY bp.id DESC LIMIT ${offset}, ${limit}`
-        : `${baseSQL} WHERE bp.current_office_id = ? AND bmd.is_last_mudda=1 AND bmd.is_main_mudda=1 ORDER BY bp.id DESC LIMIT ${offset}, ${limit}`;
+    if (nationality) {
+        // console.log(nationality)
+        if (baseWhere) {
+            baseWhere += ` AND bp.nationality = '${nationality}'`;  // Note quotes for string
+        } else {
+            baseWhere = `WHERE bp.nationality = '${nationality}'`;
+        }
+    }
 
-    con.query(sql, active_office < 2 ? [] : [active_office], (err, result) => {
-        if (err) {
-            console.error('Query Error:', err);
-            return res.json({ Status: false, Error: "Query Error" });
+    try {
+        // STEP 1: Get paginated bandi IDs
+        const idQuery = `SELECT bp.id FROM bandi_person bp ${baseWhere} ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
+        const [idRows] = await con.promise().query(idQuery, [limit, offset]);
+
+        const bandiIds = idRows.map(row => row.id);
+        if (bandiIds.length === 0) {
+            return res.json({ Status: true, Result: [], TotalCount: 0 });
         }
 
-        const grouped = {};
-        result.forEach(row => {
-            if (!grouped[row.bandi_id]) {
-                // Destructure only bandi fields to avoid duplicating mudda data
-                const {
-                    mudda_name,
-                    mudda_id,
-                    mudda_phesala_antim_office_date,
-                    vadi,
-                    office_name_with_letter_address,
-                    ...bandiData
-                } = row;
+        // STEP 2: Get total count
+        const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp ${baseWhere}`;
+        const [countResult] = await con.promise().query(countSQL);
+        const totalCount = countResult[0].total;
 
-                grouped[row.bandi_id] = {
+        // STEP 3: Get full records for selected bandis
+        const placeholders = bandiIds.map(() => '?').join(',');
+        const fullQuery = `
+            SELECT 
+                bp.id AS bandi_id,
+                bp.*,
+                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
+                ba.wardno,
+                ba.bidesh_nagarik_address_details,
+                nc.country_name_np,
+                ns.state_name_np,
+                nd.district_name_np,
+                nci.city_name_np,
+                bmd_combined.mudda_id,
+                bmd_combined.mudda_name,
+                bmd_combined.is_main_mudda,
+                bmd_combined.is_last_mudda,
+                bmd_combined.office_name_with_letter_address,
+                bmd_combined.vadi,
+                bmd_combined.mudda_phesala_antim_office_date,
+                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+                bkd.thuna_date_bs, bkd.release_date_bs
+
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+            LEFT JOIN np_district nd ON ba.district_id = nd.did
+            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+            LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id
+            LEFT JOIN (
+                SELECT 
+                    bmd.bandi_id,
+                    bmd.mudda_id,
+                    bmd.is_main_mudda,
+                    bmd.is_last_mudda,
+                    m.mudda_name,
+                    bmd.vadi,
+                    bmd.mudda_phesala_antim_office_date,
+                    o.office_name_with_letter_address
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+            WHERE bp.id IN (${placeholders})
+            ORDER BY bp.id DESC
+        `;
+        const [fullRows] = await con.promise().query(fullQuery, bandiIds);
+
+        // STEP 4: Group muddas under each bandi
+        const grouped = {};
+        fullRows.forEach(row => {
+            const {
+                bandi_id,
+                mudda_id,
+                mudda_name,
+                is_main_mudda,
+                is_last_mudda,
+                office_name_with_letter_address,
+                vadi,
+                mudda_phesala_antim_office_date,
+                ...bandiData
+            } = row;
+
+            if (!grouped[bandi_id]) {
+                grouped[bandi_id] = {
                     ...bandiData,
+                    bandi_id,
                     muddas: []
                 };
             }
 
-            if (row.mudda_id) {
-                grouped[row.bandi_id].muddas.push({
-                    mudda_name: row.mudda_name,
-                    mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
-                    vadi: row.vadi,
-                    office_name_with_letter_address: row.office_name_with_letter_address
+            if (mudda_id) {
+                grouped[bandi_id].muddas.push({
+                    mudda_id,
+                    mudda_name,
+                    is_main_mudda,
+                    is_last_mudda,
+                    office_name_with_letter_address,
+                    vadi,
+                    mudda_phesala_antim_office_date
                 });
             }
         });
-        res.json({ Status: true, Result: Object.values(grouped) });
 
-        // res.json({ Status: true, Result: Object.values(grouped) });
-    });
+        return res.json({
+            Status: true,
+            Result: Object.values(grouped),
+            TotalCount: totalCount
+        });
+    } catch (err) {
+        console.error('Query Error:', err);
+        return res.json({ Status: false, Error: 'Query Error' });
+    }
 });
 
 router.get('/get_bandi_name_for_select', verifyToken, async (req, res) => {
@@ -733,10 +803,63 @@ router.get('/get_bandi_name_for_select', verifyToken, async (req, res) => {
 
 router.get('/get_bandi_name_for_select/:id', async (req, res) => {
     const { id } = req.params;
-    const sql = `SELECT bp.*,bp.id AS bandi_id, bp.id AS bandi_office_id, m.mudda_name from bandi_person bp
-                LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
-                LEFT JOIN muddas m ON bmd.mudda_id=m.id
-                WHERE bmd.is_main_mudda=1 AND bp.current_office_id=?`;
+    console.log(id)
+    const sql = `
+        SELECT 
+                bp.id AS bandi_id,
+                bp.*,
+                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
+                ba.wardno,
+                ba.bidesh_nagarik_address_details,
+                nc.country_name_np,
+                ns.state_name_np,
+                nd.district_name_np,
+                nci.city_name_np,
+                bmd_combined.mudda_id,
+                bmd_combined.mudda_name,
+                bmd_combined.is_main_mudda,
+                bmd_combined.is_last_mudda,
+                bmd_combined.office_name_with_letter_address,
+                bmd_combined.vadi,
+                bmd_combined.mudda_phesala_antim_office_date,
+                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+                bkd.thuna_date_bs, bkd.release_date_bs,
+                p.id AS payrole_id,
+                p.status,
+                p.status AS payrole_status,
+                pr.id AS pr_id,
+                pr.is_checked,
+                pr.pyarole_rakhan_upayukat,
+                pr.dopmremark,
+                pm.mudda_name
+
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+            LEFT JOIN np_district nd ON ba.district_id = nd.did
+            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+            LEFT JOIN payroles p ON bp.id = p.bandi_id
+            LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
+            LEFT JOIN muddas pm ON p.payrole_mudda_id=pm.id
+            LEFT JOIN (
+                SELECT 
+                    bmd.bandi_id,
+                    bmd.mudda_id,
+                    bmd.is_main_mudda,
+                    bmd.is_last_mudda,
+                    m.mudda_name,
+                    bmd.vadi,
+                    bmd.mudda_phesala_antim_office_date,
+                    o.office_name_with_letter_address
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+            WHERE bp.id IN (${placeholders})
+            ORDER BY bp.id DESC
+            `;
     try {
         const result = await queryAsync(sql, [id]); // Use promise-wrapped query
         // console.log('id', result)
@@ -889,21 +1012,21 @@ router.put('/update_bandi_kaid_details/:id', verifyToken, async (req, res) => {
         let sql2 = ''
         let values2 = ''
         if (bandi_type == 'कैदी') {
-            values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,thunaDateAd, release_date_bs,releaseDateAd, id];
+            values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd, id];
             sql1 = `
                 UPDATE bandi_kaid_details
                 SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?, thuna_date_bs = ? , thuna_date_ad=?,
                     release_date_bs=?, release_date_ad=?  WHERE id = ?`;
-        } else if(bandi_type=='थुनुवा'){
-            values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,thunaDateAd, id];
+        } else if (bandi_type == 'थुनुवा') {
+            values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, id];
             sql1 = `UPDATE bandi_kaid_details SET hirasat_years=?, hirasat_months=?, hirasat_days=?,
                     thuna_date_bs=?, thuna_date_ad=? WHERE id =?`
         }
 
         await queryAsync(sql1, values1);
 
-        sql2=`UPDATE bandi_person SET bandi_type=? WHERE id=?`
-        values2=[bandi_type, bandi_id]
+        sql2 = `UPDATE bandi_person SET bandi_type=? WHERE id=?`
+        values2 = [bandi_type, bandi_id]
         await queryAsync(sql2, values2);
 
         await commitAsync(); // Commit the transaction
@@ -2103,7 +2226,184 @@ router.get('/get_prisioners_count', verifyToken, async (req, res) => {
     }
 });
 
+function extractInternalAdminData(reqBody, is_active, user_id, active_office) {
+    const {
+        chalani_no,
+        chalani_date,
+        office_id,
+        appointment_start_date_bs,
+        appointment_end_date_bs,
+        internal_admin_post_id,
+        remarks,
+        bandi_id,
+    } = reqBody;
 
+    const { years, months, days } = calculateBSDate(appointment_start_date_bs, appointment_end_date_bs);
+
+    return [
+        chalani_no,
+        chalani_date,
+        office_id,
+        appointment_start_date_bs,
+        appointment_end_date_bs,
+        years,
+        months,
+        days,
+        internal_admin_post_id,
+        remarks,
+        bandi_id,
+        is_active,
+        user_id,
+        active_office,
+    ];
+}
+
+
+router.post("/add_internal_admin", verifyToken, async (req, res) => {
+    const user_id = req.user.id;
+    const office_id = req.user.office_id;
+    const { is_active } = req.body;
+    const isActive = is_active ? is_active : 1;
+    console.log(isActive)
+
+    const insertSql = `
+    INSERT INTO bandi_internal_admins (
+      chalani_no,
+      chalani_date,
+      appointment_office,
+      appointment_start_date_bs,
+      appointment_end_date_bs,
+      facility_years,
+      facility_months,
+      facility_days,
+      internal_admin_post_id,
+      remarks,
+      bandi_id,
+      is_active,
+      created_by,
+      current_office_id
+    ) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+    const values = extractInternalAdminData(req.body, isActive, user_id, office_id);
+
+    try {
+        await queryAsync(insertSql, values);
+        res.json({ Status: true, Message: "Inserted successfully" });
+    } catch (err) {
+        console.error("Insert error:", err);
+        res.status(500).json({ Status: false, Error: "Insert failed" });
+    }
+});
+
+router.get("/get_all_internal_admin", verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const subidha_id = req.query.subidha_id;
+    console.log('subidhaid', subidha_id)
+    let baseSql = `WITH prioritized_mudda AS (
+    SELECT 
+        bmd.bandi_id,
+        m.mudda_name,
+        bmd.is_main_mudda,
+        bmd.is_last_mudda,
+        ROW_NUMBER() OVER (
+            PARTITION BY bmd.bandi_id 
+            ORDER BY 
+                CASE 
+                    WHEN bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1 THEN 1
+                    WHEN bmd.is_last_mudda = 1 THEN 2
+                    ELSE 3
+                END,
+                bmd.id DESC
+        ) AS rn
+    FROM bandi_mudda_details bmd
+    LEFT JOIN muddas m ON bmd.mudda_id = m.id
+)
+SELECT 
+    bia.id AS bia_id,
+    bia.chalani_no,
+    bia.chalani_date,
+    bia.appointment_office,
+    bia.appointment_start_date_bs,
+    bia.appointment_end_date_bs,
+    bia.facility_years,
+    bia.facility_months,
+    bia.facility_days,
+    bia.internal_admin_post_id,
+    bia.remarks,
+    bia.is_active,
+
+    bp.id AS bandi_id,
+    bp.bandi_name,
+
+    o.office_name_with_letter_address AS current_office,
+    oo.office_name_with_letter_address AS office_name,
+
+    bad.nepali_address,
+    bad.bidesh_nagarik_address_details,
+
+    bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days, 
+    bkd.thuna_date_bs, bkd.release_date_bs,
+
+    pm.mudda_name AS mudda_name
+
+FROM bandi_internal_admins bia
+LEFT JOIN bandi_person bp ON bia.bandi_id = bp.id
+LEFT JOIN offices o ON bia.current_office_id = o.id
+LEFT JOIN offices oo ON bia.appointment_office = oo.id
+LEFT JOIN view_bandi_address_details bad ON bia.bandi_id = bad.bandi_id
+LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
+
+-- This gives you the one prioritized mudda per bandi
+LEFT JOIN prioritized_mudda pm ON pm.bandi_id = bp.id AND pm.rn = 1
+
+    `
+    let sql;
+    if (active_office == 1 || active_office == 2) {
+        sql = `${baseSql}`
+    } else {
+        sql = `${baseSql}` + ` WHERE bia.current_office_id=${active_office}`
+    }
+
+    con.query(sql, (error, results) => {
+        if (error) {
+            console.error('Database query error:', error);
+            return res.status(500).json({ Status: false, Error: 'Database query failed.' });
+        }
+
+        if (results.length > 0) {
+            return res.json({ Status: true, Result: results });
+        } else {
+            return res.json({ Status: false, Error: 'No records found.' });
+        }
+    });
+})
+
+router.put("/update_internal_admin/:id", verifyToken, async (req, res) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
+    const id = req.params.id
+    try {
+        await beginTransactionAsync();
+        const existing = await queryAsync(
+            `SELECT * FROM bandi_internal_admins WHERE id = ?`,
+            [id]
+        );
+
+        if (existing.length > 0) {
+            const values = extractInternalAdminData(req.body, isActive, user_id, office_id, id);
+            await queryAsync(sql, values);
+        }
+
+        await commitAsync();
+        return res.json({ Status: true, Message: "Updated successfully" });
+    } catch (error) {
+        await rollbackAsync();
+        console.error("Payrole update error:", error);
+        return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+    }
+});
 
 
 

@@ -1,0 +1,6 @@
+{
+    "javascript.format.insertSpaceAfterConstructor": true,
+    "javascript.suggest.autoImports": false,
+    "javascript.suggest.classMemberSnippets.enabled": true,
+    "javascript.suggest.completeFunctionCalls": true
+}

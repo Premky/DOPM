@@ -4,13 +4,11 @@ import { InputLabel, TextField, Autocomplete } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
-import { useAuth } from '../../Context/AuthContext';
 
-const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type, selected_office }) => {
+const ReuseBandiRanks = ({ name, label, required, control, error,defaultValue, disabled }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
-    const { state: authState } = useAuth();
     const token = localStorage.getItem('token');
 
     // State to store office options
@@ -18,46 +16,35 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
     const [loading, setLoading] = useState(true);
 
     // Fetch office data
-    
     const fetchOffices = async () => {
         try {
-            let url;
-            if (selected_office) {
-                console.log(selected_office)
-                url = `${BASE_URL}/bandi/get_all_office_bandi`;
-            }
-
-            if (authState.office_id) {
-                if (type == 'acceptedpayrole') {
-                    url = `${BASE_URL}/bandi/get_accepted_payroles`;
-                } else if (type == 'allbandi') {
-                    url = `${BASE_URL}/bandi/get_all_office_bandi`;
-                }
-                // else {
-                //     url = `${BASE_URL}/bandi/get_bandi_name_for_select/${authState.office_id}`;
-                // }
-            }
-
+            const url = `${BASE_URL}/public/get_bandi_ranks`;
             const response = await axios.get(url, {
-                params: { selected_office },
-                withCredentials: true
+                headers: { Authorization: `Bearer ${token}` },
             });
-            // console.log('officeid', response)
 
             const { Status, Result, Error } = response.data;
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result
-                        // .filter(opt => opt?.bandi_name)
-                        .filter(opt => opt?.id && opt?.bandi_name)
-                        .map((opt, index) => {
-                            const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
-                            return {
-                                label: ` ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index + 1} `,
-                                value: opt.bandi_id,
-                            };
-                        });
+                    // const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3);
+                    const filtered = Result;
+
+                    // const formatted = filtered.map((opt, index) => ({
+                    //     sn: index + 1,
+                    //     label: opt.bandi_post_np,
+                    //     value: opt.id,
+                    // }));
+
+                    //To put manual option
+                        const formatted=[
+                            {label:'सबै', value:null}, //Manually Added
+                            ...filtered.map((opt, index)=>({
+                                sn:index+1, 
+                                label:opt.bandi_post_np, 
+                                value:opt.id
+                            }))
+                        ];
                     setFormattedOptions(formatted);
                 } else {
                     console.log('No records found.');
@@ -74,12 +61,12 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
 
     useEffect(() => {
         fetchOffices();
-    }, [selected_office]);
+    }, []);
+
     return (
         <>
             <InputLabel id={name}>
-                {/* {label} */}
-                बन्दी आई.डि.| नामथर | मुद्दा
+                {label}
                 {required && <span style={{ color: 'red' }}>*</span>}
             </InputLabel>
 
@@ -89,6 +76,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
                 <Controller
                     name={name}
                     control={control}
+                    defaultValue={defaultValue}
                     rules={{
                         ...(required && {
                             required: {
@@ -107,17 +95,12 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
                             value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
                             onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
                             sx={{ width: '100%' }}
-
-                            renderOption={(props, option) => {
-                                const { key, ...rest } = props; // separate out the key
-                                return (
-                                    <Box key={`${option.value}-${option.label}`} component="li" {...rest}>
-                                        {option.label}
-                                    </Box>
-                                );
-                            }}
-
-
+                            disabled={disabled}
+                            renderOption={(props, option) => (
+                                <Box component="li" {...props} key={option.value}>
+                                    {option.label}
+                                </Box>
+                            )}
                             renderInput={(params) => (
                                 <TextField
                                     // defaultValue=''
@@ -130,6 +113,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
                                     error={!!error}
                                     helperText={error?.message || ""}
                                     required={required}
+                                    disabled={disabled}
                                 />
                             )}
                         />
@@ -141,4 +125,4 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
     );
 };
 
-export default ReuseBandi;
+export default ReuseBandiRanks;

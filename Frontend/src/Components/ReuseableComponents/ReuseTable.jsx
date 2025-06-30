@@ -13,8 +13,10 @@ const ReusableTable = ({
   rows,
   height = 500,
   width = "100%",
+  showView = false, 
   showEdit = false,
   showDelete = false,
+  onView,
   onEdit,
   onDelete,
   enableExport = false,
@@ -157,6 +159,17 @@ const ReusableTable = ({
               filterable: false,
               renderCell: (params) => (
                 <div style={{ display: "flex", gap: 8 }}>
+                  {showView && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      onClick={() => onView?.(params.row)}
+                    >
+                      View
+                    </Button>
+                  )}
+
                   {showEdit && (
                     <Button
                       variant="contained"
@@ -167,6 +180,7 @@ const ReusableTable = ({
                       Edit
                     </Button>
                   )}
+
                   {showDelete && (
                     <Button
                       variant="contained"
@@ -189,9 +203,9 @@ const ReusableTable = ({
           getRowId={(row) => row.id}
           components={{ Toolbar: GridToolbar }}  // <-- This enables toolbar with page size selector, filter etc.
           paginationModel={paginationModel}
-          onPaginationModelChange={(newModel)=>setPaginationModel(newModel)}
+          onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
           pageSizeOptions={[10, 25, 50, 100]}
-        
+
           initialState={{
 
             columns: {

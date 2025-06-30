@@ -188,17 +188,9 @@ router.get('/get_payrole_status', async(req, res)=>{
     }
 });
 
-router.get('/get_accident_types/', async(req, res)=>{
+router.get('/get_bandi_ranks/', async(req, res)=>{
     
-    const sql = `SELECT art.*,
-                    COUNT(*) AS count
-                FROM 
-                    accident_reasons ar
-                JOIN 
-                    accident_reason_type art ON ar.reason_type = art.id
-                GROUP BY 
-                    ar.reason_type
-                ORDER BY ar.reason_type`;; 
+    const sql = `SELECT * FROM bandi_posts `; 
     try{
         const result = await query(sql);
         return res.json({Status:true, Result:result})

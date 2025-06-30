@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from 'react'
-import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos'
 import { useForm } from 'react-hook-form';
 import { Box, Button, Grid2, useScrollTrigger } from '@mui/material';
-import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
-import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
-import ViewBandi from '../ViewBandi'
-import ReuseInput from '../../ReuseableComponents/ReuseInput';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { useAuth } from '../../../Context/AuthContext';
-import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-const PayroleForm = () => {
+
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import { useAuth } from '../../../../Context/AuthContext';
+import useInternalAdmins from '../../../ReuseableComponents/UseInternalAdmins';
+
+import ViewBandi from '../../ViewBandi'
+import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
+import ReuseBandi from '../../../ReuseableComponents/ReuseBandi';
+import ReuseInput from '../../../ReuseableComponents/ReuseInput';
+import ReuseMudda from '../../../ReuseableComponents/ReuseMudda';
+import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos'
+import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
+
+const KaamdariSubidhaForm = () => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
+  const { records, recordsLoading } = useInternalAdmins();
+  console.log(records);
 
   const {
     handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm({
@@ -23,7 +30,7 @@ const PayroleForm = () => {
       },
     });
 
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
 
   // Watch Variables
@@ -96,12 +103,12 @@ const PayroleForm = () => {
         <form onSubmit={handleSubmit(onFormSubmit)}>
           <Grid2 container spacing={1}>
             <Grid2 size={12}>
-              कार्यालयको विवरणः
+             पत्रको विवरणः
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-              <ReusePayroleNos
-                name='payrole_no'
-                label='प्यारोल संख्या'
+              <ReuseKaragarOffice
+                name='office_id'
+                label='कार्यालय'
                 required={true}
                 control={control}
                 error={errors._no}
@@ -206,4 +213,4 @@ const PayroleForm = () => {
   )
 }
 
-export default PayroleForm
+export default KaamdariSubidhaForm

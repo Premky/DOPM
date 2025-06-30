@@ -17,6 +17,7 @@ import { authRouter } from './routes/authRoute.js';
 import { publicRouter } from './routes/publicRoutes.js';
 import { employeRouter } from './routes/employeRoute.js';
 import { bandiRouter } from './routes/bandiRuoute.js';
+import { payroleRouter } from './routes/payroleRoute.js';
 
 dotenv.config();
 
@@ -126,6 +127,7 @@ app.use('/auth', authRouter);
 app.use('/public', publicRouter);
 app.use('/emp', employeRouter);
 app.use('/bandi', bandiRouter);
+app.use('/payrole', payroleRouter);
 
 // ------------------- ✅ Error Handler -------------------
 app.use(errorHandler);

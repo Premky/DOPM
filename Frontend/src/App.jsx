@@ -15,13 +15,18 @@ const LoggedIn = lazy(() => import('./Components/Auth/middlewares/LoggedIn'));
 const CountReport = lazy(() => import('./Components/Bandi/Tables/Counts/CountReport'));
 const AllBandiTable = lazy(() => import('./Components/Bandi/Tables/AllBandiTable'));
 const BandiPersonForm = lazy(() => import('./Components/Bandi/Forms/BandiPersonForm'));
-const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
+// const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
 const ViewBandi = lazy(() => import('./Components/Bandi/ViewBandi'));
 
 const PayroleMakebari = lazy(() => import('./Components/Bandi/Tables/PayroleMakebari'));
 const PayroleForm = lazy(() => import('./Components/Bandi/Forms/PayroleForm'));
 const PayroleTable = lazy(() => import('./Components/Bandi/Tables/PayroleTable'));
 const PayroleLogForm = lazy(() => import('./Components/Bandi/Forms/PayroleLogForm'));
+
+const AantarikPrashasanForm = lazy(() => import('./Components/Bandi/Kaamdari_subidha/Forms/AantarikPrashasanForm'));
+const AantarikPrashasanTable = lazy(() => import('./Components/Bandi/Kaamdari_subidha/Tables/AantarikPrashasanTable'));
+const KaamdariSubidhaForm = lazy(() => import('./Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm'));
+const KaamdariBhuktanDecision = lazy(() => import('./Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision'));
 
 import { Outlet } from 'react-router-dom';
 
@@ -42,7 +47,7 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes with Navigation */}
-            <Route element={<ProtectedLayout />}> 
+            <Route element={<ProtectedLayout />}>
 
               {/* Admin routes wrapped with AdminCheck */}
               <Route element={<AdminCheck />}>
@@ -61,8 +66,17 @@ function App() {
                   <Route path="dashboard" element={<CountReport />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />
-                  <Route path="create_bandi_family" element={<BandiFamilyForm />} />
+                  {/* <Route path="create_bandi_family" element={<BandiFamilyForm />} /> */}
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+                </Route>
+
+                <Route path="kaamdari_subidha" element={<OutletLayout />}>
+                  <Route path="create_aantarik_prashasan" element={<AantarikPrashasanForm />} />
+                  <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
+                  <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
+                  <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
+                  
+
                 </Route>
 
                 {/* Payrole Routes */}
@@ -73,6 +87,7 @@ function App() {
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
                   <Route path="payrole_log" element={<PayroleLogForm />} />
                 </Route>
+
               </Route>
 
               {/* Catch all for unknown routes */}

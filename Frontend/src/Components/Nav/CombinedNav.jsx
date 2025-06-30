@@ -33,8 +33,17 @@ const CombinedNav = ({ user }) => {
       submenu: [
         { name: 'प्यारोल थप', path: '/payrole/create_payrole' },
         { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
-        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log'},
-        { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table'}
+        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
+        { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
+      ]
+    },
+    {
+      name: 'कामदारी सुविधा',
+      defaultPath: '/kaamdari_subidha',
+      submenu: [
+        { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/kaamdari_subidha/create_aantarik_prashasan' },
+        { name: 'आन्तिरक प्रशासन', path: '/kaamdari_subidha/aantarik_prashasan_table' },
+        { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
     }
   ];
