@@ -10,6 +10,8 @@ const BandiShortTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
     // const { bandi_id } = useParams();
 
+    console.log(bandi_id)
+
     const [fetchedBandi, setFetchedBandies] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -41,6 +43,7 @@ const BandiShortTable = ({ bandi_id }) => {
             fetchBandies();
         }
     }, [bandi_id]);
+    
     return (
         <>
             <Grid item container spacing={2}>
@@ -57,6 +60,11 @@ const BandiShortTable = ({ bandi_id }) => {
                                 <TableCell>{fetchedBandi.bandi_id}</TableCell>
                                 <TableCell>बन्दी प्रकार</TableCell>
                                 <TableCell>{fetchedBandi.bandi_type}</TableCell>
+                                <TableCell>नामथर</TableCell>
+                                <TableCell>{fetchedBandi.bandi_name}
+                                    <br/>
+                                    {fetchedBandi.nepali_address||fetchBandies.bidesh_nagarik_address_details}
+                                </TableCell>
                                 <TableCell rowSpan={5} colSpan={2} align='center'>
                                     <img
                                         src={fetchedBandi.photo_path ? `${BASE_URL}${fetchedBandi.photo_path}` : '/default-avatar.png'}
@@ -66,10 +74,9 @@ const BandiShortTable = ({ bandi_id }) => {
                                 </TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell>नामथर</TableCell>
-                                <TableCell>{fetchedBandi.bandi_name}</TableCell>
+
                             </TableRow>
-                            
+
 
                         </Table>
                     </TableContainer>

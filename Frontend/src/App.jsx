@@ -13,6 +13,7 @@ const AdminCheck = lazy(() => import('./Components/Auth/middlewares/AdminCheck')
 const LoggedIn = lazy(() => import('./Components/Auth/middlewares/LoggedIn'));
 
 const CountReport = lazy(() => import('./Components/Bandi/Tables/Counts/CountReport'));
+const BandiMaskebari = lazy(() => import('./Components/Bandi/Reports/BandiMaskebari'));
 const AllBandiTable = lazy(() => import('./Components/Bandi/Tables/AllBandiTable'));
 const BandiPersonForm = lazy(() => import('./Components/Bandi/Forms/BandiPersonForm'));
 // const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
@@ -64,6 +65,7 @@ function App() {
                 <Route path="bandi" element={<OutletLayout />}>
                   <Route index element={<CountReport />} />
                   <Route path="dashboard" element={<CountReport />} />
+                  <Route path="maskebari" element={<BandiMaskebari />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />
                   {/* <Route path="create_bandi_family" element={<BandiFamilyForm />} /> */}

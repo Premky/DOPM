@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from 'react-router-dom'
-
-import BandiShortTable from '../../Tables/BandiShortTable';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import BandiShortTable from "../../Tables/BandiShortTable";
+import { useBaseURL } from "../../../../Context/BaseURLProvider";
+import { Button, Grid2, Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 const KaamdariBhuktanDecision = () => {
+  const BASE_URL = useBaseURL();
   const params = useParams();
-  // Prefer the passed prop, fallback to param
-  // const subidha_id = subidha_no ? subidha_no : params.id;
   const subidha_id = params.id;
 
-  // console.log((subidha_id))
-  const [bandies, setBandies] = useState([]);
+  const [bandies, setBandies] = useState(null);
+
   const fetchBandies = async () => {
     try {
       const response = await axios.get(
@@ -20,8 +21,8 @@ const KaamdariBhuktanDecision = () => {
           withCredentials: true
         }
       );
-      console.log('kajdsfl')
-      setBandies(response.data.Result || []);
+      // console.log(subidha_id)
+      setBandies(response.data.Result[0] || []);
       console.log(response.data.Result)
     } catch (error) {
       console.error("Failed to fetch bandies:", error);
@@ -30,15 +31,23 @@ const KaamdariBhuktanDecision = () => {
 
   useEffect(() => {
     fetchBandies();
-  });
-
+  }, [subidha_id]);
 
   return (
     <>
-      {bandies}
-      {/* <BandiShortTable bandi_id={subidha_id} /> */}
-    </>
-  )
-}
+      <Grid2 container size={{ xs: 12 }}>
+        <Grid2 size={{xs:12}}>
+          <BandiShortTable bandi_id={bandies?.bandi_id} />
+        </Grid2>
+        <Grid2 size={{xs:12, sm:6}}>
+          <TableContainer>
+            a;dslkf
+          </TableContainer>
+        </Grid2>
+      </Grid2>
 
-export default KaamdariBhuktanDecision
+    </>
+  );
+};
+
+export default KaamdariBhuktanDecision;
