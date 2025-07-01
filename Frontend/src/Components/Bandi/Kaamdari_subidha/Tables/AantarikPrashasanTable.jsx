@@ -147,7 +147,7 @@ const AantarikPrashasanTable = () => {
     ...b,
     id: b.bandi_id,
     bandi_address: b.nepali_address || b.bidesh_nagarik_address_details,
-    duration: b.facility_years || 0 + '|' + b.facility_months || 0 + '|' + b.faciltiy_days || 0,
+    // duration: b.facility_years || 0 + '|' + b.facility_months || 0 + '|' + b.faciltiy_days || 0,
     duration: `${b.facility_years || 0}|${b.facility_months || 0}|${b.facility_days || 0}`,
     facility:
       b.appointment_start_date_bs && b.appointment_end_date_bs
