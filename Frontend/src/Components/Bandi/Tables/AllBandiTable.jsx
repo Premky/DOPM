@@ -306,7 +306,7 @@ const AllBandiTable = () => {
                                                 rowSpan={kaidiMuddas.length || 1}
                                             >
                                                 {data.office_bandi_id} <br />
-                                                <b>{data.bandi_name}</b><br />
+                                                <b>{data.bandi_type} {data.bandi_name}</b><br />
 
                                                 {data.nationality === 'स्वदेशी'
                                                     ? `${data.city_name_np}-${data.wardno},${data.district_name_np},

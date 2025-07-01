@@ -13,7 +13,7 @@ const UseBandiTotalCountACoffice = () => {
       try {
         const response = await axios.get(`${BASE_URL}/bandi/get_office_wise_count`,{withCredentials:true});
         setCount(response.data.Result || []);
-        console.log(response)
+        console.log(response.data.Result)
       } catch (error) {
         console.error("Failed to fetch count:", error);
       } finally {

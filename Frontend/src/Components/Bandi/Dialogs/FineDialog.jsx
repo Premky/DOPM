@@ -7,7 +7,7 @@ import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseOffice from "../../ReuseableComponents/ReuseOffice";
 import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
-
+import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 
 const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
     const {
@@ -106,7 +106,7 @@ const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
                                     />
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4 }}>
-                                    <ReuseDateField
+                                    <ReuseDatePickerBS
                                         name='deposit_date'
                                         label="मिति"
                                         placeholder='YYYY-MM-DD'

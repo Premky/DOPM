@@ -4,7 +4,7 @@ import { NepaliDatePicker } from "nepali-datepicker-reactjs";
 import "nepali-datepicker-reactjs/dist/index.css";
 import { TextField, InputLabel, Box, Typography } from "@mui/material";
 
-const NepaliDatePickerWithMUI = ( {
+const ReuseDatePickerBS = ( {
     control,
     name,
     label,
@@ -91,4 +91,4 @@ const NepaliDatePickerWithMUI = ( {
     );
 };
 
-export default NepaliDatePickerWithMUI;
+export default ReuseDatePickerBS;

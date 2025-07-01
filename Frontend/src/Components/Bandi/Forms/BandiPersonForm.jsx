@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useTransition } from 'react'
+import React, { useEffect, useState, useTransition } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
@@ -19,7 +19,8 @@ import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import ReuseIdCards from '../../ReuseableComponents/ReuseIdCards';
-import ReuseRelativeRelations from '../../ReuseableComponents/ReuseRelativeRelations'
+import ReuseRelativeRelations from '../../ReuseableComponents/ReuseRelativeRelations';
+import ReuseDatePickerBs from '../../ReuseableComponents/ReuseDatePickerBS';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import ReusePhotoInput from '../../ReuseableComponents/ReusePhotoInput';
@@ -30,34 +31,36 @@ const BandiPersonForm = () => {
 
   const {
     handleSubmit, watch, setValue, register, reset, control, formState: { errors },
-  } = useForm({
-    mode:'onBlur',
+  } = useForm( {
+    mode: 'onBlur',
     defaultValues: {
       office_bandi_id: '',
       // other fields...
     },
-  });
+  } );
   const npToday = new NepaliDate();
-  const formattedDateNp = npToday.format('YYYY-MM-DD');
+  const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
   const navigate = useNavigate();
 
-  const [muddaCount, setMuddaCount] = useState(1);
-  const [familyCount, setFamilyCount] = useState(1);
+  const [muddaCount, setMuddaCount] = useState( 1 );
+  const [familyCount, setFamilyCount] = useState( 1 );
+  const [contactCount, setContactCount] = useState( 1 );
   const [age, setAge] = useState();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState( false );
 
 
-  const selectedNationality = watch('nationality');
-  const selectedState = watch('state_id');
-  const selectedDistrict = watch('district_id');
-  const selectedbandi_type = watch('bandi_type');
-  const selectedIs_amount_fixed = watch("is_fine_fixed");
-  const selectedIs_compensation = watch("is_compensation");
-  const selectedIs_bigo = watch("is_bigo");
-  const bsdob = watch("dob");
-  const bandiRelation = watch('bandi_relative_relation')
+  const selectedNationality = watch( 'nationality' );
+  const selectedState = watch( 'state_id' );
+  const selectedDistrict = watch( 'district_id' );
+  const selectedbandi_type = watch( 'bandi_type' );
+  const selectedIs_amount_fixed = watch( "is_fine_fixed" );
+  const selectedIs_compensation = watch( "is_compensation" );
+  const selectedIs_bigo = watch( "is_bigo" );
+  const bsdob = watch( "dob" );
+  const bandiRelation = watch( 'bandi_relative_relation' );
+  const idcardtype = watch( 'id_card_type' );
 
-  const testVariable = watch('office_bandi_id');
+  const testVariable = watch( 'office_bandi_id' );
   // console.log('office_bandi_id', testVariable)
 
   const isSwadeshi = selectedNationality === 'स्वदेशी';
@@ -70,59 +73,56 @@ const BandiPersonForm = () => {
     { label: 'अन्य', value: 'other' }
   ];
 
-  useEffect(() => {
+  useEffect( () => {
     const fetchRandomBandiId = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/bandi/get_random_bandi_id`);
+        const response = await axios.get( `${ BASE_URL }/bandi/get_random_bandi_id` );
         const { Status, Result } = response.data;
-        if (Status) {
-          setValue('office_bandi_id', Result || '');
+        if ( Status ) {
+          setValue( 'office_bandi_id', Result || '' );
         }
-      } catch (err) {
-        console.error('Error fetching Bandi ID:', err);
+      } catch ( err ) {
+        console.error( 'Error fetching Bandi ID:', err );
       }
     };
     fetchRandomBandiId();
-  }, [BASE_URL, setValue]);
+  }, [BASE_URL, setValue] );
 
-  useEffect(() => {
+  useEffect( () => {
     const getAge = async () => {
-      if (bsdob) {
-        const a = await calculateAge(bsdob);
-        setValue('age', a || '');
+      if ( bsdob ) {
+        const a = await calculateAge( bsdob );
+        setValue( 'age', a || '' );
       }
     };
     getAge();
-  }, [bsdob]);
+  }, [bsdob] );
 
-  const hirasat_date_bs = watch('hirasat_date_bs');
-  const release_date_bs = watch('release_date_bs');
-  const hirasat_years = watch('hirasat_years');
-  const hirasat_months = watch('hirasat_months');
-  const hirasat_days = watch('hirasat_days');
+  const hirasat_date_bs = watch( 'hirasat_date_bs' );
+  const release_date_bs = watch( 'release_date_bs' );
+  const hirasat_years = watch( 'hirasat_years' );
+  const hirasat_months = watch( 'hirasat_months' );
+  const hirasat_days = watch( 'hirasat_days' );
 
-  useEffect(() => {
+  useEffect( () => {
     const calculateKaidDuration = () => {
-      if (hirasat_date_bs && release_date_bs) {
-        const kaidDuration = calculateBSDate(hirasat_date_bs, release_date_bs);
-        const bhuktanDuration = calculateBSDate(hirasat_date_bs, formattedDateNp, kaidDuration);
-        const berujuDuration = calculateBSDate(formattedDateNp, release_date_bs, kaidDuration);
+      if ( hirasat_date_bs && release_date_bs ) {
+        const kaidDuration = calculateBSDate( hirasat_date_bs, release_date_bs );
+        const bhuktanDuration = calculateBSDate( hirasat_date_bs, formattedDateNp, kaidDuration );
+        const berujuDuration = calculateBSDate( formattedDateNp, release_date_bs, kaidDuration );
 
-        const totalkaidDuration = sumDates(hirasat_years, hirasat_months, hirasat_days, kaidDuration)
-        const totalBhuktanDuration = sumDates(hirasat_years, hirasat_months, hirasat_days, bhuktanDuration)
+        const totalkaidDuration = sumDates( hirasat_years, hirasat_months, hirasat_days, kaidDuration );
+        const totalBhuktanDuration = sumDates( hirasat_years, hirasat_months, hirasat_days, bhuktanDuration );
 
-        setValue('kaid_duration', `${kaidDuration.years}|${kaidDuration.months}|${kaidDuration.days}`);
-
-
-
-        setValue('total_kaid_duration', `${totalkaidDuration.totalYears}|${totalkaidDuration.totalMonths}|${totalkaidDuration.totalDays}`);
-        setValue('total_bhuktan_duration', `${totalBhuktanDuration.totalYears}|${totalBhuktanDuration.totalMonths}|${totalBhuktanDuration.totalDays}`);
-        setValue('bhuktan_duration', `${bhuktanDuration.years}|${bhuktanDuration.months}|${bhuktanDuration.days}`);
-        setValue('beruju_duration', `${berujuDuration.years}|${berujuDuration.months}|${berujuDuration.days}`);
+        setValue( 'kaid_duration', `${ kaidDuration.years }|${ kaidDuration.months }|${ kaidDuration.days }` );
+        setValue( 'total_kaid_duration', `${ totalkaidDuration.totalYears }|${ totalkaidDuration.totalMonths }|${ totalkaidDuration.totalDays }` );
+        setValue( 'total_bhuktan_duration', `${ totalBhuktanDuration.totalYears }|${ totalBhuktanDuration.totalMonths }|${ totalBhuktanDuration.totalDays }` );
+        setValue( 'bhuktan_duration', `${ bhuktanDuration.years }|${ bhuktanDuration.months }|${ bhuktanDuration.days }` );
+        setValue( 'beruju_duration', `${ berujuDuration.years }|${ berujuDuration.months }|${ berujuDuration.days }` );
       }
     };
 
-    if (hirasat_date_bs?.length === 10 && release_date_bs?.length === 10) {
+    if ( hirasat_date_bs?.length === 10 && release_date_bs?.length === 10 ) {
       calculateKaidDuration();
     }
   }, [
@@ -133,15 +133,15 @@ const BandiPersonForm = () => {
     hirasat_months,
     hirasat_days,
     setValue,
-  ]);
+  ] );
 
 
-  const onSubmit = async (data) => {
-    console.log(data);
+  const onSubmit = async ( data ) => {
+    console.log( data );
     try {
       const url = editing
-        ? `${BASE_URL}/bandi/update_bandi/${currentData.id}`
-        : `${BASE_URL}/bandi/create_bandi`;
+        ? `${ BASE_URL }/bandi/update_bandi/${ currentData.id }`
+        : `${ BASE_URL }/bandi/create_bandi`;
 
       const method = editing ? 'PUT' : 'POST';
 
@@ -149,49 +149,49 @@ const BandiPersonForm = () => {
       const formData = new FormData();
 
       //Append all fields except arrays/objects
-      for (const key in data) {
-        if (key === 'photo' && data[key]?.[0]) {
+      for ( const key in data ) {
+        if ( key === 'photo' && data[key]?.[0] ) {
           //Handle Photo file (from file input)
-          formData.append('photo', data[key][0]); //if using MUI FileInput, it's usually array
-        } else if (Array.isArray(data[key])) {
+          formData.append( 'photo', data[key][0] ); //if using MUI FileInput, it's usually array
+        } else if ( Array.isArray( data[key] ) ) {
           //Handle family array or others
-          formData.append(key, JSON.stringify(data[key]));
+          formData.append( key, JSON.stringify( data[key] ) );
         } else {
-          formData.append(key, data[key])
+          formData.append( key, data[key] );
         }
       }
 
-      const response = await axios({
+      const response = await axios( {
         method,
         url,
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data', },
         withCredentials: true,
-      });
+      } );
 
       const { Status, Result, Error } = response.data;
 
-      if (Status) {
-        Swal.fire('थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success');
-        console.log(response)
+      if ( Status ) {
+        Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
+        console.log( response );
         const bandi_id = Result;
-        console.log(bandi_id);
-        navigate(`/bandi/view_saved_record/${bandi_id}`); // <-- fixed here
+        console.log( bandi_id );
+        navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
         reset();
-        setEditing(false);
-        fetchAccidentRecords();
+        setEditing( false );
+        
       } else {
-        Swal.fire('त्रुटि!', Error || 'रिकर्ड थप्न सकिएन', 'error');
+        Swal.fire( 'त्रुटि!', Error || 'रिकर्ड थप्न सकिएन', 'error' );
       }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      Swal.fire('त्रुटि!', 'डेटा बुझाउँदा समस्या आयो।', 'error');
+    } catch ( error ) {
+      console.error( 'Error submitting form:', error );
+      Swal.fire( 'त्रुटि!', 'डेटा बुझाउँदा समस्या आयो।', 'error' );
     }
   };
 
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit( onSubmit )}>
       <Grid container spacing={2}>
         <Grid item container xs={9} sm={8} md={10}>
           <Grid item xs={12} sm={6} md={3}>
@@ -278,7 +278,7 @@ const BandiPersonForm = () => {
               name="bandi_education"
               label="बन्दीको शैक्षिक योग्यता"
               options={[
-                { label: 'थाहा नभएको', value: 'थाहा नभएको'},
+                { label: 'थाहा नभएको', value: 'थाहा नभएको' },
                 { label: 'सामान्य पढ्न लेख्न जान्ने', value: 'सामान्य पढ्न लेख्न जान्ने' },
                 { label: 'आठ सम्म', value: 'आठ सम्म' },
                 { label: 'एस.एल.सी/एस.ई.ई', value: 'एस.एल.सी/एस.ई.ई' },
@@ -292,8 +292,9 @@ const BandiPersonForm = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          {/* <Grid item xs={12} sm={6} md={3}>
             <ReuseInput
+              hidden
               name="bandi_height"
               label="बन्दीको उचाई"
               required={false}
@@ -304,13 +305,14 @@ const BandiPersonForm = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <ReuseInput
+              hidden
               name="bandi_weight"
               label="बन्दीको तौल"
               required={false}
               control={control}
               error={errors.bandi_weight}
             />
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={12} sm={6} md={3}>
             <ReuseInput
@@ -341,61 +343,61 @@ const BandiPersonForm = () => {
           बन्दीको मुद्दा विवरणः
         </Grid>
 
-        {[...Array(muddaCount)].map((_, index) => (
+        {[...Array( muddaCount )].map( ( _, index ) => (
           <Grid container item spacing={2} key={index} sx={{ mt: 2 }}>
             <Grid item xs={12} sm={6} md={3}>
               <ReuseMudda
-                name={`mudda_id_${index + 1}`}
+                name={`mudda_id_${ index + 1 }`}
                 label="मुद्दा"
                 required={true}
                 control={control}
-                error={errors[`mudda_${index + 1}`]}
+                error={errors[`mudda_${ index + 1 }`]}
               />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <ReuseInput
-                name={`mudda_no_${index + 1}`}
+                name={`mudda_no_${ index + 1 }`}
                 label="मुद्दा नं."
                 required={true}
                 control={control}
-                error={errors[`mudda_no_${index + 1}`]}
+                error={errors[`mudda_no_${ index + 1 }`]}
               />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <ReuseInput
-                name={`vadi_${index + 1}`}
+                name={`vadi_${ index + 1 }`}
                 label="वादी वा जाहेरवालाको नाम"
                 required={true}
                 control={control}
-                error={errors[`vadi_${index + 1}`]}
+                error={errors[`vadi_${ index + 1 }`]}
               />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <ReuseOffice
-                name={`mudda_office_${index + 1}`}
+                name={`mudda_office_${ index + 1 }`}
                 label="मुद्दा रहेको निकाय"
                 required={true}
                 control={control}
-                error={errors[`mudda_office_${index + 1}`]}
+                error={errors[`mudda_office_${ index + 1 }`]}
               />
             </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
+            {/* <Grid item xs={12} sm={6} md={3}>
               <ReuseDistrict
-                name={`mudda_district_${index + 1}`}
+                name={`mudda_district_${ index + 1 }`}
                 label="मुद्दा रहेको जिल्ला"
                 required={true}
                 control={control}
-                error={errors[`mudda_district_${index + 1}`]}
+                error={errors[`mudda_district_${ index + 1 }`]}
               />
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={12} sm={6} md={3}>
               <ReuseSelect
-                name={`mudda_condition_${index + 1}`}
+                name={`mudda_condition_${ index + 1 }`}
                 label="मुद्दाको अवस्था?"
                 required={true}
                 control={control}
@@ -403,26 +405,26 @@ const BandiPersonForm = () => {
                   { label: 'चालु', value: 1 },
                   { label: 'अन्तिम भएको', value: 0 },
                 ]}
-                error={errors[`mudda_condition_${index + 1}`]}
+                error={errors[`mudda_condition_${ index + 1 }`]}
               />
             </Grid>
 
             {selectedbandi_type == 'कैदी' && (
               <Grid item xs={12} sm={6} md={3}>
                 <ReuseDateField
-                  name={`mudda_phesala_date_${index + 1}`}
+                  name={`mudda_phesala_date_${ index + 1 }`}
                   label='मुद्दा फैसला मिति'
                   placeholder={'YYYY-MM-DD'}
                   required={true}
                   control={control}
-                  error={errors[`mudda_phesala_date_${index + 1}`]}
+                  error={errors[`mudda_phesala_date_${ index + 1 }`]}
                 />
               </Grid>
             )}
 
             <Grid item xs={11} sm={5} md={2}>
               <ReuseSelect
-                name={`is_main_mudda_${index + 1}`}
+                name={`is_main_mudda_${ index + 1 }`}
                 label="मुख्य मुददा हो/होइन?"
                 required={true}
                 control={control}
@@ -430,13 +432,13 @@ const BandiPersonForm = () => {
                   { label: 'होइन', value: 0 },
                   { label: 'हो', value: 1 },
                 ]}
-                error={errors[`is_main_mudda_${index + 1}`]}
+                error={errors[`is_main_mudda_${ index + 1 }`]}
               />
             </Grid>
 
             <Grid item xs={11} sm={5} md={2}>
               <ReuseSelect
-                name={`is_last_mudda_${index + 1}`}
+                name={`is_last_mudda_${ index + 1 }`}
                 label="अन्तिम मुददा हो/होइन?"
                 required={true}
                 control={control}
@@ -444,7 +446,7 @@ const BandiPersonForm = () => {
                   { label: 'होइन', value: 0 },
                   { label: 'हो', value: 1 },
                 ]}
-                error={errors[`is_last_mudda_${index + 1}`]}
+                error={errors[`is_last_mudda_${ index + 1 }`]}
               />
             </Grid>
 
@@ -454,7 +456,7 @@ const BandiPersonForm = () => {
                 color="secondary"
                 size="small"
                 type="button"
-                onClick={() => setMuddaCount(muddaCount + 1)}
+                onClick={() => setMuddaCount( muddaCount + 1 )}
               >
                 +
               </Button>
@@ -467,14 +469,14 @@ const BandiPersonForm = () => {
                   color="warning"
                   size="small"
                   type="button"
-                  onClick={() => setMuddaCount(muddaCount - 1)}
+                  onClick={() => setMuddaCount( muddaCount - 1 )}
                 >
                   <RemoveIcon />
                 </Button>
               )}
             </Grid>
           </Grid>
-        ))}
+        ) )}
       </Grid>
       <hr />
       <Grid item container spacing={2}>
@@ -535,7 +537,7 @@ const BandiPersonForm = () => {
 
         </Grid>
 
-        {selectedbandi_type === 'कैदी' && (<>
+        {selectedbandi_type === 'कैदी' && ( <>
           <Grid item xs={12} sm={6} md={2}>
             <ReuseDateField
               name="release_date_bs"
@@ -595,29 +597,42 @@ const BandiPersonForm = () => {
               />
             </Grid>
           </Grid>
-        </>)}
+        </> )}
       </Grid>
       <hr />
       <Grid item container spacing={2}>
         <Grid item xs={12}>
           बन्दीको परिचयपत्रको विवरणः
         </Grid>
+
         <Grid item xs={12} sm={6} md={2}>
           <ReuseIdCards
             name="id_card_type"
             label="कार्डको प्रकार"
             defaultvalue={1}
-            required={true}
+            required={false}
             control={control}
             error={errors.id_card_type}
           />
         </Grid>
-
+        {idcardtype?.label === 'अन्य' && (
+          <>
+            <Grid item xs={12} sm={6} md={2}>
+              <ReuseInput
+                name="card_name"
+                label="कार्डको विवरण"
+                required={false}
+                control={control}
+                error={errors.card_name}
+              />
+            </Grid>
+          </>
+        )}
         <Grid item xs={12} sm={6} md={2}>
           <ReuseInput
             name="card_no"
             label="परिचय पत्र नं."
-            required={true}
+            required={false}
             control={control}
             error={errors.card_no}
           />
@@ -627,7 +642,7 @@ const BandiPersonForm = () => {
           <ReuseDistrict
             name="card_issue_district_id"
             label="जारी जिल्ला"
-            required={true}
+            required={false}
             control={control}
             error={errors.card_issue_district_id}
           />
@@ -638,7 +653,7 @@ const BandiPersonForm = () => {
             name="card_issue_date"
             label="परिचय पत्र जारी मिती"
             placeholder='YYYY-DD-MM'
-            required={true}
+            required={false}
             control={control}
             error={errors.card_issue_date}
           />
@@ -651,7 +666,7 @@ const BandiPersonForm = () => {
         </Grid>
         <Grid item xs={10}>
           <Grid item xs={12} sm={6} md={2}>
-            <select name='nationality' {...register('nationality')}>
+            <select name='nationality' {...register( 'nationality' )}>
               <option value='स्वदेशी'>स्वदेशी</option>
               <option value='बिदेशी'>बिदेशी</option>
             </select>
@@ -729,66 +744,59 @@ const BandiPersonForm = () => {
         <Grid item xs={12}>
           पारिवारीक विवरणः
         </Grid>
-        {[...Array(familyCount)].map((_, index) => {
-          const currentRelation = watch(`family[${index}].bandi_relative_relation`);
+        {[...Array( familyCount )].map( ( _, index ) => {
+          const currentRelation = watch( `family[${ index }].bandi_relative_relation` );
 
           return (
             <Grid item container xs={12} key={index}>
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseRelativeRelations
-                  name={`family[${index}].bandi_relative_relation`}
+                  name={`family[${ index }].bandi_relative_relation`}
                   label="बन्दीसंगको नाता"
-                  required={true}
+                  required={false}
                   control={control}
                   error={errors?.family?.[index]?.bandi_relative_relation}
                 />
               </Grid>
 
-              {parseInt(currentRelation) === 6 ? (
-                <Grid item xs={12} sm={6} md={2}>
-                  <ReuseInput
-                    name={`family[${index}].bandi_number_of_children`}
-                    label="छोरा/छोरी (संख्या)"
-                    type="number"
-                    required={true}
-                    control={control}
-                    error={errors?.family?.[index]?.bandi_number_of_children}
-                  />
-                </Grid>
-              ) : (
-                <>
-                  <Grid item xs={12} sm={6} md={2}>
-                    <ReuseInput
-                      name={`family[${index}].bandi_relative_name`}
-                      label="नामथर"
-                      required={true}
-                      control={control}
-                      error={errors?.family?.[index]?.bandi_relative_name}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2}>
-                    <ReuseInput
-                      name={`family[${index}].bandi_relative_address`}
-                      label="ठेगाना"
-                      required={true}
-                      control={control}
-                      error={errors?.family?.[index]?.bandi_relative_address}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2}>
-                    <ReuseInput
-                      name={`family[${index}].bandi_relative_contact_no`}
-                      label="सम्पर्क नं."
-                      onlyDigits={true}
-                      minLength={10}
-                      maxLength={10}
-                      required={true}
-                      control={control}
-                      error={errors?.family?.[index]?.bandi_relative_contact_no}
-                    />
-                  </Grid>
-                </>
-              )}
+
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseDatePickerBs
+                  name={`family[${ index }].bandi_relative_dob`}
+                  label="जन्म मिति"
+                  type="number"                  
+                  control={control}
+                  error={errors?.family?.[index]?.bandi_number_of_children}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseInput
+                  name={`family[${ index }].bandi_relative_name`}
+                  label="नामथर"                  
+                  control={control}
+                  error={errors?.family?.[index]?.bandi_relative_name}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseInput
+                  name={`family[${ index }].bandi_relative_address`}
+                  label="ठेगाना"                  
+                  control={control}
+                  error={errors?.family?.[index]?.bandi_relative_address}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseInput
+                  name={`family[${ index }].bandi_relative_contact_no`}
+                  label="सम्पर्क नं."
+                  onlyDigits={true}
+                  minLength={10}
+                  maxLength={10}                  
+                  control={control}
+                  error={errors?.family?.[index]?.bandi_relative_contact_no}
+                />
+              </Grid>
 
               <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
                 <Button
@@ -796,7 +804,7 @@ const BandiPersonForm = () => {
                   color="secondary"
                   size="small"
                   type="button"
-                  onClick={() => setFamilyCount(familyCount + 1)}
+                  onClick={() => setFamilyCount( familyCount + 1 )}
                 >
                   +
                 </Button>
@@ -809,7 +817,7 @@ const BandiPersonForm = () => {
                     color="warning"
                     size="small"
                     type="button"
-                    onClick={() => setFamilyCount(familyCount - 1)}
+                    onClick={() => setFamilyCount( familyCount - 1 )}
                   >
                     <RemoveIcon />
                   </Button>
@@ -817,12 +825,94 @@ const BandiPersonForm = () => {
               </Grid>
             </Grid>
           );
-        })}
+        } )}
 
       </Grid>
 
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          सम्पर्क व्यक्ति (दुई जना अनिवार्य)
+        </Grid>
+        {[...Array( contactCount )].map( ( _, index ) => {
+          // const currentRelation = watch( `contact[${ index }].bandi_relative_relation` );
 
-      {selectedbandi_type == 'कैदी' && (<>
+          return (
+            <Grid item container xs={12} key={index}>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseRelativeRelations
+                  name={`conatact_person[${ index }].bandi_contact_relation`}
+                  label="बन्दीसंगको नाता"
+                  required={true}
+                  control={control}
+                  error={errors?.conatact_person?.[index]?.bandi_contact_relation}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseInput
+                  name={`conatact_person[${ index }].bandi_contact_name`}
+                  label="नामथर"
+                  required={true}
+                  control={control}
+                  error={errors?.conatact_person?.[index]?.bandi_contact_name}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseInput
+                  name={`conatact_person[${ index }].bandi_contact_address`}
+                  label="ठेगाना"
+                  required={true}
+                  control={control}
+                  error={errors?.conatact_person?.[index]?.bandi_contact_address}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseInput
+                  name={`conatact_person[${ index }].bandi_contact_contact_no`}
+                  label="सम्पर्क नं."
+                  onlyDigits={true}
+                  minLength={10}
+                  maxLength={10}
+                  required={true}
+                  control={control}
+                  error={errors?.conatact_person?.[index]?.bandi_contact_contact_no}
+                />
+              </Grid>
+
+
+
+              <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="small"
+                  type="button"
+                  onClick={() => setContactCount( contactCount + 1 )}
+                >
+                  +
+                </Button>
+              </Grid>
+
+              <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
+                {contactCount > 1 && (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    type="button"
+                    onClick={() => setContactCount( contactCount - 1 )}
+                  >
+                    <RemoveIcon />
+                  </Button>
+                )}
+              </Grid>
+            </Grid>
+          );
+        } )}
+
+      </Grid>
+
+      {selectedbandi_type == 'कैदी' && ( <>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             जरिवाना रकम तोकिएको छ वा छैं‍न
@@ -1113,7 +1203,7 @@ const BandiPersonForm = () => {
             />
           </Grid>
         </Grid>
-      </>)
+      </> )
       }
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -1129,10 +1219,31 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">
-            Save
-          </Button>
+          {contactCount === 2 ? (
+            <Button type="submit" variant="contained" color="primary">
+              Save
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={() =>
+                Swal.fire( {
+                  icon: 'warning',
+                  title: 'सम्पर्क व्यक्ति अपुग',
+                  text: 'दुई जना सम्पर्क व्यक्ति अनिवार्य छ।',
+                  confirmButtonText: 'हुन्छ',
+                } )
+              }
+            >
+              Submit
+            </Button>
+
+
+          )}
+
         </Grid>
+
       </Grid>
     </form >
   );

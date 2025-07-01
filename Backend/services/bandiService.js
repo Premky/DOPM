@@ -1,0 +1,156 @@
+// services/bandiService.js
+
+//गाडीका विवरणहरुः नाम सुची
+// Promisify specific methods
+import con from '../utils/db.js';
+import { promisify } from 'util';
+const queryAsync = promisify( con.query ).bind( con );
+const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
+const commitAsync = promisify( con.commit ).bind( con );
+const rollbackAsync = promisify( con.rollback ).bind( con );
+const query = promisify( con.query ).bind( con );
+
+import { bs2ad } from '../utils/bs2ad.js';
+
+async function insertBandiPerson(data) {
+  const dob_ad = await bs2ad(data.dob);
+  const values = [
+    data.bandi_type, data.office_bandi_id, data.nationality, data.bandi_name,
+    data.gender, data.dob, dob_ad, data.age, data.married_status, data.photo_path,
+    data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
+    data.bandi_remarks, data.user_id, data.user_id, data.office_id
+  ];
+
+  const sql = `INSERT INTO bandi_person (
+    bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path,
+    bandi_education, height, weight, bandi_huliya, remarks, created_by, updated_by, current_office_id
+  ) VALUES (?)`;
+
+  const result = await queryAsync(sql, [values]);
+  return result.insertId;
+}
+
+async function insertKaidDetails(bandi_id, data) {
+    const defaultDate = '1950-01-01'
+
+  const hirasatBs = data.hirasat_date_bs || defaultDate;
+  const releaseBs = data.release_date_bs || defaultDate;
+ 
+  const thunaAd = data.hirasatBs ? await bs2ad(data?.hirasat_date_bs) : defaultDate;
+  const releaseAd = data.releaseBs ? await bs2ad(data?.release_date_bs) : defaultDate;
+  const values = [
+    bandi_id, data.hirasat_years, data.hirasat_months, data.hirasat_days,
+    hirasatBs, thunaAd, releaseBs, releaseAd,
+    data.user_id, data.user_id, data.office_id
+  ];
+
+  const sql = `INSERT INTO bandi_kaid_details (
+    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thuna_date_ad,
+    release_date_bs, release_date_ad, created_by, updated_by, current_office_id
+  ) VALUES (?)`;
+
+  await queryAsync(sql, [values]);
+}
+
+async function insertCardDetails(bandi_id, data) {
+  const values = [
+    bandi_id, data.id_card_type, data.card_name, data.card_no,
+    data.card_issue_district_id, data.card_issue_date, data.user_id, data.office_id
+  ];
+  const sql = `INSERT INTO bandi_id_card_details (
+    bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, current_office_id
+  ) VALUES (?)`;
+  await queryAsync(sql, [values]);
+}
+
+async function insertAddress(bandi_id, data) {
+  const values = [
+    bandi_id, data.nationality_id, data.state_id, data.district_id,
+    data.municipality_id, data.wardno, data.bidesh_nagrik_address_details, data.office_id
+  ];
+  const sql = `INSERT INTO bandi_address (
+    bandi_id, nationality_id, province_id, district_id,
+    gapa_napa_id, wardno, bidesh_nagarik_address_details, current_office_id
+  ) VALUES (?)`;
+  await queryAsync(sql, [values]);
+}
+
+async function insertMuddaDetails(bandi_id, muddas, office_id) {
+  const sql = `INSERT INTO bandi_mudda_details (
+    bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
+    mudda_condition, mudda_phesala_antim_office_district,
+    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date, vadi, current_office_id
+  ) VALUES (?)`;
+
+  for (const m of muddas) {
+    const values = [
+      bandi_id, m.mudda_id, m.mudda_no, m.is_last, m.is_main,
+      m.condition, m.district, m.office, m.date, m.vadi, office_id
+    ];
+    await queryAsync(sql, [values]);
+  }
+}
+
+async function insertFineDetails(bandi_id, fines) {
+  const sql = `INSERT INTO bandi_fine_details (
+    bandi_id, fine_type, amount_fixed, deposit_amount, amount_deposited, deposit_district,
+    deposit_ch_no, deposit_date, deposit_office
+  ) VALUES (?)`;
+
+  for (const fine of fines) {
+    const values = [
+      bandi_id, fine.type, fine.is_fixed, fine.amount, fine.is_paid,
+      fine.district, fine.ch_no, fine.date, fine.office
+    ];
+    await queryAsync(sql, [values]);
+  }
+}
+
+async function insertPunarabedan(bandi_id, data) {
+  const values = [
+    bandi_id, data.punarabedan_office_id, data.punarabedan_office_district,
+    data.punarabedan_office_ch_no, data.punarabedan_office_date
+  ];
+  const sql = `INSERT INTO bandi_punarabedan_details (
+    bandi_id, punarabedan_office_id, punarabedan_office_district,
+    punarabedan_office_ch_no, punarabedan_office_date
+  ) VALUES (?)`;
+  await queryAsync(sql, [values]);
+}
+
+async function insertFamily(bandi_id, family = []) {
+  if (!family.length) return;
+  const values = family.map(f => [
+    bandi_id, f.bandi_relative_name, f.bandi_relative_relation,
+    f.bandi_relative_address, f.dob, 0, f.bandi_relative_contact_no
+  ]);
+  const sql = `INSERT INTO bandi_relative_info (
+    bandi_id, relative_name, relation_id, relative_address, dob, is_dependent, contact_no
+  ) VALUES ?`;
+  await queryAsync(sql, [values]);
+}
+
+async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
+  if (!contacts.length) return;
+  const values = contacts.map(c => [
+    bandi_id, c.relation_id, c.contact_name, c.contact_address,
+    c.contact_contact_details, user_id, office_id
+  ]);
+  const sql = `INSERT INTO bandi_contact_person (
+    bandi_id, relation_id, contact_name, contact_address,
+    contact_contact_details, created_by, current_office_id
+  ) VALUES ?`;
+  await queryAsync(sql, [values]);
+}
+
+export {
+  insertBandiPerson,
+  insertKaidDetails,
+  insertCardDetails,
+  insertAddress,
+  insertMuddaDetails,
+  insertFineDetails,
+  insertPunarabedan,
+  insertFamily,
+  insertContacts
+};

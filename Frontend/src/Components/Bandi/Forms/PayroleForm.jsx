@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos'
+import React, { useEffect, useState } from 'react';
+import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
 import { useForm } from 'react-hook-form';
 import { Box, Button, Grid2, useScrollTrigger } from '@mui/material';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
-import ViewBandi from '../ViewBandi'
+import ViewBandi from '../ViewBandi';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
@@ -16,84 +16,92 @@ const PayroleForm = () => {
   const { state: authState } = useAuth();
 
   const {
-    handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm({
+    handleSubmit, watch, setValue, register, reset, control, formState: { errors } } = useForm( {
       defaultValues: {
         office_bandi_id: '',
         // other fields...
       },
-    });
+    } );
 
-  const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState( false );
+  const [editing, setEditing] = useState( false );
 
   // Watch Variables
-  const payrole_no = watch('payrole_no');
-  const bandi_id = watch('bandi_id');
+  const payrole_no = watch( 'payrole_no' );
+  const bandi_id = watch( 'bandi_id' );
   // End of Watch Variables
 
-  const [bandi, setBandi] = useState(null)
+  const [bandi, setBandi] = useState( null );
   const fetchBandi = async () => {
     try {
-      const bandies = await axios.get(`${BASE_URL}/bandi/get_bandi/${bandi_id}`, {
+      const bandies = await axios.get( `${ BASE_URL }/bandi/get_bandi/${ bandi_id }`, {
         withCredentials: true
-      });
-      setBandi(bandies.data.Result[0])
-      setValue('mudda_id', bandi.mudda_id||'')
-      console.log(bandi)
+      } );
+      setBandi( bandies.data.Result[0] );
+      setValue( 'mudda_id', bandi.mudda_id || '' );
+      console.log( bandi );
       // console.log(bandies.data);
-    } catch (err) {
-      console.error(err);
+    } catch ( err ) {
+      console.error( err );
     }
   };
-  useEffect(() => {
-    console.log(bandi_id)
-    fetchBandi();
-  }, [bandi_id])
+  // fetchBandi function remains same
+  useEffect( () => {
+    if ( bandi_id ) fetchBandi();
+  }, [bandi_id] );
 
-  const onFormSubmit = async (data) => {
-    setLoading(true);
+  // New useEffect to set mudda_id after bandi is set
+  useEffect( () => {
+    if ( bandi && bandi.mudda_id ) {
+      setValue( 'mudda_id', bandi.mudda_id );
+    }
+  }, [bandi] );
+
+
+  const onFormSubmit = async ( data ) => {
+    setLoading( true );
     try {
       // console.log(data)
-      const url = editing ? `${BASE_URL}/bandi/update_office/${editableData.id}` : `${BASE_URL}/bandi/create_payrole`;
+      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/bandi/create_payrole`;
       const method = editing ? 'PUT' : 'POST';
-      const response = await axios({
+      const response = await axios( {
         method, url, data: data,
         withCredentials: true
-      })
+      } );
       const { Status, Result, Error } = response.data;
-      console.log(response)
-      if (Status) {
-        Swal.fire({
-          title: `Office ${editing ? 'updated' : 'created'} successfully!`,
+      console.log( response );
+      if ( Status ) {
+        Swal.fire( {
+          title: `Office ${ editing ? 'updated' : 'created' } successfully!`,
           icon: "success",
           draggable: true
-        });
+        } );
         reset();
-        setEditing(false);
+        setEditing( false );
         fetchOffices();
       } else {
-        Swal.fire({
+        Swal.fire( {
           title: response.data.nerr,
           icon: 'error',
           draggable: true
-        });
+        } );
       }
 
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
+    } catch ( err ) {
+      console.error( err );
+      Swal.fire( {
         title: err?.response?.data?.nerr || err.message || "सर्भरमा समस्या आयो।",
         icon: 'error',
         draggable: true
-      });
+      } );
     } finally {
-      setLoading(false);
+      setLoading( false );
     }
-  }
+  };
   return (
     <>
       <Box sx={{ flexGrow: 1 }}>
-        <form onSubmit={handleSubmit(onFormSubmit)}>
+        <form onSubmit={handleSubmit( onFormSubmit )}>
           <Grid2 container spacing={1}>
             <Grid2 size={12}>
               कार्यालयको विवरणः
@@ -127,7 +135,7 @@ const PayroleForm = () => {
               />
             </Grid2>
 
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }} hidden>
+            {/* <Grid2 size={{ xs: 12, sm: 6, md: 3 }} >
               <ReuseMudda
                 name='mudda_id'
                 label='मुददा'
@@ -135,7 +143,7 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.mudda_id}
               />
-            </Grid2>
+            </Grid2> */}
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseBandi
                 name='bandi_id'
@@ -149,10 +157,10 @@ const PayroleForm = () => {
             </Grid2>
           </Grid2>
           <Grid2 container spacing={2}>
-            {bandi?.payrole_id?
+            {bandi?.payrole_id ?
               <>
-                <Grid2 sx={{color:'red'}}>
-                यो कैदीको प्यारोल अगाडी नै आवेदन गरी सकेको
+                <Grid2 sx={{ color: 'red' }}>
+                  यो कैदीको प्यारोल अगाडी नै आवेदन गरी सकेको
                 </Grid2>
               </> : <></>
             }
@@ -203,7 +211,7 @@ const PayroleForm = () => {
         </form>
       </Box >
     </>
-  )
-}
+  );
+};
 
-export default PayroleForm
+export default PayroleForm;

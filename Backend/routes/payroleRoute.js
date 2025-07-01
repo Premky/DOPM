@@ -17,15 +17,15 @@ import verifyToken from '../middlewares/verifyToken.js';
 
 const router = express.Router();
 // const query = promisify(con.query).bind(con);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath( import.meta.url );
+const __dirname = path.dirname( __filename );
 
 
 
 import NepaliDateConverter from 'nepali-date-converter';
-const current_date = new NepaliDate().format('YYYY-MM-DD');
-const fy = new NepaliDate().format('YYYY'); //Support for filter
-const fy_date = fy + '-04-01'
+const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
+const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
+const fy_date = fy + '-04-01';
 
 import { bs2ad } from '../utils/bs2ad.js';
 // console.log(current_date);
@@ -33,23 +33,23 @@ import { bs2ad } from '../utils/bs2ad.js';
 
 //गाडीका विवरणहरुः नाम सुची
 // Promisify specific methods
-const queryAsync = promisify(con.query).bind(con);
-const beginTransactionAsync = promisify(con.beginTransaction).bind(con);
-const commitAsync = promisify(con.commit).bind(con);
-const rollbackAsync = promisify(con.rollback).bind(con);
-const query = promisify(con.query).bind(con);
+const queryAsync = promisify( con.query ).bind( con );
+const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
+const commitAsync = promisify( con.commit ).bind( con );
+const rollbackAsync = promisify( con.rollback ).bind( con );
+const query = promisify( con.query ).bind( con );
 
 // Convert BS to AD
 // const adDate = bs.toGregorian('2081-03-01'); // Output: { year: 2024, month: 6, day: 14 }
 
 // English to Nepali date conversion
-const [npYear, npMonth, npDay] = dateConverter.englishToNepali(2023, 5, 27);
+const [npYear, npMonth, npDay] = dateConverter.englishToNepali( 2023, 5, 27 );
 
 
 
-async function calculateAge(birthDateBS) {
+async function calculateAge( birthDateBS ) {
     // Convert BS to AD
-    const nepaliDate = new NepaliDate(birthDateBS);
+    const nepaliDate = new NepaliDate( birthDateBS );
     const adDate = nepaliDate.getDateObject(); // Converts to JavaScript Date
 
     // Get current date
@@ -60,7 +60,7 @@ async function calculateAge(birthDateBS) {
     const m = currentDate.getMonth() - adDate.getMonth();
 
     // Adjust age if birthday hasn't occurred yet this year
-    if (m < 0 || (m === 0 && currentDate.getDate() < adDate.getDate())) {
+    if ( m < 0 || ( m === 0 && currentDate.getDate() < adDate.getDate() ) ) {
         age--;
     }
 
@@ -70,70 +70,70 @@ async function calculateAge(birthDateBS) {
 async function generateUniqueBandiId() {
     const maxAttempts = 10;
 
-    for (let i = 0; i < maxAttempts; i++) {
-        const randId = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+    for ( let i = 0; i < maxAttempts; i++ ) {
+        const randId = Math.floor( 100000 + Math.random() * 900000 ); // 6-digit random number
         const result = await queryAsync(
             `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [randId]
         );
 
-        if (result.length === 0) {
+        if ( result.length === 0 ) {
             return randId; // Unique ID
         }
     }
 
-    throw new Error("Unable to generate a unique bandi ID after multiple attempts.");
+    throw new Error( "Unable to generate a unique bandi ID after multiple attempts." );
 }
 
-router.get('/get_random_bandi_id', async (req, res) => {
+router.get( '/get_random_bandi_id', async ( req, res ) => {
     const rand_bandi_id = await generateUniqueBandiId();
-    console.log(rand_bandi_id)
-    return res.json({ Status: true, Result: rand_bandi_id })
-})
+    console.log( rand_bandi_id );
+    return res.json( { Status: true, Result: rand_bandi_id } );
+} );
 
 //Define storage configuration
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+const storage = multer.diskStorage( {
+    destination: function ( req, file, cb ) {
         const uploadDir = './uploads/bandi_photos';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
+        if ( !fs.existsSync( uploadDir ) ) {
+            fs.mkdirSync( uploadDir, { recursive: true } );
         }
-        cb(null, uploadDir);
+        cb( null, uploadDir );
     },
-    filename: function (req, file, cb) {
+    filename: function ( req, file, cb ) {
         const { office_bandi_id, bandi_name } = req.body;
 
-        if (!office_bandi_id || !bandi_name) {
-            return cb(new Error('bandi_id and bandi_name are required'), null);
+        if ( !office_bandi_id || !bandi_name ) {
+            return cb( new Error( 'bandi_id and bandi_name are required' ), null );
         }
 
-        const ext = path.extname(file.originalname);
-        const dateStr = new Date().toISOString().split('T')[0];
-        const safeName = bandi_name.replace(/\s+/g, '_'); //sanitize spaces
+        const ext = path.extname( file.originalname );
+        const dateStr = new Date().toISOString().split( 'T' )[0];
+        const safeName = bandi_name.replace( /\s+/g, '_' ); //sanitize spaces
 
-        const uniqueName = `${office_bandi_id}_${safeName}_${dateStr}${ext}`;
-        cb(null, uniqueName);
+        const uniqueName = `${ office_bandi_id }_${ safeName }_${ dateStr }${ ext }`;
+        cb( null, uniqueName );
     }
-});
+} );
 
 // File filter (only images allowed)
-const fileFilter = (req, file, cb) => {
+const fileFilter = ( req, file, cb ) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const extname = allowedTypes.test( path.extname( file.originalname ).toLowerCase() );
+    const mimetype = allowedTypes.test( file.mimetype );
 
-    if (extname && mimetype) return cb(null, true);
-    cb(new Error('Only image files are allowed!'));
+    if ( extname && mimetype ) return cb( null, true );
+    cb( new Error( 'Only image files are allowed!' ) );
 };
 
 //Size limit (1 MB max For now)
-const upload = multer({
+const upload = multer( {
     storage,
     fileFilter,
     limits: { fileSize: 1 * 1024 * 1024 },
-})
+} );
 
-router.get('/get_payroles', verifyToken, async (req, res) => {
+router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
@@ -145,74 +145,72 @@ router.get('/get_payroles', verifyToken, async (req, res) => {
     const searchchecked = req.query.searchchecked || 0;
     const searchis_checked = req.query.searchis_checked || 0;
 
-    const page = parseInt(req.query.page) || 0;
-    const limit = parseInt(req.query.limit) || 25;
+    const page = parseInt( req.query.page ) || 0;
+    const limit = parseInt( req.query.limit ) || 25;
     const offset = page * limit;
 
     let baseWhere = `WHERE p.status>=1 `;
-    if (searchOffice) {
-        baseWhere += `AND bp.current_office_id = ${searchOffice} `;
-    } else if (active_office == 1 || active_office == 2) {
+    if ( searchOffice ) {
+        baseWhere += `AND bp.current_office_id = ${ searchOffice } `;
+    } else if ( active_office == 1 || active_office == 2 ) {
         baseWhere += ` AND bp.current_office_id='' `;
     } else {
-        baseWhere += `AND bp.current_office_id = ${active_office} `;
+        baseWhere += `AND bp.current_office_id = ${ active_office } `;
     }
 
-    if (searchpayroleStatus) {
-        const status = Number(searchpayroleStatus);
-        if (status !== 3) {
-            baseWhere += ` AND p.status = ${status} `;
-        } else if (active_office === 1 || active_office === 2) {
+    if ( searchpayroleStatus ) {
+        const status = Number( searchpayroleStatus );        
+        if ( status !== 3 ) {
+            baseWhere += ` AND p.status = ${ status } `;
+        } else if ( active_office === 1 || active_office === 2 ) {
             baseWhere += ` AND p.status = 3 `;
         } else {
-            console.log(status)
-            // Exclude status 3 for offices not 1 or 2
             baseWhere += ` AND p.status != 3 `;
         }
     } else {
-        if (active_office !== 1 && active_office !== 2) {
+        if ( active_office !== 1 && active_office !== 2 ) {
             baseWhere += ` AND p.status != 3 `;
         }
     }
 
-    if (searchpyarole_rakhan_upayukat) {
-        baseWhere += `AND p.searchpyarole_rakhan_upayukat=${searchpyarole_rakhan_upayukat} `
+    if ( searchpyarole_rakhan_upayukat ) {
+        baseWhere += `AND pr.searchpyarole_rakhan_upayukat=${ searchpyarole_rakhan_upayukat } `;
     }
 
-    if (nationality) {
+    if ( nationality ) {
         // console.log(nationality)
-        if (baseWhere) {
-            baseWhere += ` AND bp.nationality = '${nationality}'`;  // Note quotes for string
+        if ( baseWhere ) {
+            baseWhere += ` AND bp.nationality = '${ nationality }'`;  // Note quotes for string
         } else {
-            baseWhere += `AND bp.nationality = '${nationality}'`;
+            baseWhere += `AND bp.nationality = '${ nationality }'`;
         }
     }
-
-
 
     try {
         // STEP 1: Get paginated bandi IDs
         const idQuery = `SELECT bp.id FROM bandi_person bp 
         LEFT JOIN payroles p ON bp.id=p.bandi_id 
         LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-        ${baseWhere} ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
-        const [idRows] = await con.promise().query(idQuery, [limit, offset]);
+        ${ baseWhere } ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
 
-        const bandiIds = idRows.map(row => row.id);
-        if (bandiIds.length === 0) {
-            return res.json({ Status: true, Result: [], TotalCount: 0 });
+        const [idRows] = await con.promise().query( idQuery, [limit, offset] );
+
+        const bandiIds = idRows.map( row => row.id );
+        // console.log('bandi_id:', bandiIds)
+        if ( bandiIds.length === 0 ) {
+            return res.json( { Status: true, Result: [], TotalCount: 0 } );
         }
 
         // STEP 2: Get total count
         const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp 
-        LEFT JOIN payroles p ON bp.id=p.bandi_id 
-        LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-        ${baseWhere}`;
-        const [countResult] = await con.promise().query(countSQL);
+            LEFT JOIN payroles p ON bp.id=p.bandi_id 
+            LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
+            ${ baseWhere }`;
+        const [countResult] = await con.promise().query( countSQL );
         const totalCount = countResult[0].total;
 
         // STEP 3: Get full records for selected bandis
-        const placeholders = bandiIds.map(() => '?').join(',');
+        const placeholders = bandiIds.map( () => '?' ).join( ',' );
         const fullQuery = `
             SELECT 
                 bp.id AS bandi_id,
@@ -266,14 +264,14 @@ router.get('/get_payroles', verifyToken, async (req, res) => {
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
                 LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
             ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
-            WHERE bp.id IN (${placeholders})
+            WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
-        const [fullRows] = await con.promise().query(fullQuery, bandiIds);
-
+        console.log( fullQuery );
+        const [fullRows] = await con.promise().query( fullQuery, bandiIds );
         // STEP 4: Group muddas under each bandi
         const grouped = {};
-        fullRows.forEach(row => {
+        fullRows.forEach( row => {
             const {
                 bandi_id,
                 mudda_id,
@@ -286,7 +284,7 @@ router.get('/get_payroles', verifyToken, async (req, res) => {
                 ...bandiData
             } = row;
 
-            if (!grouped[bandi_id]) {
+            if ( !grouped[bandi_id] ) {
                 grouped[bandi_id] = {
                     ...bandiData,
                     bandi_id,
@@ -294,8 +292,8 @@ router.get('/get_payroles', verifyToken, async (req, res) => {
                 };
             }
 
-            if (mudda_id) {
-                grouped[bandi_id].muddas.push({
+            if ( mudda_id ) {
+                grouped[bandi_id].muddas.push( {
                     mudda_id,
                     mudda_name,
                     is_main_mudda,
@@ -303,30 +301,30 @@ router.get('/get_payroles', verifyToken, async (req, res) => {
                     office_name_with_letter_address,
                     vadi,
                     mudda_phesala_antim_office_date
-                });
+                } );
             }
-        });
+        } );
 
         // console.log(Object.values(grouped))
 
-        return res.json({
+        return res.json( {
             Status: true,
-            Result: Object.values(grouped),
+            Result: Object.values( grouped ),
             TotalCount: totalCount
-        });
-    } catch (err) {
-        console.error('Query Error:', err);
-        return res.json({ Status: false, Error: 'Query Error' });
+        } );
+    } catch ( err ) {
+        console.error( 'Query Error:', err );
+        return res.json( { Status: false, Error: 'Query Error' } );
     }
-});
+} );
 
 
-router.get('/get_bandi_name_for_select', verifyToken, async (req, res) => {
+router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     // console.log(active_office)
     // const user_id = req.user.id;
-    let sql = ''
-    if (active_office <= 2) {
+    let sql = '';
+    if ( active_office <= 2 ) {
         sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id,
                         m.mudda_name, 
                         p.id AS payrole_id 
@@ -343,47 +341,47 @@ router.get('/get_bandi_name_for_select', verifyToken, async (req, res) => {
                         LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
                         LEFT JOIN muddas m ON bmd.mudda_id=m.id
                         JOIN payroles p ON bp.id=bandi_id
-                    WHERE bmd.is_main_mudda=1 WHERE bp.current_office_id=${active_office}`;
+                    WHERE bmd.is_main_mudda=1 WHERE bp.current_office_id=${ active_office }`;
     }
     try {
-        const result = await queryAsync(sql); // Use promise-wrapped query
+        const result = await queryAsync( sql ); // Use promise-wrapped query
 
-        if (result.length === 0) {
-            return res.json({ Status: false, Error: "Bandi not found for select" });
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
         }
         const bandi = result[0];
         // 🟢 Calculate age from BS DOB
-        const age = await calculateAge(bandi.dob); // Assuming dob is BS like '2080-01-10'
+        const age = await calculateAge( bandi.dob ); // Assuming dob is BS like '2080-01-10'
         bandi.age = age;
         // console.log(age)
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error(err);
-        return res.json({ Status: false, Error: "Query Error" });
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
     }
-})
+} );
 
-router.get('/get_bandi_name_for_select/:id', async (req, res) => {
+router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `SELECT bp.*,bp.id AS bandi_id, bp.id AS bandi_office_id, m.mudda_name from bandi_person bp
                 LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
                 LEFT JOIN muddas m ON bmd.mudda_id=m.id
                 WHERE bmd.is_main_mudda=1 AND bp.current_office_id=?`;
     try {
-        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
         // console.log('id', result)
 
-        if (result.length === 0) {
-            return res.json({ Status: false, Error: "Bandi not found for select" });
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
         }
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error(err);
-        return res.json({ Status: false, Error: "Query Error" });
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
     }
-})
+} );
 
-router.get('/get_selected_bandi/:id', async (req, res) => {
+router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
         SELECT b.*, bm.*, m.mudda_name 
@@ -394,24 +392,24 @@ router.get('/get_selected_bandi/:id', async (req, res) => {
     `;
 
     try {
-        const result = await queryAsync(sql, [id]); // Use promise-wrapped query
+        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
 
-        if (result.length === 0) {
-            return res.json({ Status: false, Error: "Bandi not found" });
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found" } );
         }
         const bandi = result[0];
         // 🟢 Calculate age from BS DOB
-        const age = await calculateAge(bandi.dob); // Assuming dob is BS like '2080-01-10'
+        const age = await calculateAge( bandi.dob ); // Assuming dob is BS like '2080-01-10'
         bandi.age = age;
         // console.log(age)
-        return res.json({ Status: true, Result: bandi });
-    } catch (err) {
-        console.error(err);
-        return res.json({ Status: false, Error: "Query Error" });
+        return res.json( { Status: true, Result: bandi } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
     }
-});
+} );
 
-router.post('/create_payrole', verifyToken, async (req, res) => {
+router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const {
@@ -421,11 +419,11 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
         dopmremark
     } = req.body;
 
-    console.log('bandi_id', bandi_id)
+    console.log( 'bandi_id', bandi_id );
     let payrole_no_bandi_id = '';
-    if (bandi_id && payrole_no) {
-        let payrole_no_bandi = String(payrole_no) + String(bandi_id);
-        payrole_no_bandi_id = payrole_no_bandi
+    if ( bandi_id && payrole_no ) {
+        let payrole_no_bandi = String( payrole_no ) + String( bandi_id );
+        payrole_no_bandi_id = payrole_no_bandi;
     }
 
     try {
@@ -434,7 +432,7 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
         let sql = '';
         let values = [];
 
-        if (payrole_niranay_no) {
+        if ( payrole_niranay_no ) {
             // FIX or remove this block if irrelevant
             // Assuming you want to insert into another table
             // values = [bandi_id, relation_id, no_of_children]; // define those variables properly
@@ -449,7 +447,7 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
                 payrole_reason,
                 other_details,
                 payrole_remarks,
-                0, // status
+                1, // status
                 payrole_no,
                 bandi_id,
                 user_id,
@@ -464,32 +462,32 @@ router.post('/create_payrole', verifyToken, async (req, res) => {
     ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
         `;
 
-            const result = await queryAsync(sql, values);
+            const result = await queryAsync( sql, values );
             const inserted_id = result.insertId;
-            console.log(inserted_id)
+            console.log( inserted_id );
             await commitAsync();
 
-            return res.json({
+            return res.json( {
                 // Result: inserted_id,
                 Status: true,
                 message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-            });
+            } );
         }
 
-    } catch (error) {
+    } catch ( error ) {
         await rollbackAsync();
-        console.error("Transaction failed:", error);
-        return res.status(500).json({
+        console.error( "Transaction failed:", error );
+        return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        });
+        } );
     }
-});
+} );
 
 
 
-router.get('/get_accepted_payroles', verifyToken, async (req, res) => {
+router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
 
@@ -509,27 +507,27 @@ router.get('/get_accepted_payroles', verifyToken, async (req, res) => {
         let queryParams = [];
 
         // Restrict results for lower-level offices (office_id >= 2)
-        if (user_office_id > 2) {
+        if ( user_office_id > 2 ) {
             finalQuery += ` AND (p.created_office = ? OR p.updated_office = ?)`;
             queryParams = [user_office_id, user_office_id];
         }
 
         // console.log(finalQuery)
 
-        const result = await queryAsync(finalQuery, queryParams);
-        console.log('acceptedpayrole', user_office_id)
-        if (!result.length) {
-            return res.json({ Status: false, Error: 'No payrole records found' });
+        const result = await queryAsync( finalQuery, queryParams );
+        console.log( 'acceptedpayrole', user_office_id );
+        if ( !result.length ) {
+            return res.json( { Status: false, Error: 'No payrole records found' } );
         }
 
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error('Error fetching accepted payroles:', err);
-        return res.status(500).json({ Status: false, Error: 'Internal server error' });
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Error fetching accepted payroles:', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal server error' } );
     }
-});
+} );
 
-router.put('/update_payrole/:id', verifyToken, async (req, res) => {
+router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
     const {
@@ -567,11 +565,11 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
         let sql = '';
         let values = [];
 
-        const existingReviews = await query(`SELECT * FROM payrole_reviews WHERE payrole_id = ?`, [payrole_id]);
+        const existingReviews = await query( `SELECT * FROM payrole_reviews WHERE payrole_id = ?`, [payrole_id] );
 
-        if ((user_office_id === 1 || user_office_id === 2)) {
-            if (pyarole_rakhan_upayukat) {
-                if (existingReviews.length > 0) {
+        if ( ( user_office_id === 1 || user_office_id === 2 ) ) {
+            if ( pyarole_rakhan_upayukat ) {
+                if ( existingReviews.length > 0 ) {
                     sql = `
                 UPDATE payrole_reviews 
                 SET pyarole_rakhan_upayukat = ?, dopmremark = ?, reviewed_by = ?, reviewed_office_id = ?
@@ -583,8 +581,8 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
                 VALUES (?, ?, ?, ?, ?)`;
                     values = [payrole_id, pyarole_rakhan_upayukat, dopmremark, user_id, user_office_id];
                 }
-            } else if (is_checked) {
-                if (existingReviews.length > 0) {
+            } else if ( is_checked ) {
+                if ( existingReviews.length > 0 ) {
                     sql = `
                 UPDATE payrole_reviews SET is_checked = ? WHERE payrole_id = ?`;
                     values = [is_checked, payrole_id];
@@ -596,16 +594,16 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
                 }
             }
         } else {
-            if (payrole_decision_date || payrole_granted_letter_no) {
-                if (existingReviews.length > 0) {
-                    console.log('updated')
+            if ( payrole_decision_date || payrole_granted_letter_no ) {
+                if ( existingReviews.length > 0 ) {
+                    console.log( 'updated' );
                     sql = `
                 UPDATE payrole_decisions 
                 SET payrole_niranay_no = ?, payrole_decision_date = ?, payrole_granted_letter_no = ?, payrole_granted_letter_date = ?, result=?
                 WHERE payrole_id = ?`;
                     values = [payrole_niranay_no, payrole_decision_date, payrole_granted_letter_no, payrole_granted_letter_date, result, payrole_id];
                 } else {
-                    console.log('inserted')
+                    console.log( 'inserted' );
                     sql = `
                 INSERT INTO payrole_decisions (payrole_id, mudda_id, arrest_date, release_date, payrole_nos, 
                 payrole_decision_date, payrole_granted_court, payrole_granted_aadesh_date, 
@@ -623,16 +621,16 @@ router.put('/update_payrole/:id', verifyToken, async (req, res) => {
         }
 
 
-        const queryResult = await query(sql, values);
-        return res.json({ Status: true, Result: queryResult });
+        const queryResult = await query( sql, values );
+        return res.json( { Status: true, Result: queryResult } );
 
-    } catch (err) {
-        console.error('Database error', err);
-        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
     }
-});
+} );
 
-router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
+router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
 
@@ -658,16 +656,16 @@ router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
     } = req.body;
 
     let arrest_date = '0000-00-00';
-    if (!arrest_date || !thuna_date_bs) {
+    if ( !arrest_date || !thuna_date_bs ) {
         arrest_date = '0000-00-00';
     }
 
-    const total_kaid = calculateBSDate(arrest_date, release_date_bs)
+    const total_kaid = calculateBSDate( arrest_date, release_date_bs );
 
-    const bhuktan_duration = calculateBSDate(arrest_date, current_date, total_kaid)
+    const bhuktan_duration = calculateBSDate( arrest_date, current_date, total_kaid );
     const kaid_bhuktan_duration = bhuktan_duration.formattedDuration || 0;
     const kaid_bhuktan_percentage = bhuktan_duration.percentage || 0;
-    const baki_duration = calculateBSDate(current_date, release_date_bs, total_kaid)
+    const baki_duration = calculateBSDate( current_date, release_date_bs, total_kaid );
     const baki_kaid_duration = baki_duration.formattedDuration || 0;
     const baki_kaid_percent = baki_duration.percentage || 0;
 
@@ -679,7 +677,7 @@ router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
             [payrole_id]
         );
 
-        if (existing.length > 0) {
+        if ( existing.length > 0 ) {
             const sql = `
         UPDATE payrole_decisions
         SET
@@ -724,7 +722,7 @@ router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
                 payrole_id,
             ];
 
-            await queryAsync(sql, values);
+            await queryAsync( sql, values );
         } else {
             const insertSql = `
         INSERT INTO payrole_decisions (
@@ -756,10 +754,10 @@ router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
                 user_office_id,
             ];
 
-            await queryAsync(insertSql, insertValues);
+            await queryAsync( insertSql, insertValues );
         }
 
-        if (hajir_current_date_bs) {
+        if ( hajir_current_date_bs ) {
             const logSql = `
         INSERT INTO payrole_logs (
           payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office
@@ -774,68 +772,68 @@ router.put("/update_payrole_decision/:id", verifyToken, async (req, res) => {
                 hajir_office,
             ];
 
-            await queryAsync(logSql, logValues);
+            await queryAsync( logSql, logValues );
         }
 
-        await queryAsync(`UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id])
+        await queryAsync( `UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id] );
 
         await commitAsync();
-        return res.json({ Status: true, Message: "Updated successfully" });
-    } catch (error) {
+        return res.json( { Status: true, Message: "Updated successfully" } );
+    } catch ( error ) {
         await rollbackAsync();
-        console.error("Payrole update error:", error);
-        return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+        console.error( "Payrole update error:", error );
+        return res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
-});
+} );
 
 
-router.put('/update_is_payrole_checked/:id', verifyToken, async (req, res) => {
+router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
-    console.log('payrole_id', id)
-    const user_office_id = req.user.office_id
-    const user_id = req.user.id
+    console.log( 'payrole_id', id );
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
     const {
         is_checked
     } = req.body;
     // console.log('dopmremark',status)
-    console.log(req.body)
+    console.log( req.body );
     const updated_by = 1;
     const sql = `UPDATE payrole_reviews SET is_checked =? WHERE id =?; `;
     const values = [
         is_checked, id
     ];
     try {
-        const result = await query(sql, values);
+        const result = await query( sql, values );
         // console.log(result)
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error('Database error', err);
-        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
     }
-})
+} );
 
-router.put('/update_payrole_status/:id', verifyToken, async (req, res) => {
+router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
-    console.log('payrole_id', id)
-    const user_office_id = req.user.office_id
-    const user_id = req.user.id
+    console.log( 'payrole_id', id );
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
     const { value } = req.body;
-    console.log('dopmremark', value)
-    console.log(req.body)
+    console.log( 'dopmremark', value );
+    console.log( req.body );
     const updated_by = 1;
     const sql = `UPDATE payroles SET status = ? WHERE id =?; `;
     const values = [value, id];
     try {
-        const result = await query(sql, values);
+        const result = await query( sql, values );
         // console.log(result)
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error('Database error', err);
-        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
     }
-})
+} );
 
-router.put('/update_payrole_logs/:id', verifyToken, async (req, res) => {
+router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
     const {
@@ -861,38 +859,38 @@ router.put('/update_payrole_logs/:id', verifyToken, async (req, res) => {
         let sql = '';
         let values = [];
 
-        if (hajir_status == '2') {
-            console.log("अनुपस्थित")
+        if ( hajir_status == '2' ) {
+            console.log( "अनुपस्थित" );
         }
 
 
-        const queryResult = await query(sql, values);
-        return res.json({ Status: true, Result: queryResult });
+        const queryResult = await query( sql, values );
+        return res.json( { Status: true, Result: queryResult } );
 
-    } catch (err) {
-        console.error('Database error', err);
-        return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
     }
-});
+} );
 
-router.post('/create_payrole_maskebari_count', verifyToken, async (req, res) => {
+router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const active_user = req.user.id;
     try {
         // Add active_user and active_office to the request body
         req.body.created_by = active_user;
         req.body.created_office = active_office;
-        const keys = Object.keys(req.body);
-        const values = Object.values(req.body);
-        const placeholders = keys.map(() => '?').join(', ');
-        const sql = `INSERT INTO payrole_maskebari (${keys.join(', ')}) VALUES (${placeholders})`;
-        const result = await query(sql, values);
-        console.log(result)
-        res.status(201).json({ id: result.insertId });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const keys = Object.keys( req.body );
+        const values = Object.values( req.body );
+        const placeholders = keys.map( () => '?' ).join( ', ' );
+        const sql = `INSERT INTO payrole_maskebari (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
+        const result = await query( sql, values );
+        console.log( result );
+        res.status( 201 ).json( { id: result.insertId } );
+    } catch ( err ) {
+        res.status( 500 ).json( { error: err.message } );
     }
-});
+} );
 
 const getMaskebariQuery = `SELECT 
                         year_bs, 
@@ -941,34 +939,34 @@ const getMaskebariQuery = `SELECT
                     FROM payrole_maskebari pm
                     LEFT JOIN offices oo ON pm.office_id = oo.id
                     LEFT JOIN offices os ON pm.created_office = os.id
-`
+`;
 
-router.get('/payrole_maskebari_count', verifyToken, async (req, res) => {
+router.get( '/payrole_maskebari_count', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     let sql = '';
     let params = '';
     try {
-        if (active_office <= 2) {
-            sql = `${getMaskebariQuery}                     
+        if ( active_office <= 2 ) {
+            sql = `${ getMaskebariQuery }                     
                     GROUP BY year_bs, month_bs, office_id
-                    ORDER BY year_bs DESC, month_bs;`
-            params = []
+                    ORDER BY year_bs DESC, month_bs;`;
+            params = [];
         } else {
-            console.log('clientRoute')
-            sql = `${getMaskebariQuery} WHERE created_office=? 
+            console.log( 'clientRoute' );
+            sql = `${ getMaskebariQuery } WHERE created_office=? 
                     GROUP BY year_bs, month_bs, office_id
-                    ORDER BY year_bs DESC, month_bs; `
-            params = [active_office]
+                    ORDER BY year_bs DESC, month_bs; `;
+            params = [active_office];
         }
-        const result = await query(sql, params);
-        res.status(200).json({ Status: true, Result: result });
-    } catch (err) {
-        console.error('GET Error:', err);
-        res.status(500).json({ Status: false, error: err.message });
+        const result = await query( sql, params );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'GET Error:', err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
     }
-});
+} );
 
-router.put('/create_payrole_maskebari_count/:id', verifyToken, async (req, res) => {
+router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const active_office = req.user.office_id;
     const active_user = req.user.id;
@@ -978,20 +976,20 @@ router.put('/create_payrole_maskebari_count/:id', verifyToken, async (req, res) 
         req.body.updated_by = active_user;
         // req.body.updated_office = active_office;
 
-        const keys = Object.keys(req.body);
-        const values = Object.values(req.body);
+        const keys = Object.keys( req.body );
+        const values = Object.values( req.body );
 
-        const setClause = keys.map(key => `${key} = ?`).join(', ');
-        const sql = `UPDATE payrole_maskebari SET ${setClause} WHERE id = ?`;
+        const setClause = keys.map( key => `${ key } = ?` ).join( ', ' );
+        const sql = `UPDATE payrole_maskebari SET ${ setClause } WHERE id = ?`;
 
-        values.push(id); // Add ID at the end for WHERE clause
+        values.push( id ); // Add ID at the end for WHERE clause
 
-        const result = await query(sql, values);
-        res.status(200).json({ message: 'Updated successfully', affectedRows: result.affectedRows });
-    } catch (err) {
-        console.error('Update Error:', err);
-        res.status(500).json({ error: err.message });
+        const result = await query( sql, values );
+        res.status( 200 ).json( { message: 'Updated successfully', affectedRows: result.affectedRows } );
+    } catch ( err ) {
+        console.error( 'Update Error:', err );
+        res.status( 500 ).json( { error: err.message } );
     }
-});
+} );
 
-export { router as payroleRouter }
+export { router as payroleRouter };

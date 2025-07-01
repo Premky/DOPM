@@ -74,7 +74,8 @@ const ReuseIdCards = ({ name, label, required, readonly, control, error, default
                         autoHighlight
                         getOptionLabel={(option) => option.label || ''} // Prevents crashes if `label` is missing
                         value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
-                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
+                        // onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
+                        onChange={(_, newValue) => onChange(newValue ? newValue : '')} // Store Full Object
                         sx={{ width: '100%' }}
                         // renderOption={(props, option) => (
                         //     <Box key={option.value} component="li" {...props}>

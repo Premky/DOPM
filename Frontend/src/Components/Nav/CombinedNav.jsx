@@ -23,10 +23,11 @@ const CombinedNav = ({ user }) => {
       defaultPath: '/bandi',
       submenu: [
         { name: 'बन्दी ड्यासबोर्ड', path: '/bandi/dashboard' },
+        { name: 'नयाँ बन्दी विवरण', path: '/bandi/create_bandi' },
+        { name: 'बन्दी विवरण', path: '/bandi/bandi_details' },
         { name: 'कार्यालयगत संख्या', path: '/bandi/count_ac_office' },
         { name: 'मास्केवारी', path: '/bandi/maskebari' },
-        { name: 'बन्दी विवरण', path: '/bandi/bandi_details' },
-        { name: 'नयाँ बन्दी विवरण', path: '/bandi/create_bandi' }
+        { name: 'कैदमुक्त/लगत कट्टा', path: '/bandi/bandi_release' },
       ]
     },
     {

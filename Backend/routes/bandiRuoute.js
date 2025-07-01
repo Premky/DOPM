@@ -1,9 +1,7 @@
 import express from 'express';
 import con from '../utils/db.js';
-import con2 from '../utils/db2.js';
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -67,16 +65,11 @@ async function calculateAge( birthDateBS ) {
     return age;
 }
 
-
-
-
-
-
 async function generateUniqueBandiId() {
     const maxAttempts = 10;
 
     for ( let i = 0; i < maxAttempts; i++ ) {
-        const randId = Math.floor( 100000 + Math.random() * 900000 ); // 6-digit random number
+        const randId = Math.floor( 1000000 + Math.random() * 9000000 ); // 7-digit random number
         const result = await queryAsync(
             `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [randId]
@@ -138,7 +131,95 @@ const upload = multer( {
     limits: { fileSize: 1 * 1024 * 1024 },
 } );
 
+import {
+    insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
+    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts
+} from '../services/bandiService.js';
+
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+    const user_id = req.user.id;
+    const office_id = req.user.office_id;
+    const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
+
+    try {
+        await beginTransactionAsync();
+        console.log( '🟢 Transaction started' );
+
+        const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
+        console.log( '✅ insertBandiPerson', bandi_id );
+
+        await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
+        console.log( '✅ insertKaidDetails' );
+
+        await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
+        console.log( '✅ insertCardDetails' );
+
+        await insertAddress( bandi_id, { ...req.body, office_id } );
+        console.log( '✅ insertAddress' );
+
+        const muddaIndexes = [...new Set( Object.keys( req.body ).filter( k => k.startsWith( 'mudda_id_' ) ).map( k => k.split( '_' )[2] ) )];
+        const muddas = muddaIndexes.map( i => ( {
+            mudda_id: req.body[`mudda_id_${ i }`],
+            mudda_no: req.body[`mudda_no_${ i }`],
+            is_last: req.body[`is_last_mudda_${ i }`],
+            is_main: req.body[`is_main_mudda_${ i }`],
+            condition: req.body[`mudda_condition_${ i }`],
+            district: req.body[`mudda_district_${ i }`],
+            office: req.body[`mudda_office_${ i }`],
+            date: req.body[`mudda_phesala_date_${ i }`],
+            vadi: req.body[`vadi_${ i }`],
+        } ) );
+        await insertMuddaDetails( bandi_id, muddas, office_id );
+        console.log( '✅ insertMuddaDetails' );
+
+        await insertFineDetails( bandi_id, [
+            { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
+            { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
+            { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
+        ] );
+        console.log( '✅ insertFineDetails' );
+
+        await insertPunarabedan( bandi_id, req.body );
+        console.log( '✅ insertPunarabedan' );
+
+        await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ) );
+        console.log( '✅ insertFamily' );
+
+        await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
+        console.log( '✅ insertContacts' );
+
+        await commitAsync();
+        console.log( '🟩 Transaction committed' );
+
+        res.json( {
+            Status: true,
+            Result: bandi_id,
+            message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( '❌ Transaction rolled back:', error );
+
+        if ( req.file ) {
+            const photoFullPath = path.join( __dirname, '..', 'uploads', 'bandi_photos', req.file.filename );
+            fs.unlink( photoFullPath, () => {
+                console.log( '🗑️ Photo deleted due to error' );
+            } );
+        }
+
+        res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।'
+        } );
+    }
+} );
+
+
+
+
+router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
@@ -148,7 +229,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     const {
         bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, age, married_status,
         bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks,
-        id_card_type, card_no, card_issue_district_id, card_issue_date,
+        id_card_type, card_name, card_no, card_issue_district_id, card_issue_date,
         nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details,
         hirasat_date_bs, thuna_date_bs, release_date_bs, hirasat_years, hirasat_months, hirasat_days,
         is_bigo, is_bigo_paid, bigo_amt, bigo_paid_cn, bigo_paid_date, bigo_paid_office, bigo_paid_office_district,
@@ -190,7 +271,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             releaseDateAd = await bs2ad( release_date_bs );
         }
 
-        const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd,
+        const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, hirasat_date_bs, thunaDateAd, release_date_bs, releaseDateAd,
             user_id, user_id, active_office
         ];
         const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, 
@@ -198,8 +279,8 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await queryAsync( insertKaidDetails, [kaidDetails] );
 
         // 3. Insert into bandi_card_details
-        const cardRecord = [bandi_id, id_card_type, card_no, card_issue_district_id, card_issue_date, user_id, active_office];
-        const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_no, card_issue_district, card_issue_date, created_by, current_office_id) VALUES(?)`;
+        const cardRecord = [bandi_id, id_card_type, card_name, card_no, card_issue_district_id, card_issue_date, user_id, active_office];
+        const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, current_office_id) VALUES(?)`;
         await queryAsync( insertCardDetails, [cardRecord] );
 
         //4. Insert into bandi_address_details:
@@ -290,7 +371,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
       relative_name,
       relation_id,
       relative_address,
-      no_of_children,
+      dob,
       is_dependent,
       contact_no
     )
@@ -302,9 +383,47 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
                 item.bandi_relative_name || null,
                 item.bandi_relative_relation || null,
                 item.bandi_relative_address || null,
-                item.bandi_number_of_children || null,
+                item.dob || null,
                 0,
                 item.bandi_relative_contact_no || null
+            ] );
+
+            await queryAsync( insertFamilySQL, [familyValues] );
+        }
+
+        // 8. Insert Contact Details
+        let conatact_person = [];
+
+        try {
+            conatact_person = req.body.conatact_person ? JSON.parse( req.body.conatact_person ) : [];
+        } catch ( err ) {
+            return res.status( 400 ).json( {
+                Status: false,
+                Error: 'Invalid conatact_person data format. Expected an array.',
+            } );
+        }
+
+
+        if ( Array.isArray( conatact_person ) && conatact_person.length > 0 ) {
+            const insertFamilySQL = `
+    INSERT INTO bandi_contact_person (
+      bandi_id,
+      relation_id,
+      contact_name,
+      contact_address,
+      contact_contact_details,
+      created_by,
+      current_office_id
+    )
+    VALUES ?
+  `;
+
+            const familyValues = conatact_person.map( item => [
+                bandi_id,
+                item.relation_id || null,
+                item.contact_name || null,
+                item.contact_address || null,
+                item.contact_contact_details || null
             ] );
 
             await queryAsync( insertFamilySQL, [familyValues] );
@@ -610,7 +729,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 } );
             }
         } );
-
+        console.log( Object.values( grouped ) );
         return res.json( {
             Status: true,
             Result: Object.values( grouped ),
@@ -1172,7 +1291,7 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
 
-    const { bandi_id, card_type_id, card_no, card_issue_district, card_issue_date } = req.body;
+    const { bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date } = req.body;
 
     // console.log(req.body)
 
@@ -1181,9 +1300,9 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
         let sql = '';
         let values = '';
 
-        values = [bandi_id, card_type_id, card_no, card_issue_district, card_issue_date];
+        values = [bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date];
         sql = `INSERT INTO bandi_id_card_details(
-            bandi_id, card_type_id, card_no, card_issue_district, card_issue_date) VALUES(?)`;
+            bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date) VALUES(?)`;
         const result = await queryAsync( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
@@ -1209,7 +1328,7 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
     const id = req.params.id;
     // console.log(id)
-    const { card_type_id, card_no, card_issue_district, card_issue_date } = req.body;
+    const { card_type_id, card_no, card_name, card_issue_district, card_issue_date } = req.body;
 
     // console.log(req.body)
 
@@ -1221,7 +1340,7 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
         values = [card_type_id, card_no, card_issue_district, card_issue_date, id];
         sql = `
             UPDATE bandi_id_card_details 
-            SET card_type_id=?, card_no=?, card_issue_district=?, card_issue_date = ? 
+            SET card_type_id=?, card_name=?, card_no=?,  card_issue_district=?, card_issue_date = ? 
             WHERE id = ?
             `;
 
@@ -2119,6 +2238,102 @@ router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res
 
 router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
+
+    const {
+        startDate,
+        endDate,
+        nationality,
+        ageFrom,
+        ageTo,
+        office_id // optional for super admin
+    } = req.query;
+
+    // Parameters for SQL binding
+    const params = [startDate, endDate, startDate, endDate];
+    const filters = [];
+
+    const baseSql = `
+        SELECT 
+            m.mudda_name,
+            COUNT(DISTINCT bp.id) AS Total,
+
+            -- कैदी
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+
+            -- थुनुवा
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+
+            -- 65+ उम्र
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+
+            -- गिरफ्तारी / छुटे
+            SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
+            SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+
+        FROM bandi_person bp
+        LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+        LEFT JOIN offices o ON bp.current_office_id = o.id
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+    `;
+
+    // Only include main and last mudda to avoid duplicates
+    filters.push( "bp.is_active = 1" );
+    filters.push( "bmd.is_main_mudda = 1" );
+    filters.push( "bmd.is_last_mudda = 1" );
+
+    // Age filter
+    if ( ageFrom && ageTo ) {
+        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+
+    // Nationality filter
+    if ( nationality ) {
+        filters.push( "bp.nationality = ?" );
+        params.push( nationality.trim() );
+    }
+
+    // Office filtering logic
+    if ( active_office > 2 ) {
+        filters.push( "bp.current_office_id = ?" );
+        params.push( active_office );
+    } else if ( office_id ) {
+        filters.push( "bp.current_office_id = ?" );
+        params.push( office_id );
+    }
+
+    const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
+
+    const finalSql = `
+        ${ baseSql }
+        ${ whereClause }
+        GROUP BY m.id, m.mudda_name
+        HAVING 
+            KaidiTotal > 0 OR 
+            ThunuwaTotal > 0 OR 
+            TotalArrestedInDateRange > 0 OR 
+            TotalReleasedInDateRange > 0
+        ORDER BY m.mudda_name ASC
+    `;
+
+    try {
+        const result = await query( finalSql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+
+router.get( '/get_prisioners_count1', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
     const {
         startDate,
         endDate,
@@ -2184,14 +2399,14 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     }
 
     // Office filter
-    console.log( 'office_id', active_office );
+    // console.log( 'office_id', active_office );
     if ( active_office > 2 ) {
         // Client office — fixed office
         filters.push( "bp.current_office_id = ?" );
         params.push( active_office );
     } else {
 
-        console.log( 'Client Office' );
+        // console.log( 'Client Office' );
     }
 
 
@@ -2218,7 +2433,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     // console.log(finalSql)
     try {
         const result = await query( finalSql, params );
-        console.log( result );
+        // console.log( result );
         res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -2229,7 +2444,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
 router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    let defaultAge=65;
+    let defaultAge = 65;
     const {
         startDate,
         endDate,
@@ -2262,12 +2477,12 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
 
             COUNT(*) AS total_kaidibandi,
 
-            COUNT(IF(bp.bandi_type = 'कैदी' AND gender = 'male' AND age >= ${defaultAge}, 1, NULL)) AS kaidi_male_65plus,
-            COUNT(IF(bp.bandi_type = 'कैदी' AND gender = 'female' AND age >= ${defaultAge}, 1, NULL)) AS kaidi_female_65plus,
-            COUNT(IF(bp.bandi_type = 'थुनुवा' AND gender = 'male' AND age >= ${defaultAge}, 1, NULL)) AS thunuwa_male_65plus,
-            COUNT(IF(bp.bandi_type = 'थुनुवा' AND gender = 'female' AND age >= ${defaultAge}, 1, NULL)) AS thunuwa_female_65plus,
+            COUNT(IF(bp.bandi_type = 'कैदी' AND gender = 'male' AND age >= ${ defaultAge }, 1, NULL)) AS kaidi_male_65plus,
+            COUNT(IF(bp.bandi_type = 'कैदी' AND gender = 'female' AND age >= ${ defaultAge }, 1, NULL)) AS kaidi_female_65plus,
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND gender = 'male' AND age >= ${ defaultAge }, 1, NULL)) AS thunuwa_male_65plus,
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND gender = 'female' AND age >= ${ defaultAge }, 1, NULL)) AS thunuwa_female_65plus,
 
-            COUNT(IF(bri.is_dependent = 1, 1, NULL)) AS aashrit,
+           -- COUNT(IF(bri.is_dependent = 1, 1, NULL)) AS aashrit,
 
             COUNT(IF(vbad.nationality_name != 'नेपाल', 1, NULL)) AS foreign_count,
             GROUP_CONCAT(DISTINCT IF(vbad.nationality_name != 'नेपाल', vbad.nationality_name, NULL)) AS foreign_countries
@@ -2275,12 +2490,22 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             FROM bandi_person bp
             	LEFT JOIN view_bandi_address_details vbad ON bp.id=vbad.bandi_id
                 LEFT JOIN offices o ON bp.current_office_id=o.id
-                LEFT JOIN bandi_relative_info bri ON bp.id=bri.bandi_id
-            
+                LEFT JOIN (
+                SELECT
+                    bandi_id,
+                    SUM(CASE WHEN bri.relation_id = '6' THEN 1 ELSE 0 END) AS aashrit_male,
+                    SUM(CASE WHEN bri.relation_id = '7' THEN 1 ELSE 0 END) AS aashrit_female,
+                    SUM(CASE WHEN bri.relation_id NOT IN ('6', '7') THEN 1 ELSE 0 END) AS aashrit_other,
+                    COUNT(IF(bri.is_dependent = 1, 1, NULL)) AS aashrit
+                FROM bandi_relative_info bri
+                WHERE is_dependent = 1
+                GROUP BY bandi_id
+                ) AS aashrit ON aashrit.bandi_id = bp.id            
     `;
 
     const filters = [];
-    const params = [startDate, endDate, startDate, endDate];
+    // const params = [startDate, endDate, startDate, endDate];
+    const params = [];
 
     // Shared conditions
     filters.push( "bp.is_active = 1" );
@@ -2299,15 +2524,23 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     }
 
     // Office filter
-    // console.log( 'office_id', active_office );
-    if ( active_office > 2 ) {
-        // Client office — fixed office
+    if ( active_office == 2 || active_office == 1 ) {
+        if ( office_id ) {
+            filters.push( "bp.current_office_id = ?" );
+            params.push( Number( office_id ) );
+        }
+    } else {
         filters.push( "bp.current_office_id = ?" );
         params.push( active_office );
-    } else {
-
-        // console.log( 'Client Office' );
     }
+    // else super admin sees all offices
+
+    // console.log( 'office_id', active_office );
+    // if ( active_office > 2 ) {
+    //     // Client office — fixed office
+    //     filters.push( "bp.current_office_id = ?" );
+    //     params.push( active_office );
+    // } 
 
 
     // else if (office_id) {
@@ -2325,7 +2558,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             ORDER BY  vbad.province_name, o.letter_address;
     `;
 
-    // console.log(finalSql)
+    console.log( finalSql );
     try {
         const result = await query( finalSql, params );
         // console.log( result );
@@ -2518,6 +2751,39 @@ router.put( "/update_internal_admin1/:id", verifyToken, async ( req, res ) => {
     }
 } );
 
+router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
+    const user_id = req.user.id;
+    const active_office = req.user.office_id;
+    const created_at = new Date();
+    // console.log(req.body)
+    console.log( created_at );
+    const { reason_id, decision_date, apply_date, nirnay_officer,aafanta_id, relative_id, remarks, bandi_id } = req.body;
 
+    const insertSql = `
+    INSERT INTO bandi_release_details (
+      bandi_id,
+      reason_id,
+      nirnay_miti,
+      karnayan_miti,
+      nirnay_officer,
+      aafanta_id,
+      remarks,
+      created_by,
+      created_at,
+      current_office_id
+    ) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?)
+  `;
+    const values = [bandi_id, reason_id, decision_date, apply_date, nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
+    try {
+        beginTransactionAsync();
+        await queryAsync( insertSql, values );
+        await queryAsync( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
+        await commitAsync();
+        res.json( { Status: true, Message: "Inserted successfully" } );
+    } catch ( err ) {
+        console.error( "Insert error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
+    }
+} );
 
 export { router as bandiRouter };

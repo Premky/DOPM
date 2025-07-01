@@ -16,84 +16,87 @@ import FineEditDialog from '../Dialogs/FineDialog';
 
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 
-const BandiFineTable = ({ bandi_id }) => {
+const BandiFineTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
-    const [fetchedBandies, setFetchedBandies] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [fetchedBandies, setFetchedBandies] = useState( [] );
+    const [loading, setLoading] = useState( false );
 
     // ✅ Fetch data
     const fetchBandies = async () => {
         try {
-            const url = `${BASE_URL}/bandi/get_bandi_fine/${bandi_id}`;
-            const response = await axios.get(url);
+            const url = `${ BASE_URL }/bandi/get_bandi_fine/${ bandi_id }`;
+            const response = await axios.get( url );
 
             const { Status, Result, Error } = response.data;
 
-            if (Status) {
-                if (Array.isArray(Result) && Result.length > 0) {
-                    setFetchedBandies(Result);
+            if ( Status ) {
+                if ( Array.isArray( Result ) && Result.length > 0 ) {
+                    setFetchedBandies( Result );
                     // console.log(fetchedBandies)
                 } else {
-                    console.log('No records found.');
-                    setFetchedBandies([]);
+                    console.log( 'No records found.' );
+                    setFetchedBandies( [] );
                 }
             } else {
-                console.log(Error || 'Failed to fetch.');
+                console.log( Error || 'Failed to fetch.' );
             }
-        } catch (error) {
-            console.error('Error fetching records:', error);
+        } catch ( error ) {
+            console.error( 'Error fetching records:', error );
         } finally {
-            setLoading(false);
+            setLoading( false );
         }
     };
-    useEffect(() => {
-        if (bandi_id) {
+    useEffect( () => {
+        if ( bandi_id ) {
             fetchBandies();
         }
-    }, [bandi_id]);
+    }, [bandi_id] );
 
     // ✅ DELETE handler
-    const handleDelete = async (id) => {
-        const confirm = await Swal.fire({
+    const handleDelete = async ( id ) => {
+        const confirm = await Swal.fire( {
             title: 'पक्का हुनुहुन्छ?',
             text: 'यो विवरण मेटाइनेछ!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'मेटाउनुहोस्',
             cancelButtonText: 'रद्द गर्नुहोस्',
-        });
+        } );
 
-        if (confirm.isConfirmed) {
+        if ( confirm.isConfirmed ) {
             try {
-                await axios.delete(`${BASE_URL}/bandi/delete_bandi_id_details/${id}`);
+                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_id_details/${ id }` );
                 fetchBandies();
-                Swal.fire('हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success');
-            } catch (error) {
-                Swal.fire('त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error');
+                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
+            } catch ( error ) {
+                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
             }
         }
     };
 
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
 
-    const handleEdit = (data) => {
-        setSelectedData(data);
-        setEditDialogOpen(true);
+    const handleEdit = ( data ) => {
+        setSelectedData( data );
+        setEditingData( true );
     };
 
-
-    const handleSave = async (updatedData) => {
+    const handleAdd = ( bandi_id ) => {
+        setEditingData( { bandi_id } );
+        setModalOpen( true );
+    };
+    const handleSave = async ( updatedData ) => {
         try {
             await axios.put(
-                `${BASE_URL}/bandi/update_bandi_fine/${updatedData.id}`,
+                `${ BASE_URL }/bandi/update_bandi_fine/${ updatedData.id }`,
                 updatedData,
                 { withCredentials: true } // ✅ Fix: wrap inside object
             );
             fetchBandies();
-            Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
-        } catch (err) {
-            Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
+            Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+        } catch ( err ) {
+            Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
         }
     };
 
@@ -101,8 +104,14 @@ const BandiFineTable = ({ bandi_id }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <h3>कैदीबन्दीको जरिवाना/क्षतिपुर्ती/बिगो विवरणः</h3>
+
+            <Grid container item xs={12}>
+                <Grid>
+                    <h3>कैदीबन्दीको जरिवाना/क्षतिपुर्ती/बिगो विवरणः</h3>
+                </Grid>
+                <Grid marginTop={2}>
+                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
+                </Grid>
             </Grid>
             <Grid item xs={12}>
                 <TableContainer component={Paper}>
@@ -122,7 +131,7 @@ const BandiFineTable = ({ bandi_id }) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fetchedBandies.map((opt, index) => (
+                            {fetchedBandies.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
                                     <TableCell align="center">{opt.fine_type || ''}</TableCell>
@@ -140,7 +149,7 @@ const BandiFineTable = ({ bandi_id }) => {
                                                 <Button
                                                     variant="contained"
                                                     color='success'
-                                                    onClick={() => handleEdit(opt)}
+                                                    onClick={() => handleEdit( opt )}
                                                 >
                                                     ✏️
                                                 </Button>
@@ -149,7 +158,7 @@ const BandiFineTable = ({ bandi_id }) => {
                                                 <Button
                                                     variant="contained"
                                                     color='error'
-                                                    onClick={() => handleDelete(opt.id)}
+                                                    onClick={() => handleDelete( opt.id )}
                                                 >
                                                     🗑️
                                                 </Button>
@@ -157,15 +166,15 @@ const BandiFineTable = ({ bandi_id }) => {
                                         </Grid>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) )}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 {/* 🔽 Insert this right after your TableContainer or at the end of return */}
                 <FineEditDialog
-                    open={editDialogOpen}
-                    onClose={() => setEditDialogOpen(false)}
-                    editingData={selectedData}
+                    open={modalOpen}
+                    onClose={() => setModalOpen( false )}
+                    editingData={editingData}
                     onSave={handleSave}
                 />
 

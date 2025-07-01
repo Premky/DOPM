@@ -4,9 +4,10 @@ import { useForm } from "react-hook-form";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import ReuseMudda from "../../ReuseableComponents/ReuseMudda";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
-import ReuseOffice from "../../ReuseableComponents/ReuseOffice";
+import ReusePunarabedanOffice from "../../ReuseableComponents/ReusePunarabedanOffice";
 import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
+
 
 
 const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
@@ -40,12 +41,13 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
             <DialogContent>
                 <Grid2 container spacing={2}>
                     <Grid2 size={{ xs: 12}}>
-                        <ReuseOffice
+                        <ReusePunarabedanOffice
                             name='punarabedan_office_id'
                             label="कार्यालय"
                             required={true}
                             control={control}
                             error={errors.punarabedan_office_id}
+                            // name_type='short'
                         />
                     </Grid2>
                     <Grid2 size={{ xs: 12}}>

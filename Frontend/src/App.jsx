@@ -16,6 +16,7 @@ const CountReport = lazy(() => import('./Components/Bandi/Tables/Counts/CountRep
 const BandiMaskebari = lazy(() => import('./Components/Bandi/Reports/BandiMaskebari'));
 const AllBandiTable = lazy(() => import('./Components/Bandi/Tables/AllBandiTable'));
 const BandiPersonForm = lazy(() => import('./Components/Bandi/Forms/BandiPersonForm'));
+const BandiReleaseForm = lazy(() => import('./Components/Bandi/Forms/BandiReleaseForm'));
 // const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
 const ViewBandi = lazy(() => import('./Components/Bandi/ViewBandi'));
 
@@ -69,6 +70,7 @@ function App() {
                   <Route path="maskebari" element={<BandiMaskebari />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />
+                  <Route path="bandi_release" element={<BandiReleaseForm />} />
                   {/* <Route path="create_bandi_family" element={<BandiFamilyForm />} /> */}
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                 </Route>
