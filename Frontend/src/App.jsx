@@ -65,6 +65,7 @@ function App() {
                 <Route path="bandi" element={<OutletLayout />}>
                   <Route index element={<CountReport />} />
                   <Route path="dashboard" element={<CountReport />} />
+                  <Route path="count_ac_office" element={<BandiMaskebari />} />
                   <Route path="maskebari" element={<BandiMaskebari />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />

@@ -16,7 +16,7 @@ const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue
     const [loading, setLoading] = useState(true);
 
     // Fetch office data
-    const fetchOffices = async () => {
+    const fetchOffices = async (name_type) => {
         try {
             const url = `${BASE_URL}/public/get_offices`;
             const response = await axios.get(url, {
@@ -28,11 +28,20 @@ const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3);
-                    const formatted = filtered.map((opt, index) => ({
-                        sn: index + 1,
-                        label: opt.office_name_with_letter_address,
-                        value: opt.id,
-                    }));
+                    let formatted;
+                    if(name_type='short'){
+                        formatted = filtered.map((opt, index) => ({
+                            sn: index + 1,
+                            label:opt.letter_address,
+                            value: opt.id,
+                        }));
+                    }else{
+                        formatted = filtered.map((opt, index) => ({
+                            sn: index + 1,
+                            label: opt.office_name_with_letter_address,
+                            value: opt.id,
+                        }));
+                    }
                     setFormattedOptions(formatted);
                 } else {
                     console.log('No records found.');
