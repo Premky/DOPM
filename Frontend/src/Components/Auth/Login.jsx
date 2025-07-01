@@ -41,7 +41,7 @@ const Login = () => {
                 await fetchSession();
                 dispatch({ type: "LOGIN", payload: response.data });
                 Swal.fire({ title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false });
-                navigate('/');
+                navigate('/bandi');
             } else {
                 Swal.fire({ title: "Login Failed", text: response.data.error, icon: "error" });
             }

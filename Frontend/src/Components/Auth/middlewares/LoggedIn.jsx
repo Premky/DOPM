@@ -12,7 +12,7 @@ const LoggedIn = () => {
 
   const isValidUser = !!state?.valid;
 
-  // console.log(isValidUser)
+  console.log(isValidUser)
 
   // If logged in, allow access; else redirect to login
   return isValidUser ? <Outlet /> : <Navigate to="/login" replace />;

@@ -3,32 +3,32 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './Context/AuthContext';
 
 // Lazy-loaded components
-const Login = lazy(() => import('./Components/Auth/Login'));
-const CombinedNav = lazy(() => import('./Components/Nav/CombinedNav'));
-const CreateUser = lazy(() => import('./Components/AdminPanel/User/CreateUser'));
-const OfficeBranchPage = lazy(() => import('./Components/AdminPanel/Office/OfficeBranchPage'));
-const Office = lazy(() => import('./Components/AdminPanel/Office/OfficeForm'));
+const Login = lazy( () => import( './Components/Auth/Login' ) );
+const CombinedNav = lazy( () => import( './Components/Nav/CombinedNav' ) );
+const CreateUser = lazy( () => import( './Components/AdminPanel/User/CreateUser' ) );
+const OfficeBranchPage = lazy( () => import( './Components/AdminPanel/Office/OfficeBranchPage' ) );
+const Office = lazy( () => import( './Components/AdminPanel/Office/OfficeForm' ) );
 
-const AdminCheck = lazy(() => import('./Components/Auth/middlewares/AdminCheck'));
-const LoggedIn = lazy(() => import('./Components/Auth/middlewares/LoggedIn'));
+const AdminCheck = lazy( () => import( './Components/Auth/middlewares/AdminCheck' ) );
+const LoggedIn = lazy( () => import( './Components/Auth/middlewares/LoggedIn' ) );
 
-const CountReport = lazy(() => import('./Components/Bandi/Tables/Counts/CountReport'));
-const BandiMaskebari = lazy(() => import('./Components/Bandi/Reports/BandiMaskebari'));
-const AllBandiTable = lazy(() => import('./Components/Bandi/Tables/AllBandiTable'));
-const BandiPersonForm = lazy(() => import('./Components/Bandi/Forms/BandiPersonForm'));
-const BandiReleaseForm = lazy(() => import('./Components/Bandi/Forms/BandiReleaseForm'));
+const CountReport = lazy( () => import( './Components/Bandi/Tables/Counts/CountReport' ) );
+const BandiMaskebari = lazy( () => import( './Components/Bandi/Reports/BandiMaskebari' ) );
+const AllBandiTable = lazy( () => import( './Components/Bandi/Tables/AllBandiTable' ) );
+const BandiPersonForm = lazy( () => import( './Components/Bandi/Forms/BandiPersonForm' ) );
+const BandiReleaseForm = lazy( () => import( './Components/Bandi/Forms/BandiReleaseForm' ) );
 // const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
-const ViewBandi = lazy(() => import('./Components/Bandi/ViewBandi'));
+const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
-const PayroleMakebari = lazy(() => import('./Components/Bandi/Tables/PayroleMakebari'));
-const PayroleForm = lazy(() => import('./Components/Bandi/Forms/PayroleForm'));
-const PayroleTable = lazy(() => import('./Components/Bandi/Tables/PayroleTable'));
-const PayroleLogForm = lazy(() => import('./Components/Bandi/Forms/PayroleLogForm'));
+const PayroleMakebari = lazy( () => import( './Components/Bandi/Tables/PayroleMakebari' ) );
+const PayroleForm = lazy( () => import( './Components/Bandi/Forms/PayroleForm' ) );
+const PayroleTable = lazy( () => import( './Components/Bandi/Tables/PayroleTable' ) );
+const PayroleLogForm = lazy( () => import( './Components/Bandi/Forms/PayroleLogForm' ) );
 
-const AantarikPrashasanForm = lazy(() => import('./Components/Bandi/Kaamdari_subidha/Forms/AantarikPrashasanForm'));
-const AantarikPrashasanTable = lazy(() => import('./Components/Bandi/Kaamdari_subidha/Tables/AantarikPrashasanTable'));
-const KaamdariSubidhaForm = lazy(() => import('./Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm'));
-const KaamdariBhuktanDecision = lazy(() => import('./Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision'));
+const AantarikPrashasanForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/AantarikPrashasanForm' ) );
+const AantarikPrashasanTable = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Tables/AantarikPrashasanTable' ) );
+const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm' ) );
+const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
 import { Outlet } from 'react-router-dom';
 
@@ -46,22 +46,23 @@ function App() {
           <Routes>
 
             {/* Public Route */}
+            {/* <Route path="/" element={<Login />} /> */}
             <Route path="/login" element={<Login />} />
 
             {/* Protected Routes with Navigation */}
-            <Route element={<ProtectedLayout />}>
 
-              {/* Admin routes wrapped with AdminCheck */}
-              <Route element={<AdminCheck />}>
-                <Route path="admin">
-                  <Route path="create_user" element={<CreateUser />} />
-                  <Route path="branch" element={<OfficeBranchPage />} />
-                  <Route path="office" element={<Office />} />
+            {/* Admin routes wrapped with AdminCheck */}
+
+            {/* Routes wrapped with LoggedIn middleware */}
+            <Route element={<LoggedIn />}>
+              <Route element={<ProtectedLayout />}>
+                <Route element={<AdminCheck />}>
+                  <Route path="admin">
+                    <Route path="create_user" element={<CreateUser />} />
+                    <Route path="branch" element={<OfficeBranchPage />} />
+                    <Route path="office" element={<Office />} />
+                  </Route>
                 </Route>
-              </Route>
-
-              {/* Routes wrapped with LoggedIn middleware */}
-              <Route element={<LoggedIn />}>
                 {/* Bandis Routes */}
                 <Route path="bandi" element={<OutletLayout />}>
                   <Route index element={<CountReport />} />
@@ -80,7 +81,7 @@ function App() {
                   <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
                   <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
                   <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
-                  
+
 
                 </Route>
 
