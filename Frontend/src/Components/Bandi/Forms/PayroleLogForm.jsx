@@ -1,5 +1,5 @@
 import { Box, Button, Grid2 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { useAuth } from '../../../Context/AuthContext';
@@ -13,6 +13,7 @@ import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import ReusePayroleBandi from '../../ReuseableComponents/ReusePayroleBandi';
 import ReusableTable from '../../ReuseableComponents/ReuseTable';
 import PayroleLogTable from '../Tables/PayroleLogTable';
+import fetchPayroleLogs from '../../ReuseableComponents/fetchPayroleLog';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -47,11 +48,14 @@ const PayroleLogForm = () => {
         },
     } );
 
-    // Destructure watched fields for clarity
+    // Destructure watched fields for clarity    
     const hajir_status = watch( 'hajir_status' );
     const no_hajir_reason = watch( 'no_hajir_reason' );
     const no_hajir_reason_office_type = watch( 'no_hajir_reason_office_type' );
     const no_hajir_is_pratibedan = watch( 'no_hajir_is_pratibedan' );
+    const bandi_id = watch( 'bandi_id' );
+    const { records: logRecords, optrecords: optLogRecords, loading: logLoadig } = fetchPayroleLogs( bandi_id );
+
 
     const [editing, setEditing] = useState( false );
     const onSubmit = async ( data ) => {
@@ -74,12 +78,19 @@ const PayroleLogForm = () => {
                 : `${ BASE_URL }/payrole/create_payrole_log`;
             const method = editing ? 'PUT' : 'POST';
 
-            const formData = new FormData();
+            // const formData = new FormData();
+            // for ( const key in payload ) {
+            //     formData.append( key, payload[key] );
+            // }
+
             const response = await axios( {
-                method, url, data: formData,
-                headers: { 'Content-Type': 'multipart/form0data', },
+                method,
+                url,
+                data: payload,
+                // headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true,
             } );
+
 
             const { Status, Result, Error } = response.data;
             if ( Status ) {
@@ -269,7 +280,7 @@ const PayroleLogForm = () => {
                 </Grid2>
             </Grid2>
             <Grid2 container>
-                <PayroleLogTable />
+                <PayroleLogTable records={logRecords} />
 
             </Grid2>
         </Box>

@@ -61,7 +61,7 @@ const Login = () => {
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3%' }}>
                 <img src='/nepal_gov_logo.png' alt='Nepal Police Logo' height='120px' />
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1%', color:'#fc3d03' }}>
                 <h1> कारागार व्यवस्थापन विभाग:PMIS </h1>                
             </Box>
             

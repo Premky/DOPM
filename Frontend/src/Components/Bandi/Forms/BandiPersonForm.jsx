@@ -1200,7 +1200,7 @@ const BandiPersonForm = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <ReuseDateField
+            <ReuseDatePickerBs
               name='punarabedan_office_date'
               label='पुनरावेदनमा नपरेको प्रमाणको पत्र मिति'
               required={false}

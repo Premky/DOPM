@@ -31,6 +31,7 @@ const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_sub
 const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
 import { Outlet } from 'react-router-dom';
+import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -71,7 +72,7 @@ function App() {
                   <Route index element={<CountReport />} />
                   <Route path="dashboard" element={<CountReport />} />
                   <Route path="count_ac_office" element={<BandiMaskebari />} />
-                  <Route path="maskebari" element={<BandiMaskebari />} />
+                  <Route path="maskebari" element={<KaragarMaskebari />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />
                   <Route path="bandi_release" element={<BandiReleaseForm />} />

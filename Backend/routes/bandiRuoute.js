@@ -1905,9 +1905,9 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     } = req.body;
 
     let arrest_date = '1950-01-01';
-    if(thuna_date_bs){
-        arrest_date=thuna_date_bs;
-    }else{
+    if ( thuna_date_bs ) {
+        arrest_date = thuna_date_bs;
+    } else {
         arrest_date = '1950-01-01';
     }
     const total_kaid = calculateBSDate( arrest_date, release_date_bs );
@@ -2794,5 +2794,117 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
     }
 } );
+
+
+
+router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const isSuperOffice = active_office === 1 || active_office === 2;
+    const officeCondition = isSuperOffice ? "1=1" : "bp.current_office_id = ?";
+    const officeParams = isSuperOffice ? [] : [active_office];
+
+    const TRANSFER_REASON_ID = 2; // Replace with real value
+    const DEATH_REASON_ID = 3;    // Replace with real value
+
+    console.log(current_date)
+
+    const queries = {
+        previousMonthCount: `
+            SELECT gender, COUNT(*) AS count
+            FROM bandi_person bp
+            LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id
+            WHERE bp.is_active = 1
+              AND ${officeCondition}
+              AND DATE_FORMAT(STR_TO_DATE(bkd.thuna_date_bs, '%Y-%m-%d'), '%Y-%m') <= '2081-02'
+            GROUP BY gender`,
+
+        addedThisMonth: `
+            SELECT gender, COUNT(*) AS count
+            FROM bandi_person bp
+            WHERE bp.is_active = 1
+              AND ${officeCondition}
+              AND LEFT(bp.created_at, 10) BETWEEN bs2ad('2081-03-01') AND bs2ad('2081-03-32')
+            GROUP BY gender`,
+
+        releasedThisMonth: `
+            SELECT bp.gender, COUNT(*) AS count
+            FROM bandi_release_details br
+            JOIN bandi_person bp ON br.bandi_id = bp.id
+            WHERE LEFT(br.nirnay_miti, 7) = '2081-03'
+              AND ${officeCondition}
+            GROUP BY bp.gender`,
+
+        transferredThisMonth: `
+            SELECT bp.gender, COUNT(*) AS count
+            FROM bandi_release_details br
+            JOIN bandi_person bp ON br.bandi_id = bp.id
+            WHERE LEFT(br.karnayan_miti, 7) = '2081-03'
+              AND br.reason_id = ?
+              AND ${officeCondition}
+            GROUP BY bp.gender`,
+
+        deathThisMonth: `
+            SELECT bp.gender, COUNT(*) AS count
+            FROM bandi_release_details br
+            JOIN bandi_person bp ON br.bandi_id = bp.id
+            WHERE LEFT(br.karnayan_miti, 7) = '2081-03'
+              AND br.reason_id = ?
+              AND ${officeCondition}
+            GROUP BY bp.gender`,
+
+        totalThisMonth: `
+            SELECT gender, COUNT(*) AS count
+            FROM bandi_person bp
+            WHERE bp.is_active = 1
+              AND ${officeCondition}
+            GROUP BY gender`,
+
+        aashritThisMonth: `
+            SELECT bp.gender, COUNT(*) AS count
+            FROM aashrit_table a
+            JOIN bandi_person bp ON a.bandi_id = bp.id
+            WHERE ${officeCondition}
+            GROUP BY bp.gender`
+    };
+
+    try {
+        const [previousMonthCount] = await query(queries.previousMonthCount, officeParams);
+        const [addedThisMonth] = await query(queries.addedThisMonth, officeParams);
+        const [releasedThisMonth] = await query(queries.releasedThisMonth, officeParams);
+        const [transferredThisMonth] = await query(queries.transferredThisMonth, [TRANSFER_REASON_ID, ...officeParams]);
+        const [deathThisMonth] = await query(queries.deathThisMonth, [DEATH_REASON_ID, ...officeParams]);
+        const [totalThisMonth] = await query(queries.totalThisMonth, officeParams);
+        const [aashritThisMonth] = await query(queries.aashritThisMonth, officeParams);
+
+        return res.json({
+            Status: true,
+            Result: {
+                previousMonthCount,
+                addedThisMonth,
+                releasedThisMonth,
+                transferredThisMonth,
+                deathThisMonth,
+                totalThisMonth,
+                aashritThisMonth
+            }
+        });
+    } catch (error) {
+        console.error("DB Error:", error);
+        return res.status(500).json({ Status: false, Error: "Database query failed." });
+    }
+});
+
+// con.query( sql, ( error, results ) => {
+//     if ( error ) {
+//         console.error( 'Database query error:', error );
+//         return res.status( 500 ).json( { Status: false, Error: 'Database query failed.' } );
+//     }
+
+//     if ( results.length > 0 ) {
+//         return res.json( { Status: true, Result: results } );
+//     } else {
+//         return res.json( { Status: false, Error: 'No records found.' } );
+//     }
+// } );
 
 export { router as bandiRouter };

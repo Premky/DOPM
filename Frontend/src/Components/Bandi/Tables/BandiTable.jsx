@@ -22,6 +22,7 @@ const BandiTable = ({ bandi_id }) => {
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     setFetchedBandies(Result[0]);
+                    console.log(Result)
                 } else {
                     console.log('No records found.');
                     setFetchedBandies([]);
@@ -54,7 +55,7 @@ const BandiTable = ({ bandi_id }) => {
                         <Table size='small' border={1}>
                             <TableRow>
                                 <TableCell>बन्दी आई.डि.</TableCell>
-                                <TableCell>{fetchedBandi.bandi_id}</TableCell>
+                                <TableCell>{fetchedBandi.office_bandi_id}</TableCell>
                                 <TableCell>बन्दी प्रकार</TableCell>
                                 <TableCell>{fetchedBandi.bandi_type}</TableCell>
                                 <TableCell rowSpan={5} colSpan={2} align='center'>

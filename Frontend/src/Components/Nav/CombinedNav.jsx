@@ -139,7 +139,7 @@ const CombinedNav = ( { user } ) => {
         <a onClick={handleLogout} style={{ color: 'red' }}>🔒 Logout</a>
       </div>
       {/* Main content rendered here */}
-      <div style={{ marginLeft: '180px', padding: '1rem' }}>
+      <div style={{ marginLeft: '180px', padding: '1rem', paddingTop:'60px' }}>
         <Outlet />
       </div>
     </div>

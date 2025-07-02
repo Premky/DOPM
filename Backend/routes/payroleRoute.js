@@ -159,7 +159,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     }
 
     if ( searchpayroleStatus ) {
-        const status = Number( searchpayroleStatus );        
+        const status = Number( searchpayroleStatus );
         if ( status !== 3 ) {
             baseWhere += ` AND p.status = ${ status } `;
         } else if ( active_office === 1 || active_office === 2 ) {
@@ -269,7 +269,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         `;
         console.log( fullQuery );
         const [fullRows] = await con.promise().query( fullQuery, bandiIds );
-        console.log(fullRows)
+        console.log( fullRows );
         // STEP 4: Group muddas under each bandi
         const grouped = {};
         fullRows.forEach( row => {
@@ -894,70 +894,130 @@ router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) 
     }
 } );
 
-router.post('/create_payrole_log', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const active_user = req.user.id;
+router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
 
-  try {
-    req.body.created_by = active_user;
-    req.body.created_office = active_office;
+    try {
+        req.body.created_by = active_user;
+        req.body.current_office_id = active_office;
 
-    const keys = Object.keys(req.body);
-    const values = Object.values(req.body);
-    const placeholders = keys.map(() => '?').join(', ');
+        // ✅ Clean payload: convert '' to null for optional fields
+        const cleanedBody = {
+            ...req.body,
+            no_hajir_reason: req.body.no_hajir_reason || null,
+            no_hajir_mudda: req.body.no_hajir_mudda || null,
+            no_hajir_mudda_district: req.body.no_hajir_mudda_district || null,
+            no_hajir_reason_office_type: req.body.no_hajir_reason_office_type || null,
+            no_hajir_reason_office_id: req.body.no_hajir_reason_office_id || null,
+            no_hajir_reason_office_name: req.body.no_hajir_reason_office_name || null,
+            no_hajir_is_pratibedan: req.body.no_hajir_is_pratibedan || null,
+            no_hajir_is_aadesh: req.body.no_hajir_is_aadesh || null,
+        };
+        delete cleanedBody.office_bandi_id; // 🔴 Remove unknown field
+        delete cleanedBody.office_name; // 🔴 Remove unknown field
 
-    const sql = `INSERT INTO payrole_maskebari (${keys.join(', ')}) VALUES (${placeholders})`;
-    const result = await query(sql, values);
+        const keys = Object.keys( cleanedBody );
+        const values = Object.values( cleanedBody );
+        const placeholders = keys.map( () => '?' ).join( ', ' );
 
-    res.status(201).json({ Status: true, Result: result.insertId });
-  } catch (err) {
-    console.error('Error creating payrole log:', err);
-    res.status(500).json({ Status: false, Error: err.message });
-  }
-});
+        const sql = `INSERT INTO payrole_logs (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
+        const result = await query( sql, values );
 
-router.put('/update_payrole/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const active_office = req.user.office_id;
-  const active_user = req.user.id;
-
-  try {
-    req.body.updated_by = active_user;
-    req.body.updated_office = active_office;
-
-    const keys = Object.keys(req.body);
-    const values = Object.values(req.body);
-    const setClause = keys.map(key => `${key} = ?`).join(', ');
-
-    const sql = `UPDATE payrole_maskebari SET ${setClause} WHERE id = ?`;
-    values.push(id); // add id to the end for WHERE clause
-
-    const result = await query(sql, values);
-
-    res.status(200).json({ Status: true, Result: result.affectedRows });
-  } catch (err) {
-    console.error('Error updating payrole log:', err);
-    res.status(500).json({ Status: false, Error: err.message });
-  }
-});
-
-router.get('/get_payrole_log/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const sql = 'SELECT * FROM payrole_maskebari WHERE id = ?';
-    const results = await query(sql, [id]);
-
-    if (!results.length) {
-      return res.status(404).json({ Status: false, Error: 'Payrole record not found' });
+        res.status( 201 ).json( { Status: true, Result: result.insertId } );
+    } catch ( err ) {
+        console.error( 'Error creating payrole log:', err );
+        res.status( 500 ).json( { Status: false, Error: err.message } );
     }
+} );
 
-    res.status(200).json({ Status: true, Result: results[0] });
-  } catch (err) {
-    console.error('Error fetching single payrole log:', err);
-    res.status(500).json({ Status: false, Error: err.message });
-  }
-});
+
+
+
+router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
+    const { id } = req.params;
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
+
+    try {
+        req.body.updated_by = active_user;
+        req.body.updated_office = active_office;
+
+        const keys = Object.keys( req.body );
+        const values = Object.values( req.body );
+        const setClause = keys.map( key => `${ key } = ?` ).join( ', ' );
+
+        const sql = `UPDATE payrole_maskebari SET ${ setClause } WHERE id = ?`;
+        values.push( id ); // add id to the end for WHERE clause
+
+        const result = await query( sql, values );
+
+        res.status( 200 ).json( { Status: true, Result: result.affectedRows } );
+    } catch ( err ) {
+        console.error( 'Error updating payrole log:', err );
+        res.status( 500 ).json( { Status: false, Error: err.message } );
+    }
+} );
+
+router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.id;
+    const id = req.params.id;
+
+    try {
+        const baseQuery = `
+                WITH ranked_mudda AS (
+            SELECT 
+                bmd.*, 
+                ROW_NUMBER() OVER (
+                PARTITION BY bmd.bandi_id 
+                ORDER BY 
+                    CASE WHEN bmd.is_last_mudda = true THEN 1 ELSE 2 END,
+                -- bmd.mudda_date DESC, -- Or another reliable timestamp
+                    bmd.id DESC           -- Fallback tie-breaker
+                ) AS rn
+            FROM bandi_mudda_details bmd
+            )
+            SELECT 
+            pl.payrole_id, pl.hajir_current_date, pl.hajir_status, 
+            pl.hajir_next_date, pl.hajir_office, pl.no_hajir_reason, 
+            pl.no_hajir_mudda, pl.no_hajir_mudda_district, 
+            pl.no_hajir_reason_office_type, pl.no_hajir_reason_office_id, 
+            pl.no_hajir_reason_office_name, pl.no_hajir_is_pratibedan, 
+            pl.no_hajir_is_aadesh, pl.hajir_remarks,
+            bp.bandi_type, bp.bandi_name, 
+            m.mudda_name
+            FROM payrole_logs pl
+            LEFT JOIN bandi_person bp ON pl.bandi_id = bp.id
+            LEFT JOIN ranked_mudda bmd ON pl.bandi_id = bmd.bandi_id AND bmd.rn = 1
+            LEFT JOIN muddas m ON bmd.mudda_id = m.id;
+    `;
+
+        let finalQuery = baseQuery;
+        let queryParams = [];
+        finalQuery += ` WHERE bp.is_active=1`;
+        // Restrict results for lower-level offices (office_id >= 2)
+        if ( user_office_id > 2 ) {
+            finalQuery += ` AND (p.created_office = ? OR p.updated_office = ?)`;
+            queryParams = [user_office_id, user_office_id];
+        }
+
+        // if()
+
+        // console.log(finalQuery)
+
+        const result = await queryAsync( finalQuery, queryParams );
+        console.log( 'acceptedpayrole', user_office_id );
+        if ( !result.length ) {
+            return res.json( { Status: false, Error: 'No payrole records found' } );
+        }
+
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Error fetching accepted payroles:', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal server error' } );
+    }
+} );
 
 const getMaskebariQuery = `SELECT 
                         year_bs, 

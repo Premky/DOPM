@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../Context/BaseURLProvider";
 
-const fetchPayroleLogs = ( bandi_id ) => {
+const fetchTOtalofAllFields = ( bandi_id ) => {
   const BASE_URL = useBaseURL();
   const [records, setRecords] = useState( [] );
   const [optrecords, setOptRecords] = useState( [] );
@@ -16,7 +16,7 @@ const fetchPayroleLogs = ( bandi_id ) => {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/payrole/get_payrole_logs/${bandi_id}`, {
+      const response = await axios.get(`${BASE_URL}/bandi/get_total_of_all_maskebari_fields/${bandi_id}`, {
         withCredentials: true,
       });
 
@@ -48,4 +48,4 @@ const fetchPayroleLogs = ( bandi_id ) => {
   return { records, optrecords, loading };
 };
 
-export default fetchPayroleLogs;
+export default fetchTOtalofAllFields;
