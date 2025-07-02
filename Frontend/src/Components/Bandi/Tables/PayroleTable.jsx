@@ -448,11 +448,11 @@ const PayroleTable = () => {
                                                     <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
 
                                                     <TableCell rowSpan={kaidiMuddas.length || 1}>
-
                                                         {( authState.office_id <= 2 || data.payrole_status === 2 ) ? (
                                                             data.dopmremark || ''
                                                         ) : null}
                                                     </TableCell>
+
                                                     <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                         {data.payrole_status === 1 ? (
                                                             <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 2 )}>
@@ -497,11 +497,11 @@ const PayroleTable = () => {
                                                                 {data.payrole_status === 4 ? (
                                                                     <>
                                                                         <Button variant="contained" color="success" onClick={() => handleUpdatePayrole( data )}>
-                                                                            प्यारोल पाएको
+                                                                            प्यारोल पाए/नपाएको
                                                                         </Button>
-                                                                        <Button variant="contained" color="warning" onClick={() => handleUpdatePayrole( data )}>
+                                                                        {/* <Button variant="contained" color="warning" onClick={() => handleUpdatePayrole( data )}>
                                                                             प्यारोल नपाएको
-                                                                        </Button>
+                                                                        </Button> */}
                                                                     </>
                                                                 ) : <>
                                                                 </>}

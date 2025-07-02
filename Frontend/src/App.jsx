@@ -47,14 +47,17 @@ function App() {
 
             {/* Public Route */}
             {/* <Route path="/" element={<Login />} /> */}
-            <Route path="/login" element={<Login />} />
+
+
 
             {/* Protected Routes with Navigation */}
 
             {/* Admin routes wrapped with AdminCheck */}
 
             {/* Routes wrapped with LoggedIn middleware */}
+            <Route path="/login" element={<Login />} />
             <Route element={<LoggedIn />}>
+
               <Route element={<ProtectedLayout />}>
                 <Route element={<AdminCheck />}>
                   <Route path="admin">

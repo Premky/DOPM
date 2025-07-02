@@ -8,7 +8,7 @@ const API_OPTIONS = [
   'https://10.5.60.151',
   'https://10.5.60.151:5173',
   'http://localhost:5173',
-  'http://192.168.18.24:5173',
+  'http://192.168.18.33:5173',
   'https://kptpo.onrender.com'
 ];
 

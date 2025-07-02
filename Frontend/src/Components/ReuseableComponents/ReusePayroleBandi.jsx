@@ -25,10 +25,10 @@ const ReusePayroleBandi = ({ name, label, required, control, error, defaultvalue
         try {
             let url;
             if (authState.office_id) {
-                url = `${BASE_URL}/bandi/get_accepted_payroles/${authState.office_id}`;
+                url = `${BASE_URL}/payrole/get_accepted_payroles/${authState.office_id}`;
             } else {
             }
-            url = `${BASE_URL}/bandi/get_accepted_payroles`;
+            url = `${BASE_URL}/payrole/get_accepted_payroles`;
 
             const response = await axios.get(url, {
                 withCredentials: true
@@ -46,7 +46,7 @@ const ReusePayroleBandi = ({ name, label, required, control, error, defaultvalue
                             const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
                             return {
                                 label: ` ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index + 1} `,
-                                value: opt.bandi_office_id,
+                                value: opt.bandi_id,
                             };
                         });
                     setFormattedOptions(formatted);

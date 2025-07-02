@@ -143,6 +143,17 @@ async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
   await queryAsync(sql, [values]);
 }
 
+async function insertHealthInsurance(bandi_id, health_insurance = [], user_id, office_id) {
+  if (!health_insurance.length) return;
+  const values = contacts.map(c => [
+    bandi_id, c.is_active, c.insurance_from, c.insurance_to, user_id, office_id
+  ]);
+  const sql = `INSERT INTO bandi_health_insurance (
+    bandi_id, is_active, insurance_from, insurance_to,
+    created_by, current_office_id
+  ) VALUES ?`;
+  await queryAsync(sql, [values]);
+}
 export {
   insertBandiPerson,
   insertKaidDetails,
@@ -152,5 +163,6 @@ export {
   insertFineDetails,
   insertPunarabedan,
   insertFamily,
-  insertContacts
+  insertContacts,
+  insertHealthInsurance
 };

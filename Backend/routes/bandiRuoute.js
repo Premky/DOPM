@@ -133,7 +133,7 @@ const upload = multer( {
 
 import {
     insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
-    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts
+    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance
 } from '../services/bandiService.js';
 
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
@@ -187,6 +187,9 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
 
         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
         console.log( '✅ insertContacts' );
+
+        await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
+        console.log( '✅ insertCardDetails' );
 
         await commitAsync();
         console.log( '🟩 Transaction committed' );
@@ -1880,6 +1883,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
 
     const {
+        bandi_id,
         mudda_id,
         // arrest_date,
         thuna_date_bs,
@@ -1900,11 +1904,12 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
         pyarole_rakhan_upayukat,
     } = req.body;
 
-    let arrest_date = '0000-00-00';
-    if ( !arrest_date || !thuna_date_bs ) {
-        arrest_date = '0000-00-00';
+    let arrest_date = '1950-01-01';
+    if(thuna_date_bs){
+        arrest_date=thuna_date_bs;
+    }else{
+        arrest_date = '1950-01-01';
     }
-
     const total_kaid = calculateBSDate( arrest_date, release_date_bs );
 
     const bhuktan_duration = calculateBSDate( arrest_date, current_date, total_kaid );
@@ -1926,6 +1931,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
             const sql = `
         UPDATE payrole_decisions
         SET
+          bandi_id=?,
           mudda_id = ?,
           arrest_date = ?,
           release_date = ?,
@@ -1947,6 +1953,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
       `;
 
             const values = [
+                bandi_id,
                 mudda_id,
                 arrest_date,
                 release_date_bs,
@@ -1971,15 +1978,16 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
         } else {
             const insertSql = `
         INSERT INTO payrole_decisions (
-          payrole_id, mudda_id, arrest_date, release_date, payrole_nos,
+          payrole_id,bandi_id, mudda_id, arrest_date, release_date, payrole_nos,
           payrole_decision_date, payrole_granted_court, payrole_granted_aadesh_date,
           payrole_granted_letter_no, payrole_granted_letter_date, payrole_result,
           payrole_decision_remark, kaid_bhuktan_duration, kaid_bhuktan_percentage,
           baki_kaid_duration, baki_kaid_percent, decision_updated_by, decision_updated_office
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
             const insertValues = [
                 payrole_id,
+                bandi_id,
                 mudda_id,
                 arrest_date,
                 release_date_bs,
@@ -2005,12 +2013,13 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
         if ( hajir_current_date_bs ) {
             const logSql = `
         INSERT INTO payrole_logs (
-          payrole_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office
-        ) VALUES (?, ?, ?, ?, ?)
+          payrole_id, bandi_id, hajir_current_date, hajir_status, hajir_next_date, hajir_office
+        ) VALUES (?, ?, ?, ?, ?, ?)
       `;
 
             const logValues = [
                 payrole_id,
+                bandi_id,
                 hajir_current_date_bs,
                 1,
                 hajir_next_date_bs,
@@ -2757,7 +2766,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
     const created_at = new Date();
     // console.log(req.body)
     console.log( created_at );
-    const { reason_id, decision_date, apply_date, nirnay_officer,aafanta_id, relative_id, remarks, bandi_id } = req.body;
+    const { reason_id, decision_date, apply_date, nirnay_officer, aafanta_id, relative_id, remarks, bandi_id } = req.body;
 
     const insertSql = `
     INSERT INTO bandi_release_details (

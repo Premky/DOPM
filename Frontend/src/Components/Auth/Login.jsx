@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, replace, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -16,52 +16,61 @@ const Login = () => {
     const BASE_URL = useBaseURL();
     const navigate = useNavigate();
     const { dispatch, fetchSession } = useAuth();
+    const { state, loading } = useAuth();
+    if ( loading ) return <>Loading...</>;
+    if ( state?.valid ) {
+        return <Navigate to='/bandi' replace />;
+    }
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [values, setValues] = useState({ username: '', password: '' });
-    const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState( false );
+    const [values, setValues] = useState( { username: '', password: '' } );
+    const [error, setError] = useState( '' );
 
-    const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+    const handleClickShowPassword = () => setShowPassword( ( prev ) => !prev );
 
-    const handleLogin = async (event) => {
+    const handleLogin = async ( event ) => {
         event.preventDefault();
 
         try {
-            const response = await axios.post(`${BASE_URL}/auth/login`, values, { withCredentials: true });
+            const response = await axios.post( `${ BASE_URL }/auth/login`, values, { withCredentials: true } );
 
-            Swal.fire({
+            Swal.fire( {
                 title: "Logging in...",
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 },
-            });
+            } );
 
-            if (response.data.loginStatus) {
+            if ( response.data.loginStatus ) {
                 await fetchSession();
-                dispatch({ type: "LOGIN", payload: response.data });
-                Swal.fire({ title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false });
-                navigate('/bandi');
+                dispatch( { type: "LOGIN", payload: response.data } );
+                Swal.fire( { title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false } );
+                navigate( '/bandi' );
             } else {
-                Swal.fire({ title: "Login Failed", text: response.data.error, icon: "error" });
+                Swal.fire( { title: "Login Failed", text: response.data.error, icon: "error" } );
             }
-        } catch (error) {
-            setError(error.response?.data?.Error || 'Unexpected error occurred');
-            Swal.fire({ title: "Login Error", text: error.message, icon: "error" });
+        } catch ( error ) {
+            setError( error.response?.data?.Error || 'Unexpected error occurred' );
+            Swal.fire( { title: "Login Error", text: error.message, icon: "error" } );
         }
     };
 
     return (
         <>
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '5%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3%' }}>
                 <img src='/nepal_gov_logo.png' alt='Nepal Police Logo' height='120px' />
             </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1%' }}>
+                <h1> कारागार व्यवस्थापन विभाग:PMIS </h1>                
+            </Box>
+            
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="loginPage">
 
                 <div className='p-3 rounded w-40 border loginForm'>
                     <form onSubmit={handleLogin} >
                         <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
-                            <TextField id="username" label="Username" onChange={(e) => setValues({ ...values, username: e.target.value })} fullWidth />
+                            <TextField id="username" label="Username" onChange={( e ) => setValues( { ...values, username: e.target.value } )} fullWidth />
                         </FormControl>
                         <br />
                         <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
@@ -70,7 +79,7 @@ const Login = () => {
                                 id="password"
                                 label="Password"
                                 type={showPassword ? 'text' : 'password'}
-                                onChange={(e) => setValues({ ...values, password: e.target.value })}
+                                onChange={( e ) => setValues( { ...values, password: e.target.value } )}
                                 endAdornment={
                                     <InputAdornment position="end">
                                         <IconButton onClick={handleClickShowPassword} edge="end">
@@ -86,7 +95,7 @@ const Login = () => {
                 </div>
             </Box>
         </>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;

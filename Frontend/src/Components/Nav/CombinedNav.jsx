@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import './Navbar.css';
 import { useAuth } from '../../Context/AuthContext';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import { useBaseURL } from '../../Context/BaseURLProvider';
 
-const CombinedNav = ({ user }) => {
+const CombinedNav = ( { user } ) => {
+  const BASE_URL = useBaseURL();
+  const { dispatch } = useAuth();
   const { state: authState } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarMenu, setSidebarMenu] = useState('');
+  const [sidebarMenu, setSidebarMenu] = useState( '' );
 
   const topMenu = [
     {
@@ -51,45 +56,66 @@ const CombinedNav = ({ user }) => {
     }
   ];
 
-  const handleTopNavClick = (menu) => {
-    setSidebarMenu(menu.name);
-    navigate(menu.defaultPath);
+  const handleTopNavClick = ( menu ) => {
+    setSidebarMenu( menu.name );
+    navigate( menu.defaultPath );
   };
 
-  const handleSubmenuClick = (path) => {
-    navigate(path);
+  const handleSubmenuClick = ( path ) => {
+    navigate( path );
   };
 
-  useEffect(() => {
-    const activeMenu = topMenu.find(menu =>
-      menu.submenu.some(sub => location.pathname.startsWith(sub.path))
+  useEffect( () => {
+    const activeMenu = topMenu.find( menu =>
+      menu.submenu.some( sub => location.pathname.startsWith( sub.path ) )
     );
-    if (activeMenu) {
-      setSidebarMenu(activeMenu.name);
+    if ( activeMenu ) {
+      setSidebarMenu( activeMenu.name );
     }
-  }, [location.pathname]);
+  }, [location.pathname] );
 
-  const selectedMenu = topMenu.find(menu => menu.name === sidebarMenu);
+  const selectedMenu = topMenu.find( menu => menu.name === sidebarMenu );
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const handleLogout = async () => {
+
+    try {
+      await axios.post( `${ BASE_URL }/auth/logout`, {}, { withCredentials: true } );
+      // Clear authentication state
+      dispatch( { type: 'LOGOUT' } );
+      localStorage.removeItem( 'token' );
+      navigate( '/login' );
+      Swal.fire( {
+        title: 'Logged Out',
+        text: 'You have been successfully logged out!',
+        icon: 'success',
+        timer: 1000,
+        showConfirmButton: false,
+      } );
+    } catch ( error ) {
+      console.log( "Logout error:", error?.response?.data || error.message || error );
+      Swal.fire( {
+        title: 'Logout Failed',
+        text: error?.response?.data?.message || error.message || 'There was an issue logging out!',
+        icon: 'error',
+      } );
+    }
+
   };
 
   return (
     <div>
       {/* Top Navigation */}
       <div className="topnav">
-        {topMenu.map(menu => (
+        {topMenu.map( menu => (
           <a
             key={menu.name}
             href="#"
             className={sidebarMenu === menu.name ? 'active' : ''}
-            onClick={() => handleTopNavClick(menu)}
+            onClick={() => handleTopNavClick( menu )}
           >
             {menu.name}
           </a>
-        ))}
+        ) )}
         <a className="icon"><i className="fa fa-bars"></i></a>
       </div>
 
@@ -104,11 +130,11 @@ const CombinedNav = ({ user }) => {
           <hr />
         </div>
 
-        {selectedMenu?.submenu.map(sub => (
-          <a key={sub.path} onClick={() => handleSubmenuClick(sub.path)}>
+        {selectedMenu?.submenu.map( sub => (
+          <a key={sub.path} onClick={() => handleSubmenuClick( sub.path )}>
             {sub.name}
           </a>
-        ))}
+        ) )}
 
         <a onClick={handleLogout} style={{ color: 'red' }}>🔒 Logout</a>
       </div>

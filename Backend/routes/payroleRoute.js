@@ -269,6 +269,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         `;
         console.log( fullQuery );
         const [fullRows] = await con.promise().query( fullQuery, bandiIds );
+        console.log(fullRows)
         // STEP 4: Group muddas under each bandi
         const grouped = {};
         fullRows.forEach( row => {
@@ -496,11 +497,12 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
       SELECT 
         p.*, 
         bp.bandi_name, 
+        bp.id AS bandi_id,
         m.mudda_name
       FROM payroles p
       LEFT JOIN bandi_person bp ON p.bandi_id = bp.id
       LEFT JOIN muddas m ON p.payrole_mudda_id = m.id
-      WHERE p.status = 4
+      WHERE p.status = 5
     `;
 
         let finalQuery = baseQuery;
@@ -891,6 +893,71 @@ router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) 
         res.status( 500 ).json( { error: err.message } );
     }
 } );
+
+router.post('/create_payrole_log', verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const active_user = req.user.id;
+
+  try {
+    req.body.created_by = active_user;
+    req.body.created_office = active_office;
+
+    const keys = Object.keys(req.body);
+    const values = Object.values(req.body);
+    const placeholders = keys.map(() => '?').join(', ');
+
+    const sql = `INSERT INTO payrole_maskebari (${keys.join(', ')}) VALUES (${placeholders})`;
+    const result = await query(sql, values);
+
+    res.status(201).json({ Status: true, Result: result.insertId });
+  } catch (err) {
+    console.error('Error creating payrole log:', err);
+    res.status(500).json({ Status: false, Error: err.message });
+  }
+});
+
+router.put('/update_payrole/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const active_office = req.user.office_id;
+  const active_user = req.user.id;
+
+  try {
+    req.body.updated_by = active_user;
+    req.body.updated_office = active_office;
+
+    const keys = Object.keys(req.body);
+    const values = Object.values(req.body);
+    const setClause = keys.map(key => `${key} = ?`).join(', ');
+
+    const sql = `UPDATE payrole_maskebari SET ${setClause} WHERE id = ?`;
+    values.push(id); // add id to the end for WHERE clause
+
+    const result = await query(sql, values);
+
+    res.status(200).json({ Status: true, Result: result.affectedRows });
+  } catch (err) {
+    console.error('Error updating payrole log:', err);
+    res.status(500).json({ Status: false, Error: err.message });
+  }
+});
+
+router.get('/get_payrole_log/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const sql = 'SELECT * FROM payrole_maskebari WHERE id = ?';
+    const results = await query(sql, [id]);
+
+    if (!results.length) {
+      return res.status(404).json({ Status: false, Error: 'Payrole record not found' });
+    }
+
+    res.status(200).json({ Status: true, Result: results[0] });
+  } catch (err) {
+    console.error('Error fetching single payrole log:', err);
+    res.status(500).json({ Status: false, Error: err.message });
+  }
+});
 
 const getMaskebariQuery = `SELECT 
                         year_bs, 

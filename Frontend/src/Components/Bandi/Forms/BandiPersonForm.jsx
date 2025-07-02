@@ -60,11 +60,17 @@ const BandiPersonForm = () => {
   const bandiRelation = watch( 'bandi_relative_relation' );
   const idcardtype = watch( 'id_card_type' );
 
+
   const testVariable = watch( 'office_bandi_id' );
+
   // console.log('office_bandi_id', testVariable)
 
   const isSwadeshi = selectedNationality === 'स्वदेशी';
+  const is_active = watch( 'is_active' );
 
+  useEffect( () => {
+    console.log( is_active );
+  }, [is_active] );
 
 
   const genderOptions = [
@@ -179,7 +185,7 @@ const BandiPersonForm = () => {
         navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
         reset();
         setEditing( false );
-        
+
       } else {
         Swal.fire( 'त्रुटि!', Error || 'रिकर्ड थप्न सकिएन', 'error' );
       }
@@ -764,7 +770,7 @@ const BandiPersonForm = () => {
                 <ReuseDatePickerBs
                   name={`family[${ index }].bandi_relative_dob`}
                   label="जन्म मिति"
-                  type="number"                  
+                  type="number"
                   control={control}
                   error={errors?.family?.[index]?.bandi_number_of_children}
                 />
@@ -773,7 +779,7 @@ const BandiPersonForm = () => {
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseInput
                   name={`family[${ index }].bandi_relative_name`}
-                  label="नामथर"                  
+                  label="नामथर"
                   control={control}
                   error={errors?.family?.[index]?.bandi_relative_name}
                 />
@@ -781,7 +787,7 @@ const BandiPersonForm = () => {
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseInput
                   name={`family[${ index }].bandi_relative_address`}
-                  label="ठेगाना"                  
+                  label="ठेगाना"
                   control={control}
                   error={errors?.family?.[index]?.bandi_relative_address}
                 />
@@ -792,7 +798,7 @@ const BandiPersonForm = () => {
                   label="सम्पर्क नं."
                   onlyDigits={true}
                   minLength={10}
-                  maxLength={10}                  
+                  maxLength={10}
                   control={control}
                   error={errors?.family?.[index]?.bandi_relative_contact_no}
                 />
@@ -1215,6 +1221,51 @@ const BandiPersonForm = () => {
             error={errors.bandi_remarks}
           />
         </Grid>
+      </Grid>
+
+      <hr />
+      <Grid item container spacing={2}>
+        <Grid item xs={12}>
+          बन्दीको स्वास्थय बिमा विवरणः
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2}>
+
+          <ReuseSelect
+            name="is_active"
+            label="छ/छैन?"
+            required={true}
+            control={control}
+            options={[{ label: 'छैन', value: 0 },
+            { label: 'छ', value: 1 },
+            ]}
+            defaultValue={0}
+            error={errors.is_active}
+          />
+        </Grid>
+        {is_active == 1 && (
+          <>
+            <Grid item xs={12} sm={6} md={2}>
+              <ReuseDatePickerBs
+                name="insurance_from"
+                label="बिमा देखी"
+                required={true}
+                control={control}
+                error={errors.insurance_from}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={2}>
+              <ReuseDatePickerBs
+                name="insurance_to"
+                label="बिमा देखी"
+                required={true}
+                control={control}
+                error={errors.insurance_to}
+              />
+            </Grid>
+          </>
+        )}
       </Grid>
 
       <Grid container spacing={2}>
