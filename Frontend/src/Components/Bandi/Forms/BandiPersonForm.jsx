@@ -841,7 +841,7 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          सम्पर्क व्यक्ति (दुई जना अनिवार्य)
+          सम्पर्क व्यक्ति 
         </Grid>
         {[...Array( contactCount )].map( ( _, index ) => {
           // const currentRelation = watch( `contact[${ index }].bandi_relative_relation` );
@@ -850,42 +850,42 @@ const BandiPersonForm = () => {
             <Grid item container xs={12} key={index}>
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseRelativeRelations
-                  name={`conatact_person[${ index }].bandi_contact_relation`}
+                  name={`conatact_person[${ index }].relation_id`}
                   label="बन्दीसंगको नाता"
                   required={true}
                   control={control}
-                  error={errors?.conatact_person?.[index]?.bandi_contact_relation}
+                  error={errors?.conatact_person?.[index]?.relation_id}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseInput
-                  name={`conatact_person[${ index }].bandi_contact_name`}
+                  name={`conatact_person[${ index }].contact_name`}
                   label="नामथर"
                   required={true}
                   control={control}
-                  error={errors?.conatact_person?.[index]?.bandi_contact_name}
+                  error={errors?.conatact_person?.[index]?.contact_name}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseInput
-                  name={`conatact_person[${ index }].bandi_contact_address`}
+                  name={`conatact_person[${ index }].contact_address`}
                   label="ठेगाना"
                   required={true}
                   control={control}
-                  error={errors?.conatact_person?.[index]?.bandi_contact_address}
+                  error={errors?.conatact_person?.[index]?.contact_address}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
                 <ReuseInput
-                  name={`conatact_person[${ index }].bandi_contact_contact_no`}
+                  name={`conatact_person[${ index }].contact_contact_details`}
                   label="सम्पर्क नं."
                   onlyDigits={true}
                   minLength={10}
                   maxLength={10}
                   required={true}
                   control={control}
-                  error={errors?.conatact_person?.[index]?.bandi_contact_contact_no}
+                  error={errors?.conatact_person?.[index]?.contact_contact_details}
                 />
               </Grid>
 
