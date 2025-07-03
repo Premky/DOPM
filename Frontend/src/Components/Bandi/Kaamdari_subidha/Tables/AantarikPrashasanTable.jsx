@@ -218,9 +218,9 @@ const AantarikPrashasanTable = () => {
       <ReuseableTable
         columns={columns}
         rows={rows}
-        showView
+        // showView
         showEdit
-        showDelete
+        // showDelete
         onView={handleView}
         onEdit={handleEdit}
         // onDelete{handleDelete}

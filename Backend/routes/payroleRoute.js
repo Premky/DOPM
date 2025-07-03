@@ -267,9 +267,11 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
-        console.log( fullQuery );
+
+        // console.log( fullQuery );
+
         const [fullRows] = await con.promise().query( fullQuery, bandiIds );
-        console.log( fullRows );
+        // console.log( fullRows );
         // STEP 4: Group muddas under each bandi
         const grouped = {};
         fullRows.forEach( row => {
@@ -990,7 +992,7 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
             FROM payrole_logs pl
             LEFT JOIN bandi_person bp ON pl.bandi_id = bp.id
             LEFT JOIN ranked_mudda bmd ON pl.bandi_id = bmd.bandi_id AND bmd.rn = 1
-            LEFT JOIN muddas m ON bmd.mudda_id = m.id;
+            LEFT JOIN muddas m ON bmd.mudda_id = m.id
     `;
 
         let finalQuery = baseQuery;

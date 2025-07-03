@@ -45,7 +45,7 @@ const TotalCountOfficeWise = () => {
                             {count.map( ( data, index ) => (
                                 <TableRow key={index}>
                                     <>
-                                        <TableCell>{data.province_name}</TableCell>
+                                        <TableCell>{data.state_name_np}</TableCell>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>{data.office_short_name}</TableCell>
                                         <TableCell>{data.kaidi_male}</TableCell>

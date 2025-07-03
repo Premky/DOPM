@@ -732,7 +732,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 } );
             }
         } );
-        console.log( Object.values( grouped ) );
+        // console.log( Object.values( grouped ) );
         return res.json( {
             Status: true,
             Result: Object.values( grouped ),
@@ -2467,8 +2467,8 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
 
     const baseSql = `
             SELECT
-            vbad.province_name,
-            o.office_name_with_letter_address,
+            voad.state_name_np,
+            -- o.office_name_with_letter_address,
             o.letter_address AS office_short_name,
 
             COUNT(IF(bp.bandi_type = 'कैदी' AND gender = 'male', 1, NULL)) AS kaidi_male,
@@ -2493,12 +2493,13 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
 
            -- COUNT(IF(bri.is_dependent = 1, 1, NULL)) AS aashrit,
 
-            COUNT(IF(vbad.nationality_name != 'नेपाल', 1, NULL)) AS foreign_count,
-            GROUP_CONCAT(DISTINCT IF(vbad.nationality_name != 'नेपाल', vbad.nationality_name, NULL)) AS foreign_countries
+            COUNT(IF(vbad.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
+            GROUP_CONCAT(DISTINCT IF(vbad.country_name_np != 'नेपाल', vbad.country_name_np, NULL)) AS foreign_countries
 
             FROM bandi_person bp
             	LEFT JOIN view_bandi_address_details vbad ON bp.id=vbad.bandi_id
                 LEFT JOIN offices o ON bp.current_office_id=o.id
+                LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
                 LEFT JOIN (
                 SELECT
                     bandi_id,
@@ -2563,11 +2564,11 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     const finalSql = `
         ${ baseSql }
         ${ whereClause }
-        GROUP BY vbad.province_name, o.letter_address
-            ORDER BY  vbad.province_name, o.letter_address;
+        GROUP BY voad.state_id, o.letter_address
+            ORDER BY  voad.state_id, o.letter_address;
     `;
 
-    console.log( finalSql );
+    // console.log( finalSql );
     try {
         const result = await query( finalSql, params );
         // console.log( result );
