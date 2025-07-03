@@ -105,7 +105,7 @@ const AllBandiTable = () => {
                     grouped[bandiId].push(mudda);
                 });
                 setFetchedMuddas(grouped); // grouped is now an object like { 1: [mudda1, mudda2], 2: [mudda1] }
-                console.log(fetchedMuddas)
+                // console.log(fetchedMuddas)
             } else {
                 console.warn(Error || 'Failed to fetch mudda.');
                 setFetchedMuddas({});
