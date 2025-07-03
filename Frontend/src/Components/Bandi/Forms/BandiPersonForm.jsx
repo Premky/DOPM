@@ -24,6 +24,7 @@ import ReuseDatePickerBs from '../../ReuseableComponents/ReuseDatePickerBS';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import ReusePhotoInput from '../../ReuseableComponents/ReusePhotoInput';
+import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 
 
 const BandiPersonForm = () => {
@@ -247,7 +248,8 @@ const BandiPersonForm = () => {
           </Grid>
           <Grid container item xs={12} sm={6} md={3}>
             <Grid item xs={10} sm={9} md={8}>
-              <ReuseDateField
+              {/* <ReuseDateField */}
+              <ReuseDatePickerBS
                 name="dob"
                 label="जन्म मिति (वि.सं.)"
                 readonly={true}
@@ -618,7 +620,7 @@ const BandiPersonForm = () => {
             name="id_card_type"
             label="कार्डको प्रकार"
             defaultvalue={1}
-            required={false}
+            required={true}
             control={control}
             error={errors.id_card_type}
           />
@@ -661,7 +663,7 @@ const BandiPersonForm = () => {
             name="card_issue_date"
             label="परिचय पत्र जारी मिती"
             placeholder='YYYY-DD-MM'
-            required={false}
+            required={idcardtype?.label !== 'अन्य'}
             control={control}
             error={errors.card_issue_date}
           />
