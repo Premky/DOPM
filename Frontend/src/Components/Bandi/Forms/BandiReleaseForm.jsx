@@ -91,7 +91,7 @@ const BandiReleaseForm = () => {
                         </Grid2>
                         <hr />
                         <Grid2 container size={{ xs: 12 }}>
-                            <Grid2 size={{ xs: 12, xs: 6, sm: 3 }}>
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseSelect
                                     name='reason_id'
                                     label='छुटेको/लगत कट्टाको कारणः'
@@ -102,7 +102,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid2>
 
-                            <Grid2 size={{ xs: 12, xs: 6, sm: 3 }}>
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseDatePickerBS
                                     name='decision_date'
                                     label='निर्णय मिति'
@@ -111,7 +111,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid2>
 
-                            <Grid2 size={{ xs: 12, xs: 6, sm: 3 }}>
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseDatePickerBS
                                     name='apply_date'
                                     label='कार्यान्वयन मिति'
@@ -121,7 +121,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid2>
 
-                            <Grid2 size={{ xs: 12, xs: 6, sm: 3 }}>
+                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseInput
                                     name='nirnay_officer'
                                     label='निर्णय गर्ने अधिकारी'
@@ -131,7 +131,7 @@ const BandiReleaseForm = () => {
                             </Grid2>
                         </Grid2>
                         <Grid2 container size={{ xs: 12 }}>
-                            <Grid2 size={{ xs: 12, xs: 6}}>
+                            <Grid2 size={{ xs: 12, sm: 6}}>
                                 <ReuseSelect
                                     name='aafanta_id'
                                     label='बुझ्ने मान्छे छान्नुहोस्'
@@ -141,7 +141,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid2>
 
-                            <Grid2 size={{ xs: 12, xs: 6}}>
+                            <Grid2 size={{ xs: 12, sm: 6}}>
                                 <ReuseInput
                                     name='remarks'
                                     label='कैफियत'
