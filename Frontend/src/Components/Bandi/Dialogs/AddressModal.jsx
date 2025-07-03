@@ -20,6 +20,7 @@ const AddressModal = ({ open, onClose, onSave, editingData }) => {
         control,
         handleSubmit,
         reset,
+        register,
         watch,
         formState: { errors },
     } = useForm({
@@ -30,16 +31,18 @@ const AddressModal = ({ open, onClose, onSave, editingData }) => {
         if (editingData) {
             console.log(editingData)
             reset({
+                id: editingData.id || "", // ✅ Include this
                 bandi_id: editingData.bandi_id || "",
-                nationality_id: editingData.nationality_id || "",
-                province_id: editingData.province_id || "",
+                nationality_id: editingData.country_id || "",
+                province_id: editingData.state_id || "",
                 district_id: editingData.district_id || "",
-                gapa_napa_id: editingData.gapa_napa_id || "",
+                gapa_napa_id: editingData.city_id || "",
                 wardno: editingData.wardno || "",
                 bidesh_nagarik_address_details: editingData.bidesh_nagarik_address_details || "",
             });
         } else {
             reset({
+                id:"",
                 bandi_id: "",
                 nationality_id: 1,
                 province_id: "",
@@ -52,6 +55,7 @@ const AddressModal = ({ open, onClose, onSave, editingData }) => {
     }, [editingData, reset]);
 
     const onSubmit = (data) => {
+        console.log('data:', data, 'id:', editingData?.id)
         onSave(data, editingData?.id);
         onClose();
     };
@@ -65,7 +69,7 @@ const AddressModal = ({ open, onClose, onSave, editingData }) => {
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
                 <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden />
-
+                <input type="hidden" {...register("id")} />
                 <ReuseCountry
                     name="nationality_id"
                     label="देश"

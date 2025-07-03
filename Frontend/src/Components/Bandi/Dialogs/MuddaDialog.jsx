@@ -17,10 +17,10 @@ import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
-const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
+const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
     const {
         control, handleSubmit, reset, formState: { errors },
-    } = useForm({
+    } = useForm( {
         defaultValues: {
             bandi_id: "",
             mudda_id: "",
@@ -35,15 +35,15 @@ const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
             is_last_mudda: "",
             is_main_mudda: ""
         },
-    });
+    } );
 
 
-    useEffect(() => {
-        console.log(editingData)
-        if (editingData) {
-            reset({ ...editingData });
+    useEffect( () => {
+        console.log( editingData );
+        if ( editingData ) {
+            reset( { ...editingData } );
         } else {
-            reset({
+            reset( {
                 bandi_id: "",
                 mudda_id: "",
                 mudda_list: "",
@@ -56,12 +56,12 @@ const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
                 mudda_phesala_antim_office_date: "",
                 is_last_mudda: "",
                 is_main_mudda: "",
-            });;
+            } );;
         }
-    }, [editingData, reset]);
+    }, [editingData, reset] );
 
-    const onSubmit = (data) => {
-        onSave(data, editingData?.id);
+    const onSubmit = ( data ) => {
+        onSave( data, editingData?.id );
         onClose();
     };
 
@@ -77,6 +77,15 @@ const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
                     control={control}
                     required={true}
                 />
+                <Grid2 size={{ xs: 12 }}>
+                    <ReuseInput
+                        name="vadi"
+                        label="वादी वा जाहेरवालाको नाम"
+                        control={control}
+                        required={true}
+                        errors={errors.vadi}
+                    />
+                </Grid2>
 
                 <Grid2 container>
                     <Grid2 size={{ xs: 12, sm: 6 }}>
@@ -113,7 +122,7 @@ const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
                             error={errors.mudda_phesala_antim_office_id}
                         />
                     </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                    {/* <Grid2 size={{ xs: 12, sm: 6 }}>
                         <ReuseDistrict
                             name="mudda_phesala_antim_office_district"
                             label="मुद्दा फैसला गर्ने जिल्ला"
@@ -121,14 +130,14 @@ const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
                             control={control}
                             error={errors.mudda_phesala_antim_office_district}
                         />
-                    </Grid2>
+                    </Grid2> */}
                 </Grid2>
 
                 <Grid2 container>
                     <Grid2 size={{ xs: 12, sm: 4 }}>
                         <ReuseDateField
                             name="mudda_phesala_antim_office_date"
-                            label="मुद्दा फैसला गर्ने जिल्ला"
+                            label="फैसला मिति"
                             placeholder='YYYY-MM-DD'
                             required={true}
                             control={control}
@@ -168,7 +177,7 @@ const MuddaDialog = ({ open, onClose, onSave, editingData }) => {
 
             <DialogActions>
                 <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
-                <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
+                <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
                     {editingData ? "अपडेट गर्नुहोस्" : "थप्नुहोस्"}
                 </Button>
             </DialogActions>

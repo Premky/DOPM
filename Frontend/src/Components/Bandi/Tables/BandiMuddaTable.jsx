@@ -149,7 +149,7 @@ const BandiMuddaTable = ({ bandi_id }) => {
                                 <TableCell align="center">मुद्दा नं.</TableCell>
                                 <TableCell align="center">मुद्दा अवस्था</TableCell>
                                 <TableCell align="center">मुद्दा फैसला गर्ने अन्तिम निकाय</TableCell>
-                                <TableCell align="center">मुद्दा फैसला जिल्ला</TableCell>
+                                {/* <TableCell align="center">मुद्दा फैसला जिल्ला</TableCell> */}
                                 <TableCell align="center">मुद्दा फैसला मिती</TableCell>
                                 <TableCell align="center">मुख्या मुद्दा हो?</TableCell>
                                 <TableCell align="center">अन्तिम मुद्दा हो?</TableCell>
@@ -164,7 +164,7 @@ const BandiMuddaTable = ({ bandi_id }) => {
                                     <TableCell align="center">{opt.mudda_no || ''}</TableCell>
                                     <TableCell align="center">{opt.mudda_condition == 1 ? 'चालु' : 'अन्तिम भएको' || ''}</TableCell>
                                     <TableCell align="center">{opt.office_name_with_letter_address}</TableCell>
-                                    <TableCell align="center">{opt.district_name_np}</TableCell>
+                                    {/* <TableCell align="center">{opt.district_name_np}</TableCell> */}
                                     <TableCell align="center">{opt.mudda_phesala_antim_office_date}</TableCell>
                                     <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
                                     <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>

@@ -21,6 +21,7 @@ import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import ReuseIdCards from '../../ReuseableComponents/ReuseIdCards';
 import ReuseRelativeRelations from '../../ReuseableComponents/ReuseRelativeRelations';
 import ReuseDatePickerBs from '../../ReuseableComponents/ReuseDatePickerBS';
+import ReusePunarabedanOffice from '../../ReuseableComponents/ReusePunarabedanOffice';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import ReusePhotoInput from '../../ReuseableComponents/ReusePhotoInput';
@@ -185,8 +186,8 @@ const BandiPersonForm = () => {
         console.log( response );
         const bandi_id = Result;
         console.log( bandi_id );
-        navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
-        reset();
+        // navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
+        // reset();
         setEditing( false );
 
       } else {
@@ -262,7 +263,7 @@ const BandiPersonForm = () => {
               <ReuseInput
                 name="age"
                 label="उमेर"
-                required={true}
+                required={false}
                 control={control}
                 error={errors.age}
                 type="number"
@@ -1188,7 +1189,7 @@ const BandiPersonForm = () => {
             पुनरावेदनमा नपरेको प्रमाणः
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <ReuseOffice
+            <ReusePunarabedanOffice
               name='punarabedan_office_id'
               label='पुनरावेदनमा नपरेको कार्यालय'
               required={false}
@@ -1197,7 +1198,7 @@ const BandiPersonForm = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          {/* <Grid item xs={12} sm={6} md={3}>
             <ReuseDistrict
               name='punarabedan_office_district'
               label='पुनरावेदनमा नपरेको कार्यालयको जिल्ला'
@@ -1205,7 +1206,7 @@ const BandiPersonForm = () => {
               control={control}
               error={errors.punarabedan_office_district}
             />
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={12} sm={6} md={3}>
             <ReuseInput

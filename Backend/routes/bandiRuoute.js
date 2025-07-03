@@ -136,6 +136,38 @@ import {
     insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance
 } from '../services/bandiService.js';
 
+con.query( `CREATE OR REPLACE VIEW view_bandi_address_details AS
+SELECT 
+    bp.id AS bandi_id,
+    ba.wardno,
+    ba.bidesh_nagarik_address_details,
+    nc.id AS country_id, 
+    nc.country_name_np,
+    ns.state_id,
+    ns.state_name_np,
+    nd.did AS district_id,
+    nd.district_name_np,
+    ng.cid AS city_id,
+    ng.city_name_np,
+
+    -- Full Nepali formatted address
+    CONCAT_WS(
+        ', ',
+        ng.city_name_np,
+        CONCAT('वडा नं ', ba.wardno),
+        nd.district_name_np,
+        ns.state_name_np,
+        nc.country_name_np
+    ) AS nepali_address
+
+FROM bandi_person bp
+LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+LEFT JOIN np_district nd ON ba.district_id = nd.did
+LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
+`);
+
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.id;
     const office_id = req.user.office_id;
@@ -150,10 +182,10 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
         console.log( '✅ insertBandiPerson', bandi_id );
 
-        
+
         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertKaidDetails' );
-        
+
         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertCardDetails' );
 
@@ -175,7 +207,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertMuddaDetails( bandi_id, muddas, office_id );
         console.log( '✅ insertMuddaDetails' );
 
-        if(data.fines?.length && data.fine_paid_office){
+        if ( data.fines?.length && data.fine_paid_office ) {
             await insertFineDetails( bandi_id, [
                 { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
                 { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
@@ -184,9 +216,9 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             console.log( '✅ insertFineDetails' );
         }
 
-        if(data.punarabedan_office_id && data.punarabedan_office_district && 
-            data.punarabedan_office_ch_no && data.punarabedan_office_date){
-            await insertPunarabedan( bandi_id, req.body );        
+        if ( data.punarabedan_office_id && data.punarabedan_office_district &&
+            data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
+            await insertPunarabedan( bandi_id, req.body );
             console.log( '✅ insertPunarabedan' );
         }
 
@@ -196,9 +228,9 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
         console.log( '✅ insertContacts' );
 
-        if(data.health_insurance?.length){
+        if ( data.health_insurance?.length ) {
             await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
-            console.log( '✅ insertCardDetails' );
+            console.log( '✅ Health Details' );
         }
 
         await commitAsync();
@@ -229,6 +261,75 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     }
 } );
 
+router.post('/create_bandi_punrabedn', verifyToken, async (req, res) => {
+    const user_id = req.user.id;
+    const current_office_id = req.user.office_id;
+
+    const {
+        bandi_id,
+        punarabedan_office_id,
+        punarabedan_office_name,
+        punarabedan_office_district,
+        punarabedan_office_ch_no,
+        punarabedan_office_date
+    } = req.body;
+
+    // Basic validation
+    if (!bandi_id || !punarabedan_office_id || !punarabedan_office_district || !punarabedan_office_ch_no || !punarabedan_office_date) {
+        return res.status(400).json({
+            Status: false,
+            message: "सबै आवश्यक फिल्डहरू भरिएको हुनुपर्छ।"
+        });
+    }
+
+    try {
+        await beginTransactionAsync();
+
+        const insertQuery = `
+            INSERT INTO bandi_punarabedan_details (
+                bandi_id,
+                punarabedan_office_id,
+                punarabedan_office_name,
+                punarabedan_office_district,
+                punarabedan_office_ch_no,
+                punarabedan_office_date,
+                created_by,
+                updated_by,
+                current_office_id
+            ) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?)
+        `;
+
+        const values = [
+            bandi_id,
+            punarabedan_office_id,
+            punarabedan_office_name || null,
+            punarabedan_office_district,
+            punarabedan_office_ch_no,
+            punarabedan_office_date,
+            user_id,
+            user_id,
+            current_office_id
+        ];
+
+        await queryAsync(insertQuery, values);
+
+        await commitAsync();
+
+        res.json({
+            Status: true,
+            message: "पुनरावेदन विवरण सफलतापूर्वक थपियो।"
+        });
+
+    } catch (error) {
+        await rollbackAsync();
+        console.error("Insert failed:", error);
+        res.status(500).json({
+            Status: false,
+            message: "सर्भर त्रुटि भयो।",
+            Error: error.message
+        });
+    }
+});
 
 
 
@@ -378,6 +479,7 @@ router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( re
 
 
         if ( Array.isArray( family ) && family.length > 0 ) {
+
             const insertFamilySQL = `
     INSERT INTO bandi_relative_info (
       bandi_id,
@@ -430,6 +532,11 @@ router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( re
     )
     VALUES ?
   `;
+            //9. Insert into bandi_address_details:
+            const addressRecord = [bandi_id, nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details, active_office];
+            const insertAddressRecord = `INSERT INTO bandi_address(bandi_id, nationality_id, province_id, district_id,
+                                    gapa_napa_id, wardno, bidesh_nagarik_address_details, current_office_id) VALUES(?)`;
+            await queryAsync( insertAddressRecord, [addressRecord] );
 
             const familyValues = conatact_person.map( item => [
                 bandi_id,
@@ -484,6 +591,7 @@ router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( re
 const getBandiQuery = `
     SELECT 
     b.id AS bandi_id,
+    b.office_bandi_id,
     b.bandi_name,
     b.bandi_type,
     b.gender,
@@ -754,142 +862,6 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const searchOffice = req.query.searchOffice || 0;
-    const nationality = req.query.nationality || 0;
-    const page = parseInt( req.query.page ) || 0;
-    const limit = parseInt( req.query.limit ) || 25;
-    const offset = page * limit;
-
-    let baseWhere = '';
-    if ( searchOffice ) {
-        baseWhere = `WHERE bp.current_office_id = ${ searchOffice }`;
-    } else if ( active_office == 1 || active_office == 2 ) {
-        baseWhere = `WHERE bp.current_office_id=''`;
-    } else {
-        baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
-    }
-
-    if ( nationality ) {
-        // console.log(nationality)
-        if ( baseWhere ) {
-            baseWhere += ` AND bp.nationality = '${ nationality }'`;  // Note quotes for string
-        } else {
-            baseWhere = `WHERE bp.nationality = '${ nationality }'`;
-        }
-    }
-
-    try {
-        // STEP 1: Get paginated bandi IDs
-        const idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
-        const [idRows] = await con.promise().query( idQuery, [limit, offset] );
-
-        const bandiIds = idRows.map( row => row.id );
-        if ( bandiIds.length === 0 ) {
-            return res.json( { Status: true, Result: [], TotalCount: 0 } );
-        }
-
-        // STEP 2: Get total count
-        const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp ${ baseWhere }`;
-        const [countResult] = await con.promise().query( countSQL );
-        const totalCount = countResult[0].total;
-
-        // STEP 3: Get full records for selected bandis
-        const placeholders = bandiIds.map( () => '?' ).join( ',' );
-        const fullQuery = `
-            SELECT 
-                bp.id AS bandi_id,
-                bp.*,
-                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
-                ba.wardno,
-                ba.bidesh_nagarik_address_details,
-                nc.country_name_np,
-                ns.state_name_np,
-                nd.district_name_np,
-                nci.city_name_np,
-                bmd_combined.mudda_id,
-                bmd_combined.mudda_name,
-                bmd_combined.is_main_mudda,
-                bmd_combined.is_last_mudda,
-                bmd_combined.office_name_with_letter_address,
-                bmd_combined.vadi,
-                bmd_combined.mudda_phesala_antim_office_date,
-                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
-                bkd.thuna_date_bs, bkd.release_date_bs
-
-            FROM bandi_person bp
-            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
-            LEFT JOIN np_district nd ON ba.district_id = nd.did
-            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
-            LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id
-            LEFT JOIN (
-                SELECT 
-                    bmd.bandi_id,
-                    bmd.mudda_id,
-                    bmd.is_main_mudda,
-                    bmd.is_last_mudda,
-                    m.mudda_name,
-                    bmd.vadi,
-                    bmd.mudda_phesala_antim_office_date,
-                    o.office_name_with_letter_address
-                FROM bandi_mudda_details bmd
-                LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
-            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
-            WHERE bp.id IN (${ placeholders })
-            ORDER BY bp.id DESC
-        `;
-        const [fullRows] = await con.promise().query( fullQuery, bandiIds );
-
-        // STEP 4: Group muddas under each bandi
-        const grouped = {};
-        fullRows.forEach( row => {
-            const {
-                bandi_id,
-                mudda_id,
-                mudda_name,
-                is_main_mudda,
-                is_last_mudda,
-                office_name_with_letter_address,
-                vadi,
-                mudda_phesala_antim_office_date,
-                ...bandiData
-            } = row;
-
-            if ( !grouped[bandi_id] ) {
-                grouped[bandi_id] = {
-                    ...bandiData,
-                    bandi_id,
-                    muddas: []
-                };
-            }
-
-            if ( mudda_id ) {
-                grouped[bandi_id].muddas.push( {
-                    mudda_id,
-                    mudda_name,
-                    is_main_mudda,
-                    is_last_mudda,
-                    office_name_with_letter_address,
-                    vadi,
-                    mudda_phesala_antim_office_date
-                } );
-            }
-        } );
-
-        return res.json( {
-            Status: true,
-            Result: Object.values( grouped ),
-            TotalCount: totalCount
-        } );
-    } catch ( err ) {
-        console.error( 'Query Error:', err );
-        return res.json( { Status: false, Error: 'Query Error' } );
-    }
-} );
 
 router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -1037,7 +1009,7 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
 router.get( '/get_bandi_address/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT * FROM bandi_address_detail_view 
+        SELECT * FROM view_bandi_address_details 
         WHERE bandi_id = ?
     `;
     try {
@@ -1053,6 +1025,29 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
     }
 } );
 
+router.put('/update_bandi/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const data = req.body;
+// console.log(data)
+    try {
+        const result = await queryAsync(`
+            UPDATE bandi_person SET                
+                bandi_name = ?, gender = ?, dob = ?, married_status = ?,
+                bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
+                updated_by = ?, updated_at = NOW()
+            WHERE id = ?
+        `, [            
+            data.bandi_name, data.gender, data.dob, data.married_status,
+            data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
+            req.user.id, id
+        ]);
+        console.log(result)
+        res.json({ Status: true, message: "Updated successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ Status: false, message: "Server error", error: error.message });
+    }
+});
 
 router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -1214,9 +1209,9 @@ router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
         let sql = '';
         let values = '';
 
-        values = [bandi_id, relative_name, relation_np, relative_address, contact_no];
+        values = [bandi_id, relative_name, relation_np, relative_address, contact_no, user_id, user_id, active_office];
         sql = `INSERT INTO bandi_relative_info(
-            bandi_id, relative_name, relation_id, relative_address, contact_no) VALUES(?)`;
+            bandi_id, relative_name, relation_id, relative_address, contact_no, created_by, updated_by, current_office_id) VALUES(?)`;
         const result = await queryAsync( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
@@ -1281,9 +1276,10 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
 router.get( '/get_bandi_id_card/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT bid.*, git.govt_id_name_np 
+        SELECT bid.*, nd.district_name_np AS card_issue_district_name, git.govt_id_name_np 
         FROM bandi_id_card_details bid
         LEFT JOIN govt_id_types git ON bid.card_type_id = git.id
+        LEFT JOIN np_district nd ON bid.card_issue_district=nd.did
         WHERE bandi_id = ?
     `;
 
@@ -1313,9 +1309,9 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
         let sql = '';
         let values = '';
 
-        values = [bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date];
+        values = [bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, user_id, user_id, active_office];
         sql = `INSERT INTO bandi_id_card_details(
-            bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date) VALUES(?)`;
+            bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, updated_by, current_office_id) VALUES(?)`;
         const result = await queryAsync( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
@@ -1350,7 +1346,7 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
         let sql = '';
         let values = '';
 
-        values = [card_type_id, card_no, card_issue_district, card_issue_date, id];
+        values = [card_type_id, card_name, card_no, card_issue_district, card_issue_date, id];
         sql = `
             UPDATE bandi_id_card_details 
             SET card_type_id=?, card_name=?, card_no=?,  card_issue_district=?, card_issue_date = ? 
@@ -1381,7 +1377,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
 
     const { bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-        mudda_phesala_antim_office_district, mudda_phesala_antim_office_date,
+        mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
         is_main_mudda, is_last_mudda
     } = req.body;
 
@@ -1392,12 +1388,15 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
         let sql = '';
         let values = '';
         values = [bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-            mudda_phesala_antim_office_district, mudda_phesala_antim_office_date,
-            is_main_mudda, is_last_mudda];
+            mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+            is_main_mudda, is_last_mudda,
+            user_id, user_id, active_office
+        ];
         sql = `INSERT INTO bandi_mudda_details(
                 bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-                mudda_phesala_antim_office_district, mudda_phesala_antim_office_date,
-                is_main_mudda, is_last_mudda) VALUES(?)`;
+                mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+                is_main_mudda, is_last_mudda, 
+                created_by, updated_by, current_office_id) VALUES(?)`;
         const result = await queryAsync( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
@@ -2808,7 +2807,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
 
 
 
-router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) => {
+router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const isSuperOffice = active_office === 1 || active_office === 2;
     const officeCondition = isSuperOffice ? "1=1" : "bp.current_office_id = ?";
@@ -2817,7 +2816,7 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
     const TRANSFER_REASON_ID = 2; // Replace with real value
     const DEATH_REASON_ID = 3;    // Replace with real value
 
-    console.log(current_date)
+    console.log( current_date );
 
     const queries = {
         previousMonthCount: `
@@ -2825,7 +2824,7 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
             FROM bandi_person bp
             LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id
             WHERE bp.is_active = 1
-              AND ${officeCondition}
+              AND ${ officeCondition }
               AND DATE_FORMAT(STR_TO_DATE(bkd.thuna_date_bs, '%Y-%m-%d'), '%Y-%m') <= '2081-02'
             GROUP BY gender`,
 
@@ -2833,7 +2832,7 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
             SELECT gender, COUNT(*) AS count
             FROM bandi_person bp
             WHERE bp.is_active = 1
-              AND ${officeCondition}
+              AND ${ officeCondition }
               AND LEFT(bp.created_at, 10) BETWEEN bs2ad('2081-03-01') AND bs2ad('2081-03-32')
             GROUP BY gender`,
 
@@ -2842,7 +2841,7 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
             FROM bandi_release_details br
             JOIN bandi_person bp ON br.bandi_id = bp.id
             WHERE LEFT(br.nirnay_miti, 7) = '2081-03'
-              AND ${officeCondition}
+              AND ${ officeCondition }
             GROUP BY bp.gender`,
 
         transferredThisMonth: `
@@ -2851,7 +2850,7 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
             JOIN bandi_person bp ON br.bandi_id = bp.id
             WHERE LEFT(br.karnayan_miti, 7) = '2081-03'
               AND br.reason_id = ?
-              AND ${officeCondition}
+              AND ${ officeCondition }
             GROUP BY bp.gender`,
 
         deathThisMonth: `
@@ -2860,34 +2859,34 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
             JOIN bandi_person bp ON br.bandi_id = bp.id
             WHERE LEFT(br.karnayan_miti, 7) = '2081-03'
               AND br.reason_id = ?
-              AND ${officeCondition}
+              AND ${ officeCondition }
             GROUP BY bp.gender`,
 
         totalThisMonth: `
             SELECT gender, COUNT(*) AS count
             FROM bandi_person bp
             WHERE bp.is_active = 1
-              AND ${officeCondition}
+              AND ${ officeCondition }
             GROUP BY gender`,
 
         aashritThisMonth: `
             SELECT bp.gender, COUNT(*) AS count
             FROM aashrit_table a
             JOIN bandi_person bp ON a.bandi_id = bp.id
-            WHERE ${officeCondition}
+            WHERE ${ officeCondition }
             GROUP BY bp.gender`
     };
 
     try {
-        const [previousMonthCount] = await query(queries.previousMonthCount, officeParams);
-        const [addedThisMonth] = await query(queries.addedThisMonth, officeParams);
-        const [releasedThisMonth] = await query(queries.releasedThisMonth, officeParams);
-        const [transferredThisMonth] = await query(queries.transferredThisMonth, [TRANSFER_REASON_ID, ...officeParams]);
-        const [deathThisMonth] = await query(queries.deathThisMonth, [DEATH_REASON_ID, ...officeParams]);
-        const [totalThisMonth] = await query(queries.totalThisMonth, officeParams);
-        const [aashritThisMonth] = await query(queries.aashritThisMonth, officeParams);
+        const [previousMonthCount] = await query( queries.previousMonthCount, officeParams );
+        const [addedThisMonth] = await query( queries.addedThisMonth, officeParams );
+        const [releasedThisMonth] = await query( queries.releasedThisMonth, officeParams );
+        const [transferredThisMonth] = await query( queries.transferredThisMonth, [TRANSFER_REASON_ID, ...officeParams] );
+        const [deathThisMonth] = await query( queries.deathThisMonth, [DEATH_REASON_ID, ...officeParams] );
+        const [totalThisMonth] = await query( queries.totalThisMonth, officeParams );
+        const [aashritThisMonth] = await query( queries.aashritThisMonth, officeParams );
 
-        return res.json({
+        return res.json( {
             Status: true,
             Result: {
                 previousMonthCount,
@@ -2898,12 +2897,12 @@ router.get("/get_total_of_all_maskebari_fields", verifyToken, async (req, res) =
                 totalThisMonth,
                 aashritThisMonth
             }
-        });
-    } catch (error) {
-        console.error("DB Error:", error);
-        return res.status(500).json({ Status: false, Error: "Database query failed." });
+        } );
+    } catch ( error ) {
+        console.error( "DB Error:", error );
+        return res.status( 500 ).json( { Status: false, Error: "Database query failed." } );
     }
-});
+} );
 
 // con.query( sql, ( error, results ) => {
 //     if ( error ) {

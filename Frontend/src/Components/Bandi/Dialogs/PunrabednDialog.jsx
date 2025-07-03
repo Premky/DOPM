@@ -50,7 +50,7 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
                             // name_type='short'
                         />
                     </Grid2>
-                    <Grid2 size={{ xs: 12}}>
+                    {/* <Grid2 size={{ xs: 12}}>
                         <ReuseDistrict
                             name='punarabedan_office_district'
                             label="फैसला भएको जिल्ला"
@@ -58,7 +58,7 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
                             control={control}
                             error={errors.punarabedan_office_district}
                         />
-                    </Grid2>
+                    </Grid2> */}
 
                     <Grid2 size={{ xs: 12, sm: 6 }}>
                         <ReuseInput
