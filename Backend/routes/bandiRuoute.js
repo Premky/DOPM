@@ -184,7 +184,8 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             console.log( '✅ insertFineDetails' );
         }
 
-        if(data.punarabedan_office_id && data.punarabedan_office_district){
+        if(data.punarabedan_office_id && data.punarabedan_office_district && 
+            data.punarabedan_office_ch_no && data.punarabedan_office_date){
             await insertPunarabedan( bandi_id, req.body );        
             console.log( '✅ insertPunarabedan' );
         }
