@@ -140,17 +140,20 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     const user_id = req.user.id;
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
+    const data = req.body;
 
     try {
         await beginTransactionAsync();
+
         console.log( '🟢 Transaction started' );
 
         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
         console.log( '✅ insertBandiPerson', bandi_id );
 
+        
         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertKaidDetails' );
-
+        
         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertCardDetails' );
 
@@ -172,15 +175,19 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertMuddaDetails( bandi_id, muddas, office_id );
         console.log( '✅ insertMuddaDetails' );
 
-        await insertFineDetails( bandi_id, [
-            { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
-            { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
-            { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
-        ] );
-        console.log( '✅ insertFineDetails' );
+        if(data.fines?.length && data.fine_paid_office){
+            await insertFineDetails( bandi_id, [
+                { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
+                { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
+                { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
+            ] );
+            console.log( '✅ insertFineDetails' );
+        }
 
-        await insertPunarabedan( bandi_id, req.body );
-        console.log( '✅ insertPunarabedan' );
+        if(data.punarabedan_office_id && data.punarabedan_office_district){
+            await insertPunarabedan( bandi_id, req.body );        
+            console.log( '✅ insertPunarabedan' );
+        }
 
         await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ) );
         console.log( '✅ insertFamily' );
@@ -188,8 +195,10 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
         console.log( '✅ insertContacts' );
 
-        await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
-        console.log( '✅ insertCardDetails' );
+        if(data.health_insurance?.length){
+            await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
+            console.log( '✅ insertCardDetails' );
+        }
 
         await commitAsync();
         console.log( '🟩 Transaction committed' );

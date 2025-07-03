@@ -59,7 +59,9 @@ const BandiPersonForm = () => {
   const bsdob = watch( "dob" );
   const bandiRelation = watch( 'bandi_relative_relation' );
   const idcardtype = watch( 'id_card_type' );
-
+  const is_fine_paid = watch( 'is_fine_paid' );
+  const is_bigo_paid = watch( 'is_bigo_paid' );
+  const is_compensation_paid = watch( 'is_compensation_paid' );
 
   const testVariable = watch( 'office_bandi_id' );
 
@@ -956,45 +958,52 @@ const BandiPersonForm = () => {
                   error={errors.is_fine_paid}
                 />
               </Grid>
+              {is_fine_paid === 1 && (
+                <>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseOffice
+                      name="fine_paid_office"
+                      label="जरिवाना तिरेको निकाय"
+                      required={true}
+                      control={control}
+                      error={errors.fine_paid_office}
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseOffice
-                  name='fine_paid_office'
-                  label='जरिवाना तिरेको निकाय'
-                  required={true}
-                  control={control}
-                  error={errors.fine_paid_office}
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseDistrict
+                      name="fine_paid_office_district"
+                      label="जरिवाना तिरेको जिल्ला"
+                      required={true}
+                      control={control}
+                      error={errors.fine_paid_office_district}
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDistrict
-                  name='fine_paid_office_district'
-                  label='जरिवाना तिरेको जिल्ला'
-                  required={true}
-                  control={control}
-                  error={errors.fine_paid_office_district}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseInput
-                  name='fine_paid_cn'
-                  label='च.नं.'
-                  required={true}
-                  control={control}
-                  error={errors.fine_paid_cn}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDateField
-                  name='fine_paid_date'
-                  label='जरिवाना तिरेको मिति'
-                  placeholder='YYYY-MM-DD'
-                  required={true}
-                  control={control}
-                  error={errors.fine_paid_date}
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseInput
+                      name="fine_paid_cn"
+                      label="च.नं."
+                      required={true}
+                      control={control}
+                      error={errors.fine_paid_cn}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseDateField
+                      name="fine_paid_date"
+                      label="जरिवाना तिरेको मिति"
+                      placeholder="YYYY-MM-DD"
+                      required={true}
+                      control={control}
+                      error={errors.fine_paid_date}
+                    />
+                  </Grid>
+                </>
+              )}
+
+
             </>
           )}
         </Grid>
@@ -1039,45 +1048,49 @@ const BandiPersonForm = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseOffice
-                  name='compensation_paid_office'
-                  label='क्षतिपुर्ती तिरेको निकाय'
-                  required={true}
-                  control={control}
-                  error={errors.compensation_paid_office}
-                />
-              </Grid>
+              {is_compensation_paid === 1 && (
+                <>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseOffice
+                      name='compensation_paid_office'
+                      label='क्षतिपुर्ती तिरेको निकाय'
+                      required={true}
+                      control={control}
+                      error={errors.compensation_paid_office}
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDistrict
-                  name='compensation_paid_office_district'
-                  label='क्षतिपुर्ती तिरेको जिल्ला'
-                  required={true}
-                  control={control}
-                  error={errors.compensation_paid_office_district}
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseDistrict
+                      name='compensation_paid_office_district'
+                      label='क्षतिपुर्ती तिरेको जिल्ला'
+                      required={true}
+                      control={control}
+                      error={errors.compensation_paid_office_district}
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseInput
-                  name='compensation_paid_cn'
-                  label='च.नं.'
-                  required={true}
-                  control={control}
-                  error={errors.compensation_paid_cn}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDateField
-                  name='compensation_paid_date'
-                  label='क्षतिपुर्ती तिरेको मिति'
-                  placeholder='YYYY-MM-DD'
-                  required={true}
-                  control={control}
-                  error={errors.compensation_paid_date}
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseInput
+                      name='compensation_paid_cn'
+                      label='च.नं.'
+                      required={true}
+                      control={control}
+                      error={errors.compensation_paid_cn}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseDateField
+                      name='compensation_paid_date'
+                      label='क्षतिपुर्ती तिरेको मिति'
+                      placeholder='YYYY-MM-DD'
+                      required={true}
+                      control={control}
+                      error={errors.compensation_paid_date}
+                    />
+                  </Grid>
+                </>
+              )}
             </>
           )}
 
@@ -1122,45 +1135,48 @@ const BandiPersonForm = () => {
                   error={errors.is_bigo_paid}
                 />
               </Grid>
+              {is_bigo_paid === 1 && (
+                <>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseOffice
+                      name='bigo_paid_office'
+                      label='बिगो तिरेको निकाय'
+                      required={true}
+                      control={control}
+                      error={errors.bigo_paid_office}
+                    />
+                  </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseOffice
-                  name='bigo_paid_office'
-                  label='बिगो तिरेको निकाय'
-                  required={true}
-                  control={control}
-                  error={errors.bigo_paid_office}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDistrict
-                  name='bigo_paid_office_district'
-                  label='बिगो तिरेको जिल्ला'
-                  required={true}
-                  control={control}
-                  error={errors.bigo_paid_office_district}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseInput
-                  name='bigo_paid_cn'
-                  label='च.नं.'
-                  required={true}
-                  control={control}
-                  error={errors.bigo_paid_cn}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <ReuseDateField
-                  name='bigo_paid_date'
-                  label='बिगो तिरेको मिति'
-                  placeholder='YYYY-MM-DD'
-                  required={true}
-                  control={control}
-                  error={errors.bigo_paid_date}
-                />
-              </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseDistrict
+                      name='bigo_paid_office_district'
+                      label='बिगो तिरेको जिल्ला'
+                      required={true}
+                      control={control}
+                      error={errors.bigo_paid_office_district}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseInput
+                      name='bigo_paid_cn'
+                      label='च.नं.'
+                      required={true}
+                      control={control}
+                      error={errors.bigo_paid_cn}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <ReuseDateField
+                      name='bigo_paid_date'
+                      label='बिगो तिरेको मिति'
+                      placeholder='YYYY-MM-DD'
+                      required={true}
+                      control={control}
+                      error={errors.bigo_paid_date}
+                    />
+                  </Grid>
+                </>
+              )}
             </>
           )}
         </Grid>
@@ -1270,8 +1286,10 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          {contactCount === 2 ? (
-            <Button type="submit" variant="contained" color="primary">
+          <Button type="submit" variant="contained" color="primary">
+            Submit
+          </Button>
+          {/* {contactCount === 1 ? (
               Save
             </Button>
           ) : (
@@ -1291,7 +1309,7 @@ const BandiPersonForm = () => {
             </Button>
 
 
-          )}
+          )} */}
 
         </Grid>
 
