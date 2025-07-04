@@ -105,11 +105,13 @@ async function insertCardDetails(bandi_id, data) {
 async function insertAddress(bandi_id, data) {
   const values = [
     bandi_id, data.nationality_id, data.state_id, data.district_id,
-    data.municipality_id, data.wardno, data.bidesh_nagrik_address_details, data.office_id
+    data.municipality_id, data.wardno, data.bidesh_nagrik_address_details,
+    data.user_id, data.user_id, data.office_id
   ];
   const sql = `INSERT INTO bandi_address (
     bandi_id, nationality_id, province_id, district_id,
-    gapa_napa_id, wardno, bidesh_nagarik_address_details, current_office_id
+    gapa_napa_id, wardno, bidesh_nagarik_address_details,
+    created_by, updated_by, current_office_id
   ) VALUES (?)`;
   await queryAsync(sql, [values]);
 }
@@ -132,10 +134,17 @@ async function insertMuddaDetails(bandi_id, muddas, office_id) {
 
 
 async function insertFineDetails(bandi_id, fines) {
+  console.log(fines)
   if (!fines || !fines.length) return;
   const sql = `INSERT INTO bandi_fine_details (...) VALUES (?)`;
   for (const fine of fines) {
-    const values = [bandi_id, fine.type, fine.is_fixed, fine.amount, fine.is_paid, fine.district, fine.ch_no, fine.date, fine.office];
+    let values;
+    if(fine.is_fixed){
+      values = [bandi_id, fine.type, fine.is_fixed, fine.amount, fine.is_paid, fine.district, fine.ch_no, fine.date, fine.office];
+    }else{
+      values = [bandi_id, fine.type, fine.is_fixed, 
+      ];
+    }
     await queryAsync(sql, [values]);
   }
 }
@@ -151,14 +160,16 @@ async function insertPunarabedan(bandi_id, data) {
 }
 
 
-async function insertFamily(bandi_id, family = []) {
+async function insertFamily(bandi_id, family = [], user_id, office_id) {
   if (!family.length) return;
   const values = family.map(f => [
     bandi_id, f.bandi_relative_name, f.bandi_relative_relation,
-    f.bandi_relative_address, f.dob, 0, f.bandi_relative_contact_no
+    f.bandi_relative_address, f.dob, f.is_dependent, f.bandi_relative_contact_no,
+    user_id, user_id, office_id
   ]);
   const sql = `INSERT INTO bandi_relative_info (
-    bandi_id, relative_name, relation_id, relative_address, dob, is_dependent, contact_no
+    bandi_id, relative_name, relation_id, relative_address, dob, is_dependent, contact_no,
+    created_by, updated_by, current_office_id
   ) VALUES ?`;
   await queryAsync(sql, [values]);
 }
@@ -167,11 +178,11 @@ async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
   if (!contacts.length) return;
   const values = contacts.map(c => [
     bandi_id, c.relation_id, c.contact_name, c.contact_address,
-    c.contact_contact_details, user_id, office_id
+    c.contact_contact_details, user_id, user_id, office_id
   ]);
   const sql = `INSERT INTO bandi_contact_person (
     bandi_id, relation_id, contact_name, contact_address,
-    contact_contact_details, created_by, current_office_id
+    contact_contact_details, created_by, updated_by, current_office_id
   ) VALUES ?`;
   await queryAsync(sql, [values]);
 }

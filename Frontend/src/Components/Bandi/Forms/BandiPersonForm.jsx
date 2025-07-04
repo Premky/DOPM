@@ -186,8 +186,8 @@ const BandiPersonForm = () => {
         console.log( response );
         const bandi_id = Result;
         console.log( bandi_id );
-        // navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
-        // reset();
+        navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
+        reset();
         setEditing( false );
 
       } else {
@@ -679,7 +679,7 @@ const BandiPersonForm = () => {
           <Grid item xs={12} sm={6} md={2}>
             <select name='nationality' {...register( 'nationality' )}>
               <option value='स्वदेशी'>स्वदेशी</option>
-              <option value='बिदेशी'>बिदेशी</option>
+              <option value='विदेशी'>विदेशी</option>
             </select>
           </Grid>
         </Grid>
@@ -757,7 +757,8 @@ const BandiPersonForm = () => {
         </Grid>
         {[...Array( familyCount )].map( ( _, index ) => {
           const currentRelation = watch( `family[${ index }].bandi_relative_relation` );
-
+          const isDependent = watch( `family[${ index }].is_dependent` );
+          console.log(isDependent)
           return (
             <Grid item container xs={12} key={index}>
               <Grid item xs={12} sm={6} md={2}>
@@ -767,17 +768,6 @@ const BandiPersonForm = () => {
                   required={false}
                   control={control}
                   error={errors?.family?.[index]?.bandi_relative_relation}
-                />
-              </Grid>
-
-
-              <Grid item xs={12} sm={6} md={2}>
-                <ReuseDatePickerBs
-                  name={`family[${ index }].bandi_relative_dob`}
-                  label="जन्म मिति"
-                  type="number"
-                  control={control}
-                  error={errors?.family?.[index]?.bandi_number_of_children}
                 />
               </Grid>
 
@@ -797,17 +787,45 @@ const BandiPersonForm = () => {
                   error={errors?.family?.[index]?.bandi_relative_address}
                 />
               </Grid>
+
               <Grid item xs={12} sm={6} md={2}>
-                <ReuseInput
-                  name={`family[${ index }].bandi_relative_contact_no`}
-                  label="सम्पर्क नं."
-                  onlyDigits={true}
-                  minLength={10}
-                  maxLength={10}
+                <ReuseSelect
+                  name={`family[${ index }].is_dependent`}
+                  label="आश्रीत हो/होइन?"
+                  options={[
+                    { value: 1, label: 'हो' },
+                    { value: 0, label: 'होइन' }
+                  ]}
                   control={control}
-                  error={errors?.family?.[index]?.bandi_relative_contact_no}
+                  error={errors?.family?.[index]?.is_dependent}
                 />
               </Grid>
+
+              {isDependent === 1 && (
+                <Grid item xs={12} sm={6} md={2}>
+                  <ReuseDatePickerBs
+                    name={`family[${ index }].bandi_relative_dob`}
+                    label="जन्म मिति"
+                    type="number"
+                    control={control}
+                    error={errors?.family?.[index]?.bandi_relative_dob}
+                  />
+                </Grid>
+              )}
+
+              {isDependent === 0 && (
+                <Grid item xs={12} sm={6} md={2}>
+                  <ReuseInput
+                    name={`family[${ index }].bandi_relative_contact_no`}
+                    label="सम्पर्क नं."
+                    onlyDigits={true}
+                    minLength={10}
+                    maxLength={10}
+                    control={control}
+                    error={errors?.family?.[index]?.bandi_relative_contact_no}
+                  />
+                </Grid>
+              )}
 
               <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
                 <Button
@@ -842,7 +860,7 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          सम्पर्क व्यक्ति 
+          सम्पर्क व्यक्ति
         </Grid>
         {[...Array( contactCount )].map( ( _, index ) => {
           // const currentRelation = watch( `contact[${ index }].bandi_relative_relation` );

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+// import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { Button, Paper } from "@mui/material";
@@ -84,6 +84,7 @@ const ReusableTable = ({
   ];
 
   const handleExportExcel = async () => {
+    const { saveAs } = await import("file-saver");
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data");
 

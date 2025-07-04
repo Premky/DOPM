@@ -189,7 +189,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertCardDetails' );
 
-        await insertAddress( bandi_id, { ...req.body, office_id } );
+        await insertAddress( bandi_id, { ...req.body,user_id, office_id } );
         console.log( '✅ insertAddress' );
 
         const muddaIndexes = [...new Set( Object.keys( req.body ).filter( k => k.startsWith( 'mudda_id_' ) ).map( k => k.split( '_' )[2] ) )];
@@ -207,6 +207,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertMuddaDetails( bandi_id, muddas, office_id );
         console.log( '✅ insertMuddaDetails' );
 
+        console.log(data.fines)
         if ( data.fines?.length && data.fine_paid_office ) {
             await insertFineDetails( bandi_id, [
                 { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
@@ -222,7 +223,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             console.log( '✅ insertPunarabedan' );
         }
 
-        await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ) );
+        await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ), user_id, office_id );
         console.log( '✅ insertFamily' );
 
         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );

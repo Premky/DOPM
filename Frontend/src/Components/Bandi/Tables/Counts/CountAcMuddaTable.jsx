@@ -58,7 +58,7 @@ const CountAcMuddaTable = ({ records, totals, startDate, endDate }) => {
                                     </Link>
                                 </TableCell>
                                 <TableCell align="center">
-                                    {parseInt(record.Nabalak) + parseInt(record.Nabalika)}
+                                    {parseInt(record.Nabalak||0) + parseInt(record.Nabalika||0)}
                                 </TableCell>
                                 <TableCell align="center" className="fw-bold">
                                     {parseInt(record.ThunuwaTotal) + parseInt(record.KaidiTotal)}
