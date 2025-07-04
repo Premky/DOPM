@@ -183,6 +183,7 @@ async function insertMuddaDetails( bandi_id, muddas, office_id ) {
 }
 
 async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
+  console.log(fines)
   for ( const fine of fines ) {
     let sql, values;
 
@@ -337,20 +338,36 @@ async function insertPunarabedan( bandi_id, data ) {
 }
 
 
-async function insertFamily( bandi_id, family = [], user_id, office_id ) {
-  if ( !family.length ) return;
-  // console.log(family)
-  const values = family.map( f => [
-    bandi_id, f.bandi_relative_name, f.bandi_relative_relation,
-    f.bandi_relative_address, f.bandi_relative_dob, f.is_dependent, f.bandi_relative_contact_no,
-    user_id, user_id, office_id
-  ] );
+async function insertFamily(bandi_id, family = [], user_id, office_id) {
+  if (!family.length) return;
+
+  // Filter out family members where relation_id is undefined or blank
+  const validFamily = family.filter(f => f.bandi_relative_relation !== undefined && f.bandi_relative_relation !== '');
+
+  // If after filtering, there are no valid family members, don't insert anything
+  if (!validFamily.length) return;
+
+  const values = validFamily.map(f => [
+    bandi_id,
+    f.bandi_relative_name,
+    f.bandi_relative_relation,
+    f.bandi_relative_address,
+    f.bandi_relative_dob,
+    f.is_dependent,
+    f.bandi_relative_contact_no,
+    user_id,
+    user_id,
+    office_id
+  ]);
+
   const sql = `INSERT INTO bandi_relative_info (
     bandi_id, relative_name, relation_id, relative_address, dob, is_dependent, contact_no,
     created_by, updated_by, current_office_id
   ) VALUES ?`;
-  await queryAsync( sql, [values] );
+
+  await queryAsync(sql, [values]);
 }
+
 
 async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
   if ( !contacts.length ) return;
