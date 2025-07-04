@@ -79,7 +79,7 @@ const BandiAddressTable = ( { bandi_id } ) => {
 
     const handleEdit = ( data, bandi_id ) => {
         // setEditingData(data, bandi_id);
-        // console.log(data)
+        console.log(data)
         setEditingData( data );
         setModalOpen( true );
     };
@@ -89,6 +89,7 @@ const BandiAddressTable = ( { bandi_id } ) => {
     };
 
     const handleSave = async ( formData, id ) => {
+        console.log('formdata', formData)
         console.log( id );
         try {
             if ( id ) {

@@ -189,7 +189,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertCardDetails' );
 
-        await insertAddress( bandi_id, { ...req.body,user_id, office_id } );
+        await insertAddress( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertAddress' );
 
         const muddaIndexes = [...new Set( Object.keys( req.body ).filter( k => k.startsWith( 'mudda_id_' ) ).map( k => k.split( '_' )[2] ) )];
@@ -207,15 +207,15 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertMuddaDetails( bandi_id, muddas, office_id );
         console.log( '✅ insertMuddaDetails' );
 
-        console.log(data.fines)
-        if ( data.fines?.length && data.fine_paid_office ) {
-            await insertFineDetails( bandi_id, [
-                { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
-                { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
-                { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
-            ] );
-            console.log( '✅ insertFineDetails' );
-        }
+        // console.log( data.fines );
+
+        await insertFineDetails( bandi_id, user_id, office_id, [
+            { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
+            { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
+            { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
+        ] );
+        console.log( '✅ insertFineDetails' );
+
 
         if ( data.punarabedan_office_id && data.punarabedan_office_district &&
             data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
@@ -235,7 +235,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         }
 
         await commitAsync();
-        console.log( '🟩 Transaction committed' );
+        console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id }` );
 
         res.json( {
             Status: true,
@@ -262,7 +262,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     }
 } );
 
-router.post('/create_bandi_punrabedn', verifyToken, async (req, res) => {
+router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
     const current_office_id = req.user.office_id;
 
@@ -276,11 +276,11 @@ router.post('/create_bandi_punrabedn', verifyToken, async (req, res) => {
     } = req.body;
 
     // Basic validation
-    if (!bandi_id || !punarabedan_office_id || !punarabedan_office_district || !punarabedan_office_ch_no || !punarabedan_office_date) {
-        return res.status(400).json({
+    if ( !bandi_id || !punarabedan_office_id || !punarabedan_office_district || !punarabedan_office_ch_no || !punarabedan_office_date ) {
+        return res.status( 400 ).json( {
             Status: false,
             message: "सबै आवश्यक फिल्डहरू भरिएको हुनुपर्छ।"
-        });
+        } );
     }
 
     try {
@@ -312,25 +312,25 @@ router.post('/create_bandi_punrabedn', verifyToken, async (req, res) => {
             current_office_id
         ];
 
-        await queryAsync(insertQuery, values);
+        await queryAsync( insertQuery, values );
 
         await commitAsync();
 
-        res.json({
+        res.json( {
             Status: true,
             message: "पुनरावेदन विवरण सफलतापूर्वक थपियो।"
-        });
+        } );
 
-    } catch (error) {
+    } catch ( error ) {
         await rollbackAsync();
-        console.error("Insert failed:", error);
-        res.status(500).json({
+        console.error( "Insert failed:", error );
+        res.status( 500 ).json( {
             Status: false,
             message: "सर्भर त्रुटि भयो।",
             Error: error.message
-        });
+        } );
     }
-});
+} );
 
 
 
@@ -1010,8 +1010,37 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
 router.get( '/get_bandi_address/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT * FROM view_bandi_address_details 
-        WHERE bandi_id = ?
+            SELECT 
+            ba.id,
+            bp.id AS bandi_id,
+            ba.wardno,
+            ba.bidesh_nagarik_address_details,
+            nc.id AS country_id, 
+            nc.country_name_np,
+            ns.state_id,
+            ns.state_name_np,
+            nd.did AS district_id,
+            nd.district_name_np,
+            ng.cid AS city_id,
+            ng.city_name_np,
+
+            -- Full Nepali formatted address
+            CONCAT_WS(
+                ', ',
+                ng.city_name_np,
+                CONCAT('वडा नं ', ba.wardno),
+                nd.district_name_np,
+                ns.state_name_np,
+                nc.country_name_np
+            ) AS nepali_address
+
+        FROM bandi_person bp
+        LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+        LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+        LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+        LEFT JOIN np_district nd ON ba.district_id = nd.did
+        LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid
+        WHERE bp.id = ?
     `;
     try {
         const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
@@ -1026,29 +1055,29 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
     }
 } );
 
-router.put('/update_bandi/:id', verifyToken, async (req, res) => {
+router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
-// console.log(data)
+    // console.log(data)
     try {
-        const result = await queryAsync(`
+        const result = await queryAsync( `
             UPDATE bandi_person SET                
                 bandi_name = ?, gender = ?, dob = ?, married_status = ?,
                 bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
                 updated_by = ?, updated_at = NOW()
             WHERE id = ?
-        `, [            
+        `, [
             data.bandi_name, data.gender, data.dob, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
             req.user.id, id
-        ]);
-        console.log(result)
-        res.json({ Status: true, message: "Updated successfully" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ Status: false, message: "Server error", error: error.message });
+        ] );
+        console.log( result );
+        res.json( { Status: true, message: "Updated successfully" } );
+    } catch ( error ) {
+        console.error( error );
+        res.status( 500 ).json( { Status: false, message: "Server error", error: error.message } );
     }
-});
+} );
 
 router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

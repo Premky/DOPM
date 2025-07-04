@@ -133,17 +133,73 @@ async function insertMuddaDetails(bandi_id, muddas, office_id) {
 }
 
 
-async function insertFineDetails(bandi_id, fines) {
-  console.log(fines)
-  if (!fines || !fines.length) return;
-  const sql = `INSERT INTO bandi_fine_details (...) VALUES (?)`;
-  for (const fine of fines) {
+async function insertFineDetails(bandi_id, fines, user_id, office_id) {
+  // console.log("Processing fine:", JSON.stringify(fines, null, 2));
+  // console.log('office_id',office_id)
+  
+  let sql;
+  for (const fine of fines) {    
     let values;
-    if(fine.is_fixed){
-      values = [bandi_id, fine.type, fine.is_fixed, fine.amount, fine.is_paid, fine.district, fine.ch_no, fine.date, fine.office];
+    if(fine.is_fine_fixed){
+      sql = `INSERT INTO bandi_fine_details (
+      bandi_id, fine_type, amount_fixed, amount_deposited, 
+      deposit_office, deposit_district, deposit_ch_no, 
+      deposit_date, deposit_amount,
+      created_by, updated_by, current_office_id
+      ) VALUES (?)`;
+      values = [bandi_id, fine.type, fine.is_fine_fixed,fine.is_fine_paid,
+        fine.fine_paid_office, fine.fine_paid_office_district,fine.fine_paid_cn,
+        fine.fine_paid_date, fine.fine_amt, 
+        user_id, user_id, office_id
+          ];
+          console.log(values)
+        }else{
+          sql=`INSERT INTO bandi_fine_details(
+            bandi_id, fine_type, amount_fixed, created_by, updated_by, current_office_id)`
+            values = [bandi_id, fine.type, fine.is_fine_fixed,
+              user_id, user_id, office_id
+            ];
+            
+    }
+    await queryAsync(sql, [values]);
+    if(fine.is_compensation){
+      sql = `INSERT INTO bandi_fine_details (
+      bandi_id, fine_type, amount_fixed, amount_deposited, 
+      deposit_office, deposit_district, deposit_ch_no, 
+      deposit_date, deposit_amount,
+      created_by, updated_by, current_office_id
+      ) VALUES (?)`;
+      values = [bandi_id, fine.type, fine.is_compensation,fine.is_compensation_paid,
+        fine.compensation_paid_office, fine.compensation_paid_office_district,fine.compensation_paid_cn,
+        fine.compensation_paid_date, fine.compensation_amt, 
+        user_id, user_id, office_id
+          ];
     }else{
-      values = [bandi_id, fine.type, fine.is_fixed, 
-      ];
+      sql=`INSERT INTO bandi_fine_details(
+      bandi_id, fine_type, amount_fixed, created_by, updated_by, current_office_id)`
+        values = [bandi_id, fine.type, fine.is_compensation,
+          user_id, user_id, office_id
+        ];
+    }
+    await queryAsync(sql, [values]);
+    if(fine.is_bigo){
+      sql = `INSERT INTO bandi_fine_details (
+      bandi_id, fine_type, amount_fixed, amount_deposited, 
+      deposit_office, deposit_district, deposit_ch_no, 
+      deposit_date, deposit_amount,
+      created_by, updated_by, current_office_id
+      ) VALUES (?)`;
+      values = [bandi_id, fine.type, fine.is_bigo,fine.is_bigo_paid,
+        fine.bigo_paid_office, fine.bigo_paid_office_district,fine.bigo_paid_cn,
+        fine.bigo_paid_date, fine.bigo_amt, 
+        user_id, user_id, office_id
+          ];
+    }else{
+      sql=`INSERT INTO bandi_fine_details(
+      bandi_id, fine_type, amount_fixed, created_by, updated_by, current_office_id)`
+        values = [bandi_id, fine.type, fine.is_bigo,
+          user_id, user_id, office_id
+        ];
     }
     await queryAsync(sql, [values]);
   }
@@ -162,9 +218,10 @@ async function insertPunarabedan(bandi_id, data) {
 
 async function insertFamily(bandi_id, family = [], user_id, office_id) {
   if (!family.length) return;
+  // console.log(family)
   const values = family.map(f => [
     bandi_id, f.bandi_relative_name, f.bandi_relative_relation,
-    f.bandi_relative_address, f.dob, f.is_dependent, f.bandi_relative_contact_no,
+    f.bandi_relative_address, f.bandi_relative_dob, f.is_dependent, f.bandi_relative_contact_no,
     user_id, user_id, office_id
   ]);
   const sql = `INSERT INTO bandi_relative_info (
