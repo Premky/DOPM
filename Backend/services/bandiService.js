@@ -103,16 +103,26 @@ async function insertCardDetails( bandi_id, data ) {
 }
 
 async function insertAddress( bandi_id, data ) {
-  const values = [
-    bandi_id, data.nationality_id, data.state_id, data.district_id,
-    data.municipality_id, data.wardno, data.bidesh_nagrik_address_details,
-    data.user_id, data.user_id, data.office_id
-  ];
-  const sql = `INSERT INTO bandi_address (
-    bandi_id, nationality_id, province_id, district_id,
-    gapa_napa_id, wardno, bidesh_nagarik_address_details,
-    created_by, updated_by, current_office_id
-  ) VALUES (?)`;
+  let values;
+  let sql;
+  if(data.nationality_id=1){
+    values = [
+      bandi_id, data.nationality_id, data.state_id, data.district_id,
+      data.municipality_id, data.wardno,
+      data.user_id, data.user_id, data.office_id
+    ];
+    sql = `INSERT INTO bandi_address (
+      bandi_id, nationality_id, province_id, district_id,
+      gapa_napa_id, wardno, 
+      created_by, updated_by, current_office_id
+    ) VALUES (?)`;
+  }else{
+    values=[bandi_id, data.nationality_id,data.bidesh_nagrik_address_details,created_by, updated_by, current_office_id ]
+    sql = `INSERT INTO bandi_address (
+      bandi_id, nationality_id, bidesh_nagarik_address_details,
+      created_by, updated_by, current_office_id
+    ) VALUES (?)`;
+  }
   await queryAsync( sql, [values] );
 }
 
@@ -158,7 +168,7 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
       } else {
         depositAmount = Number( depositAmount );
       }
-      
+
       values = [
         bandi_id,
         fine.type,

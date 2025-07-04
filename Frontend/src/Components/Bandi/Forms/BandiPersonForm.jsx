@@ -504,7 +504,7 @@ const BandiPersonForm = () => {
               placeholder='वर्ष'
               type='number'
               defaultValue={0}
-              required={false}
+              required={true}
               control={control}
               error={errors.hirasat_years}
             />
@@ -516,7 +516,7 @@ const BandiPersonForm = () => {
               placeholder='महिना'
               type='number'
               defaultValue={0}
-              required={false}
+              required={true}
               control={control}
               error={errors.hirasat_months}
             />
@@ -528,7 +528,7 @@ const BandiPersonForm = () => {
               placeholder='दिन'
               defaultValue={0}
               type='number'
-              required={false}
+              required={true}
               control={control}
               error={errors.hirasat_days}
             />
