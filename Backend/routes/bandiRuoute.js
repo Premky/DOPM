@@ -209,13 +209,23 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
 
         // console.log( data.fines );
 
-        await insertFineDetails( bandi_id, user_id, office_id, [
-            { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
-            { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
-            { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
-        ] );
-        console.log( '✅ insertFineDetails' );
+        // await insertFineDetails( bandi_id, user_id, office_id, [
+        //     { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
+        //     { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
+        //     { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
+        // ] );
+        // console.log( '✅ insertFineDetails' );
 
+        await insertFineDetails(
+            bandi_id,
+            [
+                { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
+                { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
+                { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office }
+            ],
+            user_id,
+            office_id
+        );
 
         if ( data.punarabedan_office_id && data.punarabedan_office_district &&
             data.punarabedan_office_ch_no && data.punarabedan_office_date ) {

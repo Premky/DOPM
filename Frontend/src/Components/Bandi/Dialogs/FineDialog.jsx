@@ -42,9 +42,14 @@ const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
 
                 <Grid2 container spacing={2}>
                     <Grid2 size={{ xs: 12, sm: 4 }}>
-                        <ReuseInput
+                        <ReuseSelect
                             name="fine_type"
                             label="जरिवाना/क्षतिपुर्ती/बिगो"
+                            options={[
+                                {label:'जरिवाना', value:'जरिवाना'},
+                                {label:'क्षतिपुर्ति', value:'क्षतिपुर्ती'},
+                                {label:'विगो तथा कोष', value:'विगो तथा कोष'}
+                            ]}
                             readonly={true}
                             control={control}
                             error={errors.fine_type}
