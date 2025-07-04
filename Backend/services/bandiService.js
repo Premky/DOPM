@@ -70,24 +70,49 @@ async function insertBandiPerson( data ) {
 // }
 
 async function insertKaidDetails( bandi_id, data ) {
-  const defaultDate = '1950-01-01';
 
-  const hirasatBs = data.hirasat_date_bs || defaultDate;
-  const releaseBs = data.release_date_bs || defaultDate;
+  // const defaultDate = '1950-01-01';
 
-  const thunaAd = data.hirasatBs ? await bs2ad( data?.hirasat_date_bs ) : defaultDate;
-  const releaseAd = data.releaseBs ? await bs2ad( data?.release_date_bs ) : defaultDate;
-  const values = [
-    bandi_id, data.hirasat_years, data.hirasat_months, data.hirasat_days,
-    hirasatBs, thunaAd, releaseBs, releaseAd,
-    data.user_id, data.user_id, data.office_id
+  const hirasatBs = data.hirasat_date_bs;
+  const releaseBs = data.release_date_bs;
+
+  let thunaAd;
+  let releaseAd;
+  if ( hirasatBs ) {
+    // thunaAd = data.hirasatBs;
+    thunaAd = data.hirasatBs && await bs2ad( data?.hirasat_date_bs );
+  }
+  if ( releaseBs ) {
+    releaseAd = data.releaseBs && await bs2ad( data?.release_date_bs );
+  }
+
+  const baseValues = [
+    bandi_id,
+    data.hirasat_years,
+    data.hirasat_months,
+    data.hirasat_days,
+    data.hirasatBs,
+    thunaAd
   ];
 
-  const sql = `INSERT INTO bandi_kaid_details (
-    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thuna_date_ad,
-    release_date_bs, release_date_ad, created_by, updated_by, current_office_id
-  ) VALUES (?)`;
+  const auditFields = [data.user_id, data.user_id, data.office_id];
 
+  let values, sql;
+
+  if ( releaseBs ) {
+    values = [...baseValues, releaseBs, releaseAd, ...auditFields];
+    sql = `INSERT INTO bandi_kaid_details (
+    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thuna_date_ad,
+    release_date_bs, release_date_ad,
+    created_by, updated_by, current_office_id
+  ) VALUES (?)`;
+  } else {
+    values = [...baseValues, ...auditFields];
+    sql = `INSERT INTO bandi_kaid_details (
+    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thuna_date_ad,
+    created_by, updated_by, current_office_id
+  ) VALUES (?)`;
+  }
   await queryAsync( sql, [values] );
 }
 
@@ -103,26 +128,41 @@ async function insertCardDetails( bandi_id, data ) {
 }
 
 async function insertAddress( bandi_id, data ) {
-  let values;
-  let sql;
-  if(data.nationality_id=1){
+  let sql, values;
+  const isNepali = Number( data.nationality_id ) === 1;
+
+  if ( isNepali ) {
     values = [
-      bandi_id, data.nationality_id, data.state_id, data.district_id,
-      data.municipality_id, data.wardno,
-      data.user_id, data.user_id, data.office_id
+      bandi_id,
+      data.nationality_id,
+      data.state_id,
+      data.district_id,
+      data.municipality_id,
+      data.wardno,
+      data.user_id,
+      data.user_id,
+      data.office_id
     ];
     sql = `INSERT INTO bandi_address (
       bandi_id, nationality_id, province_id, district_id,
-      gapa_napa_id, wardno, 
+      gapa_napa_id, wardno,
       created_by, updated_by, current_office_id
     ) VALUES (?)`;
-  }else{
-    values=[bandi_id, data.nationality_id,data.bidesh_nagrik_address_details,created_by, updated_by, current_office_id ]
+  } else {
+    values = [
+      bandi_id,
+      data.nationality_id,
+      data.bidesh_nagrik_address_details,
+      data.user_id,
+      data.user_id,
+      data.office_id
+    ];
     sql = `INSERT INTO bandi_address (
       bandi_id, nationality_id, bidesh_nagarik_address_details,
       created_by, updated_by, current_office_id
     ) VALUES (?)`;
   }
+
   await queryAsync( sql, [values] );
 }
 
