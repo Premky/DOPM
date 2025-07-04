@@ -536,7 +536,7 @@ const BandiPersonForm = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={2}>
-          <ReuseDateField
+          <ReuseDatePickerBs
             name='hirasat_date_bs'
             label='थुना/कैद परेको मिती'
             placeholder={'YYYY-MM-DD'}
@@ -664,7 +664,8 @@ const BandiPersonForm = () => {
             name="card_issue_date"
             label="परिचय पत्र जारी मिती"
             placeholder='YYYY-DD-MM'
-            required={idcardtype?.label !== 'अन्य'}
+            // required={idcardtype !== 6 || idcardtype==''}
+            required={false}
             control={control}
             error={errors.card_issue_date}
           />

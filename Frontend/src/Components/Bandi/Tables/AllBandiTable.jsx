@@ -1,5 +1,5 @@
-import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import exportToExcel from '../Exports/ExcelPayrole';
-import '../../../index.css'
+import '../../../index.css';
 import { useNavigate } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 
@@ -21,126 +21,126 @@ const AllBandiTable = () => {
     const { state: authState } = useAuth();
     const navigate = useNavigate();
     const npToday = new NepaliDate();
-    const formattedDateNp = npToday.format('YYYY-MM-DD');
-    useEffect(() => {
-        setValue('searchOffice', authState.office_id | '')
-    }, [authState]);
+    const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
+    useEffect( () => {
+        setValue( 'searchOffice', authState.office_id | '' );
+    }, [authState] );
     const {
-        handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm({
+        handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm( {
             defaultValues: {
                 office_bandi_id: '',
                 // other fields...
             },
-        });
+        } );
 
-    const [editing, setEditing] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [editing, setEditing] = useState( false );
+    const [loading, setLoading] = useState( false );
 
     //For Pagination
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
+    const [page, setPage] = useState( 0 );
+    const [rowsPerPage, setRowsPerPage] = useState( 25 );
+    const handleChangePage = ( event, newPage ) => {
+        setPage( newPage );
     };
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
+    const handleChangeRowsPerPage = ( event ) => {
+        setRowsPerPage( parseInt( event.target.value, 10 ) );
+        setPage( 0 );
     };
 
-    const [open, setOpen] = useState(false);
-    const [modalValues, setModalValues] = useState({
+    const [open, setOpen] = useState( false );
+    const [modalValues, setModalValues] = useState( {
         bandi_info: '',
         mudda_name: '',
         status: '',
-    });
+    } );
 
     //Watch Variables:
-    const searchOffice = watch('searchOffice');
-    const nationality = watch('nationality');
+    const searchOffice = watch( 'searchOffice' );
+    const nationality = watch( 'nationality' );
     //Watch Variables
 
-    const [allKaidi, setAllKaidi] = useState([]);
-    const [filteredKaidi, setFilteredKaidi] = useState([]);
-    const [totalKaidi, setTotalKaidi] = useState(0);
+    const [allKaidi, setAllKaidi] = useState( [] );
+    const [filteredKaidi, setFilteredKaidi] = useState( [] );
+    const [totalKaidi, setTotalKaidi] = useState( 0 );
     const fetchKaidi = async () => {
-        setLoading(true);
+        setLoading( true );
         try {
-            const response = await axios.get(`${BASE_URL}/bandi/get_all_office_bandi`, {
+            const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
                 params: { page, limit: rowsPerPage, searchOffice, nationality },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
-            });
+            } );
 
             const { Status, Result, Error } = response.data;
             // console.log(response.data)
-            if (Status && Array.isArray(Result)) {
-                setAllKaidi(Result);
-                setFilteredKaidi(Result);
-                setTotalKaidi(response.data.TotalCount);  //Total Count 
+            if ( Status && Array.isArray( Result ) ) {
+                setAllKaidi( Result );
+                setFilteredKaidi( Result );
+                setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
-                console.warn(Error || 'No records found.');
-                setAllKaidi([]);
+                console.warn( Error || 'No records found.' );
+                setAllKaidi( [] );
             }
-        } catch (error) {
-            console.error('Error fetching records:', error);
+        } catch ( error ) {
+            console.error( 'Error fetching records:', error );
         } finally {
-            setLoading(false);
+            setLoading( false );
         }
     };
 
 
-    const [fetchedMuddas, setFetchedMuddas] = useState([]);
+    const [fetchedMuddas, setFetchedMuddas] = useState( [] );
     const fetchMuddas = async () => {
         try {
-            const url = `${BASE_URL}/bandi/get_bandi_mudda`;
-            const response = await axios.get(url, { withCredentials: true });
+            const url = `${ BASE_URL }/bandi/get_bandi_mudda`;
+            const response = await axios.get( url, { withCredentials: true } );
             const { Status, Result, Error } = response.data;
 
-            if (Status) {
+            if ( Status ) {
                 // Group muddas by bandi_id
                 const grouped = {};
-                Result.forEach((mudda) => {
+                Result.forEach( ( mudda ) => {
                     const bandiId = mudda.bandi_id;
-                    if (!grouped[bandiId]) grouped[bandiId] = [];
-                    grouped[bandiId].push(mudda);
-                });
-                setFetchedMuddas(grouped); // grouped is now an object like { 1: [mudda1, mudda2], 2: [mudda1] }
+                    if ( !grouped[bandiId] ) grouped[bandiId] = [];
+                    grouped[bandiId].push( mudda );
+                } );
+                setFetchedMuddas( grouped ); // grouped is now an object like { 1: [mudda1, mudda2], 2: [mudda1] }
                 // console.log(fetchedMuddas)
             } else {
-                console.warn(Error || 'Failed to fetch mudda.');
-                setFetchedMuddas({});
+                console.warn( Error || 'Failed to fetch mudda.' );
+                setFetchedMuddas( {} );
             }
-        } catch (error) {
-            console.error('Error fetching muddas:', error);
+        } catch ( error ) {
+            console.error( 'Error fetching muddas:', error );
         }
     };
-    useEffect(() => {
+    useEffect( () => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality]);
+    }, [page, rowsPerPage, searchOffice, nationality] );
 
 
 
 
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState(null);
-    const handleEdit = (data) => {
-        setSelectedData(data);
-        setEditDialogOpen(true);
+    const [editDialogOpen, setEditDialogOpen] = useState( false );
+    const [selectedData, setSelectedData] = useState( null );
+    const handleEdit = ( data ) => {
+        setSelectedData( data );
+        setEditDialogOpen( true );
     };
 
-    const handleSave = async (updatedData) => {
+    const handleSave = async ( updatedData ) => {
         try {
             await axios.put(
-                `${BASE_URL}/bandi/update_payrole/${updatedData.payrole_id}`,
+                `${ BASE_URL }/bandi/update_payrole/${ updatedData.payrole_id }`,
                 updatedData,
                 { withCredentials: true } // ✅ Fix: put this inside an object
             );
             fetchKaidi();
-            Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
-        } catch (err) {
-            console.error(err);
-            Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
+            Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+        } catch ( err ) {
+            console.error( err );
+            Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
         }
     };
 
@@ -148,7 +148,7 @@ const AllBandiTable = () => {
         <>
             <PayroleStatusModal
                 open={editDialogOpen}
-                onClose={() => setEditDialogOpen(false)}
+                onClose={() => setEditDialogOpen( false )}
                 data={selectedData}
                 onSave={handleSave}
             />
@@ -263,6 +263,9 @@ const AllBandiTable = () => {
                                     भुक्तान कैद (वर्ष, महिना, दिन र प्रतिशत)
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                    बाँकी कैद अवधी
+                                </TableCell>
+                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
@@ -277,7 +280,7 @@ const AllBandiTable = () => {
 
 
 
-                            {filteredKaidi.map((data, index) => {
+                            {filteredKaidi.map( ( data, index ) => {
                                 {/* {filteredKaidi
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((data, index) => { */}
@@ -309,9 +312,9 @@ const AllBandiTable = () => {
                                                 <b>{data.bandi_type} {data.bandi_name}</b><br />
 
                                                 {data.nationality === 'स्वदेशी'
-                                                    ? `${data.city_name_np}-${data.wardno},${data.district_name_np},
-                                                        ${data.state_name_np},${data.country_name_np}`
-                                                    : `${data.bidesh_nagarik_address_details},${data.country_name_np}`}
+                                                    ? `${ data.city_name_np }-${ data.wardno },${ data.district_name_np },
+                                                        ${ data.state_name_np },${ data.country_name_np }`
+                                                    : `${ data.bidesh_nagarik_address_details },${ data.country_name_np }`}
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1} >
                                                 {data.current_age}
@@ -333,28 +336,38 @@ const AllBandiTable = () => {
                                                 {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
+                                            {/* तोकिएको कैद  */}
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.thuna_date_bs && data.release_date_bs ? (<>
-                                                    {calculateBSDate(data.thuna_date_bs, data.release_date_bs).formattedDuration || ''} <br />
-                                                    {calculateBSDate(data.thuna_date_bs, data.release_date_bs).percentage || ''}
-                                                </>) : ''}
+                                                {data.thuna_date_bs && data.release_date_bs ? ( <>
+                                                    {calculateBSDate(
+                                                        data.thuna_date_bs,
+                                                        data.release_date_bs
+                                                    ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( data.thuna_date_bs, data.release_date_bs ).percentage || ''}
+                                                </> ) : ''}
                                             </TableCell>
 
+                                            {/* छुट्ने मिति */}
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
+                                            {/* भुक्तान अवधी */}
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {formattedDateNp && data.thuna_date_bs ? (<>
-                                                    {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
-                                                    {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''}
-                                                </>) : ''}
+                                                {formattedDateNp && data.thuna_date_bs ? ( <>
+                                                    {calculateBSDate(
+                                                        data.thuna_date_bs,
+                                                        formattedDateNp
+                                                    ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( data.thuna_date_bs, formattedDateNp ).percentage || ''}
+                                                </> ) : ''}
 
                                                 {/* {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
                                             {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''} */}
                                             </TableCell>
+                                            {/* बाँकी अवधी */}
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.release_date_bs && formattedDateNp? (<>
-                                                    {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
-                                                    {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''}
-                                                </>) : ''}
+                                                {data.release_date_bs && formattedDateNp ? ( <>
+                                                    {calculateBSDate( formattedDateNp, data.release_date_bs  ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( formattedDateNp, data.release_date_bs  ).percentage || ''}
+                                                </> ) : ''}
                                                 {/* {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
                                             {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
                                             </TableCell>
@@ -363,22 +376,22 @@ const AllBandiTable = () => {
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
 
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                <Button onClick={() => navigate(`/bandi/view_saved_record/${data.id}`)}>
+                                                <Button onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
                                                     View
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
 
-                                        {kaidiMuddas.slice(1).map((mudda, i) => (
-                                            <TableRow key={`mudda-${data.id}-${i}`} sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
+                                        {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (
+                                            <TableRow key={`mudda-${ data.id }-${ i }`} sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
                                                 <TableCell>{mudda.mudda_name}</TableCell>
                                                 <TableCell>{mudda.jaherwala}</TableCell>
                                                 <TableCell>{mudda.antim_nikaya_faisala_miti}</TableCell>
                                             </TableRow>
-                                        ))}
+                                        ) )}
                                     </>
                                 );
-                            })}
+                            } )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -396,7 +409,7 @@ const AllBandiTable = () => {
                 </Box>
             </Box>
         </>
-    )
-}
+    );
+};
 
-export default AllBandiTable
+export default AllBandiTable;
