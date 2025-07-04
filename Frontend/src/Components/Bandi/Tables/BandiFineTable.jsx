@@ -74,29 +74,42 @@ const BandiFineTable = ( { bandi_id } ) => {
         }
     };
 
-    const [modalOpen, setModalOpen] = useState(false);
-    const [editingData, setEditingData] = useState(null);
+    const [modalOpen, setModalOpen] = useState( false );
+    const [editingData, setEditingData] = useState( null );
 
     const handleEdit = ( data ) => {
-        setSelectedData( data );
-        setEditingData( true );
+        setEditingData( data );
+        setModalOpen( true ); // <-- this was likely your intent
     };
 
     const handleAdd = ( bandi_id ) => {
         setEditingData( { bandi_id } );
         setModalOpen( true );
     };
-    const handleSave = async ( updatedData ) => {
+
+    const handleSave = async ( data ) => {
         try {
-            await axios.put(
-                `${ BASE_URL }/bandi/update_bandi_fine/${ updatedData.id }`,
-                updatedData,
-                { withCredentials: true } // ✅ Fix: wrap inside object
-            );
+            if ( data.id ) {
+                // EDIT
+                await axios.put(
+                    `${ BASE_URL }/bandi/update_bandi_fine/${ data.id }`,
+                    data,
+                    { withCredentials: true }
+                );
+                Swal.fire( 'सफल भयो!', 'डेटा अपडेट गरियो।', 'success' );
+            } else {
+                // CREATE
+                await axios.post(
+                    `${ BASE_URL }/bandi/create_bandi_fine`,
+                    data,
+                    { withCredentials: true }
+                );
+                Swal.fire( 'सफल भयो!', 'नयाँ डेटा थपियो।', 'success' );
+            }
             fetchBandies();
-            Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
         } catch ( err ) {
-            Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+            console.error( "Save error:", err );
+            Swal.fire( 'त्रुटि!', err?.response?.data?.message || 'डेटा सेभ गर्न सकिएन।', 'error' );
         }
     };
 
@@ -137,11 +150,11 @@ const BandiFineTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.fine_type || ''}</TableCell>
                                     <TableCell align="center">{opt.amount_fixed ? 'छ' : 'छैन'}</TableCell>
                                     <TableCell align="center">{opt.amount_deposited ? 'तिरेको' : 'नतिरेको' || ''}</TableCell>
-                                    <TableCell align="center">{opt.office_name_nep}</TableCell>
+                                    <TableCell align="center">{opt.office_name_nep||''}</TableCell>
                                     <TableCell align="center">{opt.district_name_np}</TableCell>
-                                    <TableCell align="center">{opt.deposit_ch_no}</TableCell>
-                                    <TableCell align="center">{opt.deposit_date}</TableCell>
-                                    <TableCell align="center">{opt.deposit_amount}</TableCell>
+                                    <TableCell align="center">{opt.deposit_ch_no||''}</TableCell>
+                                    <TableCell align="center">{opt.deposit_date||''}</TableCell>
+                                    <TableCell align="center">{opt.deposit_amount||''}</TableCell>
 
                                     <TableCell align="center">
                                         <Grid container spacing={2}>

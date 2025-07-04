@@ -111,7 +111,7 @@ const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
                                     />
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4 }}>
-                                    <ReuseDatePickerBS
+                                    <ReuseDateField
                                         name='deposit_date'
                                         label="मिति"
                                         placeholder='YYYY-MM-DD'

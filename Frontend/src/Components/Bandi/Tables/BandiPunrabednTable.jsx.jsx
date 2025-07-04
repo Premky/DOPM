@@ -97,17 +97,16 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                 fetchBandies();
                 Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
             } else {
-                await axios.post(
-                    `${ BASE_URL }/bandi/create_bandi_punrabedn`,
-                    { ...formData, bandi_id: bandi_id },
-                    { withCredentials: true }
-                );
+                console.log("📦 Payload to server:", formData);
+                await axios.post( `${ BASE_URL }/bandi/create_bandi_punrabedn`, formData, { withCredentials: true } );
+
                 Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
             }
             fetchBandies();
         } catch ( error ) {
             // Swal.fire('त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error');
-            Swal.fire( 'त्रुटि!', `${ error }`, 'error' );
+            Swal.fire( 'त्रुटि!', error.response?.data?.message || error.message || 'Unknown error', 'error' );
+            // Swal.fire( 'त्रुटि!', `${ error }`, 'error' );
         }
     };
 
