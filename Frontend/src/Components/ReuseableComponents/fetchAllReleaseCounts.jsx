@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../Context/BaseURLProvider";
 
-const fetchBandiRelatives = ( bandi_id ) => {
+const fetchAllReleaseCounts = ( bandi_id ) => {
   const BASE_URL = useBaseURL();
   const [records, setRecords] = useState( [] );
   const [optrecords, setOptRecords] = useState( [] );
@@ -25,6 +25,7 @@ const fetchBandiRelatives = ( bandi_id ) => {
             })
             setOptRecords(formatted);
             setRecords( Result || [] );
+            console.log(Result)
           }else{
             console.log('No records found');
           }
@@ -43,4 +44,4 @@ const fetchBandiRelatives = ( bandi_id ) => {
   return { records, optrecords, loading };
 };
 
-export default fetchBandiRelatives;
+export default fetchAllReleaseCounts;

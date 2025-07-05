@@ -20,57 +20,49 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
     // Fetch office data
     
     const fetchOffices = async () => {
-        try {
-            let url;
-            if (selected_office) {
-                console.log(selected_office)
-                url = `${BASE_URL}/bandi/get_all_office_bandi`;
-            }
+  try {
+    let url;
 
-            if (authState.office_id) {
-                if (type == 'acceptedpayrole') {
-                    url = `${BASE_URL}/bandi/get_accepted_payroles`;
-                } else if (type == 'allbandi') {
-                    url = `${BASE_URL}/bandi/get_all_office_bandi`;
-                }
-                // else {
-                //     url = `${BASE_URL}/bandi/get_bandi_name_for_select/${authState.office_id}`;
-                // }
-            }
-
-            const response = await axios.get(url, {
-                params: { selected_office },
-                withCredentials: true
-            });
-            // console.log('officeid', response)
-
-            const { Status, Result, Error } = response.data;
-
-            if (Status) {
-                if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result
-                        // .filter(opt => opt?.bandi_name)
-                        .filter(opt => opt?.id && opt?.bandi_name)
-                        .map((opt, index) => {
-                            const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
-                            return {
-                                label: ` ${opt.office_bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index + 1} `,
-                                value: opt.bandi_id,
-                            };
-                        });
-                    setFormattedOptions(formatted);
-                } else {
-                    console.log('No records found.');
-                }
-            } else {
-                console.log(Error || 'Failed to fetch.');
-            }
-        } catch (error) {
-            console.error('Error fetching records:', error);
-        } finally {
-            setLoading(false);
-        }
+    if (selected_office) {
+      url = `${BASE_URL}/bandi/get_all_office_bandi`;
     }
+
+    if (authState.office_id) {
+      if (type === 'acceptedpayrole') {
+        url = `${BASE_URL}/bandi/get_accepted_payroles`;
+      } else if (type === 'allbandi') {
+        url = `${BASE_URL}/bandi/get_all_office_bandi`;
+      }
+    }
+
+    const response = await axios.get(url, {
+      params: { selected_office, forSelect: true },
+      withCredentials: true,
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+
+    const { Status, Result, Error } = response.data;
+
+    if (Status && Array.isArray(Result) && Result.length > 0) {
+      const formatted = Result
+        .filter(opt => opt?.id && opt?.bandi_name)
+        .map((opt, index) => {
+          const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
+          return {
+            label: `${opt.office_bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name} | ${index + 1}`,
+            value: opt.bandi_id,
+          };
+        });
+      setFormattedOptions(formatted);
+    } else {
+      console.log('No records found.');
+    }
+  } catch (error) {
+    console.error('Error fetching records:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
     useEffect(() => {
         fetchOffices();
