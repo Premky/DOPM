@@ -258,7 +258,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         }
 
         await commitAsync();
-        console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id }` );
+        console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${req.user.office_np}` );
 
         res.json( {
             Status: true,
