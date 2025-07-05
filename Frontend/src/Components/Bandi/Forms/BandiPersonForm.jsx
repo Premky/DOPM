@@ -147,7 +147,7 @@ const BandiPersonForm = () => {
 
 
   const onSubmit = async ( data ) => {
-    console.log( data );
+    // console.log( data );
     try {
       const url = editing
         ? `${ BASE_URL }/bandi/update_bandi/${ currentData.id }`
@@ -199,10 +199,14 @@ const BandiPersonForm = () => {
     }
   };
 
+  const formHeadStyle = { color: 'red', fontWeight: 'bold' };
 
   return (
     <form onSubmit={handleSubmit( onSubmit )}>
       <Grid container spacing={2}>
+        <Grid item xs={12} sx={formHeadStyle}>
+          बन्दीको विवरणः
+        </Grid>
         <Grid item container xs={9} sm={8} md={10}>
           <Grid item xs={12} sm={6} md={3}>
             <ReuseInput
@@ -350,7 +354,7 @@ const BandiPersonForm = () => {
       <hr />
 
       <Grid container spacing={0}>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{ mb: 0, ...formHeadStyle }}>
           बन्दीको मुद्दा विवरणः
         </Grid>
 
@@ -491,7 +495,7 @@ const BandiPersonForm = () => {
       </Grid>
       <hr />
       <Grid item container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={formHeadStyle}>
           पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरणः
         </Grid>
 
@@ -503,7 +507,7 @@ const BandiPersonForm = () => {
               label="वर्ष"
               placeholder='वर्ष'
               type='number'
-              defaultValue={0}
+              // defaultValue={0}
               required={true}
               control={control}
               error={errors.hirasat_years}
@@ -515,7 +519,7 @@ const BandiPersonForm = () => {
               label="महिना "
               placeholder='महिना'
               type='number'
-              defaultValue={0}
+              // defaultValue={0}
               required={true}
               control={control}
               error={errors.hirasat_months}
@@ -526,7 +530,7 @@ const BandiPersonForm = () => {
               name="hirasat_days"
               label="दिन"
               placeholder='दिन'
-              defaultValue={0}
+              // defaultValue={0}
               type='number'
               required={true}
               control={control}
@@ -612,7 +616,7 @@ const BandiPersonForm = () => {
       </Grid>
       <hr />
       <Grid item container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={formHeadStyle}>
           बन्दीको परिचयपत्रको विवरणः
         </Grid>
 
@@ -626,7 +630,7 @@ const BandiPersonForm = () => {
             error={errors.id_card_type}
           />
         </Grid>
-        {idcardtype?.label === 'अन्य' && (
+        {idcardtype === 6 && (
           <>
             <Grid item xs={12} sm={6} md={2}>
               <ReuseInput
@@ -673,7 +677,7 @@ const BandiPersonForm = () => {
       </Grid>
       <hr />
       <Grid container spacing={2}>
-        <Grid item xs={2}>
+        <Grid item xs={2} sx={formHeadStyle}>
           बन्दीको ठेगानाः
         </Grid>
         <Grid item xs={10}>
@@ -753,13 +757,13 @@ const BandiPersonForm = () => {
       </Grid>
       <hr />
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          पारिवारीक विवरणः
+        <Grid item xs={12} sx={formHeadStyle}>
+          पारिवारीक/आश्रित विवरणः
         </Grid>
         {[...Array( familyCount )].map( ( _, index ) => {
           const currentRelation = watch( `family[${ index }].bandi_relative_relation` );
           const isDependent = watch( `family[${ index }].is_dependent` );
-          console.log(isDependent)
+          console.log( isDependent );
           return (
             <Grid item container xs={12} key={index}>
               <Grid item xs={12} sm={6} md={2}>
@@ -860,7 +864,7 @@ const BandiPersonForm = () => {
       </Grid>
 
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={formHeadStyle}>
           सम्पर्क व्यक्ति
         </Grid>
         {[...Array( contactCount )].map( ( _, index ) => {
@@ -944,7 +948,7 @@ const BandiPersonForm = () => {
 
       {selectedbandi_type == 'कैदी' && ( <>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={formHeadStyle}>
             जरिवाना रकम तोकिएको छ वा छैं‍न
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -1031,7 +1035,7 @@ const BandiPersonForm = () => {
         </Grid>
 
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={formHeadStyle}>
             क्षतिपुर्ती रकम तोकिएको छ वा छैं‍न
           </Grid>
 
@@ -1119,7 +1123,7 @@ const BandiPersonForm = () => {
         </Grid>
 
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={formHeadStyle}>
             बिगो रकम तोकिएको छ वा छैं‍न
           </Grid>
 
@@ -1204,7 +1208,7 @@ const BandiPersonForm = () => {
         </Grid>
 
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={formHeadStyle}>
             पुनरावेदनमा नपरेको प्रमाणः
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -1249,21 +1253,10 @@ const BandiPersonForm = () => {
         </Grid>
       </> )
       }
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <ReuseInput
-            name='bandi_remarks'
-            label='कैफियत'
-            required={false}
-            control={control}
-            error={errors.bandi_remarks}
-          />
-        </Grid>
-      </Grid>
 
       <hr />
       <Grid item container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={formHeadStyle}>
           बन्दीको स्वास्थय बिमा विवरणः
         </Grid>
 
@@ -1305,6 +1298,20 @@ const BandiPersonForm = () => {
           </>
         )}
       </Grid>
+
+      <Grid container spacing={2} >
+        <Grid item xs={12}>
+          <ReuseInput
+            name='bandi_remarks'
+            label='कैफियत'
+            required={false}
+            control={control}
+            error={errors.bandi_remarks}
+          />
+        </Grid>
+      </Grid>
+
+
 
       <Grid container spacing={2}>
         <Grid item xs={12}>

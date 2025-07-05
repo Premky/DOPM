@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Navigate, replace, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -15,16 +15,17 @@ const Login = () => {
     // const BASE_URL = useApiBaseUrl();
     const BASE_URL = useBaseURL();
     const navigate = useNavigate();
-    const { dispatch, fetchSession } = useAuth();
-    const { state, loading } = useAuth();
+    const { dispatch, fetchSession, state, loading } = useAuth();
+
+    const [showPassword, setShowPassword] = useState( false );
+    const [values, setValues] = useState( { username: '', password: '' } );
+    const [error, setError] = useState( '' );
+
     if ( loading ) return <>Loading...</>;
     if ( state?.valid ) {
         return <Navigate to='/bandi' replace />;
     }
 
-    const [showPassword, setShowPassword] = useState( false );
-    const [values, setValues] = useState( { username: '', password: '' } );
-    const [error, setError] = useState( '' );
 
     const handleClickShowPassword = () => setShowPassword( ( prev ) => !prev );
 
@@ -51,8 +52,10 @@ const Login = () => {
                 Swal.fire( { title: "Login Failed", text: response.data.error, icon: "error" } );
             }
         } catch ( error ) {
+            const message = error.response?.data?.Error || 'Unexpected error occurred' ;
             setError( error.response?.data?.Error || 'Unexpected error occurred' );
-            Swal.fire( { title: "Login Error", text: error.message, icon: "error" } );
+            Swal.fire( { title: "Login Error", text: message, icon: "error" } );
+            // Swal.fire( { title: "Login Error", text: error.message, icon: "error" } );
         }
     };
 
