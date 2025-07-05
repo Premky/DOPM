@@ -127,7 +127,7 @@ async function insertAddress( bandi_id, data ) {
   await queryAsync( sql, [values] );
 }
 
-async function insertMuddaDetails( bandi_id, muddas, office_id ) {
+async function insertMuddaDetails1( bandi_id, muddas, office_id ) {
   const sql = `INSERT INTO bandi_mudda_details (
     bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
     mudda_condition, mudda_phesala_antim_office_district,
@@ -140,6 +140,34 @@ async function insertMuddaDetails( bandi_id, muddas, office_id ) {
       m.condition, m.district, m.office, m.date, m.vadi, office_id
     ];
     await queryAsync( sql, [values] );
+  }
+}
+
+async function insertMuddaDetails(bandi_id, muddas = [], office_id) {
+  const sql = `INSERT INTO bandi_mudda_details (
+    bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
+    mudda_condition, mudda_phesala_antim_office_district,
+    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date, vadi, current_office_id
+  ) VALUES (?)`;
+
+  for (const m of muddas) {
+    // 🛑 Skip this mudda if mudda_id is missing or empty
+    if (!m.mudda_id) continue;
+
+    const values = [
+      bandi_id,
+      m.mudda_id,
+      m.mudda_no,
+      m.is_last,
+      m.is_main,
+      m.condition,
+      m.district,
+      m.office,
+      m.date,
+      m.vadi,
+      office_id
+    ];
+    await queryAsync(sql, [values]);
   }
 }
 
@@ -202,88 +230,6 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
       ];
     }
 
-    await queryAsync( sql, [values] );
-  }
-}
-
-async function insertFineDetails1( bandi_id, fines, user_id, office_id ) {
-  // console.log("Processing fine:", JSON.stringify(fines, null, 2));
-  // console.log('office_id',office_id)
-
-  let sql;
-  for ( const fine of fines ) {
-    let values;
-    if ( fine.is_fine_fixed ) {
-      sql = `INSERT INTO bandi_fine_details (
-      bandi_id, fine_type, amount_fixed, amount_deposited, 
-      deposit_office, deposit_district, deposit_ch_no, 
-      deposit_date, deposit_amount,
-      created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-      const depositAmount = fine.amount?.toString().trim() === '' ? null : Number( fine.amount );
-      values = [
-        bandi_id,
-        fine.type,
-        fine.is_fine_fixed,
-        fine.is_fine_paid,
-        fine.fine_paid_office,
-        fine.fine_paid_office_district,
-        fine.fine_paid_cn,
-        fine.fine_paid_date,
-        depositAmount, // ✅ replaced fine.amount safely
-        user_id,
-        user_id,
-        office_id
-      ];
-      // console.log( values );
-    } else {
-      sql = `INSERT INTO bandi_fine_details(
-            bandi_id, fine_type, amount_fixed, created_by, updated_by, current_office_id)`;
-      values = [bandi_id, fine.type, fine.is_fine_fixed,
-        user_id, user_id, office_id
-      ];
-
-    }
-    await queryAsync( sql, [values] );
-    if ( fine.is_compensation ) {
-      sql = `INSERT INTO bandi_fine_details (
-      bandi_id, fine_type, amount_fixed, amount_deposited, 
-      deposit_office, deposit_district, deposit_ch_no, 
-      deposit_date, deposit_amount,
-      created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-      values = [bandi_id, fine.type, fine.is_compensation, fine.is_compensation_paid,
-        fine.compensation_paid_office, fine.compensation_paid_office_district, fine.compensation_paid_cn,
-        fine.compensation_paid_date, fine.compensation_amt,
-        user_id, user_id, office_id
-      ];
-    } else {
-      sql = `INSERT INTO bandi_fine_details(
-      bandi_id, fine_type, amount_fixed, created_by, updated_by, current_office_id)`;
-      values = [bandi_id, fine.type, fine.is_compensation,
-        user_id, user_id, office_id
-      ];
-    }
-    await queryAsync( sql, [values] );
-    if ( fine.is_bigo ) {
-      sql = `INSERT INTO bandi_fine_details (
-      bandi_id, fine_type, amount_fixed, amount_deposited, 
-      deposit_office, deposit_district, deposit_ch_no, 
-      deposit_date, deposit_amount,
-      created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-      values = [bandi_id, fine.type, fine.is_bigo, fine.is_bigo_paid,
-        fine.bigo_paid_office, fine.bigo_paid_office_district, fine.bigo_paid_cn,
-        fine.bigo_paid_date, fine.bigo_amt,
-        user_id, user_id, office_id
-      ];
-    } else {
-      sql = `INSERT INTO bandi_fine_details(
-      bandi_id, fine_type, amount_fixed, created_by, updated_by, current_office_id)`;
-      values = [bandi_id, fine.type, fine.is_bigo,
-        user_id, user_id, office_id
-      ];
-    }
     await queryAsync( sql, [values] );
   }
 }

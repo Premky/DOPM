@@ -10,6 +10,7 @@ import fetchAllReleaseCounts from '../../ReuseableComponents/fetchAllReleaseCoun
 
 const KaragarMaskebari = () => {
     const {records:releaseRecords, loading:releaseRecordsLoading}=fetchAllReleaseCounts();
+    
     return (
         <div>
             <Grid2 container>
@@ -20,7 +21,7 @@ const KaragarMaskebari = () => {
             </Grid2>
 
             <Grid2 container sx={{marginTop:1}}>
-                <TotalReleaseDetails />
+                <TotalReleaseDetails releaseRecords={releaseRecords}/>
             </Grid2>
 
             <Grid2 container sx={{marginTop:1}}>

@@ -26,6 +26,10 @@ const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
 const fy_date = fy + '-04-01';
 
 import { bs2ad } from '../utils/bs2ad.js';
+import {
+    insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
+    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance
+} from '../services/bandiService.js';
 // console.log(current_date);
 // console.log(fy_date)
 
@@ -36,14 +40,6 @@ const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
 const commitAsync = promisify( con.commit ).bind( con );
 const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
-
-// Convert BS to AD
-// const adDate = bs.toGregorian('2081-03-01'); // Output: { year: 2024, month: 6, day: 14 }
-
-// English to Nepali date conversion
-const [npYear, npMonth, npDay] = dateConverter.englishToNepali( 2023, 5, 27 );
-
-
 
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
@@ -93,18 +89,18 @@ router.get( '/get_random_bandi_id', async ( req, res ) => {
 const storage = multer.diskStorage( {
     destination: function ( req, file, cb ) {
         const uploadDir = './uploads/bandi_photos';
+        // console.log(uploadDir)
         if ( !fs.existsSync( uploadDir ) ) {
             fs.mkdirSync( uploadDir, { recursive: true } );
         }
         cb( null, uploadDir );
     },
+
     filename: function ( req, file, cb ) {
         const { office_bandi_id, bandi_name } = req.body;
-
         if ( !office_bandi_id || !bandi_name ) {
             return cb( new Error( 'bandi_id and bandi_name are required' ), null );
         }
-
         const ext = path.extname( file.originalname );
         const dateStr = new Date().toISOString().split( 'T' )[0];
         const safeName = bandi_name.replace( /\s+/g, '_' ); //sanitize spaces
@@ -116,7 +112,7 @@ const storage = multer.diskStorage( {
 
 // File filter (only images allowed)
 const fileFilter = ( req, file, cb ) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const allowedTypes = /jpeg|jpg|png|gif|webp|jfif/;
     const extname = allowedTypes.test( path.extname( file.originalname ).toLowerCase() );
     const mimetype = allowedTypes.test( file.mimetype );
 
@@ -131,10 +127,7 @@ const upload = multer( {
     limits: { fileSize: 1 * 1024 * 1024 },
 } );
 
-import {
-    insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
-    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance
-} from '../services/bandiService.js';
+
 
 con.query( `CREATE OR REPLACE VIEW view_bandi_address_details AS
 SELECT 
@@ -167,19 +160,56 @@ LEFT JOIN np_state ns ON ba.province_id = ns.state_id
 LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
-router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async(req,res)=>{
-    const user_id=req.user.id;
-    const active_office = req.user.office_id;
-    const id=req.params.id;
-    const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
-    const data = req.body;
-    
-    //get previous photo name:
-    const sql = `SELECT photo_path from bandi_person WHERE id=${id}`
-    const old_photo = await queryAsync(sql)
-    console.log('old_photo', old_photo)
 
-})
+router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+    const bandi_id = req.params.id;
+    const { bandi_name, office_bandi_id } = req.body;
+    const photoFile = req.file;
+    const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
+
+    if ( !photoFile || !bandi_name || !office_bandi_id ) {
+        return res.status( 400 ).json( { success: false, message: 'Missing required fields' } );
+    }
+
+    try {
+        await beginTransactionAsync();
+
+        // Fetch old photo for cleanup
+        const result = await queryAsync( `SELECT photo_path FROM bandi_person WHERE id = ?`, [bandi_id] );
+        const oldPhotoPath = result?.[0]?.photo_path;
+
+        // Update photo path in DB
+        await queryAsync(
+            `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
+            [photo_path, bandi_id]
+        );
+
+        await commitAsync();
+
+        // Delete old photo AFTER commit (non-blocking)
+        if ( oldPhotoPath && fs.existsSync( `.${ oldPhotoPath }` ) ) {
+            fs.unlink( `.${ oldPhotoPath }`, ( err ) => {
+                if ( err ) console.error( 'Failed to delete old photo:', err );
+            } );
+        }
+
+        res.status( 200 ).json( { success: true, message: 'फोटो सफलतापूर्वक अपडेट भयो', photo_path } );
+
+    } catch ( err ) {
+        await rollbackAsync();
+
+        // ❌ Delete the uploaded file if transaction fails
+        if ( photoFile && fs.existsSync( photoFile.path ) ) {
+            fs.unlink( photoFile.path, ( unlinkErr ) => {
+                if ( unlinkErr ) console.error( 'Rollback failed to delete uploaded file:', unlinkErr );
+            } );
+        }
+
+        console.error( 'Update transaction failed:', err );
+        res.status( 500 ).json( { success: false, message: 'फोटो अपडेट असफल भयो', error: err.message } );
+    }
+} );
+
 
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.id;
@@ -258,7 +288,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         }
 
         await commitAsync();
-        console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${req.user.office_np}` );
+        console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${ req.user.office_np }` );
 
         res.json( {
             Status: true,
@@ -744,7 +774,9 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
 router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
-    console.log( selectedOffice );
+    // const forSelect = req.query.forSelect || 0;
+    const forSelect = req.query.forSelect === 'true' || req.query.forSelect === '1';
+    console.log( 'forSelect', forSelect );
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
     const page = parseInt( req.query.page ) || 0;
@@ -765,7 +797,6 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
         }
     }
-
     if ( nationality ) {
         // console.log(nationality)
         if ( baseWhere ) {
@@ -774,11 +805,19 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.nationality = '${ nationality }'`;
         }
     }
-
+    if(forSelect){baseWhere+= ` AND bp.is_active=1 `;}
     try {
         // STEP 1: Get paginated bandi IDs
-        const idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
-        const [idRows] = await con.promise().query( idQuery, [limit, offset] );
+        let idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC`;
+        let idRows;
+
+        if ( forSelect ) {
+            
+            [idRows] = await con.promise().query( idQuery );
+        } else {
+            idQuery += ` LIMIT ? OFFSET ?`;
+            [idRows] = await con.promise().query( idQuery, [limit, offset] );
+        }
 
         const bandiIds = idRows.map( row => row.id );
         if ( bandiIds.length === 0 ) {
@@ -1081,8 +1120,8 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
 router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
-    const dob_ad = await bs2ad(data.dob);
-    console.log(dob_ad)
+    const dob_ad = await bs2ad( data.dob );
+    console.log( dob_ad );
     try {
         const result = await queryAsync( `
             UPDATE bandi_person SET                
@@ -2971,17 +3010,84 @@ router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res 
     }
 } );
 
-// con.query( sql, ( error, results ) => {
-//     if ( error ) {
-//         console.error( 'Database query error:', error );
-//         return res.status( 500 ).json( { Status: false, Error: 'Database query failed.' } );
-//     }
 
-//     if ( results.length > 0 ) {
-//         return res.json( { Status: true, Result: results } );
-//     } else {
-//         return res.json( { Status: false, Error: 'No records found.' } );
-//     }
-// } );
+
+router.get( "/released_bandi_count", verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const targetOffice = req.query.office_id || active_office;
+    const isSuperOffice = active_office === 1 || active_office === 2;
+
+    const officeCondition = "bp.current_office_id = ?";    
+    const officeParams = [targetOffice];
+    
+
+    // Determine default range
+    const todayBS = new NepaliDate().format( 'YYYY-MM-DD' );
+    const fy = new NepaliDate().format( 'YYYY' ); // e.g., '2081'
+    const fyStart = `${ fy-1 }-04-01`;
+
+    // Accept query override
+    const from_date_bs = req.query.from_date || fyStart;
+    const to_date_bs = req.query.to_date || todayBS;
+
+    // console.log('fyStart:', fyStart)
+    // console.log('now:', to_date_bs)
+    // Used for separating this month vs earlier
+    const currentMonth = todayBS.slice( 0, 7 );
+
+    try {
+        const sql = `
+      SELECT 
+        brr.id AS reason_id,
+        brr.reasons_np,
+        bp.gender,
+        COUNT(*) AS count,
+        CASE 
+          WHEN LEFT(brd.karnayan_miti, 7) = ? THEN 'this_month'
+          ELSE 'till_last_month'
+        END AS period
+      FROM bandi_release_details brd
+      JOIN bandi_release_reasons brr ON brd.reason_id = brr.id
+      JOIN bandi_person bp ON brd.bandi_id = bp.id
+      WHERE brd.karnayan_miti IS NOT NULL AND bp.is_active=0
+        AND ${ officeCondition }
+        AND brd.karnayan_miti BETWEEN ? AND ?
+      GROUP BY brr.id, bp.gender, period
+      ORDER BY brr.id, bp.gender;
+    `;
+    
+    const results = await query( sql, [
+        currentMonth,      // for CASE
+        ...officeParams,
+        from_date_bs,
+        to_date_bs
+    ] );
+    // console.log('officeCondition',con.format(sql, currentMonth,...officeParams,from_date_bs, to_date_bs))
+    // console.log(results)
+        const formatted = {};
+        results.forEach( ( { reason_id, reasons_np, gender, count, period } ) => {
+            if ( !formatted[reason_id] ) {
+                formatted[reason_id] = {
+                    reason_id: reason_id,
+                    reason: reasons_np,
+                    till_last_month: { Male: 0, Female: 0, Other: 0 },
+                    this_month: { Male: 0, Female: 0, Other: 0 }
+                };
+            }
+            formatted[reason_id][period][gender] = count;
+        } );
+        
+        res.json( {
+            Status: true,
+            from_date: from_date_bs,
+            to_date: to_date_bs,
+            Result: formatted
+        } );
+
+    } catch ( error ) {
+        console.error( "DB Error:", error );
+        res.status( 500 ).json( { Status: false, Error: "Query failed" } );
+    }
+} );
 
 export { router as bandiRouter };
