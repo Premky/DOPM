@@ -86,17 +86,25 @@ const BandiTable = ( { bandi_id } ) => {
                 onClose={() => setPhotoModalOpen( false )}
                 currentPhoto={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : ''}
                 onSave={async ( formData ) => {
-                    try {
+                    try {                        
                         await axios.put(
                             `${ BASE_URL }/bandi/update_bandi_photo/${ fetchedBandi.bandi_id }`,
                             formData,
-                            { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } }
+                            {
+                                withCredentials: true,
+                                headers: { 'Content-Type': 'multipart/form-data' }
+                            }
                         );
                         fetchBandies(); // refresh photo
                         Swal.fire( 'सफल भयो!', 'फोटो अपडेट गरियो', 'success' );
                     } catch ( err ) {
+                        console.log( err );
                         Swal.fire( 'त्रुटि!', 'फोटो अपलोड गर्न सकिएन', 'error' );
                     }
+                }}
+                bandiMeta={{
+                    office_bandi_id:fetchedBandi.office_bandi_id,
+                    bandi_name: fetchedBandi.bandi_name
                 }}
             />
             <Grid item container spacing={2}>

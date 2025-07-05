@@ -26,6 +26,7 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import ReusePhotoInput from '../../ReuseableComponents/ReusePhotoInput';
 import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
+import ReuseCustomDate from '../../ReuseableComponents/ReuseCustomDate';
 
 
 const BandiPersonForm = () => {
@@ -73,7 +74,7 @@ const BandiPersonForm = () => {
   const is_active = watch( 'is_active' );
 
   useEffect( () => {
-    console.log( is_active );
+    // console.log( is_active );
   }, [is_active] );
 
 
@@ -205,7 +206,7 @@ const BandiPersonForm = () => {
     <form onSubmit={handleSubmit( onSubmit )}>
       <Grid container spacing={2}>
         <Grid item xs={12} sx={formHeadStyle}>
-          बन्दीको विवरणः
+          बन्दीको विवरणः 
         </Grid>
         <Grid item container xs={9} sm={8} md={10}>
           <Grid item xs={12} sm={6} md={3}>
@@ -763,7 +764,7 @@ const BandiPersonForm = () => {
         {[...Array( familyCount )].map( ( _, index ) => {
           const currentRelation = watch( `family[${ index }].bandi_relative_relation` );
           const isDependent = watch( `family[${ index }].is_dependent` );
-          console.log( isDependent );
+          // console.log( isDependent );
           return (
             <Grid item container xs={12} key={index}>
               <Grid item xs={12} sm={6} md={2}>

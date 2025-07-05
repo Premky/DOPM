@@ -4,23 +4,25 @@ import {
   Button, Box, Avatar, Stack
 } from '@mui/material';
 
-const UpdatePhotoModal = ({ open, onClose, onSave, currentPhoto }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewURL, setPreviewURL] = useState('');
+const UpdatePhotoModal = ( { open, onClose, onSave, currentPhoto, bandiMeta } ) => {
+  const [selectedFile, setSelectedFile] = useState( null );
+  const [previewURL, setPreviewURL] = useState( '' );
 
-  const handleFileChange = (event) => {
+  const handleFileChange = ( event ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewURL(URL.createObjectURL(file));
+    if ( file ) {
+      setSelectedFile( file );
+      setPreviewURL( URL.createObjectURL( file ) );
     }
   };
 
   const handleSave = () => {
-    if (selectedFile) {
+    if ( selectedFile ) {
       const formData = new FormData();
-      formData.append('photo', selectedFile);
-      onSave(formData); // You handle upload API outside
+      formData.append( 'office_bandi_id', bandiMeta.office_bandi_id );
+      formData.append( 'bandi_name', bandiMeta.bandi_name );
+      formData.append( 'photo', selectedFile );
+      onSave( formData ); // You handle upload API outside
       onClose();
     }
   };
