@@ -23,8 +23,8 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3003;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath( import.meta.url );
+const __dirname = path.dirname( __filename );
 
 // ------------------- ✅ CORS FIRST -------------------
 const hardOrigins = [
@@ -45,48 +45,51 @@ const hardOrigins = [
 ];
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',')
+    ? process.env.ALLOWED_ORIGINS.split( ',' )
     : hardOrigins;
 
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
+app.use( cors( {
+    origin: ( origin, callback ) => {
+        if ( !origin || allowedOrigins.includes( origin ) ) {
+            callback( null, true );
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback( new Error( 'Not allowed by CORS' ) );
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
-}));
+} ) );
 
 app.use(
-  '/uploads',
-  (req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin && allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      // Allow direct browser access (no CORS header sent by <img> from same-origin)
-      res.setHeader('Access-Control-Allow-Origin', '*');
-    }
-    next();
-  },
-  express.static(path.join(__dirname, 'uploads')) // ← make sure this path is correct
+    '/uploads',
+    ( req, res, next ) => {
+        const origin = req.headers.origin;
+        if ( origin && allowedOrigins.includes( origin ) ) {
+            res.setHeader( 'Access-Control-Allow-Origin', origin );
+        } else {
+            // Allow direct browser access (no CORS header sent by <img> from same-origin)
+            res.setHeader( 'Access-Control-Allow-Origin', '*' );
+        }
+        // res.setHeader( 'Cross-Origin-Resource-Policy', 'cross-origin' ); // ✅ Required for image sharing
+        // res.setHeader( 'Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept' );
+
+        next();
+    },
+    express.static( path.join( __dirname, 'uploads' ) ) // ← make sure this path is correct
 );
 
 
 // ✅ Preflight support for CORS
-app.options('*', cors());
+app.options( '*', cors() );
 
 // ------------------- ✅ Middleware -------------------
-app.use(helmet());
-app.use(express.json());
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use( helmet() );
+app.use( express.json() );
+app.use( cookieParser() );
+app.use( bodyParser.urlencoded( { extended: true } ) );
 
 // ------------------- ✅ Session AFTER CORS -------------------
-app.use(session({
+app.use( session( {
     secret: process.env.JWT_SECRET || 'jwt_prem_ko_secret_key',
     resave: false,
     saveUninitialized: false,
@@ -96,49 +99,49 @@ app.use(session({
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ safer fallback
         maxAge: 24 * 60 * 60 * 1000
     }
-}));
+} ) );
 
 // console.log(process.env.NODE_ENV === 'production')
 
 // ------------------- ✅ Logging & Compression -------------------
-if (process.env.NODE_ENV !== 'production') {
-    app.use(morgan('dev'));
+if ( process.env.NODE_ENV !== 'production' ) {
+    app.use( morgan( 'dev' ) );
 } else {
-    app.use(morgan('tiny'));
+    app.use( morgan( 'tiny' ) );
 }
-app.use(compression());
+app.use( compression() );
 
 // ------------------- ✅ Rate Limiting (Optional) -------------------
-const limiter = rateLimit({
+const limiter = rateLimit( {
     windowMs: 10 * 60 * 1000,
     max: 100,
     message: 'Too many requests from this IP, please try again later.'
-});
+} );
 // app.use(limiter);
 
 // ------------------- ✅ Static Files -------------------
-app.use(express.static('Public'));
+app.use( express.static( 'Public' ) );
 // app.use('/Uploads', express.static(path.join(__dirname, 'Public', 'Uploads')));
 // Best choice for your case
-app.use('/uploads', express.static('uploads'));
+app.use( '/uploads', express.static( 'uploads' ) );
 
 // ------------------- ✅ Routes -------------------
-app.use('/auth', authRouter);
-app.use('/public', publicRouter);
-app.use('/emp', employeRouter);
-app.use('/bandi', bandiRouter);
-app.use('/payrole', payroleRouter);
+app.use( '/auth', authRouter );
+app.use( '/public', publicRouter );
+app.use( '/emp', employeRouter );
+app.use( '/bandi', bandiRouter );
+app.use( '/payrole', payroleRouter );
 
 // ------------------- ✅ Error Handler -------------------
-app.use(errorHandler);
+app.use( errorHandler );
 
 // ------------------- ✅ Server Start -------------------
-app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
-});
+app.listen( port, () => {
+    console.log( `🚀 Server running on port ${ port }` );
+} );
 
 // ------------------- ✅ Graceful Shutdown -------------------
-process.on('SIGINT', () => {
-    console.log('👋 Server shutting down...');
+process.on( 'SIGINT', () => {
+    console.log( '👋 Server shutting down...' );
     process.exit();
-});
+} );

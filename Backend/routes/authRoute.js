@@ -150,8 +150,8 @@ router.delete( '/delete_user/:id', async ( req, res ) => {
 router.post( '/login', async ( req, res ) => {
     const { username, password } = req.body;
     // console.log(req.body)
-    console.log( username );
     const validation = validateLoginInput( username, password );
+    console.log( username );
     if ( !validation.isValid ) {
         return res.status( 400 ).json( { loginStatus: false, Error: validation.message } );
     }

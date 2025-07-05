@@ -167,6 +167,19 @@ LEFT JOIN np_state ns ON ba.province_id = ns.state_id
 LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
+router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async(req,res)=>{
+    const user_id=req.user.id;
+    const active_office = req.user.office_id;
+    const id=req.params.id;
+    const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
+    const data = req.body;
+    
+    //get previous photo name:
+    const sql = `SELECT photo_path from bandi_person WHERE id=${id}`
+    const old_photo = await queryAsync(sql)
+    console.log('old_photo', old_photo)
+
+})
 
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.id;
@@ -275,7 +288,6 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
 router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
     const current_office_id = req.user.office_id;
-
     const {
         bandi_id,
         punarabedan_office_id,
@@ -286,7 +298,7 @@ router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     } = req.body;
 
     // Basic validation
-    if ( !bandi_id || !punarabedan_office_id || !punarabedan_office_district || !punarabedan_office_ch_no || !punarabedan_office_date ) {
+    if ( !bandi_id || !punarabedan_office_id || !punarabedan_office_ch_no || !punarabedan_office_date ) {
         return res.status( 400 ).json( {
             Status: false,
             message: "सबै आवश्यक फिल्डहरू भरिएको हुनुपर्छ।"
@@ -350,7 +362,7 @@ router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( re
     // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
     // console.log(req.body)
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
-    console.log( photo_path );
+    // console.log( photo_path );
     const {
         bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, age, married_status,
         bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks,
@@ -492,17 +504,17 @@ router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( re
         if ( Array.isArray( family ) && family.length > 0 ) {
 
             const insertFamilySQL = `
-    INSERT INTO bandi_relative_info (
-      bandi_id,
-      relative_name,
-      relation_id,
-      relative_address,
-      dob,
-      is_dependent,
-      contact_no
-    )
-    VALUES ?
-  `;
+                INSERT INTO bandi_relative_info (
+                bandi_id,
+                relative_name,
+                relation_id,
+                relative_address,
+                dob,
+                is_dependent,
+                contact_no
+                )
+                VALUES ?
+            `;
 
             const familyValues = family.map( item => [
                 bandi_id,
@@ -597,8 +609,6 @@ router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( re
 // bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
 // bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
 
-
-
 const getBandiQuery = `
     SELECT 
     b.id AS bandi_id,
@@ -610,6 +620,9 @@ const getBandiQuery = `
     b.dob_ad,
     TIMESTAMPDIFF(YEAR, b.dob_ad, CURDATE()) AS current_age,
     b.status AS bandi_status,
+    b.bandi_education,
+    b.bandi_huliya,
+    b.married_status,
     b.photo_path,
     b.is_active,
 
@@ -1068,16 +1081,17 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
 router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
-    // console.log(data)
+    const dob_ad = await bs2ad(data.dob);
+    console.log(dob_ad)
     try {
         const result = await queryAsync( `
             UPDATE bandi_person SET                
-                bandi_name = ?, gender = ?, dob = ?, married_status = ?,
+                bandi_name = ?, gender = ?, dob = ?, dob_ad=?, married_status = ?,
                 bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
                 updated_by = ?, updated_at = NOW()
             WHERE id = ?
         `, [
-            data.bandi_name, data.gender, data.dob, data.married_status,
+            data.bandi_name, data.gender, data.dob, dob_ad, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
             req.user.id, id
         ] );
@@ -1589,13 +1603,26 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
         deposit_amount, district_name_np, fine_type
     } = req.body;
     // console.log(req.body)
-    const updated_by = 1;
-    const sql = `UPDATE bandi_fine_details SET amount_fixed =?, amount_deposited =?, deposit_office =?, deposit_district =?, deposit_ch_no =?,
-    deposit_date =?, deposit_amount =? WHERE id =? `;
-    const values = [
-        amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
-        deposit_amount, id
-    ];
+    let sql;
+    let values;
+    sql = `UPDATE bandi_fine_details SET amount_fixed =?, amount_deposited =?, deposit_office =?, deposit_district =?, deposit_ch_no =?,
+    deposit_date =?, deposit_amount =?, updated_by=? WHERE id =? `;
+    if ( Number( amount_fixed ) === 1 ) {
+        if ( Number( amount_deposited ) === 1 ) {
+            values = [
+                amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
+                deposit_amount, user_id, id
+            ];
+        } else {
+            values = [
+                amount_fixed, amount_deposited, null, null, null, null, deposit_amount, user_id, id
+            ];
+        }
+    } else {
+        values = [
+            amount_fixed, null, null, null, null, null, null, user_id, id
+        ];
+    }
     try {
         const result = await query( sql, values );
         console.log( result );
@@ -1627,7 +1654,7 @@ router.get( '/get_bandi_punrabedn/:id', async ( req, res ) => {
     nd.district_name_np
         FROM bandi_punarabedan_details bpd
         LEFT JOIN offices o ON bpd.punarabedan_office_id = o.id
-        LEFT JOIN np_district nd ON bpd.punarabedan_office_district = nd.did
+        LEFT JOIN np_district nd ON o.district_Id = nd.did
         WHERE bandi_id = ?
     `;
 
