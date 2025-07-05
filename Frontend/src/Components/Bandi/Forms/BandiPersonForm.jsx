@@ -557,7 +557,7 @@ const BandiPersonForm = () => {
             <ReuseDateField
               name="release_date_bs"
               label="छुट्ने मिती"
-              placeholder='YYYY-DD-MM'
+              placeholder='YYYY-MM-DD'
               required={true}
               control={control}
               error={errors.release_date_bs}
@@ -667,7 +667,7 @@ const BandiPersonForm = () => {
           <ReuseDateField
             name="card_issue_date"
             label="परिचय पत्र जारी मिती"
-            placeholder='YYYY-DD-MM'
+            placeholder='YYYY-MM-DD'
             // required={idcardtype !== 6 || idcardtype==''}
             required={false}
             control={control}
