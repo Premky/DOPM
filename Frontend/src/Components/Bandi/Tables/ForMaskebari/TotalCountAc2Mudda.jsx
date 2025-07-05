@@ -1,7 +1,7 @@
-import { Box, Grid2, Paper, Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Grid2, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react';
 
-const TotalCountAc2Mudda = () => {
+const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {    
     return (
         <div>
             <Grid2 container>
@@ -29,19 +29,35 @@ const TotalCountAc2Mudda = () => {
                                     <TableCell>कैदी</TableCell>
                                     <TableCell>थुनुवा</TableCell>
                                 </TableRow>
-                                <TableRow>
-                                    <TableCell>सि.नं.</TableCell>
-                                    <TableCell>मुद्दा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                </TableRow>
                             </TableHead>
+                            <TableBody>
+                                {Array.isArray( muddawiseCount ) && muddawiseCount.map( ( item, index ) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{index + 1}</TableCell> {/* सि.नं. */}
+                                        <TableCell>{item.mudda_name}</TableCell> {/* मुद्दा */}
+                                        <TableCell>{item.KaidiTotal}</TableCell>
+                                        <TableCell>{item.ThunuwaTotal}</TableCell>
+                                        <TableCell>{item.KaidiMale}</TableCell>
+                                        <TableCell>{item.ThunuwaFemale}</TableCell>
+                                        <TableCell>{item.KaidiFemale}</TableCell>
+                                        <TableCell>{item.ThunuwaFemale}</TableCell>
+                                        <TableCell>{item.KaidiAgeAbove65}</TableCell>
+                                        <TableCell>{item.ThunuwaAgeAbove65}</TableCell>
+                                        <TableCell></TableCell>
+                                    </TableRow>
+                                ) )}
+                                <TableRow>
+                                    <TableCell colSpan={2}>जम्मा</TableCell> {/* मुद्दा */}                            ‍                                    
+                                    <TableCell>{muddawisetotal.ThunuwaTotal}</TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>                                    
+                                    <TableCell></TableCell>                                    
+                                </TableRow>
+
+                            </TableBody>
 
                         </Table>
                     </TableContainer>

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../Context/BaseURLProvider";
 
-const fetchAllReleaseCounts = ( bandi_id ) => {
+const fetchMuddaWiseCount = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -12,7 +12,7 @@ const fetchAllReleaseCounts = ( bandi_id ) => {
     useEffect( () => {
         const fetchRecords = async () => {
             try {
-                const response = await axios.get( `${ BASE_URL }/bandi/released_bandi_count`, { withCredentials: true } );
+                const response = await axios.get( `${ BASE_URL }/bandi/get_prisioners_count`, { withCredentials: true } );
                 // console.log( response );
                 const { Status, Result, Error } = response.data;
                 if ( Status ) {
@@ -45,4 +45,4 @@ const fetchAllReleaseCounts = ( bandi_id ) => {
     return { records, optrecords, loading };
 };
 
-export default fetchAllReleaseCounts;
+export default fetchMuddaWiseCount;

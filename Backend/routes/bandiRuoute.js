@@ -385,257 +385,6 @@ router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
 } );
 
 
-
-router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.id;
-    // console.log('activeoffice:', active_office, ',', 'user_id:',user_id)
-    // console.log(req.body)
-    const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
-    // console.log( photo_path );
-    const {
-        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, age, married_status,
-        bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks,
-        id_card_type, card_name, card_no, card_issue_district_id, card_issue_date,
-        nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details,
-        hirasat_date_bs, thuna_date_bs, release_date_bs, hirasat_years, hirasat_months, hirasat_days,
-        is_bigo, is_bigo_paid, bigo_amt, bigo_paid_cn, bigo_paid_date, bigo_paid_office, bigo_paid_office_district,
-        is_compensation, is_compensation_paid, compensation_amt, compensation_paid_cn, compensation_paid_date, compensation_paid_office, compensation_paid_office_district,
-        is_fine_fixed, is_fine_paid, fine_amt, fine_paid_cn, fine_paid_date, fine_paid_office, fine_paid_office_district,
-        punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date,
-    } = req.body;
-
-
-
-    const dob_ad = await bs2ad( dob );
-    const hirasatdatead = await bs2ad( hirasat_date_bs );
-
-    console.log( 'hirasat:', hirasatdatead );
-
-    const bandiPerson = [
-        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path,
-        bandi_education, bandi_height, bandi_weight, bandi_huliya, bandi_remarks, user_id, user_id, active_office];
-
-    try {
-        await beginTransactionAsync();
-        // 1. Insert into bandi_records
-        const insertBandiInfoSQL = `
-        INSERT INTO bandi_person(
-        bandi_type, office_bandi_id, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path, 
-        bandi_education, height, weight, bandi_huliya, remarks, created_by, updated_by, current_office_id) VALUES (?)`;
-
-        const bandiResult = await queryAsync( insertBandiInfoSQL, [bandiPerson] );
-        const bandi_id = bandiResult.insertId;
-
-        // 2. Insert into bandi_kaid_detao;s
-        // const hirasatDateAd = await bs2ad(hirasat_date_bs);
-        let thunaDateAd = '1900-01-01';
-        let releaseDateAd = '1900-01-01';
-        if ( hirasat_date_bs ) {
-            thunaDateAd = await bs2ad( hirasat_date_bs );
-        }
-        if ( release_date_bs ) {
-            releaseDateAd = await bs2ad( release_date_bs );
-        }
-
-        const kaidDetails = [bandi_id, hirasat_years, hirasat_months, hirasat_days, hirasat_date_bs, thunaDateAd, release_date_bs, releaseDateAd,
-            user_id, user_id, active_office
-        ];
-        const insertKaidDetails = `INSERT INTO bandi_kaid_details(bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, 
-                                    thuna_date_ad, release_date_bs, release_date_ad, created_by, updated_by, current_office_id) VALUES(?)`;
-        await queryAsync( insertKaidDetails, [kaidDetails] );
-
-        // 3. Insert into bandi_card_details
-        const cardRecord = [bandi_id, id_card_type, card_name, card_no, card_issue_district_id, card_issue_date, user_id, active_office];
-        const insertCardDetails = `INSERT INTO bandi_id_card_details(bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, current_office_id) VALUES(?)`;
-        await queryAsync( insertCardDetails, [cardRecord] );
-
-        //4. Insert into bandi_address_details:
-        const addressRecord = [bandi_id, nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details, active_office];
-        const insertAddressRecord = `INSERT INTO bandi_address(bandi_id, nationality_id, province_id, district_id,
-                                    gapa_napa_id, wardno, bidesh_nagarik_address_details, current_office_id) VALUES(?)`;
-        await queryAsync( insertAddressRecord, [addressRecord] );
-
-        // 5. Insert involved mudda
-        const muddaEntries = Object.entries( req.body ).filter( ( [key] ) =>
-            key.startsWith( "mudda_" )
-        );
-
-        // Get all keys that start with 'mudda_id_' and extract unique indexes
-        const muddaIndexes = new Set(
-            Object.keys( req.body )
-                .filter( key => key.startsWith( 'mudda_id_' ) )
-                .map( key => key.split( '_' )[2] ) // extract the index part
-        );
-
-        for ( const muddaIndex of muddaIndexes ) {
-            const mudda_id = req.body[`mudda_id_${ muddaIndex }`] || '';
-            const mudda_no = req.body[`mudda_no_${ muddaIndex }`] || '';
-            const is_last_mudda = req.body[`is_last_mudda_${ muddaIndex }`] || '';
-            const is_main_mudda = req.body[`is_main_mudda_${ muddaIndex }`] || '';
-            const mudda_condition = req.body[`mudda_condition_${ muddaIndex }`] || '';
-            const mudda_district = req.body[`mudda_district_${ muddaIndex }`] || '';
-            const mudda_office = req.body[`mudda_office_${ muddaIndex }`] || '';
-            const vadi = req.body[`vadi_${ muddaIndex }`] || '';
-            const mudda_phesala_date = req.body[`mudda_phesala_date_${ muddaIndex }`] || '';
-
-            const muddaRecord = [bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda, mudda_condition,
-                mudda_district, mudda_office, mudda_phesala_date, vadi, active_office];
-            const insertMuddaSQL = `
-            INSERT INTO bandi_mudda_details (
-                bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
-                mudda_condition, mudda_phesala_antim_office_district,
-                mudda_phesala_antim_office_id, mudda_phesala_antim_office_date,vadi, current_office_id
-
-            ) VALUES (?)`;
-
-            await queryAsync( insertMuddaSQL, [muddaRecord] );
-        }
-
-        //6. Insert into fine table 
-        const fineRecord = [
-            bandi_id, 'जरिवाना', is_fine_fixed, fine_amt, is_fine_paid, fine_paid_office_district, fine_paid_cn, fine_paid_date, fine_paid_office,
-        ];
-        const compensationRecord = [
-            bandi_id, 'क्षतिपुर्ती', is_compensation, compensation_amt, is_compensation_paid, compensation_paid_office_district,
-            compensation_paid_cn, compensation_paid_date, compensation_paid_office,
-        ];
-        const bigoRecord = [
-            bandi_id, 'विगो तथा कोष', is_bigo, bigo_amt, is_bigo_paid, bigo_paid_office_district, bigo_paid_cn, bigo_paid_date, bigo_paid_office
-        ];
-        const insertFines = `INSERT INTO bandi_fine_details(
-        bandi_id, fine_type, amount_fixed, deposit_amount, amount_deposited, deposit_district,  
-                        deposit_ch_no, deposit_date, deposit_office) VALUES(?)`;
-
-        await queryAsync( insertFines, [fineRecord] );
-        await queryAsync( insertFines, [compensationRecord] );
-        await queryAsync( insertFines, [bigoRecord] );
-
-        const punrabednRecord = [
-            bandi_id, punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date
-        ];
-        const insertpunrabedn = `INSERT INTO bandi_punarabedan_details(
-           bandi_id, punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date) VALUES(?)`;
-        await queryAsync( insertpunrabedn, [punrabednRecord] );
-
-        // 7. Insert Family Details
-        let family = [];
-
-        try {
-            family = req.body.family ? JSON.parse( req.body.family ) : [];
-        } catch ( err ) {
-            return res.status( 400 ).json( {
-                Status: false,
-                Error: 'Invalid family data format. Expected an array.',
-            } );
-        }
-
-
-        if ( Array.isArray( family ) && family.length > 0 ) {
-
-            const insertFamilySQL = `
-                INSERT INTO bandi_relative_info (
-                bandi_id,
-                relative_name,
-                relation_id,
-                relative_address,
-                dob,
-                is_dependent,
-                contact_no
-                )
-                VALUES ?
-            `;
-
-            const familyValues = family.map( item => [
-                bandi_id,
-                item.bandi_relative_name || null,
-                item.bandi_relative_relation || null,
-                item.bandi_relative_address || null,
-                item.dob || null,
-                0,
-                item.bandi_relative_contact_no || null
-            ] );
-
-            await queryAsync( insertFamilySQL, [familyValues] );
-        }
-
-        // 8. Insert Contact Details
-        let conatact_person = [];
-
-        try {
-            conatact_person = req.body.conatact_person ? JSON.parse( req.body.conatact_person ) : [];
-        } catch ( err ) {
-            return res.status( 400 ).json( {
-                Status: false,
-                Error: 'Invalid conatact_person data format. Expected an array.',
-            } );
-        }
-
-
-        if ( Array.isArray( conatact_person ) && conatact_person.length > 0 ) {
-            const insertFamilySQL = `
-    INSERT INTO bandi_contact_person (
-      bandi_id,
-      relation_id,
-      contact_name,
-      contact_address,
-      contact_contact_details,
-      created_by,
-      current_office_id
-    )
-    VALUES ?
-  `;
-            //9. Insert into bandi_address_details:
-            const addressRecord = [bandi_id, nationality_id, state_id, district_id, municipality_id, wardno, bidesh_nagrik_address_details, active_office];
-            const insertAddressRecord = `INSERT INTO bandi_address(bandi_id, nationality_id, province_id, district_id,
-                                    gapa_napa_id, wardno, bidesh_nagarik_address_details, current_office_id) VALUES(?)`;
-            await queryAsync( insertAddressRecord, [addressRecord] );
-
-            const familyValues = conatact_person.map( item => [
-                bandi_id,
-                item.relation_id || null,
-                item.contact_name || null,
-                item.contact_address || null,
-                item.contact_contact_details || null
-            ] );
-
-            await queryAsync( insertFamilySQL, [familyValues] );
-        }
-
-
-        await commitAsync(); // Commit the transaction
-
-        return res.json( {
-            Result: bandi_id,
-            Status: true,
-            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        } );
-
-    } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
-
-        // Delete the uploaded file 
-        if ( req.file ) {
-            const filePath = path.join( __dirname, 'uploads', 'bandi_photos', req.file.filename );
-            fs.unlink( filePath, ( unlinkErr ) => {
-                if ( unlinkErr ) {
-                    console.log( 'Failed to delete uploaded file:', unlinkErr );
-                } else {
-                    console.log( 'Uploaded file deleted due to error.' );
-                }
-            } );
-        }
-
-        console.error( "Transaction failed:", error );
-        return res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        } );
-    }
-} );
-
-
 // bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
 // bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
 
@@ -805,14 +554,14 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.nationality = '${ nationality }'`;
         }
     }
-    if(forSelect){baseWhere+= ` AND bp.is_active=1 `;}
+    if ( forSelect ) { baseWhere += ` AND bp.is_active=1 `; }
     try {
         // STEP 1: Get paginated bandi IDs
         let idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC`;
         let idRows;
 
         if ( forSelect ) {
-            
+
             [idRows] = await con.promise().query( idQuery );
         } else {
             idQuery += ` LIMIT ? OFFSET ?`;
@@ -2408,8 +2157,8 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
     // Only include main and last mudda to avoid duplicates
     filters.push( "bp.is_active = 1" );
-    filters.push( "bmd.is_main_mudda = 1" );
-    filters.push( "bmd.is_last_mudda = 1" );
+    filters.push( "bmd.is_main_mudda = 1 OR bmd.is_last_mudda=1" );
+    // filters.push( "bmd.is_last_mudda = 1" );
 
     // Age filter
     if ( ageFrom && ageTo ) {
@@ -3010,21 +2759,377 @@ router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res 
     }
 } );
 
+router.get("/released_bandi_count", verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const targetOffice = req.query.office_id || active_office;
+    const officeParams = [targetOffice];
+
+    const todayBS = new NepaliDate().format("YYYY-MM-DD");
+    const fy = new NepaliDate().format("YYYY");
+    const fyStart = `${fy - 1}-04-01`;
+
+    const from_date_bs = req.query.from_date || fyStart;
+    const to_date_bs = req.query.to_date || todayBS;
+    const currentMonth = todayBS.slice(0, 7);
+    const monthStart = `${currentMonth}-01`;
+
+    const formatGenderCounts = (rows, base = { Male: 0, Female: 0, Other: 0 }) => {
+        const counts = { ...base };
+        rows.forEach(({ gender, count }) => {
+            if (gender && counts.hasOwnProperty(gender)) {
+                counts[gender] += Number(count);
+            }
+        });
+        counts.Total = counts.Male + counts.Female + counts.Other;
+        return counts;
+    };
+
+    try {
+        // 📤 Original release reasons
+        const releaseSql = `
+      WITH reasons AS (
+  SELECT id AS reason_id, reasons_np FROM bandi_release_reasons
+),
+genders AS (
+  SELECT 'Male' AS gender
+  UNION ALL SELECT 'Female'
+  UNION ALL SELECT 'Other'
+),
+periods AS (
+  SELECT 'this_month' AS period
+  UNION ALL SELECT 'till_last_month'
+),
+reason_gender_periods AS (
+  SELECT r.reason_id, r.reasons_np, g.gender, p.period
+  FROM reasons r
+  CROSS JOIN genders g
+  CROSS JOIN periods p
+),
+actual_counts AS (
+  SELECT 
+    brd.reason_id,
+    bp.gender,
+    CASE 
+      WHEN LEFT(brd.karnayan_miti, 7) = ? THEN 'this_month'
+      ELSE 'till_last_month'
+    END AS period,
+    COUNT(*) AS count
+  FROM bandi_release_details brd
+  JOIN bandi_person bp ON brd.bandi_id = bp.id
+  WHERE brd.karnayan_miti IS NOT NULL
+    AND bp.is_active = 0
+    AND bp.current_office_id = ?
+    AND brd.karnayan_miti BETWEEN ? AND ?
+  GROUP BY brd.reason_id, bp.gender, period
+)
+SELECT 
+  rgp.reason_id,
+  rgp.reasons_np,
+  rgp.gender,
+  rgp.period,
+  COALESCE(ac.count, 0) AS count
+FROM reason_gender_periods rgp
+LEFT JOIN actual_counts ac ON
+  rgp.reason_id = ac.reason_id AND
+  rgp.gender = ac.gender AND
+  rgp.period = ac.period
+ORDER BY rgp.reason_id, rgp.gender, rgp.period;
+    `;
+
+        const releaseResults = await query(releaseSql, [
+            currentMonth,
+            ...officeParams,
+            from_date_bs,
+            to_date_bs
+        ]);
+
+        const formatted = {};
+
+        releaseResults.forEach(({ reason_id, reasons_np, gender, count, period }) => {
+            if (!formatted[reason_id]) {
+                formatted[reason_id] = {
+                    reason_id,
+                    reason: reasons_np,
+                    till_last_month: { Male: 0, Female: 0, Other: 0, Total: 0 },
+                    this_month: { Male: 0, Female: 0, Other: 0, Total: 0 }
+                };
+            }
+            formatted[reason_id][period][gender] = count;
+            formatted[reason_id][period].Total =
+                (formatted[reason_id][period].Male || 0) +
+                (formatted[reason_id][period].Female || 0) +
+                (formatted[reason_id][period].Other || 0);
+        });
+
+        // 🔄 New aggregates
+        const [
+            activeBeforeThisMonth,
+            releasedThisMonth,
+            addedThisMonth,
+            dependentActive
+        ] = await Promise.all([
+            query(`
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_person bp
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+        WHERE bp.is_active = 1 AND bp.current_office_id = ?
+          AND LEFT(bkd.thuna_date_bs, 7) < ?
+        GROUP BY bp.gender;
+      `, [targetOffice, currentMonth]),
+
+            query(`
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_release_details brd
+        JOIN bandi_person bp ON bp.id = brd.bandi_id
+        WHERE bp.current_office_id = ?
+          AND LEFT(brd.karnayan_miti, 7) = ?
+        GROUP BY bp.gender;
+      `, [targetOffice, currentMonth]),
+
+            query(`
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_person bp
+        JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+        WHERE bp.current_office_id = ?
+          AND bkd.thuna_date_bs BETWEEN ? AND ?
+        GROUP BY bp.gender;
+      `, [targetOffice, monthStart, to_date_bs]),
+
+            query(`
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_person bp
+        JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+        WHERE bp.current_office_id = ?
+          AND bp.is_active = 1
+          AND bri.is_dependent = 1
+        GROUP BY bp.gender;
+      `, [targetOffice])
+        ]);
+
+        // 🧩 Add to unified output for reason_ids 9, 10, 11
+        formatted[9] = {
+            reason_id: 9,
+            reason: "Active Count Till Last Month", // Custom reason for reason_id 8
+            till_last_month: formatGenderCounts([...activeBeforeThisMonth, ...releasedThisMonth]),
+            this_month: formatGenderCounts([])
+        };
+
+        formatted[10] = {
+            reason_id: 10,
+            reason: "Added This Month", // Custom reason for reason_id 9
+            till_last_month: formatGenderCounts([]),
+            this_month: formatGenderCounts(addedThisMonth)
+        };
+
+        formatted[11] = {
+            reason_id: 11,
+            reason: "Dependent Active", // Custom reason for reason_id 10
+            till_last_month: formatGenderCounts(dependentActive),
+            this_month: formatGenderCounts([])
+        };
+
+        res.json({
+            Status: true,
+            from_date: from_date_bs,
+            to_date: to_date_bs,
+            Result: formatted
+        });
+    } catch (err) {
+        console.error("DB Error:", err);
+        res.status(500).json({ Status: false, Error: "Query failed" });
+    }
+});
 
 
-router.get( "/released_bandi_count", verifyToken, async ( req, res ) => {
+
+router.get( "/released_bandi_count2", verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const targetOffice = req.query.office_id || active_office;
+    const officeParams = [targetOffice];
+
+    const todayBS = new NepaliDate().format( "YYYY-MM-DD" );
+    const fy = new NepaliDate().format( "YYYY" );
+    const fyStart = `${ fy - 1 }-04-01`;
+
+    const from_date_bs = req.query.from_date || fyStart;
+    const to_date_bs = req.query.to_date || todayBS;
+    const currentMonth = todayBS.slice( 0, 7 );
+    const monthStart = `${ currentMonth }-01`;
+
+    const formatGenderCounts = ( rows, base = { Male: 0, Female: 0, Other: 0 } ) => {
+        const counts = { ...base };
+        rows.forEach( ( { gender, count } ) => {
+            if ( gender && counts.hasOwnProperty( gender ) ) {
+                counts[gender] += Number( count );
+            }
+        } );
+        counts.Total = counts.Male + counts.Female + counts.Other;
+        return counts;
+    };
+
+    try {
+        // 📤 Original release reasons
+        const releaseSql = `
+      WITH reasons AS (
+  SELECT id AS reason_id, reasons_np FROM bandi_release_reasons
+),
+genders AS (
+  SELECT 'Male' AS gender
+  UNION ALL SELECT 'Female'
+  UNION ALL SELECT 'Other'
+),
+periods AS (
+  SELECT 'this_month' AS period
+  UNION ALL SELECT 'till_last_month'
+),
+reason_gender_periods AS (
+  SELECT r.reason_id, r.reasons_np, g.gender, p.period
+  FROM reasons r
+  CROSS JOIN genders g
+  CROSS JOIN periods p
+),
+actual_counts AS (
+  SELECT 
+    brd.reason_id,
+    bp.gender,
+    CASE 
+      WHEN LEFT(brd.karnayan_miti, 7) = ? THEN 'this_month'
+      ELSE 'till_last_month'
+    END AS period,
+    COUNT(*) AS count
+  FROM bandi_release_details brd
+  JOIN bandi_person bp ON brd.bandi_id = bp.id
+  WHERE brd.karnayan_miti IS NOT NULL
+    AND bp.is_active = 0
+    AND bp.current_office_id = ?
+    AND brd.karnayan_miti BETWEEN ? AND ?
+  GROUP BY brd.reason_id, bp.gender, period
+)
+SELECT 
+  rgp.reason_id,
+  rgp.reasons_np,
+  rgp.gender,
+  rgp.period,
+  COALESCE(ac.count, 0) AS count
+FROM reason_gender_periods rgp
+LEFT JOIN actual_counts ac ON
+  rgp.reason_id = ac.reason_id AND
+  rgp.gender = ac.gender AND
+  rgp.period = ac.period
+ORDER BY rgp.reason_id, rgp.gender, rgp.period;
+    `;
+
+        const releaseResults = await query( releaseSql, [
+            currentMonth,
+            ...officeParams,
+            from_date_bs,
+            to_date_bs
+        ] );
+
+        const formatted = {};
+
+        releaseResults.forEach( ( { reason_id, reasons_np, gender, count, period } ) => {
+            if ( !formatted[reason_id] ) {
+                formatted[reason_id] = {
+                    reason_id,
+                    reason: reasons_np,
+                    till_last_month: { Male: 0, Female: 0, Other: 0, Total: 0 },
+                    this_month: { Male: 0, Female: 0, Other: 0, Total: 0 }
+                };
+            }
+            formatted[reason_id][period][gender] = count;
+            formatted[reason_id][period].Total =
+                ( formatted[reason_id][period].Male || 0 ) +
+                ( formatted[reason_id][period].Female || 0 ) +
+                ( formatted[reason_id][period].Other || 0 );
+        } );
+
+        // 🔄 New aggregates
+        const [
+            activeBeforeThisMonth,
+            releasedThisMonth,
+            addedThisMonth,
+            dependentActive
+        ] = await Promise.all( [
+            query( `
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_person bp
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+        WHERE bp.is_active = 1 AND bp.current_office_id = ?
+          AND LEFT(bkd.thuna_date_bs, 7) < ?
+        GROUP BY bp.gender;
+      `, [targetOffice, currentMonth] ),
+
+            query( `
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_release_details brd
+        JOIN bandi_person bp ON bp.id = brd.bandi_id
+        WHERE bp.current_office_id = ?
+          AND LEFT(brd.karnayan_miti, 7) = ?
+        GROUP BY bp.gender;
+      `, [targetOffice, currentMonth] ),
+
+            query( `
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_person bp
+        JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+        WHERE bp.current_office_id = ?
+          AND bkd.thuna_date_bs BETWEEN ? AND ?
+        GROUP BY bp.gender;
+      `, [targetOffice, monthStart, to_date_bs] ),
+
+            query( `
+        SELECT bp.gender, COUNT(*) AS count
+        FROM bandi_person bp
+        JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+        WHERE bp.current_office_id = ?
+          AND bp.is_active = 1
+          AND bri.is_dependent = 1
+        GROUP BY bp.gender;
+      `, [targetOffice] )
+        ] );
+
+        // 🧩 Add to unified output
+        formatted['active_count_till_last_month'] = {
+            till_last_month: formatGenderCounts( [...activeBeforeThisMonth, ...releasedThisMonth] ),
+            this_month: formatGenderCounts( [] )
+        };
+
+        formatted['added_this_month'] = {
+            till_last_month: formatGenderCounts( [] ),
+            this_month: formatGenderCounts( addedThisMonth )
+        };
+
+        formatted['dependent_active'] = {
+            till_last_month: formatGenderCounts( dependentActive ),
+            this_month: formatGenderCounts( [] )
+        };
+
+        res.json( {
+            Status: true,
+            from_date: from_date_bs,
+            to_date: to_date_bs,
+            Result: formatted
+        } );
+    } catch ( err ) {
+        console.error( "DB Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Query failed" } );
+    }
+} );
+
+router.get( "/released_bandi_count1", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const targetOffice = req.query.office_id || active_office;
     const isSuperOffice = active_office === 1 || active_office === 2;
 
-    const officeCondition = "bp.current_office_id = ?";    
+    const officeCondition = "bp.current_office_id = ?";
     const officeParams = [targetOffice];
-    
+
 
     // Determine default range
     const todayBS = new NepaliDate().format( 'YYYY-MM-DD' );
     const fy = new NepaliDate().format( 'YYYY' ); // e.g., '2081'
-    const fyStart = `${ fy-1 }-04-01`;
+    const fyStart = `${ fy - 1 }-04-01`;
 
     // Accept query override
     const from_date_bs = req.query.from_date || fyStart;
@@ -3055,15 +3160,15 @@ router.get( "/released_bandi_count", verifyToken, async ( req, res ) => {
       GROUP BY brr.id, bp.gender, period
       ORDER BY brr.id, bp.gender;
     `;
-    
-    const results = await query( sql, [
-        currentMonth,      // for CASE
-        ...officeParams,
-        from_date_bs,
-        to_date_bs
-    ] );
-    // console.log('officeCondition',con.format(sql, currentMonth,...officeParams,from_date_bs, to_date_bs))
-    // console.log(results)
+
+        const results = await query( sql, [
+            currentMonth,      // for CASE
+            ...officeParams,
+            from_date_bs,
+            to_date_bs
+        ] );
+        // console.log('officeCondition',con.format(sql, currentMonth,...officeParams,from_date_bs, to_date_bs))
+        // console.log(results)
         const formatted = {};
         results.forEach( ( { reason_id, reasons_np, gender, count, period } ) => {
             if ( !formatted[reason_id] ) {
@@ -3076,7 +3181,7 @@ router.get( "/released_bandi_count", verifyToken, async ( req, res ) => {
             }
             formatted[reason_id][period][gender] = count;
         } );
-        
+
         res.json( {
             Status: true,
             from_date: from_date_bs,
