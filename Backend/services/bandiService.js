@@ -15,7 +15,7 @@ import { bs2ad } from '../utils/bs2ad.js';
 async function insertBandiPerson( data ) {
   const dob_ad = await bs2ad( data.dob );
   const values = [
-    data.bandi_type, data.office_bandi_id, lagat_no, data.nationality, data.bandi_name,
+    data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name,
     data.gender, data.dob, dob_ad, data.age, data.married_status, data.photo_path,
     data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
     data.bandi_remarks, data.user_id, data.user_id, data.office_id

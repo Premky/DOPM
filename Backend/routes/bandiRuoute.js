@@ -216,7 +216,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
     const data = req.body;
-
+    console.log(data)
     try {
         await beginTransactionAsync();
 
