@@ -275,8 +275,35 @@ async function insertFamily(bandi_id, family = [], user_id, office_id) {
   await queryAsync(sql, [values]);
 }
 
+async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
+  if (!contacts.length) return;
 
-async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
+  // Filter out contacts with blank or missing relation_id
+  const filteredContacts = contacts.filter(c => c.relation_id && c.relation_id.trim() !== '');
+
+  if (!filteredContacts.length) return;
+
+  const values = filteredContacts.map(c => [
+    bandi_id,
+    c.relation_id,
+    c.contact_name,
+    c.contact_address,
+    c.contact_contact_details,
+    user_id,
+    user_id,
+    office_id
+  ]);
+
+  const sql = `INSERT INTO bandi_contact_person (
+    bandi_id, relation_id, contact_name, contact_address,
+    contact_contact_details, created_by, updated_by, current_office_id
+  ) VALUES ?`;
+
+  await queryAsync(sql, [values]);
+}
+
+
+async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
   if ( !contacts.length ) return;
   const values = contacts.map( c => [
     bandi_id, c.relation_id, c.contact_name, c.contact_address,

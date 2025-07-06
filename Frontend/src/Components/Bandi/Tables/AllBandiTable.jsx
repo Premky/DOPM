@@ -14,6 +14,7 @@ import exportToExcel from '../Exports/ExcelPayrole';
 import '../../../index.css';
 import { useNavigate } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import ReuseInput from '../../ReuseableComponents/ReuseInput';
 
 
 const AllBandiTable = () => {
@@ -67,7 +68,7 @@ const AllBandiTable = () => {
         setLoading( true );
         try {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
-                params: { page, limit: rowsPerPage, searchOffice, nationality },
+                params: { page, limit: rowsPerPage, searchOffice, nationality, search_name },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
 
@@ -180,8 +181,13 @@ const AllBandiTable = () => {
                             control={control}
                         />
                     </Grid2>
-
-
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseInput
+                            name="search_name"
+                            label=""
+                            control={control}
+                        />
+                    </Grid2>
 
                     <Grid2 xs={12}>
                         <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
@@ -365,8 +371,8 @@ const AllBandiTable = () => {
                                             {/* बाँकी अवधी */}
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                 {data.release_date_bs && formattedDateNp ? ( <>
-                                                    {calculateBSDate( formattedDateNp, data.release_date_bs  ).formattedDuration || ''} <br />
-                                                    {calculateBSDate( formattedDateNp, data.release_date_bs  ).percentage || ''}
+                                                    {calculateBSDate( formattedDateNp, data.release_date_bs ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( formattedDateNp, data.release_date_bs ).percentage || ''}
                                                 </> ) : ''}
                                                 {/* {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
                                             {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
