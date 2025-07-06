@@ -278,8 +278,10 @@ async function insertFamily(bandi_id, family = [], user_id, office_id) {
 async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
   if (!contacts.length) return;
 
-  // Filter out contacts with blank or missing relation_id
-  const filteredContacts = contacts.filter(c => c.relation_id && c.relation_id.trim() !== '');
+  // Filter out contacts with missing or blank relation_id
+  const filteredContacts = contacts.filter(c =>
+    typeof c.relation_id === 'string' && c.relation_id.trim() !== ''
+  );
 
   if (!filteredContacts.length) return;
 
@@ -301,6 +303,7 @@ async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
 
   await queryAsync(sql, [values]);
 }
+
 
 
 async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
