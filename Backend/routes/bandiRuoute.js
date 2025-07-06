@@ -28,7 +28,8 @@ const fy_date = fy + '-04-01';
 import { bs2ad } from '../utils/bs2ad.js';
 import {
     insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
-    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance
+    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance,
+    insertSingleFineDetails
 } from '../services/bandiService.js';
 // console.log(current_date);
 // console.log(fy_date)
@@ -216,7 +217,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
     const data = req.body;
-    console.log(data)
+    console.log( data );
     try {
         await beginTransactionAsync();
 
@@ -258,16 +259,31 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         // ] );
         // console.log( '✅ insertFineDetails' );
 
-        await insertFineDetails(
-            bandi_id,
-            [
-                { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
-                { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
-                { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office }
-            ],
-            user_id,
-            office_id
-        );
+        // await insertFineDetails1(
+        //     bandi_id,
+        //     [
+        //         { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
+        //         { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
+        //         { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office }
+        //     ],
+        //     user_id,
+        //     office_id
+        // );
+        let fineArray = [];
+        try {
+            fineArray = JSON.parse( req.body.fine );
+        } catch ( e ) {
+            console.error( "Invalid fine JSON:", e.message );
+            fineArray = [];
+        }
+        console.log( fineArray );
+        if ( Array.isArray( fineArray ) ) {
+            await insertFineDetails( bandi_id, fineArray, user_id, office_id );
+        } else {
+            console.error( "Invalid or missing 'fine' array in request body" );
+        }
+
+
 
         if ( data.punarabedan_office_id && data.punarabedan_office_district &&
             data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
@@ -383,6 +399,33 @@ router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.post( '/create_bandi_fine', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const data = req.body;
+
+    try {
+        await beginTransactionAsync();
+        let sql = '';
+        let values = '';
+        await insertSingleFineDetails(data.bandi_id, data, user_id, user_id, active_office );
+        await commitAsync(); // Commit the transaction
+        return res.json( {
+            Result: data.bandi_id,
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync(); // Rollback the transaction if error occurs
+        console.error( "Transaction failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+    }
+} );
 
 // bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
 // bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
@@ -1360,9 +1403,11 @@ router.get( '/get_bandi_fine/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
         SELECT bfd.*,
+        ft.fine_name_np,
     o.office_name_nep,
     nd.district_name_np
         FROM bandi_fine_details bfd
+        LEFT JOIN fine_types ft ON bfd.fine_type_id=ft.id
         LEFT JOIN offices o ON bfd.deposit_office = o.id
         LEFT JOIN np_district nd ON bfd.deposit_district = nd.did
         WHERE bandi_id = ?

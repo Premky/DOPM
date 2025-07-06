@@ -30,7 +30,8 @@ const fetchMuddaWiseCount = ( bandi_id ) => {
                 ThunuwaMale: acc.ThunuwaMale + ( parseInt( record.ThunuwaMale ) || 0 ),
                 ThunuwaFemale: acc.ThunuwaFemale + ( parseInt( record.ThunuwaFemale ) || 0 ),
                 SumOfArrestedInDateRange: acc.SumOfArrestedInDateRange + ( parseInt( record.TotalArrestedInDateRange ) || 0 ),
-                SumOfReleasedInDateRange: acc.SumOfReleasedInDateRange + ( parseInt( record.TotalReleasedInDateRange ) || 0 ),
+                SumOfReleasedInDateRange: acc.SumOfReleasedInDateRange + ( parseInt( record.TotalReleasedInDateRange ) || 0 ),                
+                KaidiAgeAbove65: acc.KaidiAgeAbove65 + ( parseInt( record.KaidiAgeAbove65 ) || 0 ),
                 ThunuwaAgeAbove65: acc.ThunuwaAgeAbove65 + ( parseInt( record.ThunuwaAgeAbove65 ) || 0 ),
                 Nabalak: acc.Nabalak + ( parseInt( record.Nabalak ) || 0 ),
                 Nabalika: acc.Nabalika + ( parseInt( record.Nabalika ) || 0 ),
@@ -38,11 +39,11 @@ const fetchMuddaWiseCount = ( bandi_id ) => {
             } ),
             {
                 KaidiTotal: 0, ThunuwaTotal: 0, KaidiMale: 0, KaidiFemale: 0, ThunuwaMale: 0, ThunuwaFemale: 0,
-                SumOfArrestedInDateRange: 0, SumOfReleasedInDateRange: 0, ThunuwaAgeAbove65: 0, Nabalak: 0, Nabalika: 0, Total: 0
+                SumOfArrestedInDateRange: 0, SumOfReleasedInDateRange: 0,KaidiAgeAbove65:0, ThunuwaAgeAbove65: 0, Nabalak: 0, Nabalika: 0, Total: 0
             }
         );
         setMuddawisetotal( totals );
-        console.log(totals)
+        // console.log(totals)
     };
 
 
@@ -80,7 +81,7 @@ const fetchMuddaWiseCount = ( bandi_id ) => {
         fetchRecords();
     }, [BASE_URL, bandi_id] );
 
-    return { records, optrecords, loading };
+    return { records, muddawisetotal, optrecords, loading };
 };
 
 export default fetchMuddaWiseCount;

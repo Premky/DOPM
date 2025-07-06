@@ -111,6 +111,18 @@ router.get('/get_bandi_release_reasons/', async (req, res) => {
     })
 
 })
+router.get('/get_fine_types/', async (req, res) => {
+    const sql = `SELECT * FROM fine_types`;
+
+    con.query(sql, (err, result) => {
+        if (err) return res.json({ Status: false, Error: "Query Error" })
+        if (result.length === 0) {
+            return res.json({ Status: false, Error: "Bandi release reasons not found" });
+        }
+        return res.json({ Status: true, Result: result})
+    })
+
+})
 
 router.get('/get_countries', async(req, res)=>{
     const sql = `SELECT * from np_country ORDER BY id`; 

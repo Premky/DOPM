@@ -12,7 +12,7 @@ import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import exportToExcel from '../Exports/ExcelPayrole';
 import '../../../index.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 
@@ -382,9 +382,14 @@ const AllBandiTable = () => {
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
 
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                <Button onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
+                                                <Link to={`/bandi/view_saved_record/${ data.id }`} style={{ color: 'inherit' }}>
                                                     View
-                                                </Button>
+                                                </Link>
+
+
+                                                {/* <Button onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
+                                                    View
+                                                </Button> */}
                                             </TableCell>
                                         </TableRow>
 

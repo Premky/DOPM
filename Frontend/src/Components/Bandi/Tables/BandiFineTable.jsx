@@ -78,6 +78,7 @@ const BandiFineTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     const handleEdit = ( data ) => {
+        // console.log(data)
         setEditingData( data );
         setModalOpen( true ); // <-- this was likely your intent
     };
@@ -147,7 +148,7 @@ const BandiFineTable = ( { bandi_id } ) => {
                             {fetchedBandies.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.fine_type || ''}</TableCell>
+                                    <TableCell align="center">{opt.fine_name_np || ''}</TableCell>
                                     <TableCell align="center">{opt.amount_fixed ? 'छ' : 'छैन'}</TableCell>
                                     <TableCell align="center">{opt.amount_deposited ? 'तिरेको' : 'नतिरेको' || ''}</TableCell>
                                     <TableCell align="center">{opt.office_name_nep||''}</TableCell>

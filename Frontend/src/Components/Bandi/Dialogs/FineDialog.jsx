@@ -8,8 +8,10 @@ import ReuseOffice from "../../ReuseableComponents/ReuseOffice";
 import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
+import fetchFineTypes from '../../ReuseableComponents/fetchFineTypes';
 
 const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
+    const { optrecords: fineTypesOpt, loading: fineTypesLoading }= fetchFineTypes();
     const {
         control,
         handleSubmit,
@@ -21,6 +23,7 @@ const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
     });
 
     useEffect(() => {
+        console.log(editingData)
         if (editingData) {
             reset({ ...editingData }); // ⬅️ important!
         }
@@ -43,16 +46,12 @@ const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
                 <Grid2 container spacing={2}>
                     <Grid2 size={{ xs: 12, sm: 4 }}>
                         <ReuseSelect
-                            name="fine_type"
+                            name="fine_type_id"
                             label="जरिवाना/क्षतिपुर्ती/बिगो"
-                            options={[
-                                {label:'जरिवाना', value:'जरिवाना'},
-                                {label:'क्षतिपुर्ति', value:'क्षतिपुर्ती'},
-                                {label:'विगो तथा कोष', value:'विगो तथा कोष'}
-                            ]}
+                            options={fineTypesOpt}
                             readonly={true}
                             control={control}
-                            error={errors.fine_type}
+                            error={errors.fine_type}                            
                         />
                     </Grid2>
                     <Grid2 size={{ xs: 12, sm: 4 }}>

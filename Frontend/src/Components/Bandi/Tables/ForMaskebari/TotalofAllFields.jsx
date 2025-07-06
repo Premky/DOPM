@@ -35,7 +35,7 @@ const TotalofAllFields = () => {
                                     <TableCell>यस महिनाको थप संख्या</TableCell>
                                     <TableCell></TableCell>
                                     <TableCell></TableCell>
-                                    <TableCell></TableCell>
+                                    <TableCell>{totals.this_month_added}</TableCell>
                                     <TableCell></TableCell>
 
                                 </TableRow>
@@ -53,7 +53,7 @@ const TotalofAllFields = () => {
                                     <TableCell>यस महिनामा सरुवा भएको संख्या</TableCell>
                                     <TableCell></TableCell>
                                     <TableCell></TableCell>
-                                    <TableCell></TableCell>
+                                    <TableCell>{totals.this_month_active}</TableCell>
                                     <TableCell></TableCell>
 
                                 </TableRow>
@@ -61,7 +61,7 @@ const TotalofAllFields = () => {
                                 <TableCell>यस महिनामा मृत्यु भएको संख्या</TableCell>
                                 <TableCell></TableCell>
                                 <TableCell></TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>{totals.this_month_dead}</TableCell>
                                 <TableCell></TableCell>
                                 <TableRow>
                                     <TableCell>६</TableCell>
@@ -77,7 +77,7 @@ const TotalofAllFields = () => {
                                     <TableCell>हालको आश्रित बालबालिकाको संख्या</TableCell>
                                     <TableCell></TableCell>
                                     <TableCell></TableCell>
-                                    <TableCell></TableCell>
+                                    <TableCell>{totals.this_month_dependent}</TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
                                 <TableRow>
