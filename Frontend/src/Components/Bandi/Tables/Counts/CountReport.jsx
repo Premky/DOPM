@@ -39,8 +39,7 @@ const CountReport = () => {
         Total: 0,
     } );
 
-    const selectedOffice = watch( 'searchOffice' );
-    console.log('selectedOffice', selectedOffice)
+    const selectedOffice = watch( 'searchOffice' );    
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
@@ -48,11 +47,12 @@ const CountReport = () => {
     const fetchRecords = async ( data ) => {
         try {
             const url = `${ BASE_URL }/bandi/get_prisioners_count`;
-            console.log( selectedOffice );
+            // console.log( selectedOffice );
             const queryParams = new URLSearchParams( {
                 startDate: data?.startDate || current_date,
                 endDate: data?.endDate || current_date,
                 office_id: selectedOffice || authState.office_id, // Optional filter
+                office_id: selectedOffice || '', // Optional filter
                 nationality: data?.nationality || '',     // Optional filter
                 ageFrom: data?.ageFrom || '',             // Optional filter
                 ageTo: data?.ageTo || '',                 // Optional filter

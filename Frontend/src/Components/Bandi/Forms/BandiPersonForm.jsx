@@ -218,6 +218,15 @@ const BandiPersonForm = () => {
               control={control}
               error={errors.office_bandi_id} />
           </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <ReuseInput
+              name='lagat_no'
+              label="लगत नं."
+              // defaultValue={band_rand_id}
+              required={false}
+              control={control}
+              error={errors.lagat_no} />
+          </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <ReuseSelect

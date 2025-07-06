@@ -225,7 +225,6 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
         console.log( '✅ insertBandiPerson', bandi_id );
 
-
         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
         console.log( '✅ insertKaidDetails' );
 
@@ -2193,13 +2192,23 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     }
 
     // Office filtering logic
-    if ( active_office ==1 || active_office ==2 ) {
-        filters.push( 1==1 );
-        // filters.push( "bp.current_office_id = ?" );
-        // params.push( active_office );
-    } else if ( office_id ) {
+    // if ( active_office ==1 || active_office ==2 ) {
+    //     if(office_id==1 || office_id==2){
+    //         filters.push( 1==1 );
+    //     }
+    // // filters.push( "bp.current_office_id = ?" );
+    // // params.push( active_office );
+    // } else if ( office_id ) {
+    //     filters.push( "bp.current_office_id = ?" );
+    //     params.push( office_id );
+    // }
+    if ( office_id ) {
         filters.push( "bp.current_office_id = ?" );
         params.push( office_id );
+    } else {
+        if ( active_office == 1 || active_office == 2 ) {
+            filters.push( 1 == 1 );
+        }
     }
 
     const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
