@@ -2149,7 +2149,25 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
             SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
 
         FROM bandi_person bp
-        LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+       -- LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+       LEFT JOIN (
+            SELECT *
+            FROM (
+                SELECT bmd.*,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY bmd.bandi_id 
+                        ORDER BY bmd.created_at DESC
+                    ) AS rn
+                FROM bandi_mudda_details bmd
+            ) AS ranked_mudda
+            WHERE ranked_mudda.rn = 1
+            AND (
+                (is_main_mudda = 1 AND is_last_mudda = 1) OR
+                (is_main_mudda = 1 AND is_last_mudda = 0) OR
+                (is_main_mudda = 0 AND is_last_mudda = 1) OR
+                (is_main_mudda = 0 AND is_last_mudda = 0)
+            )
+        ) AS bmd ON bp.id = bmd.bandi_id
         LEFT JOIN muddas m ON bmd.mudda_id = m.id
         LEFT JOIN offices o ON bp.current_office_id = o.id
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
@@ -2157,7 +2175,9 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
     // Only include main and last mudda to avoid duplicates
     filters.push( "bp.is_active = 1" );
-    filters.push( "bmd.is_main_mudda = 1 OR bmd.is_last_mudda=1" );
+    // filters.push(
+    //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
+    // );
     // filters.push( "bmd.is_last_mudda = 1" );
 
     // Age filter
@@ -2173,9 +2193,10 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     }
 
     // Office filtering logic
-    if ( active_office > 2 ) {
-        filters.push( "bp.current_office_id = ?" );
-        params.push( active_office );
+    if ( active_office ==1 || active_office ==2 ) {
+        filters.push( 1==1 );
+        // filters.push( "bp.current_office_id = ?" );
+        // params.push( active_office );
     } else if ( office_id ) {
         filters.push( "bp.current_office_id = ?" );
         params.push( office_id );
@@ -2759,27 +2780,27 @@ router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res 
     }
 } );
 
-router.get("/released_bandi_count", verifyToken, async (req, res) => {
+router.get( "/released_bandi_count", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const targetOffice = req.query.office_id || active_office;
     const officeParams = [targetOffice];
 
-    const todayBS = new NepaliDate().format("YYYY-MM-DD");
-    const fy = new NepaliDate().format("YYYY");
-    const fyStart = `${fy - 1}-04-01`;
+    const todayBS = new NepaliDate().format( "YYYY-MM-DD" );
+    const fy = new NepaliDate().format( "YYYY" );
+    const fyStart = `${ fy - 1 }-04-01`;
 
     const from_date_bs = req.query.from_date || fyStart;
     const to_date_bs = req.query.to_date || todayBS;
-    const currentMonth = todayBS.slice(0, 7);
-    const monthStart = `${currentMonth}-01`;
+    const currentMonth = todayBS.slice( 0, 7 );
+    const monthStart = `${ currentMonth }-01`;
 
-    const formatGenderCounts = (rows, base = { Male: 0, Female: 0, Other: 0 }) => {
+    const formatGenderCounts = ( rows, base = { Male: 0, Female: 0, Other: 0 } ) => {
         const counts = { ...base };
-        rows.forEach(({ gender, count }) => {
-            if (gender && counts.hasOwnProperty(gender)) {
-                counts[gender] += Number(count);
+        rows.forEach( ( { gender, count } ) => {
+            if ( gender && counts.hasOwnProperty( gender ) ) {
+                counts[gender] += Number( count );
             }
-        });
+        } );
         counts.Total = counts.Male + counts.Female + counts.Other;
         return counts;
     };
@@ -2836,17 +2857,17 @@ LEFT JOIN actual_counts ac ON
 ORDER BY rgp.reason_id, rgp.gender, rgp.period;
     `;
 
-        const releaseResults = await query(releaseSql, [
+        const releaseResults = await query( releaseSql, [
             currentMonth,
             ...officeParams,
             from_date_bs,
             to_date_bs
-        ]);
+        ] );
 
         const formatted = {};
 
-        releaseResults.forEach(({ reason_id, reasons_np, gender, count, period }) => {
-            if (!formatted[reason_id]) {
+        releaseResults.forEach( ( { reason_id, reasons_np, gender, count, period } ) => {
+            if ( !formatted[reason_id] ) {
                 formatted[reason_id] = {
                     reason_id,
                     reason: reasons_np,
@@ -2856,10 +2877,10 @@ ORDER BY rgp.reason_id, rgp.gender, rgp.period;
             }
             formatted[reason_id][period][gender] = count;
             formatted[reason_id][period].Total =
-                (formatted[reason_id][period].Male || 0) +
-                (formatted[reason_id][period].Female || 0) +
-                (formatted[reason_id][period].Other || 0);
-        });
+                ( formatted[reason_id][period].Male || 0 ) +
+                ( formatted[reason_id][period].Female || 0 ) +
+                ( formatted[reason_id][period].Other || 0 );
+        } );
 
         // 🔄 New aggregates
         const [
@@ -2867,35 +2888,35 @@ ORDER BY rgp.reason_id, rgp.gender, rgp.period;
             releasedThisMonth,
             addedThisMonth,
             dependentActive
-        ] = await Promise.all([
-            query(`
+        ] = await Promise.all( [
+            query( `
         SELECT bp.gender, COUNT(*) AS count
         FROM bandi_person bp
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
         WHERE bp.is_active = 1 AND bp.current_office_id = ?
           AND LEFT(bkd.thuna_date_bs, 7) < ?
         GROUP BY bp.gender;
-      `, [targetOffice, currentMonth]),
+      `, [targetOffice, currentMonth] ),
 
-            query(`
+            query( `
         SELECT bp.gender, COUNT(*) AS count
         FROM bandi_release_details brd
         JOIN bandi_person bp ON bp.id = brd.bandi_id
         WHERE bp.current_office_id = ?
           AND LEFT(brd.karnayan_miti, 7) = ?
         GROUP BY bp.gender;
-      `, [targetOffice, currentMonth]),
+      `, [targetOffice, currentMonth] ),
 
-            query(`
+            query( `
         SELECT bp.gender, COUNT(*) AS count
         FROM bandi_person bp
         JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
         WHERE bp.current_office_id = ?
           AND bkd.thuna_date_bs BETWEEN ? AND ?
         GROUP BY bp.gender;
-      `, [targetOffice, monthStart, to_date_bs]),
+      `, [targetOffice, monthStart, to_date_bs] ),
 
-            query(`
+            query( `
         SELECT bp.gender, COUNT(*) AS count
         FROM bandi_person bp
         JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
@@ -2903,42 +2924,42 @@ ORDER BY rgp.reason_id, rgp.gender, rgp.period;
           AND bp.is_active = 1
           AND bri.is_dependent = 1
         GROUP BY bp.gender;
-      `, [targetOffice])
-        ]);
+      `, [targetOffice] )
+        ] );
 
         // 🧩 Add to unified output for reason_ids 9, 10, 11
         formatted[9] = {
             reason_id: 9,
             reason: "Active Count Till Last Month", // Custom reason for reason_id 8
-            till_last_month: formatGenderCounts([...activeBeforeThisMonth, ...releasedThisMonth]),
-            this_month: formatGenderCounts([])
+            till_last_month: formatGenderCounts( [...activeBeforeThisMonth, ...releasedThisMonth] ),
+            this_month: formatGenderCounts( [] )
         };
 
         formatted[10] = {
             reason_id: 10,
             reason: "Added This Month", // Custom reason for reason_id 9
-            till_last_month: formatGenderCounts([]),
-            this_month: formatGenderCounts(addedThisMonth)
+            till_last_month: formatGenderCounts( [] ),
+            this_month: formatGenderCounts( addedThisMonth )
         };
 
         formatted[11] = {
             reason_id: 11,
             reason: "Dependent Active", // Custom reason for reason_id 10
-            till_last_month: formatGenderCounts(dependentActive),
-            this_month: formatGenderCounts([])
+            till_last_month: formatGenderCounts( dependentActive ),
+            this_month: formatGenderCounts( [] )
         };
 
-        res.json({
+        res.json( {
             Status: true,
             from_date: from_date_bs,
             to_date: to_date_bs,
             Result: formatted
-        });
-    } catch (err) {
-        console.error("DB Error:", err);
-        res.status(500).json({ Status: false, Error: "Query failed" });
+        } );
+    } catch ( err ) {
+        console.error( "DB Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Query failed" } );
     }
-});
+} );
 
 
 

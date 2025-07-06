@@ -40,6 +40,7 @@ const CountReport = () => {
     } );
 
     const selectedOffice = watch( 'searchOffice' );
+    console.log('selectedOffice', selectedOffice)
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
@@ -51,7 +52,7 @@ const CountReport = () => {
             const queryParams = new URLSearchParams( {
                 startDate: data?.startDate || current_date,
                 endDate: data?.endDate || current_date,
-                office_id: selectedOffice || '', // Optional filter
+                office_id: selectedOffice || authState.office_id, // Optional filter
                 nationality: data?.nationality || '',     // Optional filter
                 ageFrom: data?.ageFrom || '',             // Optional filter
                 ageTo: data?.ageTo || '',                 // Optional filter
