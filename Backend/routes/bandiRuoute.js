@@ -2362,6 +2362,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     const baseSql = `
             SELECT
             voad.state_name_np,
+            voad.district_order_id,
             -- o.office_name_with_letter_address,
             o.letter_address AS office_short_name,
 
@@ -2458,8 +2459,8 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     const finalSql = `
         ${ baseSql }
         ${ whereClause }
-        GROUP BY voad.state_id, o.letter_address
-            ORDER BY  voad.state_id, o.letter_address;
+        GROUP BY voad.state_id, voad.district_order_id, o.letter_address
+            ORDER BY  voad.state_id, voad.district_order_id, o.letter_address;
     `;
 
     // console.log( finalSql );
