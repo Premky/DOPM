@@ -27,7 +27,8 @@ import { useNavigate } from 'react-router-dom';
 import ReusePhotoInput from '../../ReuseableComponents/ReusePhotoInput';
 import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import fetchFineTypes from '../../ReuseableComponents/fetchFineTypes';
-
+import fetchDiseases from '../../ReuseableComponents/fetchDiseases';
+import fetchDisabilities from '../../ReuseableComponents/fetchDisabilities';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -49,6 +50,9 @@ const BandiPersonForm = () => {
   const [familyCount, setFamilyCount] = useState( 1 );
   const [contactCount, setContactCount] = useState( 1 );
   const [fineCount, setFineCount] = useState( 1 );
+  const [diseaseCount, setDiseaseCount] = useState( 1 );
+  const [disabilityCount, setDisabilityCount] = useState( 1 );
+
   const [age, setAge] = useState();
   const [editing, setEditing] = useState( false );
 
@@ -74,6 +78,8 @@ const BandiPersonForm = () => {
 
   const isSwadeshi = selectedNationality === 'स्वदेशी';
   const is_active = watch( 'is_active' );
+  const is_ill = watch( 'is_ill' );
+  const is_disabled = watch( 'is_disabled' );
 
   useEffect( () => {
     // console.log( is_active );
@@ -189,8 +195,8 @@ const BandiPersonForm = () => {
         console.log( response );
         const bandi_id = Result;
         console.log( bandi_id );
-        navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
-        reset();
+        // navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
+        // reset();
         setEditing( false );
 
       } else {
@@ -203,6 +209,9 @@ const BandiPersonForm = () => {
   };
 
   const { optrecords: fineTypesOpt, loading: fineTypesLoading } = fetchFineTypes();
+  const { optrecords: diseasesOpt, loading: diseasesLoading } = fetchDiseases();
+  const { optrecords: disabilitiesOpt, loading: disablilitiesLoading } = fetchDisabilities();
+
   const formHeadStyle = { color: 'red', fontWeight: 'bold' };
 
   return (
@@ -975,10 +984,6 @@ const BandiPersonForm = () => {
             const is_jariwana = watch( `fine[${ index }].is_jariwana` );
             return (
               <Grid item container xs={12} key={index}>
-
-
-
-
                 <>
 
                   <Grid item xs={12} sm={6} md={2}>
@@ -1069,8 +1074,6 @@ const BandiPersonForm = () => {
                           </Grid>
                         </>
                       )}
-
-
                     </>
                   )}
                 </>
@@ -1081,20 +1084,20 @@ const BandiPersonForm = () => {
                     color="secondary"
                     size="small"
                     type="button"
-                    onClick={() => setFineCount( contactCount + 1 )}
+                    onClick={() => setFineCount( fineCount + 1 )}
                   >
                     +
                   </Button>
                 </Grid>
 
                 <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
-                  {contactCount > 1 && (
+                  {fineCount > 1 && (
                     <Button
                       variant="contained"
                       color="warning"
                       size="small"
                       type="button"
-                      onClick={() => setFineCount( contactCount - 1 )}
+                      onClick={() => setFineCount( fineCount - 1 )}
                     >
                       <RemoveIcon />
                     </Button>
@@ -1394,7 +1397,7 @@ const BandiPersonForm = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <ReuseDatePickerBs
+            <ReuseInput
               name='punarabedan_office_date'
               label='पुनरावेदनमा नपरेको प्रमाणको पत्र मिति'
               required={false}
@@ -1405,6 +1408,152 @@ const BandiPersonForm = () => {
         </Grid>
       </> )
       }
+
+      <hr />
+      <Grid item container spacing={2}>
+        <Grid item xs={12} sx={formHeadStyle}>
+          बन्दीको स्वास्थ्य अवस्थाः
+        </Grid>
+
+        {[...Array( diseaseCount )].map( ( _, index ) => {
+          const isIll = watch( `disease[${ index }].is_ill` );
+
+          return (
+            <Grid container spacing={2} key={`disease-${ index }`}>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseSelect
+                  name={`disease[${ index }].is_ill`}
+                  label="बिरामी हो/होइन?"
+                  required={true}
+                  control={control}
+                  defaultValue={0}
+                  options={[{ label: 'होइन', value: 0 }, { label: 'हो', value: 1 }]}
+                  error={errors?.disease?.[index]?.is_ill}
+                />
+              </Grid>
+
+              {isIll === 1 && (
+                <>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <ReuseSelect
+                      name={`disease[${ index }].disease_id`}
+                      label="रोग"
+                      required={true}
+                      options={diseasesOpt}
+                      control={control}
+                      error={errors?.disease?.[index]?.disease_id}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={6}>
+                    <ReuseInput
+                      name={`disease[${ index }].disease_name`}
+                      label="अन्य भए रोगको नाम"
+                      required={false}
+                      control={control}
+                      error={errors?.disease?.[index]?.disease_name}
+                    />
+                  </Grid>
+                </>
+              )}
+
+              <Grid item xs={1} sx={{ mt: 5 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => setDiseaseCount( diseaseCount + 1 )}
+                >
+                  +
+                </Button>
+              </Grid>
+
+              <Grid item xs={1} sx={{ mt: 5 }}>
+                {diseaseCount > 1 && (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    onClick={() => setDiseaseCount( diseaseCount - 1 )}
+                  >
+                    <RemoveIcon />
+                  </Button>
+                )}
+              </Grid>
+            </Grid>
+          );
+        } )}
+
+
+        <hr />
+        {[...Array( disabilityCount )].map( ( _, index ) => {
+          const isDisabled = watch( `disability[${ index }].is_disabled` );
+
+          return (
+            <Grid container spacing={2} key={`disability-${ index }`}>
+              <Grid item xs={12} sm={6} md={2}>
+                <ReuseSelect
+                  name={`disability[${ index }].is_disabled`}
+                  label="अपाङ्ग हो/होइन?"
+                  required={true}
+                  control={control}
+                  defaultValue={0}
+                  options={[{ label: 'होइन', value: 0 }, { label: 'हो', value: 1 }]}
+                  error={errors?.disability?.[index]?.is_disabled}
+                />
+              </Grid>
+
+              {isDisabled === 1 && (
+                <>
+                  <Grid item xs={12} sm={6} md={2}>
+                    <ReuseSelect
+                      name={`disability[${ index }].disability_id`}
+                      label="अपाङ्गताको प्रकार"
+                      required={true}
+                      options={disabilitiesOpt} // Or disabilitiesOpt if you have a different one
+                      control={control}
+                      error={errors?.disability?.[index]?.disability_id}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={6}>
+                    <ReuseInput
+                      name={`disability[${ index }].disability_name`}
+                      label="अन्य भए अपांगताको नाम"
+                      required={false}
+                      control={control}
+                      error={errors?.disability?.[index]?.disability_name}
+                    />
+                  </Grid>
+                </>
+              )}
+
+              <Grid item xs={1} sx={{ mt: 5 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => setDisabilityCount( disabilityCount + 1 )}
+                >
+                  +
+                </Button>
+              </Grid>
+
+              <Grid item xs={1} sx={{ mt: 5 }}>
+                {disabilityCount > 1 && (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    onClick={() => setDisabilityCount( disabilityCount - 1 )}
+                  >
+                    <RemoveIcon />
+                  </Button>
+                )}
+              </Grid>
+            </Grid>
+          );
+        } )}
+
+      </Grid>
 
       <hr />
       <Grid item container spacing={2}>

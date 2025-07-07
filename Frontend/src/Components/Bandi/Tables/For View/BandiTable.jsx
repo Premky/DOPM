@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { calculateAge, inCalculateAge } from '../../../../Utils/ageCalculator';
-import BandiEditModal from '../Dialogs/BandiEditModa';
-import UpdatePhotoModal from '../Dialogs/UpdatePhotoModal';
+import { calculateAge, inCalculateAge } from '../../../../../Utils/ageCalculator';
+import BandiEditModal from '../../Dialogs/BandiEditModa';
+import UpdatePhotoModal from '../../Dialogs/UpdatePhotoModal';
 import Swal from 'sweetalert2';
 
 const BandiTable = ( { bandi_id } ) => {

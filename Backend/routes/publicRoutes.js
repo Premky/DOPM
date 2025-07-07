@@ -124,6 +124,28 @@ router.get('/get_fine_types/', async (req, res) => {
 
 })
 
+router.get('/get_diseases', async(req, res)=>{
+    const sql = `SELECT * from diseases ORDER BY id`; 
+    try{
+        const result = await query(sql);
+        return res.json({Status:true, Result:result})
+    } catch(err){
+        console.error("Database Query Error:", err);
+        res.status(500).json({Status:false, Error:"Internal Server Error"})
+    }
+});
+
+router.get('/get_disabilities', async(req, res)=>{
+    const sql = `SELECT * from disabilities ORDER BY id`; 
+    try{
+        const result = await query(sql);
+        return res.json({Status:true, Result:result})
+    } catch(err){
+        console.error("Database Query Error:", err);
+        res.status(500).json({Status:false, Error:"Internal Server Error"})
+    }
+});
+
 router.get('/get_countries', async(req, res)=>{
     const sql = `SELECT * from np_country ORDER BY id`; 
     try{

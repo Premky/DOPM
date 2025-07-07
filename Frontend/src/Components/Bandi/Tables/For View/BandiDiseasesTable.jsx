@@ -13,10 +13,13 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
-import { useBaseURL } from '../../../Context/BaseURLProvider';
-import IdCardModal from '../Dialogs/IdCardModal';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import fetchContactPerson from '../../Apis_to_fetch/fetchContactPerson';
 
-const BandiIDTable = ( { bandi_id } ) => {
+import FamilyModal from '../../Dialogs/FamilyModal';
+import ContactPersonModal from '../../Dialogs/ContactPersonModal';
+
+const BandiContactPersonTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -24,54 +27,7 @@ const BandiIDTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-    const fetchBandies = async () => {
-        try {
-            const url = `${ BASE_URL }/bandi/get_bandi_id_card/${ bandi_id }`;
-            // console.log( url );
-            const response = await axios.get( url );
-
-            const { Status, Result, Error } = response.data;
-
-            if ( Status ) {
-                if ( Array.isArray( Result ) && Result.length > 0 ) {
-                    setFetchedBandies( Result );
-                    // console.log(fetchedBandies)
-                } else {
-                    console.log( 'No records found.' );
-                    setFetchedBandies( [] );
-                }
-            } else {
-                console.log( Error || 'Failed to fetch.' );
-            }
-        } catch ( error ) {
-            console.error( 'Error fetching records:', error );
-        } finally {
-            setLoading( false );
-        }
-    };
-    useEffect( () => {
-        if ( bandi_id ) {
-            fetchBandies();
-        }
-    }, [bandi_id] );
-
-    // ✅ Fetch select options
-    const [govtIdOptions, setGovtIdOptions] = useState( [] );
-    const fetchGovtIdOptions = async () => {
-        try {
-            const response = await axios.get( `${ BASE_URL }/public/get_id_cards` );
-            const { Status, Result } = response.data;
-            if ( Status ) {
-                setGovtIdOptions( Result ); // Expected Result = [{ id: 1, name_np: 'नागरिकता' }, ...]
-            }
-        } catch ( err ) {
-            console.error( "Error fetching govt ID options", err );
-        }
-    };
-
-    useEffect( () => {
-        fetchGovtIdOptions();
-    }, [] );
+    const { records: contactPersons, loading: contactPersonLoading, refetch } = fetchContactPerson(bandi_id);
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
@@ -86,7 +42,7 @@ const BandiIDTable = ( { bandi_id } ) => {
 
         if ( confirm.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_id_details/${ id }` );
+                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_family/${ id }` );
                 fetchBandies();
                 Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
             } catch ( error ) {
@@ -95,9 +51,9 @@ const BandiIDTable = ( { bandi_id } ) => {
         }
     };
 
-    // ✅ EDIT handler
-    const handleEdit = ( data, bandi_id ) => {
+    const handleEdit = ( data ) => {
         setEditingData( data );
+        // console.log(editingData)
         setModalOpen( true );
     };
     const handleAdd = ( bandi_id ) => {
@@ -106,41 +62,49 @@ const BandiIDTable = ( { bandi_id } ) => {
     };
 
     const handleSave = async ( formData, id ) => {
+        // const id = editingData?.id; // ✅ Get the ID if editing
+        console.log(id)
         try {
+
             if ( id ) {
+                // Update existing contact
                 await axios.put(
-                    `${ BASE_URL }/bandi/update_bandi_IdCard/${ id }`,
+                    `${ BASE_URL }/bandi/update_bandi_contact_person/${ id }`,
                     formData,
                     { withCredentials: true }
                 );
                 Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
             } else {
+                // Create new contact (wrap formData in array)
                 await axios.post(
-                    `${ BASE_URL }/bandi/create_bandi_IdCard`,
-                    { ...formData, bandi_id: bandi_id },
+                    `${ BASE_URL }/bandi/create_bandi_contact_person1`,
+                    {
+                        bandi_id: bandi_id,
+                        contact_person: [formData],
+                    },
                     { withCredentials: true }
                 );
                 Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
             }
 
-            fetchBandies();
+            await refetch();
+            setModalOpen(false);
+
         } catch ( error ) {
+            console.error( "❌ Axios Error:", error ); // Helpful for debugging
             Swal.fire( 'त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error' );
         }
     };
-
 
     return (
         <Grid container spacing={2}>
             <Grid container item xs={12}>
                 <Grid>
-                    <h3>कैदीबन्दीको परिचय पत्रको विवरणः</h3>
+                    <h3>सम्पर्क व्यक्तिको विवरणः</h3>
                 </Grid>
-                {(fetchedBandies.length == 0 ) && (
-                    <Grid marginTop={2}>
-                        &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
-                    </Grid>
-                )}
+                <Grid marginTop={2}>
+                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
+                </Grid>
             </Grid>
             <Grid item xs={12}>
                 <TableContainer component={Paper}>
@@ -148,21 +112,21 @@ const BandiIDTable = ( { bandi_id } ) => {
                         <TableHead>
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">परिचय पत्र</TableCell>
-                                <TableCell align="center">परिचय पत्र नं.</TableCell>
-                                <TableCell align="center">जारी जिल्ला</TableCell>
-                                <TableCell align="center">जारी मिति</TableCell>
+                                <TableCell align="center">नाता</TableCell>
+                                <TableCell align="center">नामथर</TableCell>
+                                <TableCell align="center">ठेगाना</TableCell>
+                                <TableCell align="center">सम्पर्क नं.</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fetchedBandies.map( ( opt, index ) => (
+                            {contactPersons.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.govt_id_name_np || ''}</TableCell>
-                                    <TableCell align="center">{opt.card_no || ''}</TableCell>
-                                    <TableCell align="center">{opt.card_issue_district_name || ''}</TableCell>
-                                    <TableCell align="center">{opt.card_issue_date || ''}</TableCell>
+                                    <TableCell align="center">{opt.relation_np || ''}</TableCell>
+                                    <TableCell align="center">{opt.contact_name || ''}</TableCell>
+                                    <TableCell align="center">{opt.contact_address || ''}</TableCell>
+                                    <TableCell align="center">{opt.contact_contact_details || ''}</TableCell>
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
@@ -179,7 +143,7 @@ const BandiIDTable = ( { bandi_id } ) => {
                     </Table>
                 </TableContainer>
             </Grid>
-            <IdCardModal
+            <ContactPersonModal
                 open={modalOpen}
                 onClose={() => setModalOpen( false )}
                 onSave={handleSave}
@@ -189,4 +153,4 @@ const BandiIDTable = ( { bandi_id } ) => {
     );
 };
 
-export default BandiIDTable;
+export default BandiContactPersonTable;

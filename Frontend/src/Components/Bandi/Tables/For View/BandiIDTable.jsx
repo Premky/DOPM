@@ -12,19 +12,22 @@ import {
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import PunrabednDialog from '../Dialogs/PunrabednDialog';
 
-import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import IdCardModal from '../../Dialogs/IdCardModal';
 
-const BandiPunrabednTable = ( { bandi_id } ) => {
+const BandiIDTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
+    const [modalOpen, setModalOpen] = useState( false );
+    const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
     const fetchBandies = async () => {
         try {
-            const url = `${ BASE_URL }/bandi/get_bandi_punrabedn/${ bandi_id }`;
+            const url = `${ BASE_URL }/bandi/get_bandi_id_card/${ bandi_id }`;
+            // console.log( url );
             const response = await axios.get( url );
 
             const { Status, Result, Error } = response.data;
@@ -52,6 +55,24 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
         }
     }, [bandi_id] );
 
+    // ✅ Fetch select options
+    const [govtIdOptions, setGovtIdOptions] = useState( [] );
+    const fetchGovtIdOptions = async () => {
+        try {
+            const response = await axios.get( `${ BASE_URL }/public/get_id_cards` );
+            const { Status, Result } = response.data;
+            if ( Status ) {
+                setGovtIdOptions( Result ); // Expected Result = [{ id: 1, name_np: 'नागरिकता' }, ...]
+            }
+        } catch ( err ) {
+            console.error( "Error fetching govt ID options", err );
+        }
+    };
+
+    useEffect( () => {
+        fetchGovtIdOptions();
+    }, [] );
+
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -74,10 +95,8 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
         }
     };
 
-    const [modalOpen, setModalOpen] = useState( false );
-    const [editingData, setEditingData] = useState( null );
-
-    const handleEdit = ( data ) => {
+    // ✅ EDIT handler
+    const handleEdit = ( data, bandi_id ) => {
         setEditingData( data );
         setModalOpen( true );
     };
@@ -90,35 +109,38 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
         try {
             if ( id ) {
                 await axios.put(
-                    `${ BASE_URL }/bandi/update_bandi_punrabedn/${ id }`,
+                    `${ BASE_URL }/bandi/update_bandi_IdCard/${ id }`,
                     formData,
-                    { withCredentials: true } // ✅ Fix: wrap inside object
+                    { withCredentials: true }
                 );
-                fetchBandies();
                 Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
             } else {
-                console.log("📦 Payload to server:", formData);
-                await axios.post( `${ BASE_URL }/bandi/create_bandi_punrabedn`, formData, { withCredentials: true } );
-
+                await axios.post(
+                    `${ BASE_URL }/bandi/create_bandi_IdCard`,
+                    { ...formData, bandi_id: bandi_id },
+                    { withCredentials: true }
+                );
                 Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
             }
+
             fetchBandies();
         } catch ( error ) {
-            // Swal.fire('त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error');
-            Swal.fire( 'त्रुटि!', error.response?.data?.message || error.message || 'Unknown error', 'error' );
-            // Swal.fire( 'त्रुटि!', `${ error }`, 'error' );
+            Swal.fire( 'त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error' );
         }
     };
+
 
     return (
         <Grid container spacing={2}>
             <Grid container item xs={12}>
                 <Grid>
-                    <h3>पुनरावेदनमा नपरेको प्रमाण विवरणः</h3>
+                    <h3>कैदीबन्दीको परिचय पत्रको विवरणः</h3>
                 </Grid>
-                <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
-                </Grid>
+                {(fetchedBandies.length == 0 ) && (
+                    <Grid marginTop={2}>
+                        &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
+                    </Grid>
+                )}
             </Grid>
             <Grid item xs={12}>
                 <TableContainer component={Paper}>
@@ -126,10 +148,10 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                         <TableHead>
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">पुनरावेदन नपरेको कार्यालय</TableCell>
-                                <TableCell align="center">पुनरावेदन नपरेको जिल्ला</TableCell>
-                                <TableCell align="center">पुनरावेदन नपरेको प्रमाणको च.नं.</TableCell>
-                                <TableCell align="center">पुनरावेदनमा नपरेको प्रमाणको पत्र मिति</TableCell>
+                                <TableCell align="center">परिचय पत्र</TableCell>
+                                <TableCell align="center">परिचय पत्र नं.</TableCell>
+                                <TableCell align="center">जारी जिल्ला</TableCell>
+                                <TableCell align="center">जारी मिति</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -137,30 +159,17 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                             {fetchedBandies.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.office_name_with_letter_address || ''}</TableCell>
-                                    <TableCell align="center">{opt.district_name_np || ''}</TableCell>
-                                    <TableCell align="center">{opt.punarabedan_office_ch_no || ''}</TableCell>
-                                    <TableCell align="center">{opt.punarabedan_office_date || ''}</TableCell>
-
+                                    <TableCell align="center">{opt.govt_id_name_np || ''}</TableCell>
+                                    <TableCell align="center">{opt.card_no || ''}</TableCell>
+                                    <TableCell align="center">{opt.card_issue_district_name || ''}</TableCell>
+                                    <TableCell align="center">{opt.card_issue_date || ''}</TableCell>
                                     <TableCell align="center">
-                                        <Grid container spacing={2}>
+                                        <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
-                                                <Button
-                                                    variant="contained"
-                                                    color='success'
-                                                    onClick={() => handleEdit( opt )}
-                                                >
-                                                    ✏️
-                                                </Button>
+                                                <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
                                             </Grid>
                                             <Grid item>
-                                                <Button
-                                                    variant="contained"
-                                                    color='error'
-                                                    onClick={() => handleDelete( opt.id )}
-                                                >
-                                                    🗑️
-                                                </Button>
+                                                <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
                                             </Grid>
                                         </Grid>
                                     </TableCell>
@@ -169,17 +178,15 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                {/* 🔽 Insert this right after your TableContainer or at the end of return */}
-                <PunrabednDialog
-                    open={modalOpen}
-                    onClose={() => setModalOpen( false )}
-                    editingData={editingData}
-                    onSave={handleSave}
-                />
-
             </Grid>
+            <IdCardModal
+                open={modalOpen}
+                onClose={() => setModalOpen( false )}
+                onSave={handleSave}
+                editingData={editingData}
+            />
         </Grid>
     );
 };
 
-export default BandiPunrabednTable;
+export default BandiIDTable;

@@ -3,6 +3,13 @@ import { Grid2 } from '@mui/material';
 import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
 import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
 
+import { MaskebariExport } from '../Exports/ExcelMaskebariCount';
+
+//Export data to Excel
+const exportMaskebari = async()=>{
+   await exportToExcel(releasedCounts, records, totals, foreignrecords, foreignTotals, fy, fm);
+}
+
 const BandiMaskebari = () => {
   return (
     <div>

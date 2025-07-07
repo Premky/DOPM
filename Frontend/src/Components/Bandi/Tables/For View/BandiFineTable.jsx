@@ -12,9 +12,9 @@ import {
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import FineEditDialog from '../Dialogs/FineDialog';
+import FineEditDialog from '../../Dialogs/FineDialog';
 
-import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
 
 const BandiFineTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();

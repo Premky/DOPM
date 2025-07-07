@@ -13,10 +13,10 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
-import { useBaseURL } from '../../../Context/BaseURLProvider';
-import FamilyModal from '../Dialogs/FamilyModal';
-import AddressModal from '../Dialogs/AddressModal';
-import KaidModal from '../Dialogs/KaidModal';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import FamilyModal from '../../Dialogs/FamilyModal';
+import AddressModal from '../../Dialogs/AddressModal';
+import KaidModal from '../../Dialogs/KaidModal';
 
 const BandiKaidTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();

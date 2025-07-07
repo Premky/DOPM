@@ -29,7 +29,10 @@ import { bs2ad } from '../utils/bs2ad.js';
 import {
     insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
     insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance,
-    insertSingleFineDetails
+    insertSingleFineDetails,
+    insertDiseasesDetails,
+    insertDisablilityDetails,
+    updateContactPerson
 } from '../services/bandiService.js';
 // console.log(current_date);
 // console.log(fy_date)
@@ -217,7 +220,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
     const data = req.body;
-    console.log( data );
+    console.log( req.user.office_np );
     try {
         await beginTransactionAsync();
 
@@ -250,25 +253,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertMuddaDetails( bandi_id, muddas, office_id );
         console.log( '✅ insertMuddaDetails' );
 
-        // console.log( data.fines );
 
-        // await insertFineDetails( bandi_id, user_id, office_id, [
-        //     { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
-        //     { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
-        //     { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office },
-        // ] );
-        // console.log( '✅ insertFineDetails' );
-
-        // await insertFineDetails1(
-        //     bandi_id,
-        //     [
-        //         { type: 'जरिवाना', ...req.body, amount: req.body.fine_amt, office: req.body.fine_paid_office },
-        //         { type: 'क्षतिपुर्ती', ...req.body, amount: req.body.compensation_amt, office: req.body.compensation_paid_office },
-        //         { type: 'विगो तथा कोष', ...req.body, amount: req.body.bigo_amt, office: req.body.bigo_paid_office }
-        //     ],
-        //     user_id,
-        //     office_id
-        // );
         let fineArray = [];
         try {
             fineArray = JSON.parse( req.body.fine );
@@ -296,6 +281,12 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
 
         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
         console.log( '✅ insertContacts' );
+
+        await insertDiseasesDetails( bandi_id, JSON.parse( req.body.disease ), user_id, office_id );
+        console.log( '✅ insertDiseasesDetails' );
+
+        await insertDisablilityDetails( bandi_id, JSON.parse( req.body.disability ), user_id, office_id );
+        console.log( '✅ insertDisabilityDetails' );
 
         if ( data.health_insurance?.length ) {
             await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
@@ -1537,6 +1528,149 @@ router.put( '/update_bandi_punrabedn/:id', verifyToken, async ( req, res ) => {
         return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
     }
 } );
+
+router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bdd.bandi_id, bdd.disease_name as disease_name_if_other*,
+        d.disease_name_np    
+        FROM bandi_diseases_details bdd        
+        LEFT JOIN diseases d ON bdd.diseases_id = d.id
+        WHERE bandi_id = ?
+    `;
+    try {
+        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+
+router.get( '/get_bandi_disability/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bdd.bandi_id, bdd.disability_name as disabliity_name_if_other*,
+        d.disability_name_np    
+        FROM bandi_disability_details bdd        
+        LEFT JOIN disability d ON bdd.disability_id = d.id
+        WHERE bandi_id = ?
+    `;
+    try {
+        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    try {
+        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+
+        const insertCount = await insertContacts(
+            req.body.bandi_id,
+            req.body.contact_person,
+            user_id,
+            active_office
+        );
+
+        if ( insertCount === 0 ) {
+            await rollbackAsync();
+            console.warn( "⚠️ No rows inserted. Possible bad data structure." );
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा इन्सर्ट गर्न सकेनौं। सम्भवत: 'relation_id' छुट्यो वा गलत ढाँचा।"
+            } );
+        }
+
+        await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Transaction failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+    }
+} );
+
+router.get( '/get_bandi_contact_person/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bcp.id, bcp.bandi_id, bcp.relation_id, relation_np as relation_np, bcp.contact_name, bcp.contact_address,
+        bcp.contact_contact_details        
+        FROM bandi_contact_person bcp        
+        LEFT JOIN relationships r ON bcp.relation_id = r.id
+        WHERE bandi_id = ?
+    `;
+    try {
+        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+router.put('/update_bandi_contact_person/:id', verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const user_id = req.user.id;
+  const contactId = req.params.id;
+
+  try {
+    console.log("📝 Update contact request:", req.body);
+
+    const updatedCount = await updateContactPerson(contactId, req.body, user_id, active_office);
+
+    if (updatedCount === 0) {
+      return res.status(400).json({
+        Status: false,
+        message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
+      });
+    }
+
+    await commitAsync();
+
+    return res.json({
+      Status: true,
+      message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+    });
+
+  } catch (error) {
+    await rollbackAsync();
+    console.error("❌ Update failed:", error);
+
+    return res.status(500).json({
+      Status: false,
+      Error: error.message,
+      message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+    });
+  }
+});
 
 
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {

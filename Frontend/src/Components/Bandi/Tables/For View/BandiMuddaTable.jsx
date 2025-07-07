@@ -12,9 +12,9 @@ import {
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import MuddaEditDialog from '../Dialogs/MuddaDialog';
+import MuddaEditDialog from '../../Dialogs/MuddaDialog';
 
-import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
 
 const BandiMuddaTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();

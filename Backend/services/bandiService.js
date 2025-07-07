@@ -196,7 +196,7 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
         user_id,
         office_id
       ];
-      console.log(values)
+      console.log( values );
     } else {
       sql = `INSERT INTO bandi_fine_details (
         bandi_id,  amount_fixed,
@@ -218,128 +218,64 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
 }
 
 async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
-  
-    let sql, values;
 
-    const isFixed = Number( data.is_fine_fixed ) === 1;
-    const isPaid = Number( data.is_fine_paid ) === 1;
+  let sql, values;
 
-    if ( isFixed && isPaid ) {
-      sql = `INSERT INTO bandi_fine_details (
+  const isFixed = Number( data.is_fine_fixed ) === 1;
+  const isPaid = Number( data.is_fine_paid ) === 1;
+
+  if ( isFixed && isPaid ) {
+    sql = `INSERT INTO bandi_fine_details (
         bandi_id, fine_type_id, amount_fixed, amount_deposited,
         deposit_office, deposit_district, deposit_ch_no,
         deposit_date, deposit_amount,
         created_by, updated_by, current_office_id
       ) VALUES (?)`;
 
-      let depositAmount = fine.fine_amt;
-      if (
-        depositAmount === undefined ||
-        depositAmount === null ||
-        depositAmount.toString().trim() === '' ||
-        isNaN( Number( depositAmount ) )
-      ) {
-        depositAmount = 0;
-      } else {
-        depositAmount = Number( depositAmount );
-      }
-
-      values = [
-        bandi_id,
-        data.fine_type_id,
-        data.is_fine_fixed,
-        data.is_fine_paid,
-        data.fine_paid_office,
-        data.fine_paid_office_district,
-        data.fine_paid_cn,
-        data.fine_paid_date,
-        data.depositAmount,
-        user_id,
-        user_id,
-        office_id
-      ];
-      console.log(values)
+    let depositAmount = fine.fine_amt;
+    if (
+      depositAmount === undefined ||
+      depositAmount === null ||
+      depositAmount.toString().trim() === '' ||
+      isNaN( Number( depositAmount ) )
+    ) {
+      depositAmount = 0;
     } else {
-      sql = `INSERT INTO bandi_fine_details (
+      depositAmount = Number( depositAmount );
+    }
+
+    values = [
+      bandi_id,
+      data.fine_type_id,
+      data.is_fine_fixed,
+      data.is_fine_paid,
+      data.fine_paid_office,
+      data.fine_paid_office_district,
+      data.fine_paid_cn,
+      data.fine_paid_date,
+      data.depositAmount,
+      user_id,
+      user_id,
+      office_id
+    ];
+    console.log( values );
+  } else {
+    sql = `INSERT INTO bandi_fine_details (
         bandi_id, fine_type_id, amount_fixed,
         created_by, updated_by, current_office_id
       ) VALUES (?)`;
 
-      values = [
-        bandi_id,
-        data.fine_type_id,
-        data.is_fine_fixed,
-        user_id,
-        user_id,
-        office_id
-      ];
-    }
-
-    await queryAsync( sql, [values] );  
-}
-
-
-async function insertFineDetails1( bandi_id, fines, user_id, office_id ) {
-  // console.log(fines)
-  for ( const fine of fines ) {
-    let sql, values;
-
-    const isFixed = Number( fine.is_fine_fixed ) === 1;
-    const isPaid = Number( fine.is_fine_paid ) === 1;
-
-    if ( isFixed && isPaid ) {
-      sql = `INSERT INTO bandi_fine_details (
-        bandi_id, fine_type, amount_fixed, amount_deposited,
-        deposit_office, deposit_district, deposit_ch_no,
-        deposit_date, deposit_amount,
-        created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-      let depositAmount = fine.amount;
-
-      if (
-        depositAmount === undefined ||
-        depositAmount === null ||
-        depositAmount.toString().trim() === '' ||
-        isNaN( Number( depositAmount ) )
-      ) {
-        depositAmount = null;
-      } else {
-        depositAmount = Number( depositAmount );
-      }
-
-      values = [
-        bandi_id,
-        fine.type,
-        fine.is_fine_fixed,
-        fine.is_fine_paid,
-        fine.fine_paid_office,
-        fine.fine_paid_office_district,
-        fine.fine_paid_cn,
-        fine.fine_paid_date,
-        // fine.amount,
-        depositAmount,
-        user_id,
-        user_id,
-        office_id
-      ];
-    } else {
-      sql = `INSERT INTO bandi_fine_details (
-        bandi_id, fine_type, amount_fixed,
-        created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-
-      values = [
-        bandi_id,
-        fine.type,
-        fine.is_fine_fixed,
-        user_id,
-        user_id,
-        office_id
-      ];
-    }
-
-    await queryAsync( sql, [values] );
+    values = [
+      bandi_id,
+      data.fine_type_id,
+      data.is_fine_fixed,
+      user_id,
+      user_id,
+      office_id
+    ];
   }
+
+  await queryAsync( sql, [values] );
 }
 
 async function insertPunarabedan( bandi_id, data ) {
@@ -383,7 +319,53 @@ async function insertFamily( bandi_id, family = [], user_id, office_id ) {
   await queryAsync( sql, [values] );
 }
 
-async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
+async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
+  try {
+    if (!contacts.length) {
+      console.warn("⚠️ No contacts provided to insert.");
+      return 0;
+    }
+
+    const filteredContacts = contacts.filter(c =>
+      (typeof c.relation_id === 'string' && c.relation_id.trim() !== '') ||
+      (typeof c.relation_id === 'number' && !isNaN(c.relation_id))
+    );
+
+    if (!filteredContacts.length) {
+      console.warn("⚠️ All contacts filtered out. Possibly missing 'relation_id'.");
+      console.log("🔍 Received contacts:", contacts);
+      return 0;
+    }
+
+    const values = filteredContacts.map(c => [
+      bandi_id,
+      c.relation_id,
+      c.contact_name,
+      c.contact_address,
+      c.contact_contact_details,
+      user_id,
+      user_id,
+      office_id
+    ]);
+
+    const sql = `INSERT INTO bandi_contact_person (
+      bandi_id, relation_id, contact_name, contact_address,
+      contact_contact_details, created_by, updated_by, current_office_id
+    ) VALUES ?`;
+
+    const result = await queryAsync(sql, [values]);
+    console.log("✅ Insert result:", result);
+    return result.affectedRows || 0;
+
+  } catch (err) {
+    console.error("❌ SQL/Insert error:", err); // <-- logs real SQL or DB issues
+    throw err;
+  }
+}
+
+
+
+async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
   if ( !contacts.length ) return;
 
   // Filter out contacts with missing or blank relation_id
@@ -412,19 +394,78 @@ async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
   await queryAsync( sql, [values] );
 }
 
+async function updateContactPerson(contactId, contact, user_id, office_id) {
+  if (
+    !contact.contact_name ||
+    !contact.contact_address ||
+    !contact.contact_contact_details ||
+    !contact.relation_id
+  ) {
+    console.warn("⚠️ Missing required contact fields:", contact);
+    return 0;
+  }
 
+  const sql = `
+    UPDATE bandi_contact_person
+    SET
+      relation_id = ?,
+      contact_name = ?,
+      contact_address = ?,
+      contact_contact_details = ?,
+      updated_by = ?,
+      current_office_id = ?
+    WHERE id = ?
+  `;
 
-async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
-  if ( !contacts.length ) return;
-  const values = contacts.map( c => [
-    bandi_id, c.relation_id, c.contact_name, c.contact_address,
-    c.contact_contact_details, user_id, user_id, office_id
-  ] );
-  const sql = `INSERT INTO bandi_contact_person (
-    bandi_id, relation_id, contact_name, contact_address,
-    contact_contact_details, created_by, updated_by, current_office_id
-  ) VALUES ?`;
-  await queryAsync( sql, [values] );
+  const values = [
+    contact.relation_id,
+    contact.contact_name,
+    contact.contact_address,
+    contact.contact_contact_details,
+    user_id,
+    office_id,
+    contactId
+  ];
+
+  try {
+    const result = await queryAsync(sql, values);
+    console.log("✅ Update result:", result);
+    return result.affectedRows || 0;
+  } catch (error) {
+    console.error("❌ SQL Update Error:", error);
+    throw error;
+  }
+}
+
+async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_id ) {
+  for ( const disease of diseases ) {
+    if ( Number( disease.is_ill ) === 1 ) {
+      const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, created_by, updated_by, created_office_id)
+        VALUES(?)`;
+      const values = [bandi_id,
+        disease.disease_id || 0,
+        disease.disease_name?.trim() || null,
+        user_id, user_id, office_id
+      ];
+      await queryAsync( sql, [values] );
+    }
+  }
+}
+
+async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, office_id ) {
+  for ( const disability of disabilities ) {
+    if ( Number( disability.is_disabled ) === 1 ) {
+      const sql = `INSERT INTO bandi_disability_details(
+      bandi_id, disability_id, disability_name, created_by, updated_by, created_office_id) VALUES (?)`;
+      const values = [
+        bandi_id,
+        disability.disability_id || 0,
+        disability.disability_name?.trim() || null,
+        user_id, user_id, office_id
+      ];
+      await queryAsync( sql, [values] );
+    }
+  }
 }
 
 async function insertHealthInsurance( bandi_id, health_insurance = [], user_id, office_id ) {
@@ -450,5 +491,8 @@ export {
   insertPunarabedan,
   insertFamily,
   insertContacts,
+  updateContactPerson,
+  insertDiseasesDetails,
+  insertDisablilityDetails,
   insertHealthInsurance
 };

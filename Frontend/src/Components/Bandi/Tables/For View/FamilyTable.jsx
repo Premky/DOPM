@@ -13,8 +13,8 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
-import { useBaseURL } from '../../../Context/BaseURLProvider';
-import FamilyModal from '../Dialogs/FamilyModal';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import FamilyModal from '../../Dialogs/FamilyModal';
 
 const FamilyTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
