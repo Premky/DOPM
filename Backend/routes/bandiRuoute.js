@@ -570,12 +570,13 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     console.log( 'forSelect', forSelect );
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
+    const search_name = req.query.search_name || 0;
     const page = parseInt( req.query.page ) || 0;
     const limit = parseInt( req.query.limit ) || 25;
     const offset = page * limit;
 
     let baseWhere = '';
-
+    // console.log(search_name)
 
     if ( selectedOffice ) {
         baseWhere += ` WHERE bp.current_office_id=${ selectedOffice }`;
@@ -583,7 +584,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         if ( searchOffice ) {
             baseWhere = `WHERE bp.current_office_id = ${ searchOffice }`;
         } else if ( active_office == 1 || active_office == 2 ) {
-            baseWhere = `WHERE bp.current_office_id=''`;
+            baseWhere = `WHERE 1=1`;
         } else {
             baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
         }
@@ -596,14 +597,24 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.nationality = '${ nationality }'`;
         }
     }
-    if ( forSelect ) { baseWhere += ` AND bp.is_active=1 `; }
+
+    if ( search_name ) {
+        const escapedName = con.escape( `%${ search_name }%` );
+        baseWhere += ` AND (bp.bandi_name LIKE ${ escapedName } OR bp.office_bandi_id = ${ con.escape( search_name ) })`;
+    }
+
+
+    baseWhere += ` AND bp.is_active=1 `;
+    if ( forSelect ) {
+        baseWhere += ` AND bp.is_active=1 `;
+    }
+
     try {
         // STEP 1: Get paginated bandi IDs
         let idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC`;
         let idRows;
 
         if ( forSelect ) {
-
             [idRows] = await con.promise().query( idQuery );
         } else {
             idQuery += ` LIMIT ? OFFSET ?`;

@@ -191,7 +191,10 @@ const AllBandiTable = () => {
                     </Grid2>
 
                     <Grid2 xs={12}>
-                        <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                        <Button 
+                            type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
+                            onClick={fetchKaidi}
+                            >
                             रिपोर्ट लिई ल्याउनुहोस्
                         </Button>
                         <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
