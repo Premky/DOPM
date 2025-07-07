@@ -975,10 +975,15 @@ const BandiPersonForm = () => {
             const is_jariwana = watch( `fine[${ index }].is_jariwana` );
             return (
               <Grid item container xs={12} key={index}>
-                
+
+
+
+
+                <>
+
                   <Grid item xs={12} sm={6} md={2}>
                     <ReuseSelect
-                      name={`fine[${ index }].is_jariwana`}
+                      name={`fine[${ index }].is_fine_fixed`}
                       label='छ/छैन'
                       options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
                       defaultValue='0'
@@ -987,102 +992,88 @@ const BandiPersonForm = () => {
                       error={errors?.fine?.[index]?.is_fine_fixed}
                     />
                   </Grid>
-                
-                {is_jariwana == 1 && (
-                  <>
-                    <Grid item xs={12} sm={6} md={2}>
-                      <ReuseSelect
-                        name={`fine[${ index }].fine_type`}
-                        label="प्रकार"
-                        options={fineTypesOpt}
-                        required={true}
-                        control={control}
-                        error={errors?.fine?.[index]?.fine_type}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
-                      <ReuseSelect
-                        name={`fine[${ index }].is_fine_fixed`}
-                        label='छ/छैन'
-                        options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                        defaultValue='0'
-                        required={true}
-                        control={control}
-                        error={errors?.fine?.[index]?.is_fine_fixed}
-                      />
-                    </Grid>
-                    {selectedIs_amount_fixed === 1 && (
-                      <>
-                        <Grid item xs={12} sm={6} md={3}>
-                          <ReuseInput
-                            name={`fine[${ index }].fine_amt`}
-                            label='रकम'
-                            required={true}
-                            control={control}
-                            error={errors?.fine?.[index]?.fine_amt}
-                          />
-                        </Grid>
+                  {selectedIs_amount_fixed === 1 && (
+                    <>
+                      <Grid item xs={12} sm={6} md={2}>
+                        <ReuseSelect
+                          name={`fine[${ index }].fine_type`}
+                          label="प्रकार"
+                          options={fineTypesOpt}
+                          required={true}
+                          control={control}
+                          error={errors?.fine?.[index]?.fine_type}
+                        />
+                      </Grid>
 
-                        <Grid item xs={12} sm={6} md={3}>
-                          <ReuseSelect
-                            name={`fine[${ index }].is_fine_paid`}
-                            label='तिरेको छ/छैन'
-                            options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                            required={true}
-                            control={control}
-                            error={errors?.fine?.[index]?.is_fine_paid}
-                          />
-                        </Grid>
-                        {is_fine_paid === 1 && (
-                          <>
-                            <Grid item xs={12} sm={6} md={3}>
-                              <ReuseOffice
-                                name={`fine[${ index }].fine_paid_office`}
-                                label="जरिवाना तिरेको निकाय"
-                                required={true}
-                                control={control}
-                                error={errors?.fine?.[index]?.fine_paid_office}
-                              />
-                            </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <ReuseInput
+                          name={`fine[${ index }].fine_amt`}
+                          label='रकम'
+                          required={true}
+                          control={control}
+                          error={errors?.fine?.[index]?.fine_amt}
+                        />
+                      </Grid>
 
-                            <Grid item xs={12} sm={6} md={3}>
-                              <ReuseDistrict
-                                name={`fine[${ index }].fine_paid_office_district`}
-                                label="जरिवाना तिरेको जिल्ला"
-                                required={true}
-                                control={control}
-                                error={errors?.fine?.[index]?.fine_paid_office_district}
-                              />
-                            </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <ReuseSelect
+                          name={`fine[${ index }].is_fine_paid`}
+                          label='तिरेको छ/छैन'
+                          options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                          required={true}
+                          control={control}
+                          error={errors?.fine?.[index]?.is_fine_paid}
+                        />
+                      </Grid>
+                      {is_fine_paid === 1 && (
+                        <>
+                          <Grid item xs={12} sm={6} md={3}>
+                            <ReuseOffice
+                              name={`fine[${ index }].fine_paid_office`}
+                              label="जरिवाना तिरेको निकाय"
+                              required={true}
+                              control={control}
+                              error={errors?.fine?.[index]?.fine_paid_office}
+                            />
+                          </Grid>
 
-                            <Grid item xs={12} sm={6} md={3}>
-                              <ReuseInput
-                                name={`fine[${ index }].fine_paid_cn`}
-                                label="च.नं."
-                                required={true}
-                                control={control}
-                                error={errors?.fine?.[index]?.fine_paid_cn}
-                              />
-                            </Grid>
+                          <Grid item xs={12} sm={6} md={3}>
+                            <ReuseDistrict
+                              name={`fine[${ index }].fine_paid_office_district`}
+                              label="जरिवाना तिरेको जिल्ला"
+                              required={true}
+                              control={control}
+                              error={errors?.fine?.[index]?.fine_paid_office_district}
+                            />
+                          </Grid>
 
-                            <Grid item xs={12} sm={6} md={3}>
-                              <ReuseDateField
-                                name={`fine[${ index }].fine_paid_date`}
-                                label="जरिवाना तिरेको मिति"
-                                placeholder="YYYY-MM-DD"
-                                required={true}
-                                control={control}
-                                error={errors?.fine?.[index]?.fine_paid_date}
-                              />
-                            </Grid>
-                          </>
-                        )}
+                          <Grid item xs={12} sm={6} md={3}>
+                            <ReuseInput
+                              name={`fine[${ index }].fine_paid_cn`}
+                              label="च.नं."
+                              required={true}
+                              control={control}
+                              error={errors?.fine?.[index]?.fine_paid_cn}
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6} md={3}>
+                            <ReuseDateField
+                              name={`fine[${ index }].fine_paid_date`}
+                              label="जरिवाना तिरेको मिति"
+                              placeholder="YYYY-MM-DD"
+                              required={true}
+                              control={control}
+                              error={errors?.fine?.[index]?.fine_paid_date}
+                            />
+                          </Grid>
+                        </>
+                      )}
 
 
-                      </>
-                    )}
-                  </>
-                )}
+                    </>
+                  )}
+                </>
 
                 <Grid item xs={1} sm={1} md={1} sx={{ mt: 5 }}>
                   <Button
