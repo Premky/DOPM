@@ -8,8 +8,8 @@ import { useAuth } from '../../../Context/AuthContext';
 import fetchReleaseReasons from '../../ReuseableComponents/fetchReleaseReasons';
 import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
 
-import BandiMuddaTable from '../Tables/BandiMuddaTable';
-import BandiAddressTable from '../Tables/BandiAddressTable';
+import BandiMuddaTable from '../Tables/For View/BandiMuddaTable'
+import BandiAddressTable from '../Tables/For View/BandiAddressTable';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
