@@ -199,13 +199,13 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
       console.log(values)
     } else {
       sql = `INSERT INTO bandi_fine_details (
-        bandi_id, fine_type_id, amount_fixed,
+        bandi_id,  amount_fixed,
         created_by, updated_by, current_office_id
       ) VALUES (?)`;
 
       values = [
         bandi_id,
-        fine.fine_type,
+        // fine.fine_type,
         fine.is_fine_fixed,
         user_id,
         user_id,
