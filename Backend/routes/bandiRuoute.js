@@ -603,7 +603,6 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         baseWhere += ` AND (bp.bandi_name LIKE ${ escapedName } OR bp.office_bandi_id = ${ con.escape( search_name ) })`;
     }
 
-
     baseWhere += ` AND bp.is_active=1 `;
     if ( forSelect ) {
         baseWhere += ` AND bp.is_active=1 `;

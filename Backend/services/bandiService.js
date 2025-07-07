@@ -52,7 +52,7 @@ async function insertKaidDetails( bandi_id, data ) {
     data.hirasat_years,
     data.hirasat_months,
     data.hirasat_days,
-    data.hirasatBs,
+    hirasatBs,
     thunaAd
   ];
 
