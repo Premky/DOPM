@@ -15,7 +15,7 @@ const KaragarMaskebari = () => {
     const { records: muddawiseCount,muddawisetotal, loading: muddawiseCountLoading } = fetchMuddaWiseCount();
 
     // console.log( muddawisetotal );
-    console.log( releaseRecords );
+    // console.log( releaseRecords );
     const totals = {
         regular_this_month:
             ( parseInt( releaseRecords[0]?.this_month?.Total || 0 ) ) +

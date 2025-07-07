@@ -59,6 +59,7 @@ const AllBandiTable = () => {
     //Watch Variables:
     const searchOffice = watch( 'searchOffice' );
     const nationality = watch( 'nationality' );
+    const search_name = watch( 'search_name')
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -184,7 +185,7 @@ const AllBandiTable = () => {
                     <Grid2 size={{ xs: 12, sm: 2 }}>
                         <ReuseInput
                             name="search_name"
-                            label=""
+                            label="नाम/संकेत नं."
                             control={control}
                         />
                     </Grid2>

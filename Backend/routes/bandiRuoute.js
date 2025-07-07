@@ -408,7 +408,7 @@ router.post( '/create_bandi_fine', verifyToken, async ( req, res ) => {
         await beginTransactionAsync();
         let sql = '';
         let values = '';
-        await insertSingleFineDetails(data.bandi_id, data, user_id, user_id, active_office );
+        await insertSingleFineDetails( data.bandi_id, data, user_id, user_id, active_office );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Result: data.bandi_id,
@@ -2236,25 +2236,26 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
         params.push( nationality.trim() );
     }
 
-    // Office filtering logic
-    // if ( active_office ==1 || active_office ==2 ) {
-    //     if(office_id==1 || office_id==2){
-    //         filters.push( 1==1 );
-    //     }
-    // // filters.push( "bp.current_office_id = ?" );
-    // // params.push( active_office );
-    // } else if ( office_id ) {
-    //     filters.push( "bp.current_office_id = ?" );
-    //     params.push( office_id );
-    // }
-    if ( office_id ) {
-        filters.push( "bp.current_office_id = ?" );
-        params.push( office_id );
-    } else {
-        if ( active_office == 1 || active_office == 2 ) {
+    if ( active_office == 1 || active_office == 2 ) {
+        if ( office_id ) {
+            filters.push( "bp.current_office_id=?" );
+            params.push( office_id );
+        } else {
             filters.push( 1 == 1 );
         }
+    } else {
+        filters.push( "bp.current_office_id=?" );
+        params.push( active_office );
     }
+
+    // if ( office_id ) {
+    //     filters.push( "bp.current_office_id = ?" );
+    //     params.push( office_id );
+    // } else {
+    //     if ( active_office == 1 || active_office == 2 ) {
+    //         filters.push( 1 == 1 );
+    //     }
+    // }
 
     const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
 
@@ -2291,7 +2292,7 @@ router.get( '/get_prisioners_count1', verifyToken, async ( req, res ) => {
         office_id // optional for super admin
     } = req.query;
 
-    // console.log(req.query)
+    console.log( req.query );
 
     const baseSql = `
         SELECT 
@@ -2347,22 +2348,20 @@ router.get( '/get_prisioners_count1', verifyToken, async ( req, res ) => {
     }
 
     // Office filter
-    // console.log( 'office_id', active_office );
-    if ( active_office > 2 ) {
-        // Client office — fixed office
-        filters.push( "bp.current_office_id = ?" );
-        params.push( active_office );
+
+
+
+    if ( active_office == 1 || active_office == 2 ) {
+        if ( office_id ) {
+            filters.push( "bp.current_office_id=?" );
+            params.push( office_id );
+        } else {
+            filters.push( 1 == 1 );
+        }
     } else {
-
-        // console.log( 'Client Office' );
+        filters.push( "bp.current_office_id=?" );
+        params.push( active_office );
     }
-
-
-    // else if (office_id) {
-    //     // Optional filter for superadmin
-    //     filters.push("bp.current_office_id = ?");
-    //     params.push(office_id);
-    // }
 
     const whereClause = filters.length > 0 ? `WHERE ${ filters.join( " AND " ) }` : '';
 
@@ -2474,15 +2473,28 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     }
 
     // Office filter
-    if ( active_office == 2 || active_office == 1 ) {
+    console.log( active_office );
+    if ( active_office == 1 || active_office == 2 ) {
         if ( office_id ) {
-            filters.push( "bp.current_office_id = ?" );
-            params.push( Number( office_id ) );
+            filters.push( "bp.current_office_id=?" );
+            params.push( office_id );
+        } else {
+            filters.push( 1 == 1 );
         }
     } else {
-        filters.push( "bp.current_office_id = ?" );
+        filters.push( "bp.current_office_id=?" );
         params.push( active_office );
     }
+
+    // if ( active_office == 2 || active_office == 1 ) {
+    //     if ( office_id ) {
+    //         filters.push( "bp.current_office_id = ?" );
+    //         params.push( Number( office_id ) );
+    //     }
+    // } else {
+    //     filters.push( "bp.current_office_id = ?" );
+    //     params.push( active_office );
+    // }
     // else super admin sees all offices
 
     // console.log( 'office_id', active_office );
