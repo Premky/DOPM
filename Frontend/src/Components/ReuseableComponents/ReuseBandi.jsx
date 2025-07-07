@@ -47,7 +47,7 @@ const ReuseBandi = ({ name, label, required, control, error, defaultvalue, type,
       const formatted = Result
         .filter(opt => opt?.id && opt?.bandi_name)
         .map((opt, index) => {
-          const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
+          const bt = opt.bandi_type;
           return {
             label: `${opt.office_bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name} | ${index + 1}`,
             value: opt.bandi_id,
