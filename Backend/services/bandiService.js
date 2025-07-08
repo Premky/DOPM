@@ -546,6 +546,44 @@ async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, o
   }
 }
 
+async function updateDisabilities( disabilityId, disability, user_id, office_id ) {
+  console.log(disability)
+  if (
+    !disabilityId ||        
+    !disability.disability_id
+  ) {
+    console.warn( "⚠️ Missing required disability fields:", disabilityId, disability );
+    return 0;
+  }
+
+  const sql = `
+    UPDATE bandi_disability_details
+    SET
+      disability_id = ?,
+      disability_name = ?,      
+      updated_by = ?,
+      created_office_id = ?
+    WHERE id = ?
+  `;
+
+  const values = [
+    disability.disability_id,
+    disability.disability_name,    
+    user_id,
+    office_id,
+    disabilityId
+  ];
+
+  try {
+    const result = await queryAsync( sql, values );
+    console.log( "✅ Update result:", result );
+    return result.affectedRows || 0;
+  } catch ( error ) {
+    console.error( "❌ SQL Update Error:", error );
+    throw error;
+  }
+}
+
 async function insertHealthInsurance( bandi_id, health_insurance = [], user_id, office_id ) {
   if ( !health_insurance.length ) return;
   const values = health_insurance.map( c => [
@@ -573,5 +611,6 @@ export {
   insertDiseasesDetails,
   updateDiseasesDetails,
   insertDisablilityDetails,
+  updateDisabilities,
   insertHealthInsurance
 };

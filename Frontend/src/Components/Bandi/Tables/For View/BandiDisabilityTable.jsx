@@ -14,9 +14,10 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
-import fetchBandiDiseases from '../../Apis_to_fetch/fetchBandiDiseases';
 
-import DiseasesModal from '../../Dialogs/DiseasesModal';
+import fetchBandiDisabilities from '../../Apis_to_fetch/fetchBandiDisabilities';
+
+import DisabilityModal from '../../Dialogs/DisabilityModal';
 
 const BandiDisabilityTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
@@ -26,7 +27,8 @@ const BandiDisabilityTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-    const { records: bandiDiseases, loading: bandiDiseasesLoading, refetch } = fetchBandiDiseases(bandi_id);    
+    
+    const { records: bandiDisability, loading: bandiDisabilityLoading, refetch } = fetchBandiDisabilities(bandi_id);    
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -98,7 +100,7 @@ const BandiDisabilityTable = ( { bandi_id } ) => {
         <Grid container spacing={2}>
             <Grid container item xs={12}>
                 <Grid>
-                    <h3>रोगी विवरणः</h3>
+                    <h3> अशक्तताको विवरणः</h3>
                 </Grid>
                 <Grid marginTop={2}>
                     &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
@@ -115,10 +117,10 @@ const BandiDisabilityTable = ( { bandi_id } ) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {bandiDiseases.map( ( opt, index ) => (
+                            {bandiDisability.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.disease_id==100 ?<>{`(${opt.disease_name_np}) ${opt.disease_name_if_other}`} </> : opt.disease_name_np}</TableCell>                                   
+                                    <TableCell align="center">{opt.disability_id==100 ?<>{`(${opt.disablility_name_np}) ${opt.disability_name_if_other}`} </> : opt.disablility_name_np}</TableCell>                                   
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
@@ -135,7 +137,7 @@ const BandiDisabilityTable = ( { bandi_id } ) => {
                     </Table>
                 </TableContainer>
             </Grid>
-            <DiseasesModal
+            <DisabilityModal
                 open={modalOpen}
                 onClose={() => setModalOpen( false )}
                 onSave={handleSave}

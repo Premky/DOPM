@@ -5,7 +5,7 @@ import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTot
 const TotalGenderWiseCount = () => {
 
     const { totals, countLoading } = UseBandiTotalCountACoffice();
-    console.log( totals );
+    // console.log( totals );
     return (
         <Box>
             <Grid2>

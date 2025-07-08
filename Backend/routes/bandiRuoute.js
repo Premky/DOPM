@@ -33,7 +33,8 @@ import {
     insertDiseasesDetails,
     insertDisablilityDetails,
     updateContactPerson,
-    updateDiseasesDetails
+    updateDiseasesDetails,
+    updateDisabilities
 } from '../services/bandiService.js';
 // console.log(current_date);
 // console.log(fy_date)
@@ -1592,41 +1593,80 @@ router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
     }
 } );
 
-router.put('/update_bandi_diseases/:id', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const user_id = req.user.id;
-  const diseasesId = req.params.id;
+router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const diseasesId = req.params.id;
 
-  try {
-    console.log("📝 Update diseases request:", req.body);
-    const updatedCount = await updateDiseasesDetails(diseasesId, req.body, user_id, active_office);
+    try {
+        console.log( "📝 Update diseases request:", req.body );
+        const updatedCount = await updateDiseasesDetails( diseasesId, req.body, user_id, active_office );
 
-    if (updatedCount === 0) {
-      return res.status(400).json({
-        Status: false,
-        message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
-      });
+        if ( updatedCount === 0 ) {
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
+            } );
+        }
+
+        await commitAsync();
+
+        return res.json( {
+            Status: true,
+            message: "बन्दी रोग विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
+        } );
     }
+} );
 
-    await commitAsync();
+router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
 
-    return res.json({
-      Status: true,
-      message: "बन्दी रोग विवरण सफलतापूर्वक अपडेट गरियो।"
-    });
+    try {
+        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
-  } catch (error) {
-    await rollbackAsync();
-    console.error("❌ Update failed:", error);
+        const insertCount = await insertDisablilityDetails(
+            req.body.bandi_id,
+            req.body.bandi_diseases,
+            user_id,
+            active_office
+        );
 
-    return res.status(500).json({
-      Status: false,
-      Error: error.message,
-      message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
-    });
-  }
-});
+        if ( insertCount === 0 ) {
+            await rollbackAsync();
+            console.warn( "⚠️ No rows inserted. Possible bad data structure." );
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा इन्सर्ट गर्न सकेनौं। सम्भवत: 'relation_id' छुट्यो वा गलत ढाँचा।"
+            } );
+        }
 
+        await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Transaction failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+    }
+} );
 
 router.get( '/get_bandi_disability/:id', async ( req, res ) => {
     const { id } = req.params;
@@ -1647,6 +1687,41 @@ router.get( '/get_bandi_disability/:id', async ( req, res ) => {
     } catch ( err ) {
         console.error( err );
         return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const disabilityId = req.params.id;
+
+    try {
+        console.log( "📝 Update disability request:", req.body );
+        const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
+
+        if ( updatedCount === 0 ) {
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
+            } );
+        }
+
+        await commitAsync();
+
+        return res.json( {
+            Status: true,
+            message: "बन्दी रोग विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
+        } );
     }
 } );
 
@@ -1712,41 +1787,41 @@ router.get( '/get_bandi_contact_person/:id', async ( req, res ) => {
     }
 } );
 
-router.put('/update_bandi_contact_person/:id', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const user_id = req.user.id;
-  const contactId = req.params.id;
+router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const contactId = req.params.id;
 
-  try {
-    console.log("📝 Update contact request:", req.body);
+    try {
+        console.log( "📝 Update contact request:", req.body );
 
-    const updatedCount = await updateContactPerson(contactId, req.body, user_id, active_office);
+        const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
 
-    if (updatedCount === 0) {
-      return res.status(400).json({
-        Status: false,
-        message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
-      });
+        if ( updatedCount === 0 ) {
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
+            } );
+        }
+
+        await commitAsync();
+
+        return res.json( {
+            Status: true,
+            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+        } );
     }
-
-    await commitAsync();
-
-    return res.json({
-      Status: true,
-      message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
-    });
-
-  } catch (error) {
-    await rollbackAsync();
-    console.error("❌ Update failed:", error);
-
-    return res.status(500).json({
-      Status: false,
-      Error: error.message,
-      message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
-    });
-  }
-});
+} );
 
 
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {
@@ -2608,8 +2683,109 @@ router.get( '/get_prisioners_count1', verifyToken, async ( req, res ) => {
     }
 } );
 
-
 router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const defaultAge = 65;
+    const defaultOfficeCategory = 2;
+
+    const {
+        startDate,
+        endDate,
+        nationality,
+        ageFrom,
+        ageTo,
+        office_id // optional for super admin
+    } = req.query;
+
+    const filters = [];
+    const params = [];
+
+    // Age filter
+    if ( ageFrom && ageTo ) {
+        filters.push( 'AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?' );
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+
+    // Nationality filter
+    if ( nationality ) {
+        filters.push( 'AND bp.nationality = ?' );
+        params.push( nationality.trim() );
+    }
+
+    // Build office-level and office category filters together
+    const officeFilters = ['o.office_categories_id = ?'];
+    params.push( defaultOfficeCategory );
+
+    if ( active_office !== 1 && active_office !== 2 ) {
+        officeFilters.push( 'o.id = ?' );
+        params.push( active_office );
+    } else if ( office_id ) {
+        officeFilters.push( 'o.id = ?' );
+        params.push( office_id );
+    }
+
+    const officeWhereClause = `WHERE ${ officeFilters.join( ' AND ' ) }`;
+
+    const baseSql = `
+        SELECT
+            voad.state_name_np,
+            voad.district_order_id,
+            o.letter_address AS office_short_name,
+
+            COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male', 1, NULL)) AS kaidi_male,
+            COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female', 1, NULL)) AS kaidi_female,
+            COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender NOT IN ('male', 'female'), 1, NULL)) AS kaidi_other,
+            COUNT(IF(bp.bandi_type = 'कैदी', 1, NULL)) AS total_kaidi,
+
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male', 1, NULL)) AS thunuwa_male,
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female', 1, NULL)) AS thunuwa_female,
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender NOT IN ('male', 'female'), 1, NULL)) AS thunuwa_other,
+            COUNT(IF(bp.bandi_type = 'थुनुवा', 1, NULL)) AS total_thunuwa,
+
+            COUNT(IF(bp.gender = 'male', 1, NULL)) AS total_male,
+            COUNT(IF(bp.gender = 'female', 1, NULL)) AS total_female,
+            COUNT(bp.id) AS total_kaidibandi,
+
+            COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male' AND bp.age >= ${ defaultAge }, 1, NULL)) AS kaidi_male_65plus,
+            COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female' AND bp.age >= ${ defaultAge }, 1, NULL)) AS kaidi_female_65plus,
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male' AND bp.age >= ${ defaultAge }, 1, NULL)) AS thunuwa_male_65plus,
+            COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female' AND bp.age >= ${ defaultAge }, 1, NULL)) AS thunuwa_female_65plus,
+
+            COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
+            GROUP_CONCAT(DISTINCT IF(bp.country_name_np != 'नेपाल', bp.country_name_np, NULL)) AS foreign_countries
+
+        FROM offices o
+        LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
+        LEFT JOIN (
+            SELECT 
+                bp.id,
+                bp.gender,
+                bp.bandi_type,
+                bp.current_office_id,
+                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
+                bp.nationality,
+                vbad.country_name_np
+            FROM bandi_person bp
+            LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
+            WHERE bp.is_active = 1
+            ${ filters.join( ' ' ) }
+        ) AS bp ON bp.current_office_id = o.id
+        ${ officeWhereClause }
+        GROUP BY voad.state_id, voad.district_order_id, o.letter_address
+        ORDER BY voad.state_id, voad.district_order_id, o.letter_address;
+    `;
+
+    try {
+        const result = await query( baseSql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+
+router.get( '/get_office_wise_count1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     let defaultAge = 65;
     const {
@@ -2705,31 +2881,6 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         filters.push( "bp.current_office_id=?" );
         params.push( active_office );
     }
-
-    // if ( active_office == 2 || active_office == 1 ) {
-    //     if ( office_id ) {
-    //         filters.push( "bp.current_office_id = ?" );
-    //         params.push( Number( office_id ) );
-    //     }
-    // } else {
-    //     filters.push( "bp.current_office_id = ?" );
-    //     params.push( active_office );
-    // }
-    // else super admin sees all offices
-
-    // console.log( 'office_id', active_office );
-    // if ( active_office > 2 ) {
-    //     // Client office — fixed office
-    //     filters.push( "bp.current_office_id = ?" );
-    //     params.push( active_office );
-    // } 
-
-
-    // else if (office_id) {
-    //     // Optional filter for superadmin
-    //     filters.push("bp.current_office_id = ?");
-    //     params.push(office_id);
-    // }
 
     const whereClause = filters.length > 0 ? `WHERE ${ filters.join( " AND " ) }` : '';
 

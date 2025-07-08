@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const fetchContactPerson = ( bandi_id ) => {
+const fetchBandiDisabilities = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -47,4 +47,4 @@ const fetchContactPerson = ( bandi_id ) => {
     return { records, optrecords, loading, refetch:fetchBandiRecords };
 };
 
-export default fetchContactPerson;
+export default fetchBandiDisabilities;
