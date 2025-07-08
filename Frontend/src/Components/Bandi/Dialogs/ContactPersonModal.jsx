@@ -57,7 +57,7 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
             <input type="text" name="bandi_id" value={editingData?.bandi_id} 
-            // hidden
+            hidden
             />
 
                 <ReuseRelativeRelations

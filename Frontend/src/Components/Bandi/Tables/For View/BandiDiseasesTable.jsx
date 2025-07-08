@@ -14,12 +14,11 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
-import fetchContactPerson from '../../Apis_to_fetch/fetchContactPerson';
+import fetchBandiDiseases from '../../Apis_to_fetch/fetchBandiDiseases';
 
-import FamilyModal from '../../Dialogs/FamilyModal';
-import ContactPersonModal from '../../Dialogs/ContactPersonModal';
+import DiseasesModal from '../../Dialogs/DiseasesModal';
 
-const BandiContactPersonTable = ( { bandi_id } ) => {
+const BandiDiseasesTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -27,8 +26,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-    const { records: contactPersons, loading: contactPersonLoading, refetch } = fetchContactPerson(bandi_id);
-
+    const { records: bandiDiseases, loading: bandiDiseasesLoading, refetch } = fetchBandiDiseases(bandi_id);    
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -69,7 +67,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
             if ( id ) {
                 // Update existing contact
                 await axios.put(
-                    `${ BASE_URL }/bandi/update_bandi_contact_person/${ id }`,
+                    `${ BASE_URL }/bandi/update_bandi_diseases/${ id }`,
                     formData,
                     { withCredentials: true }
                 );
@@ -77,10 +75,10 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
             } else {
                 // Create new contact (wrap formData in array)
                 await axios.post(
-                    `${ BASE_URL }/bandi/create_bandi_contact_person1`,
+                    `${ BASE_URL }/bandi/create_bandi_diseases`,
                     {
                         bandi_id: bandi_id,
-                        contact_person: [formData],
+                        bandi_diseases: [formData],
                     },
                     { withCredentials: true }
                 );
@@ -100,7 +98,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
         <Grid container spacing={2}>
             <Grid container item xs={12}>
                 <Grid>
-                    <h3>सम्पर्क व्यक्तिको विवरणः</h3>
+                    <h3>रोगी विवरणः</h3>
                 </Grid>
                 <Grid marginTop={2}>
                     &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
@@ -112,21 +110,15 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
                         <TableHead>
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">नाता</TableCell>
-                                <TableCell align="center">नामथर</TableCell>
-                                <TableCell align="center">ठेगाना</TableCell>
-                                <TableCell align="center">सम्पर्क नं.</TableCell>
+                                <TableCell align="center">रोग</TableCell>                              
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {contactPersons.map( ( opt, index ) => (
+                            {bandiDiseases.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.relation_np || ''}</TableCell>
-                                    <TableCell align="center">{opt.contact_name || ''}</TableCell>
-                                    <TableCell align="center">{opt.contact_address || ''}</TableCell>
-                                    <TableCell align="center">{opt.contact_contact_details || ''}</TableCell>
+                                    <TableCell align="center">{opt.disease_id==100 ?<>{`(${opt.disease_name_np}) ${opt.disease_name_if_other}`} </> : opt.disease_name_np}</TableCell>                                   
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
@@ -143,7 +135,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
                     </Table>
                 </TableContainer>
             </Grid>
-            <ContactPersonModal
+            <DiseasesModal
                 open={modalOpen}
                 onClose={() => setModalOpen( false )}
                 onSave={handleSave}
@@ -153,4 +145,4 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
     );
 };
 
-export default BandiContactPersonTable;
+export default BandiDiseasesTable;

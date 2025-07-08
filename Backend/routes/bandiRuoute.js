@@ -32,7 +32,8 @@ import {
     insertSingleFineDetails,
     insertDiseasesDetails,
     insertDisablilityDetails,
-    updateContactPerson
+    updateContactPerson,
+    updateDiseasesDetails
 } from '../services/bandiService.js';
 // console.log(current_date);
 // console.log(fy_date)
@@ -1529,20 +1530,60 @@ router.put( '/update_bandi_punrabedn/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    try {
+        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+
+        const insertCount = await insertDiseasesDetails(
+            req.body.bandi_id,
+            req.body.bandi_diseases,
+            user_id,
+            active_office
+        );
+
+        if ( insertCount === 0 ) {
+            await rollbackAsync();
+            console.warn( "⚠️ No rows inserted. Possible bad data structure." );
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा इन्सर्ट गर्न सकेनौं। सम्भवत: 'relation_id' छुट्यो वा गलत ढाँचा।"
+            } );
+        }
+
+        await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Transaction failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+    }
+} );
+
 router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT bdd.bandi_id, bdd.disease_name as disease_name_if_other*,
+        SELECT bdd.id, bdd.bandi_id, bdd.disease_id, bdd.disease_name as disease_name_if_other,
         d.disease_name_np    
         FROM bandi_diseases_details bdd        
-        LEFT JOIN diseases d ON bdd.diseases_id = d.id
+        LEFT JOIN diseases d ON bdd.disease_id = d.id
         WHERE bandi_id = ?
     `;
     try {
         const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi ID not found" } );
+            return res.json( { Status: false, Error: "Bandi Diseases ID not found" } );
         }
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -1551,11 +1592,46 @@ router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
     }
 } );
 
+router.put('/update_bandi_diseases/:id', verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const user_id = req.user.id;
+  const diseasesId = req.params.id;
+
+  try {
+    console.log("📝 Update diseases request:", req.body);
+    const updatedCount = await updateDiseasesDetails(diseasesId, req.body, user_id, active_office);
+
+    if (updatedCount === 0) {
+      return res.status(400).json({
+        Status: false,
+        message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
+      });
+    }
+
+    await commitAsync();
+
+    return res.json({
+      Status: true,
+      message: "बन्दी रोग विवरण सफलतापूर्वक अपडेट गरियो।"
+    });
+
+  } catch (error) {
+    await rollbackAsync();
+    console.error("❌ Update failed:", error);
+
+    return res.status(500).json({
+      Status: false,
+      Error: error.message,
+      message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
+    });
+  }
+});
+
 
 router.get( '/get_bandi_disability/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT bdd.bandi_id, bdd.disability_name as disabliity_name_if_other*,
+        SELECT bdd.id, bdd.bandi_id, bdd.disability_id, bdd.disability_name as disabliity_name_if_other*,
         d.disability_name_np    
         FROM bandi_disability_details bdd        
         LEFT JOIN disability d ON bdd.disability_id = d.id
@@ -1565,7 +1641,7 @@ router.get( '/get_bandi_disability/:id', async ( req, res ) => {
         const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi ID not found" } );
+            return res.json( { Status: false, Error: "Bandi Disability ID not found" } );
         }
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {

@@ -9,7 +9,7 @@ import BandiPunrabednTable from './Tables/For View/BandiPunrabednTable.jsx'
 import BandiAddressTable from './Tables/For View/BandiAddressTable.jsx'
 import BandiKaidTable from './Tables/For View/BandiKaidTable.jsx'
 import BandiContactPersonTable from './Tables/For View/ContactPersonTable.jsx';
-
+import BandiDiseasesTable from './Tables/For View/BandiDiseasesTable.jsx'
 
 const ViewBandi = ({ bandi }) => {
     const params = useParams();
@@ -28,6 +28,7 @@ const ViewBandi = ({ bandi }) => {
             <BandiMuddaTable bandi_id={bandi_id} />
             <BandiFineTable bandi_id={bandi_id} />
             <BandiPunrabednTable bandi_id={bandi_id} />
+            <BandiDiseasesTable bandi_id={bandi_id} />
         </>
     )
 }

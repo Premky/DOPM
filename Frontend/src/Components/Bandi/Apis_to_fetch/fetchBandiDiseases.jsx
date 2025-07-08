@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const fetchContactPerson = ( bandi_id ) => {
+const fetchBandiDiseases = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -12,7 +12,7 @@ const fetchContactPerson = ( bandi_id ) => {
     const fetchBandiRecords = async () => {
         try {
             setLoading(true);
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_contact_person/${ bandi_id }`,
+            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_diseases/${ bandi_id }`,
                 { withCredentials: true } );
             // console.log( response );
             const { Status, Result, Error } = response.data;
@@ -27,6 +27,7 @@ const fetchContactPerson = ( bandi_id ) => {
 
                     setOptRecords( formatted );
                     setRecords( resultArray );
+                    // console.log(records)
                 } else {
                     console.log( 'No records found' );
                 }
@@ -47,4 +48,4 @@ const fetchContactPerson = ( bandi_id ) => {
     return { records, optrecords, loading, refetch:fetchBandiRecords };
 };
 
-export default fetchContactPerson;
+export default fetchBandiDiseases;

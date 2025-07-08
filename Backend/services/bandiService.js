@@ -319,25 +319,25 @@ async function insertFamily( bandi_id, family = [], user_id, office_id ) {
   await queryAsync( sql, [values] );
 }
 
-async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
+async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
   try {
-    if (!contacts.length) {
-      console.warn("⚠️ No contacts provided to insert.");
+    if ( !contacts.length ) {
+      console.warn( "⚠️ No contacts provided to insert." );
       return 0;
     }
 
-    const filteredContacts = contacts.filter(c =>
-      (typeof c.relation_id === 'string' && c.relation_id.trim() !== '') ||
-      (typeof c.relation_id === 'number' && !isNaN(c.relation_id))
+    const filteredContacts = contacts.filter( c =>
+      ( typeof c.relation_id === 'string' && c.relation_id.trim() !== '' ) ||
+      ( typeof c.relation_id === 'number' && !isNaN( c.relation_id ) )
     );
 
-    if (!filteredContacts.length) {
-      console.warn("⚠️ All contacts filtered out. Possibly missing 'relation_id'.");
-      console.log("🔍 Received contacts:", contacts);
+    if ( !filteredContacts.length ) {
+      console.warn( "⚠️ All contacts filtered out. Possibly missing 'relation_id'." );
+      console.log( "🔍 Received contacts:", contacts );
       return 0;
     }
 
-    const values = filteredContacts.map(c => [
+    const values = filteredContacts.map( c => [
       bandi_id,
       c.relation_id,
       c.contact_name,
@@ -346,19 +346,19 @@ async function insertContacts(bandi_id, contacts = [], user_id, office_id) {
       user_id,
       user_id,
       office_id
-    ]);
+    ] );
 
     const sql = `INSERT INTO bandi_contact_person (
       bandi_id, relation_id, contact_name, contact_address,
       contact_contact_details, created_by, updated_by, current_office_id
     ) VALUES ?`;
 
-    const result = await queryAsync(sql, [values]);
-    console.log("✅ Insert result:", result);
+    const result = await queryAsync( sql, [values] );
+    console.log( "✅ Insert result:", result );
     return result.affectedRows || 0;
 
-  } catch (err) {
-    console.error("❌ SQL/Insert error:", err); // <-- logs real SQL or DB issues
+  } catch ( err ) {
+    console.error( "❌ SQL/Insert error:", err ); // <-- logs real SQL or DB issues
     throw err;
   }
 }
@@ -394,14 +394,14 @@ async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
   await queryAsync( sql, [values] );
 }
 
-async function updateContactPerson(contactId, contact, user_id, office_id) {
+async function updateContactPerson( contactId, contact, user_id, office_id ) {
   if (
     !contact.contact_name ||
     !contact.contact_address ||
     !contact.contact_contact_details ||
     !contact.relation_id
   ) {
-    console.warn("⚠️ Missing required contact fields:", contact);
+    console.warn( "⚠️ Missing required contact fields:", contact );
     return 0;
   }
 
@@ -428,16 +428,16 @@ async function updateContactPerson(contactId, contact, user_id, office_id) {
   ];
 
   try {
-    const result = await queryAsync(sql, values);
-    console.log("✅ Update result:", result);
+    const result = await queryAsync( sql, values );
+    console.log( "✅ Update result:", result );
     return result.affectedRows || 0;
-  } catch (error) {
-    console.error("❌ SQL Update Error:", error);
+  } catch ( error ) {
+    console.error( "❌ SQL Update Error:", error );
     throw error;
   }
 }
 
-async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_id ) {
+async function insertDiseasesDetails1( bandi_id, diseases = [], user_id, office_id ) {
   for ( const disease of diseases ) {
     if ( Number( disease.is_ill ) === 1 ) {
       const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, created_by, updated_by, created_office_id)
@@ -449,6 +449,84 @@ async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_i
       ];
       await queryAsync( sql, [values] );
     }
+  }
+}
+
+async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_id ) {
+  try {
+    if ( !diseases.length ) {
+      console.warn( "⚠️ No diseases provided to insert." );
+      return 0;
+    }
+
+    const filteredDiseases = diseases.filter( c =>
+      ( typeof c.disease_id === 'string' && c.disease_id.trim() !== '' ) ||
+      ( typeof c.disease_id === 'number' && !isNaN( c.disease_id ) )
+    );
+
+    if ( !filteredDiseases.length ) {
+      console.warn( "⚠️ All contacts filtered out. Possibly missing 'disease_id'." );
+      console.log( "🔍 Received contacts:", diseases );
+      return 0;
+    }
+
+    const values = filteredDiseases.map( c => [
+      bandi_id,
+      c.disease_id,
+      c.disease_name,
+      user_id,
+      user_id,
+      office_id
+    ] );
+
+    const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, 
+    created_by, updated_by, created_office_id) VALUES ?`;
+
+    const result = await queryAsync( sql, [values] );
+    console.log( "✅ Insert result:", result );
+    return result.affectedRows || 0;
+
+  } catch ( err ) {
+    console.error( "❌ SQL/Insert error:", err ); // <-- logs real SQL or DB issues
+    throw err;
+  }
+}
+
+async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id ) {
+  
+  if (
+    !diseasesId ||        
+    !diseases.disease_id
+  ) {
+    console.warn( "⚠️ Missing required diseases fields:", diseasesId, diseases );
+    return 0;
+  }
+
+  const sql = `
+    UPDATE bandi_diseases_details
+    SET
+      disease_id = ?,
+      disease_name = ?,      
+      updated_by = ?,
+      created_office_id = ?
+    WHERE id = ?
+  `;
+
+  const values = [
+    diseases.disease_id,
+    diseases.disease_name,    
+    user_id,
+    office_id,
+    diseasesId
+  ];
+
+  try {
+    const result = await queryAsync( sql, values );
+    console.log( "✅ Update result:", result );
+    return result.affectedRows || 0;
+  } catch ( error ) {
+    console.error( "❌ SQL Update Error:", error );
+    throw error;
   }
 }
 
@@ -493,6 +571,7 @@ export {
   insertContacts,
   updateContactPerson,
   insertDiseasesDetails,
+  updateDiseasesDetails,
   insertDisablilityDetails,
   insertHealthInsurance
 };

@@ -24,7 +24,7 @@ const BandiTable = ( { bandi_id } ) => {
             if ( Status ) {
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
                     setFetchedBandies( Result[0] );
-                    console.log( Result );
+                    // console.log( Result );
                 } else {
                     console.log( 'No records found.' );
                     setFetchedBandies( [] );

@@ -23,7 +23,7 @@ const FineEditDialog = ({ open, onClose, onSave, editingData }) => {
     });
 
     useEffect(() => {
-        console.log(editingData)
+        // console.log(editingData)
         if (editingData) {
             reset({ ...editingData }); // ⬅️ important!
         }

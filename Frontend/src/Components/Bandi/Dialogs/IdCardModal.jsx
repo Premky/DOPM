@@ -63,7 +63,7 @@ const IdCardModal = ( { open, onClose, onSave, editingData } ) => {
 
     const card_type_id = watch('card_type_id');
     useEffect(()=>{
-        console.log(card_type_id)
+        // console.log(card_type_id)
 
     },[card_type_id])
     return (

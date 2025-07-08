@@ -77,7 +77,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
             } else {
                 // Create new contact (wrap formData in array)
                 await axios.post(
-                    `${ BASE_URL }/bandi/create_bandi_contact_person1`,
+                    `${ BASE_URL }/bandi/create_bandi_contact_person`,
                     {
                         bandi_id: bandi_id,
                         contact_person: [formData],
