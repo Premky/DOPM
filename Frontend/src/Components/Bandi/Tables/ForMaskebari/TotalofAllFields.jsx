@@ -4,7 +4,7 @@ import fetchTOtalofAllFields from '../../../ReuseableComponents/fetchTotalofAllF
 
 const TotalofAllFields = () => {
     const {records:totals, loading:totoalsLoading}=fetchTOtalofAllFields();
-    console.log(totals)
+    // console.log(totals)
     return (
         <div>
             

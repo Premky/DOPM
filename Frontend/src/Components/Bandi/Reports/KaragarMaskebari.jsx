@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid2 } from '@mui/material';
+import { Grid2, Box, Typography, Button } from '@mui/material';
 import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
 import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
 import TotalReleaseDetails from '../Tables/ForMaskebari/TotalReleaseDetails';
@@ -9,13 +9,24 @@ import TotalofAllFields from '../Tables/ForMaskebari/TotalofAllFields';
 
 import fetchAllReleaseCounts from '../../ReuseableComponents/fetchAllReleaseCounts';
 import fetchMuddaWiseCount from '../../ReuseableComponents/fetchMuddaWiseCount';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import { useForm } from 'react-hook-form';
+import { useAuth } from '../../../Context/AuthContext';
 
 const KaragarMaskebari = () => {
+    const { state: authState } = useAuth();
     const { records: releaseRecords, loading: releaseRecordsLoading } = fetchAllReleaseCounts();
-    const { records: muddawiseCount,muddawisetotal, loading: muddawiseCountLoading } = fetchMuddaWiseCount();
+    const { records: muddawiseCount, muddawisetotal, loading: muddawiseCountLoading } = fetchMuddaWiseCount();
+    const { control, watch, handleSubmit } = useForm();
 
     // console.log( muddawisetotal );
     // console.log( releaseRecords );
+    const selectedOffice = watch( 'searchOffice' );
+    const nationality = watch( 'nationality' );
+    const startDate = watch( 'startDate' );
+    const endDate = watch( 'endDate' );
+
     const totals = {
         regular_this_month:
             ( parseInt( releaseRecords[0]?.this_month?.Total || 0 ) ) +
@@ -27,14 +38,14 @@ const KaragarMaskebari = () => {
             ( parseInt( releaseRecords[0]?.this_month?.Total || 0 ) ) +
             ( parseInt( releaseRecords[1]?.this_month?.Total || 0 ) ),
 
-        payroll_till_this_month: (parseInt(releaseRecords[2]?.this_month?.Total || 0)),
+        payroll_till_this_month: ( parseInt( releaseRecords[2]?.this_month?.Total || 0 ) ),
 
         mafi_this_month: parseInt( releaseRecords[3]?.this_month?.Total || 0 ),
 
         mafi_till_now:
             ( parseInt( releaseRecords[3]?.till_last_month?.Total || 0 ) ) +
             ( parseInt( releaseRecords[3]?.this_month?.Total || 0 ) ),
-        
+
         kaam_this_month: parseInt( releaseRecords[4]?.this_month?.Total || 0 ),
         kaam_till_now:
             ( parseInt( releaseRecords[4]?.till_last_month?.Total || 0 ) ) +
@@ -42,22 +53,110 @@ const KaragarMaskebari = () => {
 
         this_month_155: parseInt( releaseRecords[5]?.this_month?.Total || 0 ),
         till_now_155:
-        ( parseInt( releaseRecords[5]?.till_last_month?.Total || 0 ) ) +
-        ( parseInt( releaseRecords[5]?.this_month?.Total || 0 ) ),
-        
+            ( parseInt( releaseRecords[5]?.till_last_month?.Total || 0 ) ) +
+            ( parseInt( releaseRecords[5]?.this_month?.Total || 0 ) ),
+
         this_month_transfer: parseInt( releaseRecords[6]?.this_month?.Total || 0 ),
         this_month_death: parseInt( releaseRecords[7]?.this_month?.Total || 0 ),
         this_month_active: parseInt( releaseRecords[8]?.till_last_month?.Total || 0 ),
         this_month_added: parseInt( releaseRecords[9]?.this_month?.Total || 0 ),
         this_month_dependent: parseInt( releaseRecords[10]?.this_month?.Total || 0 ),
-        
+
     };
 
-    
+
     return (
         <div>
-            <Grid2 container>
+            <Grid2 container >
+                <Box sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                        {/* Welcome {authState.user} from {authState.office_np} */}
+                    </Typography>
 
+                    <form
+                    // onSubmit={handleSubmit( onSubmit )}
+                    >
+                        <Grid2 container spacing={2}>
+                            <Grid2 size={{ xs: 12, sm: 6 }}>
+                                <ReuseKaragarOffice
+                                    name="searchOffice"
+                                    label="Office"
+                                    control={control}
+                                    name_type='short'
+                                    disabled={authState.office_id >= 3}
+                                />
+                            </Grid2>
+
+                            <Grid2 size={{ xs: 12, sm: 4 }}>
+                                <ReuseSelect
+                                    name="nationality"
+                                    label='राष्ट्रियता'
+                                    options={[
+                                        { label: 'स्वदेशी', value: 'स्वदेशी' },
+                                        { label: 'विदेशी', value: 'बिदेशी' }
+                                    ]}
+                                    control={control}
+                                />
+                            </Grid2>
+
+                            {/* <Grid2 container size={{ xs: 12, sm: 4 }}>
+                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                    <ReuseDatePickerBS
+                                        name="startDate"
+                                        control={control}
+                                        label="देखी"
+                                    />
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                    <ReuseDatePickerBS
+                                        name="endDate"
+                                        control={control}
+                                        label="सम्म"
+                                    />
+                                </Grid2>
+                            </Grid2>
+
+                            <Grid2 xs={6} sm={3}>
+                                <Controller
+                                    name="ageFrom"
+                                    control={control}
+                                    render={( { field } ) => (
+                                        <TextField
+                                            {...field}
+                                            label="Min Age"
+                                            fullWidth
+                                            type="number"
+                                        />
+                                    )}
+                                />
+                            </Grid2>
+
+                            <Grid2 xs={6} sm={3}>
+                                <Controller
+                                    name="ageTo"
+                                    control={control}
+                                    render={( { field } ) => (
+                                        <TextField
+                                            {...field}
+                                            label="Max Age"
+                                            fullWidth
+                                            type="number"
+                                        />
+                                    )}
+                                />
+                            </Grid2> */}
+
+                            <Grid2 xs={12}>
+                                <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                                    रिपोर्ट लिई ल्याउनुहोस्
+                                </Button>
+                                {/* <Button onClick={ExportCountReport} variant="outlined" sx={{ mt: 2, ml: 2 }}>
+                                    एक्सेल निर्यात
+                                </Button> */}
+                            </Grid2>
+                        </Grid2>
+                    </form>
+                </Box>
             </Grid2>
             <Grid2 container sx={{ marginTop: 1 }}>
                 <TotalofAllFields totals={totals} />
@@ -69,7 +168,7 @@ const KaragarMaskebari = () => {
 
             <Grid2 container sx={{ marginTop: 1 }}>
                 {/* <CountAcMuddaTable /> */}
-                <TotalCountAc2Mudda muddawiseCount={muddawiseCount} muddawisetotal={muddawisetotal}/>
+                <TotalCountAc2Mudda muddawiseCount={muddawiseCount} muddawisetotal={muddawisetotal} />
             </Grid2>
         </div>
     );
