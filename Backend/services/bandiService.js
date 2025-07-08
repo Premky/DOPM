@@ -162,6 +162,17 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
     const isFixed = Number( fine.is_fine_fixed ) === 1;
     const isPaid = Number( fine.is_fine_paid ) === 1;
 
+    let depositAmount = fine.fine_amt;
+    if (
+      depositAmount === undefined ||
+      depositAmount === null ||
+      depositAmount.toString().trim() === '' ||
+      isNaN( Number( depositAmount ) )
+    ) {
+      depositAmount = 0;
+    } else {
+      depositAmount = Number( depositAmount );
+    }
     if ( isFixed && isPaid ) {
       sql = `INSERT INTO bandi_fine_details (
         bandi_id, fine_type_id, amount_fixed, amount_deposited,
@@ -169,18 +180,6 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
         deposit_date, deposit_amount,
         created_by, updated_by, current_office_id
       ) VALUES (?)`;
-
-      let depositAmount = fine.fine_amt;
-      if (
-        depositAmount === undefined ||
-        depositAmount === null ||
-        depositAmount.toString().trim() === '' ||
-        isNaN( Number( depositAmount ) )
-      ) {
-        depositAmount = 0;
-      } else {
-        depositAmount = Number( depositAmount );
-      }
 
       values = [
         bandi_id,
@@ -197,15 +196,28 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
         office_id
       ];
       console.log( values );
-    } else {
-      sql = `INSERT INTO bandi_fine_details (
-        bandi_id,  amount_fixed,
-        created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-
+    } else if ( isFixed && !isPaid ) {
+      sql = `INSERT INTO bandi_fine_details(
+      bandi_id, fine_type_id, amount_fixed, amount_deposited, deposit_amount,
+      created_by, updated_by, current_office_id) VALUES(?)`;
       values = [
         bandi_id,
-        // fine.fine_type,
+        fine.fine_type,
+        fine.is_fine_fixed,
+        fine.is_fine_paid,
+        depositAmount,
+        user_id,
+        user_id,
+        office_id
+      ];
+    }
+    else {
+      sql = `INSERT INTO bandi_fine_details (
+        bandi_id,   amount_fixed,
+        created_by, updated_by, current_office_id
+      ) VALUES (?)`;
+      values = [
+        bandi_id,
         fine.is_fine_fixed,
         user_id,
         user_id,
@@ -218,12 +230,23 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
 }
 
 async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
-
+console.log(data)
   let sql, values;
 
-  const isFixed = Number( data.is_fine_fixed ) === 1;
-  const isPaid = Number( data.is_fine_paid ) === 1;
+  const isFixed = Number( data.amount_fixed ) === 1;
+  const isPaid = Number( data.amount_deposited ) === 1;
 
+  let depositAmount = data.deposit_amount;
+  if (
+    depositAmount === undefined ||
+    depositAmount === null ||
+    depositAmount.toString().trim() === '' ||
+    isNaN( Number( depositAmount ) )
+  ) {
+    depositAmount = 0;
+  } else {
+    depositAmount = Number( depositAmount );
+  }
   if ( isFixed && isPaid ) {
     sql = `INSERT INTO bandi_fine_details (
         bandi_id, fine_type_id, amount_fixed, amount_deposited,
@@ -232,43 +255,45 @@ async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
         created_by, updated_by, current_office_id
       ) VALUES (?)`;
 
-    let depositAmount = fine.fine_amt;
-    if (
-      depositAmount === undefined ||
-      depositAmount === null ||
-      depositAmount.toString().trim() === '' ||
-      isNaN( Number( depositAmount ) )
-    ) {
-      depositAmount = 0;
-    } else {
-      depositAmount = Number( depositAmount );
-    }
-
     values = [
       bandi_id,
       data.fine_type_id,
-      data.is_fine_fixed,
-      data.is_fine_paid,
-      data.fine_paid_office,
-      data.fine_paid_office_district,
-      data.fine_paid_cn,
-      data.fine_paid_date,
-      data.depositAmount,
+      data.amount_fixed,
+      data.amount_deposited,
+      data.deposit_office,
+      data.deposit_district,
+      data.deposit_ch_no,
+      data.deposit_date,
+      depositAmount,
       user_id,
       user_id,
       office_id
     ];
     console.log( values );
-  } else {
-    sql = `INSERT INTO bandi_fine_details (
-        bandi_id, fine_type_id, amount_fixed,
-        created_by, updated_by, current_office_id
-      ) VALUES (?)`;
-
+  } else if ( isFixed ) {
+    sql = `INSERT INTO bandi_fine_details(
+      bandi_id, fine_type_id, amount_fixed, amount_deposited, deposit_amount,
+      created_by, updated_by, current_office_id) VALUES(?)`;
     values = [
       bandi_id,
       data.fine_type_id,
-      data.is_fine_fixed,
+      data.amount_fixed,
+      data.amount_deposited,
+      depositAmount,
+      user_id,
+      user_id,
+      office_id
+    ];
+  }
+  else {
+    sql = `INSERT INTO bandi_fine_details (
+        bandi_id, fine_type_id,  amount_fixed,
+        created_by, updated_by, current_office_id
+      ) VALUES (?)`;
+    values = [
+      bandi_id,
+      data.fine_type_id,
+      data.amount_fixed,
       user_id,
       user_id,
       office_id
@@ -493,9 +518,9 @@ async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_i
 }
 
 async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id ) {
-  
+
   if (
-    !diseasesId ||        
+    !diseasesId ||
     !diseases.disease_id
   ) {
     console.warn( "⚠️ Missing required diseases fields:", diseasesId, diseases );
@@ -514,7 +539,7 @@ async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id )
 
   const values = [
     diseases.disease_id,
-    diseases.disease_name,    
+    diseases.disease_name,
     user_id,
     office_id,
     diseasesId
@@ -547,9 +572,9 @@ async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, o
 }
 
 async function updateDisabilities( disabilityId, disability, user_id, office_id ) {
-  console.log(disability)
+  console.log( disability );
   if (
-    !disabilityId ||        
+    !disabilityId ||
     !disability.disability_id
   ) {
     console.warn( "⚠️ Missing required disability fields:", disabilityId, disability );
@@ -568,7 +593,7 @@ async function updateDisabilities( disabilityId, disability, user_id, office_id 
 
   const values = [
     disability.disability_id,
-    disability.disability_name,    
+    disability.disability_name,
     user_id,
     office_id,
     disabilityId

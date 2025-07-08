@@ -1427,7 +1427,7 @@ router.get( '/get_bandi_fine/:id', async ( req, res ) => {
         console.error( err );
         return res.json( { Status: false, Error: "Query Error" } );
     }
-} );
+});
 
 router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
@@ -1593,40 +1593,41 @@ router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
     }
 } );
 
-router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
+router.put('/update_bandi_diseases/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-    const diseasesId = req.params.id;
+    const disabilityId = req.params.id;
 
     try {
-        console.log( "📝 Update diseases request:", req.body );
-        const updatedCount = await updateDiseasesDetails( diseasesId, req.body, user_id, active_office );
+        console.log("📝 Update disability request:", req.body);
+        const updatedCount = await updateDisabilities(disabilityId, req.body, user_id, active_office);
 
-        if ( updatedCount === 0 ) {
-            return res.status( 400 ).json( {
+        if (updatedCount === 0) {
+            return res.status(400).json({
                 Status: false,
                 message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
-            } );
+            });
         }
 
         await commitAsync();
 
-        return res.json( {
+        return res.json({
             Status: true,
-            message: "बन्दी रोग विवरण सफलतापूर्वक अपडेट गरियो।"
-        } );
+            message: "बन्दी अपाङ्गता विवरण सफलतापूर्वक अपडेट गरियो।"
+        });
 
-    } catch ( error ) {
+    } catch (error) {
         await rollbackAsync();
-        console.error( "❌ Update failed:", error );
+        console.error("❌ Update failed:", error);
 
-        return res.status( 500 ).json( {
+        return res.status(500).json({
             Status: false,
             Error: error.message,
-            message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
-        } );
+            message: "सर्भर त्रुटि भयो, अपाङ्गता विवरण अपडेट गर्न असफल।"
+        });
     }
-} );
+});
+
 
 router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
