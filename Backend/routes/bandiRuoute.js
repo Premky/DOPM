@@ -1632,11 +1632,11 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
 
     try {
-        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+        // console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertDisablilityDetails(
             req.body.bandi_id,
-            req.body.bandi_diseases,
+            req.body.bandi_disability,
             user_id,
             active_office
         );
@@ -1670,10 +1670,10 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
 router.get( '/get_bandi_disability/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT bdd.id, bdd.bandi_id, bdd.disability_id, bdd.disability_name as disabliity_name_if_other*,
-        d.disability_name_np    
+        SELECT bdd.id, bdd.bandi_id, bdd.disability_id, bdd.disability_name as disabliity_name_if_other,
+        d.disablility_name_np    
         FROM bandi_disability_details bdd        
-        LEFT JOIN disability d ON bdd.disability_id = d.id
+        LEFT JOIN disabilities d ON bdd.disability_id = d.id
         WHERE bandi_id = ?
     `;
     try {
@@ -2447,132 +2447,7 @@ router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res
     }
 } );
 
-router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
 
-    const {
-        startDate,
-        endDate,
-        nationality,
-        ageFrom,
-        ageTo,
-        office_id // optional for super admin
-    } = req.query;
-
-    // Parameters for SQL binding
-    const params = [startDate, endDate, startDate, endDate];
-    const filters = [];
-
-    const baseSql = `
-        SELECT 
-            m.mudda_name,
-            COUNT(DISTINCT bp.id) AS Total,
-
-            -- कैदी
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
-
-            -- थुनुवा
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
-
-            -- 65+ उम्र
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
-
-            -- गिरफ्तारी / छुटे
-            SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
-            SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
-
-        FROM bandi_person bp
-       -- LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
-       LEFT JOIN (
-            SELECT *
-            FROM (
-                SELECT bmd.*,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY bmd.bandi_id 
-                        ORDER BY bmd.created_at DESC
-                    ) AS rn
-                FROM bandi_mudda_details bmd
-            ) AS ranked_mudda
-            WHERE ranked_mudda.rn = 1
-            AND (
-                (is_main_mudda = 1 AND is_last_mudda = 1) OR
-                (is_main_mudda = 1 AND is_last_mudda = 0) OR
-                (is_main_mudda = 0 AND is_last_mudda = 1) OR
-                (is_main_mudda = 0 AND is_last_mudda = 0)
-            )
-        ) AS bmd ON bp.id = bmd.bandi_id
-        LEFT JOIN muddas m ON bmd.mudda_id = m.id
-        LEFT JOIN offices o ON bp.current_office_id = o.id
-        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-    `;
-
-    // Only include main and last mudda to avoid duplicates
-    filters.push( "bp.is_active = 1" );
-    // filters.push(
-    //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
-    // );
-    // filters.push( "bmd.is_last_mudda = 1" );
-
-    // Age filter
-    if ( ageFrom && ageTo ) {
-        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
-        params.push( Number( ageFrom ), Number( ageTo ) );
-    }
-
-    // Nationality filter
-    if ( nationality ) {
-        filters.push( "bp.nationality = ?" );
-        params.push( nationality.trim() );
-    }
-
-    if ( active_office == 1 || active_office == 2 ) {
-        if ( office_id ) {
-            filters.push( "bp.current_office_id=?" );
-            params.push( office_id );
-        } else {
-            filters.push( 1 == 1 );
-        }
-    } else {
-        filters.push( "bp.current_office_id=?" );
-        params.push( active_office );
-    }
-
-    // if ( office_id ) {
-    //     filters.push( "bp.current_office_id = ?" );
-    //     params.push( office_id );
-    // } else {
-    //     if ( active_office == 1 || active_office == 2 ) {
-    //         filters.push( 1 == 1 );
-    //     }
-    // }
-
-    const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
-
-    const finalSql = `
-        ${ baseSql }
-        ${ whereClause }
-        GROUP BY m.id, m.mudda_name
-        HAVING 
-            KaidiTotal > 0 OR 
-            ThunuwaTotal > 0 OR 
-            TotalArrestedInDateRange > 0 OR 
-            TotalReleasedInDateRange > 0
-        ORDER BY m.mudda_name ASC
-    `;
-
-    try {
-        const result = await query( finalSql, params );
-        res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
 
 
 router.get( '/get_prisioners_count1', verifyToken, async ( req, res ) => {
@@ -3118,7 +2993,132 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
     }
 } );
 
+router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
 
+    const {
+        startDate,
+        endDate,
+        nationality,
+        ageFrom,
+        ageTo,
+        office_id // optional for super admin
+    } = req.query;
+
+    // Parameters for SQL binding
+    const params = [startDate, endDate, startDate, endDate];
+    const filters = [];
+
+    const baseSql = `
+        SELECT 
+            m.mudda_name,
+            COUNT(DISTINCT bp.id) AS Total,
+
+            -- कैदी
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+
+            -- थुनुवा
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+
+            -- 65+ उम्र
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+
+            -- गिरफ्तारी / छुटे
+            SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
+            SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+
+        FROM bandi_person bp
+       -- LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+       LEFT JOIN (
+            SELECT *
+            FROM (
+                SELECT bmd.*,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY bmd.bandi_id 
+                        ORDER BY bmd.created_at DESC
+                    ) AS rn
+                FROM bandi_mudda_details bmd
+            ) AS ranked_mudda
+            WHERE ranked_mudda.rn = 1
+            AND (
+                (is_main_mudda = 1 AND is_last_mudda = 1) OR
+                (is_main_mudda = 1 AND is_last_mudda = 0) OR
+                (is_main_mudda = 0 AND is_last_mudda = 1) OR
+                (is_main_mudda = 0 AND is_last_mudda = 0)
+            )
+        ) AS bmd ON bp.id = bmd.bandi_id
+        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+        LEFT JOIN offices o ON bp.current_office_id = o.id
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+    `;
+
+    // Only include main and last mudda to avoid duplicates
+    filters.push( "bp.is_active = 1" );
+    // filters.push(
+    //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
+    // );
+    // filters.push( "bmd.is_last_mudda = 1" );
+
+    // Age filter
+    if ( ageFrom && ageTo ) {
+        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+
+    // Nationality filter
+    if ( nationality ) {
+        filters.push( "bp.nationality = ?" );
+        params.push( nationality.trim() );
+    }
+
+    if ( active_office == 1 || active_office == 2 ) {
+        if ( office_id ) {
+            filters.push( "bp.current_office_id=?" );
+            params.push( office_id );
+        } else {
+            filters.push( 1 == 1 );
+        }
+    } else {
+        filters.push( "bp.current_office_id=?" );
+        params.push( active_office );
+    }
+
+    // if ( office_id ) {
+    //     filters.push( "bp.current_office_id = ?" );
+    //     params.push( office_id );
+    // } else {
+    //     if ( active_office == 1 || active_office == 2 ) {
+    //         filters.push( 1 == 1 );
+    //     }
+    // }
+
+    const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
+
+    const finalSql = `
+        ${ baseSql }
+        ${ whereClause }
+        GROUP BY m.id, m.mudda_name
+        HAVING 
+            KaidiTotal > 0 OR 
+            ThunuwaTotal > 0 OR 
+            TotalArrestedInDateRange > 0 OR 
+            TotalReleasedInDateRange > 0
+        ORDER BY m.mudda_name ASC
+    `;
+
+    try {
+        const result = await query( finalSql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
 
 router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -3126,10 +3126,10 @@ router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res 
     const officeCondition = isSuperOffice ? "1=1" : "bp.current_office_id = ?";
     const officeParams = isSuperOffice ? [] : [active_office];
 
-    const TRANSFER_REASON_ID = 2; // Replace with real value
-    const DEATH_REASON_ID = 3;    // Replace with real value
+    const TRANSFER_REASON_ID = 7; // Replace with real value
+    const DEATH_REASON_ID = 8;    // Replace with real value
 
-    console.log( current_date );
+    // console.log( current_date );
 
     const queries = {
         previousMonthCount: `

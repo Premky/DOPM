@@ -12,9 +12,9 @@ const fetchBandiDisabilities = ( bandi_id ) => {
     const fetchBandiRecords = async () => {
         try {
             setLoading(true);
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_contact_person/${ bandi_id }`,
+            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_disability/${ bandi_id }`,
                 { withCredentials: true } );
-            // console.log( response );
+            console.log( response );
             const { Status, Result, Error } = response.data;
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {

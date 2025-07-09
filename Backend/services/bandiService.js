@@ -230,7 +230,7 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
 }
 
 async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
-console.log(data)
+  console.log( data );
   let sql, values;
 
   const isFixed = Number( data.amount_fixed ) === 1;
@@ -555,7 +555,8 @@ async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id )
   }
 }
 
-async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, office_id ) {
+async function insertDisablilityDetails1( bandi_id, disabilities = [], user_id, office_id ) {
+
   for ( const disability of disabilities ) {
     if ( Number( disability.is_disabled ) === 1 ) {
       const sql = `INSERT INTO bandi_disability_details(
@@ -570,6 +571,52 @@ async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, o
     }
   }
 }
+
+async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, office_id ) {
+  try {
+    if ( !disabilities.length ) {
+      console.warn( "⚠️ No disabilities provided to insert." );
+      return 0;
+    }
+
+    const filteredDisabilities = disabilities.filter( c =>
+      ( typeof c.disability_id === 'string' && c.disability_id.trim() !== '' ) ||
+      ( typeof c.disability_id === 'number' && !isNaN( c.disability_id ) )
+    );
+    
+    console.log( 'filteredDiabities', filteredDisabilities );
+
+    if ( !filteredDisabilities.length ) {
+      console.warn( "⚠️ No disabilities marked as disabled (is_disabled !== 1)." );
+      console.log( "🔍 Received disabilities:", disabilities );
+      return 0;
+    }
+
+    const values = filteredDisabilities.map( d => [
+      bandi_id,
+      d.disability_id || 0,
+      d.disability_name?.trim() || null,
+      user_id,
+      user_id,
+      office_id,
+    ] );
+
+    const sql = `INSERT INTO bandi_disability_details (
+      bandi_id, disability_id, disability_name, created_by, updated_by, created_office_id
+    ) VALUES ?`;
+
+    const result = await queryAsync( sql, [values] );
+    // console.log( "✅ Disabilities insert result:", result );
+    console.log( "✅ Disabilities inserted" )
+
+    return result.affectedRows || 0;
+
+  } catch ( err ) {
+    console.error( "❌ Disability insert error:", err );
+    throw err;
+  }
+}
+
 
 async function updateDisabilities( disabilityId, disability, user_id, office_id ) {
   console.log( disability );

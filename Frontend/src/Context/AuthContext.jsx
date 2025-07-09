@@ -68,7 +68,7 @@ export const AuthProvider = ( { children } ) => {
         timeout=setTimeout(()=>{
             dispatch({type:'LOGOUT'});
             axios.post(`${BASE_URL}/auth/logout`,{}, {withCredentials:true});
-        }, 11*60*1000); // 15 minutes
+        }, 11*60*1000); // 11 minutes
        };
 
        //List of events that reset the timer

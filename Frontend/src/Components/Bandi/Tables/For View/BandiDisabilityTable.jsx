@@ -80,7 +80,7 @@ const BandiDisabilityTable = ( { bandi_id } ) => {
                     `${ BASE_URL }/bandi/create_bandi_disability`,
                     {
                         bandi_id: bandi_id,
-                        bandi_diseases: [formData],
+                        bandi_disability: [formData],
                     },
                     { withCredentials: true }
                 );

@@ -10,6 +10,8 @@ const fetchAllReleaseCounts = ( bandi_id ) => {
     const [loading, setLoading] = useState( true );
 
     useEffect( () => {
+        
+
         const fetchRecords = async () => {
             try {
                 const response = await axios.get( `${ BASE_URL }/bandi/released_bandi_count`, { withCredentials: true } );

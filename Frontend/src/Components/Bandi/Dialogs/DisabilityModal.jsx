@@ -33,7 +33,7 @@ const DisabilityModal = ( { open, onClose, onSave, editingData } ) => {
             reset( {
                 bandi_id: editingData.bandi_id || "",
                 disability_id: editingData.disability_id || "",
-                disease_name: editingData.disability_name || ""
+                disability_name: editingData.disability_name || ""
             } );
         } else {
             reset( {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Grid2, Box, Typography, Button } from '@mui/material';
 import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
 import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
@@ -13,19 +13,66 @@ import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../../Context/AuthContext';
+import { exportToExcel } from '../Exports/ExcelMaskebariCount';
+import NepaliDate from 'nepali-datetime';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
-    const { records: releaseRecords, loading: releaseRecordsLoading } = fetchAllReleaseCounts();
-    const { records: muddawiseCount, muddawisetotal, loading: muddawiseCountLoading } = fetchMuddaWiseCount();
-    const { control, watch, handleSubmit } = useForm();
+    const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
+    const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
+    const fy_date = fy + '-04-01';
 
+    const { records: releaseRecords, loading: releaseRecordsLoading } = fetchAllReleaseCounts();
+
+
+    const { control, watch, handleSubmit } = useForm();
     // console.log( muddawisetotal );
     // console.log( releaseRecords );
     const selectedOffice = watch( 'searchOffice' );
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
+
+    const filters = useMemo( () => ( {
+        startDate: startDate || current_date,
+        endDate: endDate || current_date,
+        nationality: nationality || '',
+        selectedOffice: selectedOffice || ''
+    } ), [startDate, endDate, nationality, selectedOffice, current_date] );
+
+    const {
+        records: muddawiseCount,
+        muddawisetotal,
+        loading: muddawiseCountLoading
+    } = fetchMuddaWiseCount( { filters } );
+
+    const swadeshiFilters = useMemo( () => ( {
+        startDate: startDate || current_date,
+        endDate: endDate || current_date,
+        nationality: 'स्वदेशी',
+        selectedOffice: selectedOffice || ''
+    } ), [startDate, endDate, selectedOffice, current_date] );
+
+    const bideshiFilters = useMemo( () => ( {
+        startDate: startDate || current_date,
+        endDate: endDate || current_date,
+        nationality: 'विदेशी',
+        selectedOffice: selectedOffice || ''
+    } ), [startDate, endDate, selectedOffice, current_date] );
+
+    const {
+        records: swadeshiCount,
+        muddawisetotal: swadeshiTotal,
+        loading: swadeshiLoading
+    } = fetchMuddaWiseCount( { filters: swadeshiFilters } );
+
+    const {
+        records: bideshiCount,
+        muddawisetotal: bideshiTotal,
+        loading: bideshiLoading
+    } = fetchMuddaWiseCount( { filters: bideshiFilters } );
+
+
 
     const totals = {
         regular_this_month:
@@ -64,6 +111,7 @@ const KaragarMaskebari = () => {
 
     };
 
+    // console.log(releaseRecords)
 
     return (
         <div>
@@ -150,9 +198,19 @@ const KaragarMaskebari = () => {
                                 <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
                                     रिपोर्ट लिई ल्याउनुहोस्
                                 </Button>
-                                {/* <Button onClick={ExportCountReport} variant="outlined" sx={{ mt: 2, ml: 2 }}>
-                                    एक्सेल निर्यात
-                                </Button> */}
+                                <Button onClick={() => exportToExcel(
+                                    releaseRecords,
+                                    swadeshiCount,
+                                    swadeshiTotal,
+                                    bideshiCount,
+                                    bideshiTotal,
+                                    '2081/2082',
+                                    'असार'
+                                )}
+                                    variant='contained'
+                                    color='success'
+                                >Download</Button>
+
                             </Grid2>
                         </Grid2>
                     </form>
@@ -168,7 +226,11 @@ const KaragarMaskebari = () => {
 
             <Grid2 container sx={{ marginTop: 1 }}>
                 {/* <CountAcMuddaTable /> */}
-                <TotalCountAc2Mudda muddawiseCount={muddawiseCount} muddawisetotal={muddawisetotal} />
+                <TotalCountAc2Mudda muddawiseCount={swadeshiCount} muddawisetotal={swadeshiTotal} />
+            </Grid2>
+            <Grid2 container sx={{ marginTop: 1 }}>
+                {/* <CountAcMuddaTable /> */}
+                <TotalCountAc2Mudda muddawiseCount={bideshiCount} muddawisetotal={bideshiTotal} />
             </Grid2>
         </div>
     );
