@@ -51,7 +51,7 @@ const CountReport = () => {
             const queryParams = new URLSearchParams( {
                 startDate: data?.startDate || current_date,
                 endDate: data?.endDate || current_date,
-                office_id: selectedOffice || authState.office_id, // Optional filter
+                office_id: selectedOffice || '', // Optional filter
                 // office_id: selectedOffice || '', // Optional filter
                 nationality: data?.nationality || '',     // Optional filter
                 ageFrom: data?.ageFrom || '',             // Optional filter
