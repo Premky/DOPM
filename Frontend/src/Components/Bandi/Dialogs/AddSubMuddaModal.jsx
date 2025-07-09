@@ -6,13 +6,13 @@ import {
     DialogActions,
     TextField,
     Button,
-} from "@mui/material";
+} from "@mui/material"; 
 import { useForm, Controller } from "react-hook-form";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import fetchMuddaGroups from "../../ReuseableComponents/FetchApis/fetchMuddaGroups";
+import axios from "axios";
 
-const AddSubMuddaModal = ( { open, onClose, onSave, editingData } ) => {
-    console.log( editingData );
+const AddSubMuddaModal = ( { open, onClose, onSave, editingData, BASE_URL, refetch, setModalOpen } ) => {
     const {
         control,
         handleSubmit,
@@ -20,32 +20,42 @@ const AddSubMuddaModal = ( { open, onClose, onSave, editingData } ) => {
         formState: { errors },
     } = useForm( {
         defaultValues: {
-            mudda_group_id: "",            
+            mudda_group_id: "",
             mudda_name: ""
         },
     } );
 
     const { optrecords, loading } = fetchMuddaGroups();
-    // console.log(editingData)
-    // useEffect( () => {
-    //     if ( editingData ) {
-    //         reset( {
-    //             bandi_id: editingData.bandi_id || "",
-    //             disease_id: editingData.disease_id || "",
-    //             disease_name: editingData.disease_name || ""
-    //         } );
-    //     } else {
-    //         reset( {
-    //             bandi_id: "",
-    //             disease_id: "",
-    //             disease_name: ""
-    //         } );
-    //     }
-    // }, [editingData, reset] );
 
-    const onSubmit = ( data ) => {
-        onSave( data, editingData?.id );
-        onClose();
+    const onSubmit = async ( data ) => {
+        try {
+            // console.log( '📤 Attempting to send data...' );
+            // console.log( '🔗 BASE_URL:', BASE_URL );
+            // console.log( '📦 Payload:', data );
+
+            const response = await axios.post( `${ BASE_URL }/bandi/create_mudda`, data, {
+                withCredentials: true,
+            } );
+
+            console.log( '✅ Axios Response:', response.data );
+            console.log( '2', BASE_URL );
+
+            alert( 'Saved!' );
+            await refetch();
+            setModalOpen( false );
+            onClose();
+        } catch ( error ) {
+            if ( error.response ) {
+                console.error( "❌ Server error:", error.response.data );
+                console.error( "🔢 Status code:", error.response.status );
+                console.error( "📄 Headers:", error.response.headers );
+            } else if ( error.request ) {
+                console.error( "🚫 No response received from server." );
+                console.error( "📬 Request details:", error.request );
+            } else {
+                console.error( "⚠️ Error during request setup:", error.message );
+            }
+        }
     };
 
     return (
@@ -58,8 +68,8 @@ const AddSubMuddaModal = ( { open, onClose, onSave, editingData } ) => {
                     options={optrecords}
                     control={control}
                     required={true}
-                    error={!!errors.disease_id}
-                    helperText={errors.disease_id?.message}
+                    error={!!errors.mudda_group_id}
+                    helperText={errors.mudda_group_id?.message}
                 />
 
                 <Controller

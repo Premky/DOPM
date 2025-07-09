@@ -24,4 +24,5 @@ con.connect(function(err){
     }
 })
 
+export const promiseCon = con.promise();
 export default con;

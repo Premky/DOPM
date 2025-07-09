@@ -10,6 +10,7 @@ const initialState = {
     office_np: null,
     branch_np: null,
     office_id: null,
+    is_online: null,
     valid: false,
 };
 
@@ -42,8 +43,10 @@ export const AuthProvider = ( { children } ) => {
                     office_id: response.data.user.office_id,
                     usertype_en: response.data.user.usertype_en,
                     usertype_np: response.data.user.usertype_np,
+                    is_online: response.data.user.is_online,
                     valid: true,
                 };
+                // console.log(authData)
                 dispatch( { type: "LOGIN", payload: authData } );
             } else {
                 dispatch( { type: "LOGOUT" } );

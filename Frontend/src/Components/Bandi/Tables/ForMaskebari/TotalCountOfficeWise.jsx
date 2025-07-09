@@ -2,15 +2,32 @@ import React from 'react';
 import { Box, Grid2, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
 
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
+import fetchUserStatus from '../../../ReuseableComponents/fetchUserStatus';
+import { useAuth } from '../../../../Context/AuthContext';
 
 const TotalCountOfficeWise = () => {
+    const { state } = useAuth();
+    const onlineStatus = state.is_online;
+    
+    const { count, countLoading } = UseBandiTotalCountACoffice();
+    const { records: loginStatus, loading: loginLoading } = fetchUserStatus();
+    
+    const onlineOfficeIds = new Set(
+        loginStatus
+            ?.filter( ( user ) => user.is_online === 1 )
+            .map( ( user ) => user.office_id )
+    );
+
+    // console.log(state)
+    // console.log(onlineStatus)
+
     const tableheadstyle = {
         textAlign: 'center', verticalAlign: 'middle', backgroundColor: 'teal'
     };
-    const { count, countLoading } = UseBandiTotalCountACoffice();
+    // console.log(loginStatus)
     return (
         <Box>
-            <Box sx={{width: '100%', overflowX:'auto'}}>
+            <Box sx={{ width: '100%', overflowX: 'auto' }}>
                 <TableContainer>
                     <Table size='small' border='1'>
                         <TableHead>
@@ -47,7 +64,16 @@ const TotalCountOfficeWise = () => {
                                     <>
                                         <TableCell>{data.state_name_np}</TableCell>
                                         <TableCell>{index + 1}</TableCell>
-                                        <TableCell>{data.office_short_name}</TableCell>
+                                        <TableCell
+                                            sx={{
+                                                backgroundColor: onlineOfficeIds.has( data.office_id ) ? 'green' : 'inherit',
+                                                color: onlineOfficeIds.has( data.office_id ) ? 'white' : 'inherit',
+                                            }}
+                                        >
+                                            {data.office_short_name}
+                                        </TableCell>
+
+                                        {/* <TableCell sx={{ background: state?.is_online ? 'green' : 'black' }}>{data.office_short_name}</TableCell> */}
                                         <TableCell>{data.total_male + data.total_female || 0}</TableCell>
                                         <TableCell>{data.kaidi_male}</TableCell>
                                         <TableCell>{data.kaidi_female}</TableCell>

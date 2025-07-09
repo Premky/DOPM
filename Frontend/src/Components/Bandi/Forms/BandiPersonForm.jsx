@@ -389,7 +389,7 @@ const BandiPersonForm = () => {
           <AddSubMuddaModal
             open={modalOpen}
             onClose={() => setModalOpen( false )}
-            // onSave={handleSave}
+            BASE_URL={BASE_URL}
             // editingData={editingData}
           />
         </Grid>

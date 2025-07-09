@@ -2784,6 +2784,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             voad.state_name_np,
             voad.district_order_id,
             o.letter_address AS office_short_name,
+            o.id AS office_id,
 
             COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male', 1, NULL)) AS kaidi_male,
             COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female', 1, NULL)) AS kaidi_female,
@@ -2824,8 +2825,8 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             ${ filters.join( ' ' ) }
         ) AS bp ON bp.current_office_id = o.id
         ${ officeWhereClause }
-        GROUP BY voad.state_id, voad.district_order_id, o.letter_address
-        ORDER BY voad.state_id, voad.district_order_id, o.letter_address;
+        GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
+        ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
     `;
 
     try {
@@ -3829,6 +3830,32 @@ router.get( "/released_bandi_count1", verifyToken, async ( req, res ) => {
     } catch ( error ) {
         console.error( "DB Error:", error );
         res.status( 500 ).json( { Status: false, Error: "Query failed" } );
+    }
+} );
+
+router.post( '/create_mudda', verifyToken, async ( req, res ) => {
+    const user_id = req.user.id;
+    const office_id = req.user.office_id;
+    const data = req.body;
+
+    const insertSql = `
+    INSERT INTO muddas (
+      mudda_name,
+      muddas_group_id,    
+      created_by,
+      updated_by,
+      current_office_id
+    ) VALUES (?, ?, ?, ?,?)
+  `;
+
+    const values = [req.body.mudda_name, req.body.mudda_group_id, user_id, user_id, office_id] ;
+
+    try {
+        await queryAsync( insertSql, values );
+        res.json( { Status: true, Message: "Inserted successfully" } );
+    } catch ( err ) {
+        console.error( "Insert error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
     }
 } );
 
