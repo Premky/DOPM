@@ -721,6 +721,7 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
     const id = req.params.id;
+    console.log('id', id)
     // const forSelect = req.query.forSelect || 0;
     const forSelect = req.query.forSelect === 'true' || req.query.forSelect === '1';
     // console.log( 'forSelect', forSelect );
@@ -825,11 +826,11 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
                     bth.transfer_office_id, 
                     bth.transfer_from_date, 
                     bth.transfer_to_date, 
-                    bth.transfer_reason, 
+                    bth.transfer_reason_id, 
                     bth.remarks
                 FROM bandi_transfer_history bth
-                    LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason=btr.id                    
-                    ) AS bth_combined ON bp.id = bth_combined_id.bandi_id
+                    LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason_id=btr.id                    
+                    ) AS bth_combined ON bp.id = bth_combined.bandi_id
             LEFT JOIN (
                 SELECT 
                     bmd.bandi_id,

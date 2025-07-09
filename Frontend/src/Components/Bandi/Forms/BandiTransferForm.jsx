@@ -153,13 +153,10 @@ const BandiTransferForm = () => {
                                         <TableCell>{bandi[0]?.bandi_type}</TableCell>
                                         {Array.isArray(bandi?.[0]?.history)?(
                                             bandi?.[0]?.history((i, index)=>(
-
+                                              <>000</>  
                                             ))
                                         ):(<></>)}
-                                        <TableCell>{bandi[0]?.}</TableCell>
 
-
-                                        <TableCell>1</TableCell>
                                     </TableBody>
                                 </Table>
                             </TableContainer>

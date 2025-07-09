@@ -29,6 +29,7 @@ import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import fetchFineTypes from '../../ReuseableComponents/fetchFineTypes';
 import fetchDiseases from '../../ReuseableComponents/fetchDiseases';
 import fetchDisabilities from '../../ReuseableComponents/fetchDisabilities';
+import AddSubMuddaModal from '../Dialogs/AddSubMuddaModal';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -91,6 +92,12 @@ const BandiPersonForm = () => {
     { label: 'महिला', value: 'female' },
     { label: 'अन्य', value: 'other' }
   ];
+
+  const [modalOpen, setModalOpen] = useState( false );
+
+  const handleAdd = () => {    
+    setModalOpen( true );
+  };
 
   useEffect( () => {
     const fetchRandomBandiId = async () => {
@@ -378,7 +385,13 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={0}>
         <Grid item xs={12} sx={{ mb: 0, ...formHeadStyle }}>
-          बन्दीको मुद्दा विवरणः
+          बन्दीको मुद्दा विवरणः  <button onClick={() => handleAdd()}>Add</button>
+          <AddSubMuddaModal
+            open={modalOpen}
+            onClose={() => setModalOpen( false )}
+            // onSave={handleSave}
+            // editingData={editingData}
+          />
         </Grid>
 
         {[...Array( muddaCount )].map( ( _, index ) => {

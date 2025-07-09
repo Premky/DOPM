@@ -148,7 +148,7 @@ const CountReport = () => {
                                     label='राष्ट्रियता'
                                     options={[
                                         { label: 'स्वदेशी', value: 'स्वदेशी' },
-                                        { label: 'विदेशी', value: 'बिदेशी' }
+                                        { label: 'विदेशी', value: 'विदेशी' }
                                     ]}
                                     control={control}
                                 />
