@@ -139,7 +139,7 @@ const InternalAdminModal = ({ open, onClose, onSave, editingData }) => {
                             <ReuseDateField
                                 name="chalani_date"
                                 control={control}
-                                defaultValue={current_date}
+                                // defaultValue={current_date}
                                 rules={{ required: "चलानी मिति आवश्यक छ" }}
                                 label="चलानी मिति"
                                 placeholder="YYYY-MM-DD"

@@ -32,6 +32,7 @@ const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari
 
 import { Outlet } from 'react-router-dom';
 import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
+import BandiTransferForm from './Components/Bandi/Forms/BandiTransferForm';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -83,6 +84,15 @@ function App() {
 
                 <Route path="kaamdari_subidha" element={<OutletLayout />}>
                   <Route path="create_aantarik_prashasan" element={<AantarikPrashasanForm />} />
+                  <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
+                  <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
+                  <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
+
+
+                </Route>
+
+                <Route path="bandi_transfer" element={<OutletLayout />}>
+                  <Route path="new_bandi_transfer" element={<BandiTransferForm />} />
                   <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
                   <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
                   <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />

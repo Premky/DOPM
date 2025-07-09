@@ -15,6 +15,7 @@ import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import FamilyTable from '../Tables/For View/FamilyTable';
 
 const BandiReleaseForm = () => {
     const BASE_URL = useBaseURL();
@@ -89,6 +90,7 @@ const BandiReleaseForm = () => {
                         <Grid2 size={{ xs: 12 }}>
                             <BandiAddressTable bandi_id={bandi_id} />
                             <BandiMuddaTable bandi_id={bandi_id} />
+                            <FamilyTable bandi_id={bandi_id} />
                         </Grid2>
                         
                         <hr />

@@ -194,3 +194,13 @@ export const exportToExcel = async (releaseRecords, nativeRecords, nativeTotals,
   const buffer = await workbook.xlsx.writeBuffer();
   saveAs(new Blob([buffer]), `Maskebari_Report_${fy}_${fm}.xlsx`);
 };
+
+const MaskebariExport = ( { records, totals, fy, fm } ) => {
+    return (
+        <button onClick={() => exportToExcel( records, totals, fy, fm )} className="btn btn-primary">
+            Export to Excel
+        </button>
+    );
+};
+
+export { MaskebariExport };

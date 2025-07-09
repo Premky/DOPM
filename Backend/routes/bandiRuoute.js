@@ -717,6 +717,184 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const selectedOffice = req.query.selected_office || 0;
+    const id = req.params.id;
+    // const forSelect = req.query.forSelect || 0;
+    const forSelect = req.query.forSelect === 'true' || req.query.forSelect === '1';
+    // console.log( 'forSelect', forSelect );
+    const searchOffice = req.query.searchOffice || 0;
+    const nationality = req.query.nationality || 0;
+    const search_name = req.query.search_name || 0;
+    const page = parseInt( req.query.page ) || 0;
+    const limit = parseInt( req.query.limit ) || 25;
+    const offset = page * limit;
+
+    let baseWhere = '';
+    // console.log(search_name)
+
+    if ( selectedOffice ) {
+        baseWhere += ` WHERE bp.current_office_id=${ selectedOffice }`;
+    } else {
+        if ( searchOffice ) {
+            baseWhere = `WHERE bp.current_office_id = ${ searchOffice }`;
+        } else if ( active_office == 1 || active_office == 2 ) {
+            baseWhere = `WHERE 1=1`;
+        } else {
+            baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
+        }
+    }
+    if ( nationality ) {
+        // console.log(nationality)
+        if ( baseWhere ) {
+            baseWhere += ` AND bp.nationality = '${ nationality }'`;  // Note quotes for string
+        } else {
+            baseWhere = `WHERE bp.nationality = '${ nationality }'`;
+        }
+    }
+
+    if ( search_name ) {
+        const escapedName = con.escape( `%${ search_name }%` );
+        baseWhere += ` AND (bp.bandi_name LIKE ${ escapedName } OR bp.office_bandi_id = ${ con.escape( search_name ) })`;
+    }
+
+    baseWhere += ` AND bp.is_active=1 `;
+    if ( forSelect ) {
+        baseWhere += ` AND bp.is_active=1 `;
+    }
+
+    if(id){
+        baseWhere += ` AND bp.id= ${id}`;
+    }
+
+    try {
+        // STEP 1: Get paginated bandi IDs
+        let idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC`;
+        let idRows;
+
+        if ( forSelect ) {
+            [idRows] = await con.promise().query( idQuery );
+        } else {
+            idQuery += ` LIMIT ? OFFSET ?`;
+            [idRows] = await con.promise().query( idQuery, [limit, offset] );
+        }
+
+        const bandiIds = idRows.map( row => row.id );
+        if ( bandiIds.length === 0 ) {
+            return res.json( { Status: true, Result: [], TotalCount: 0 } );
+        }     
+
+        // STEP 2: Get total count
+        const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp ${ baseWhere }`;
+        const [countResult] = await con.promise().query( countSQL );
+        const totalCount = countResult[0].total;
+
+        // STEP 3: Get full records for selected bandis
+        const placeholders = bandiIds.map( () => '?' ).join( ',' );
+        const fullQuery = `
+            SELECT 
+                bp.id AS bandi_id,
+                bp.*,
+                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
+                ba.wardno,
+                ba.bidesh_nagarik_address_details,
+                nc.country_name_np,
+                ns.state_name_np,
+                nd.district_name_np,
+                nci.city_name_np,
+                bmd_combined.mudda_id,
+                bmd_combined.mudda_name,
+                bmd_combined.is_main_mudda,
+                bmd_combined.is_last_mudda,
+                bmd_combined.office_name_with_letter_address,
+                bmd_combined.vadi,
+                bmd_combined.mudda_phesala_antim_office_date,
+                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+                bkd.thuna_date_bs, bkd.release_date_bs
+
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+            LEFT JOIN np_district nd ON ba.district_id = nd.did
+            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+            LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id            
+            LEFT JOIN (
+            SELECT bth.bandi_id, 
+                    bth.transfer_office_id, 
+                    bth.transfer_from_date, 
+                    bth.transfer_to_date, 
+                    bth.transfer_reason, 
+                    bth.remarks
+                FROM bandi_transfer_history bth
+                    LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason=btr.id                    
+                    ) AS bth_combined ON bp.id = bth_combined_id.bandi_id
+            LEFT JOIN (
+                SELECT 
+                    bmd.bandi_id,
+                    bmd.mudda_id,
+                    bmd.is_main_mudda,
+                    bmd.is_last_mudda,
+                    m.mudda_name,
+                    bmd.vadi,
+                    bmd.mudda_phesala_antim_office_date,
+                    o.office_name_with_letter_address
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+            WHERE bp.id IN (${ placeholders })
+            ORDER BY bp.id DESC
+        `;
+        const [fullRows] = await con.promise().query( fullQuery, bandiIds );
+
+        // STEP 4: Group muddas under each bandi
+        const grouped = {};
+        fullRows.forEach( row => {
+            const {
+                bandi_id,
+                mudda_id,
+                mudda_name,
+                is_main_mudda,
+                is_last_mudda,
+                office_name_with_letter_address,
+                vadi,
+                mudda_phesala_antim_office_date,
+                ...bandiData
+            } = row;
+
+            if ( !grouped[bandi_id] ) {
+                grouped[bandi_id] = {
+                    ...bandiData,
+                    bandi_id,
+                    muddas: []
+                };
+            }
+
+            if ( mudda_id ) {
+                grouped[bandi_id].muddas.push( {
+                    mudda_id,
+                    mudda_name,
+                    is_main_mudda,
+                    is_last_mudda,
+                    office_name_with_letter_address,
+                    vadi,
+                    mudda_phesala_antim_office_date
+                } );
+            }
+        } );
+        // console.log( Object.values( grouped ) );
+        return res.json( {
+            Status: true,
+            Result: Object.values( grouped ),
+            TotalCount: totalCount
+        } );
+    } catch ( err ) {
+        console.error( 'Query Error:', err );
+        return res.json( { Status: false, Error: 'Query Error' } );
+    }
+} );
 
 router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -836,11 +1014,11 @@ router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
 router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT b.*, bm.*, m.mudda_name 
-        FROM bandies b
-        LEFT JOIN bandi_mudda bm ON b.id = bm.bandi_id 
+        SELECT b.*, bmd.*, m.mudda_name 
+        FROM bandi_person b
+        LEFT JOIN bandi_mudda_details bmd ON b.id = bmd.bandi_id 
         LEFT JOIN muddas m ON bm.mudda_id = m.id
-        WHERE b.id = ? AND bm.is_main = 1
+        WHERE b.id = ? AND bmd.is_main = 1
     `;
 
     try {

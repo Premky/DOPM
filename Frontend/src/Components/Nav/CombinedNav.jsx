@@ -53,6 +53,16 @@ const CombinedNav = ( { user } ) => {
         { name: 'आन्तिरक प्रशासन', path: '/kaamdari_subidha/aantarik_prashasan_table' },
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
+    },
+    {
+      name: 'स्थानान्तरण',
+      defaultPath: '/bandi_transfer',
+      submenu: [
+        // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
+        { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },
+        { name: 'स्थानान्तरण', path: '/bandi_transfer/aantarik_prashasan_table' },
+        // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
+      ]
     }
   ];
 
