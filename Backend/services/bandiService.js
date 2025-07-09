@@ -196,7 +196,7 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
         office_id
       ];
       console.log( values );
-    } else if ( isFixed && isPaid==0 ) {
+    } else if ( isFixed && isPaid===0 ) {
       sql = `INSERT INTO bandi_fine_details(
       bandi_id, fine_type_id, amount_fixed, amount_deposited, deposit_amount,
       created_by, updated_by, current_office_id) VALUES(?)`;
