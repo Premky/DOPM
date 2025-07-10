@@ -789,10 +789,10 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
         let idRows;
 
         if ( forSelect ) {
-            [idRows] = await con.promise().query( idQuery );
+            [idRows] = await pool.query( idQuery );
         } else {
             idQuery += ` LIMIT ? OFFSET ?`;
-            [idRows] = await con.promise().query( idQuery, [limit, offset] );
+            [idRows] = await pool.query( idQuery, [limit, offset] );
         }
 
         const bandiIds = idRows.map( row => row.id );
@@ -802,7 +802,7 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
 
         // STEP 2: Get total count
         const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp ${ baseWhere }`;
-        const [countResult] = await con.promise().query( countSQL );
+        const [countResult] = await pool.query( countSQL );
         const totalCount = countResult[0].total;
 
         // STEP 3: Get full records for selected bandis
@@ -862,7 +862,7 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
-        const [fullRows] = await con.promise().query( fullQuery, bandiIds );
+        const [fullRows] = await pool.query( fullQuery, bandiIds );
 
         // STEP 4: Group muddas under each bandi
         const grouped = {};
