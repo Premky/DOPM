@@ -73,7 +73,7 @@ async function generateUniqueBandiId() {
 
     for ( let i = 0; i < maxAttempts; i++ ) {
         const randId = Math.floor( 1000000 + Math.random() * 9000000 ); // 7-digit random number
-        const result = await queryAsync(
+        const result = await pool.query(
             `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [randId]
         );
@@ -136,7 +136,7 @@ const upload = multer( {
 
 
 
-con.query( `CREATE OR REPLACE VIEW view_bandi_address_details AS
+pool.query( `CREATE OR REPLACE VIEW view_bandi_address_details AS
 SELECT 
     bp.id AS bandi_id,
     ba.wardno,
@@ -182,11 +182,11 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
         await beginTransactionAsync();
 
         // Fetch old photo for cleanup
-        const result = await queryAsync( `SELECT photo_path FROM bandi_person WHERE id = ?`, [bandi_id] );
+        const result = await pool.query( `SELECT photo_path FROM bandi_person WHERE id = ?`, [bandi_id] );
         const oldPhotoPath = result?.[0]?.photo_path;
 
         // Update photo path in DB
-        await queryAsync(
+        await pool.query(
             `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
             [photo_path, bandi_id]
         );
@@ -371,7 +371,7 @@ router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
             current_office_id
         ];
 
-        await queryAsync( insertQuery, values );
+        await pool.query( insertQuery, values );
 
         await commitAsync();
 
@@ -534,7 +534,7 @@ WHERE b.is_active = 1
 
 
 router.get( '/get_bandi', async ( req, res ) => {
-    con.query( getBandiQuery, ( err, result ) => {
+    pool.query( getBandiQuery, ( err, result ) => {
         if ( err ) return res.json( { Status: false, Error: "Query Error" } );
         return res.json( { Status: true, Result: result } );
     } );
@@ -544,7 +544,7 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
     const { id } = req.params;
     console.log( 'Fetching bandi with ID:', id );
     const sql = `${ getBandiQuery } AND b.id =? `;
-    con.query( sql, [id], ( err, result ) => {
+    pool.query( sql, [id], ( err, result ) => {
         // console.log(result)
         if ( err ) {
             console.error( 'Query Error:', err );
@@ -923,7 +923,7 @@ router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
                     WHERE bmd.is_main_mudda=1 WHERE bp.current_office_id=${ active_office }`;
     }
     try {
-        const result = await queryAsync( sql ); // Use promise-wrapped query
+        const result = await pool.query( sql ); // Use promise-wrapped query
 
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi not found for select" } );
@@ -1000,7 +1000,7 @@ router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
             ORDER BY bp.id DESC
             `;
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log('id', result)
 
         if ( result.length === 0 ) {
@@ -1024,7 +1024,7 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
 
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi not found" } );
@@ -1077,7 +1077,7 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
         WHERE bp.id = ?
     `;
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi Address not found" } );
@@ -1095,7 +1095,7 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const dob_ad = await bs2ad( data.dob );
     console.log( dob_ad );
     try {
-        const result = await queryAsync( `
+        const result = await pool.query( `
             UPDATE bandi_person SET                
                 bandi_name = ?, gender = ?, dob = ?, dob_ad=?, married_status = ?,
                 bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
@@ -1139,7 +1139,7 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
             sql = `UPDATE bandi_address SET nationality_id=?, bidesh_nagarik_address_details=? WHERE id =?`;
         }
 
-        const result = await queryAsync( sql, values );
+        const result = await pool.query( sql, values );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Status: true,
@@ -1166,7 +1166,7 @@ router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
         WHERE bandi_id = ?
     `;
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi Kaid Details not found" } );
@@ -1215,11 +1215,11 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
                     thuna_date_bs=?, thuna_date_ad=? WHERE id =?`;
         }
 
-        await queryAsync( sql1, values1 );
+        await pool.query( sql1, values1 );
 
         sql2 = `UPDATE bandi_person SET bandi_type=? WHERE id=?`;
         values2 = [bandi_type, bandi_id];
-        await queryAsync( sql2, values2 );
+        await pool.query( sql2, values2 );
 
         await commitAsync(); // Commit the transaction
         return res.json( {
@@ -1249,7 +1249,7 @@ router.get( '/get_bandi_family/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi Family not found" } );
@@ -1277,7 +1277,7 @@ router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
         values = [bandi_id, relative_name, relation_np, relative_address, contact_no, user_id, user_id, active_office];
         sql = `INSERT INTO bandi_relative_info(
             bandi_id, relative_name, relation_id, relative_address, contact_no, created_by, updated_by, current_office_id) VALUES(?)`;
-        const result = await queryAsync( sql, [values] );
+        const result = await pool.query( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Result: bandi_id,
@@ -1319,7 +1319,7 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
             WHERE id = ?
             `;
 
-        const result = await queryAsync( sql, values );
+        const result = await pool.query( sql, values );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Status: true,
@@ -1349,7 +1349,7 @@ router.get( '/get_bandi_id_card/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi ID not found" } );
@@ -1377,7 +1377,7 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
         values = [bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, user_id, user_id, active_office];
         sql = `INSERT INTO bandi_id_card_details(
             bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, updated_by, current_office_id) VALUES(?)`;
-        const result = await queryAsync( sql, [values] );
+        const result = await pool.query( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Result: bandi_id,
@@ -1418,7 +1418,7 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
             WHERE id = ?
             `;
 
-        const result = await queryAsync( sql, values );
+        const result = await pool.query( sql, values );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Status: true,
@@ -1462,7 +1462,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
                 mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
                 is_main_mudda, is_last_mudda, 
                 created_by, updated_by, current_office_id) VALUES(?)`;
-        const result = await queryAsync( sql, [values] );
+        const result = await pool.query( sql, [values] );
         await commitAsync(); // Commit the transaction
         return res.json( {
             // Result: bandi_id,
@@ -1509,7 +1509,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             WHERE id = ?
             `;
 
-        const result = await queryAsync( sql, values );
+        const result = await pool.query( sql, values );
         await commitAsync(); // Commit the transaction
         return res.json( {
             Status: true,
@@ -1542,7 +1542,7 @@ router.get( '/get_bandi_mudda/', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi ID not found" } );
@@ -1568,7 +1568,7 @@ router.get( '/get_bandi_mudda/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi ID not found" } );
@@ -1595,7 +1595,7 @@ router.get( '/get_bandi_fine/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi ID not found" } );
@@ -1672,7 +1672,7 @@ router.get( '/get_bandi_punrabedn/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi ID not found" } );
@@ -1759,7 +1759,7 @@ router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
         WHERE bandi_id = ?
     `;
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi Diseases ID not found" } );
@@ -1857,7 +1857,7 @@ router.get( '/get_bandi_disability/:id', async ( req, res ) => {
         WHERE bandi_id = ?
     `;
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi Disability ID not found" } );
@@ -1954,7 +1954,7 @@ router.get( '/get_bandi_contact_person/:id', async ( req, res ) => {
         WHERE bandi_id = ?
     `;
     try {
-        const result = await queryAsync( sql, [id] ); // Use promise-wrapped query
+        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi ID not found" } );
@@ -2056,7 +2056,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
         `;
 
-            const result = await queryAsync( sql, values );
+            const result = await pool.query( sql, values );
             const inserted_id = result.insertId;
             console.log( inserted_id );
             await commitAsync();
@@ -2106,7 +2106,7 @@ SELECT * FROM(
     }
 
     try {
-        const result = await queryAsync( sql, active_office == 1 || active_office == 2 ? [] : [active_office] );
+        const result = await pool.query( sql, active_office == 1 || active_office == 2 ? [] : [active_office] );
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "No payrole records found" } );
         }
@@ -2144,7 +2144,7 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
 
         // console.log(finalQuery)
 
-        const result = await queryAsync( finalQuery, queryParams );
+        const result = await pool.query( finalQuery, queryParams );
         console.log( 'acceptedpayrole', user_office_id );
         if ( !result.length ) {
             return res.json( { Status: false, Error: 'No payrole records found' } );
@@ -2304,7 +2304,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     try {
         await beginTransactionAsync();
 
-        const existing = await queryAsync(
+        const existing = await pool.query(
             `SELECT * FROM payrole_decisions WHERE payrole_id = ?`,
             [payrole_id]
         );
@@ -2356,7 +2356,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
                 payrole_id,
             ];
 
-            await queryAsync( sql, values );
+            await pool.query( sql, values );
         } else {
             const insertSql = `
         INSERT INTO payrole_decisions (
@@ -2389,7 +2389,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
                 user_office_id,
             ];
 
-            await queryAsync( insertSql, insertValues );
+            await pool.query( insertSql, insertValues );
         }
 
         if ( hajir_current_date_bs ) {
@@ -2408,10 +2408,10 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
                 hajir_office,
             ];
 
-            await queryAsync( logSql, logValues );
+            await pool.query( logSql, logValues );
         }
 
-        await queryAsync( `UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id] );
+        await pool.query( `UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id] );
 
         await commitAsync();
         return res.json( { Status: true, Message: "Updated successfully" } );
@@ -3019,7 +3019,7 @@ router.post( "/add_internal_admin", verifyToken, async ( req, res ) => {
     const values = extractInternalAdminData( req.body, isActive, user_id, office_id );
 
     try {
-        await queryAsync( insertSql, values );
+        await pool.query( insertSql, values );
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
         console.error( "Insert error:", err );
@@ -3100,7 +3100,7 @@ LEFT JOIN prioritized_mudda pm ON pm.bandi_id = bp.id AND pm.rn = 1
     if ( subidha_id ) {
         sql += ` AND bia.id=${ subidha_id }`;
     }
-    con.query( sql, ( error, results ) => {
+    pool.query( sql, ( error, results ) => {
         if ( error ) {
             console.error( 'Database query error:', error );
             return res.status( 500 ).json( { Status: false, Error: 'Database query failed.' } );
@@ -3120,14 +3120,14 @@ router.put( "/update_internal_admin1/:id", verifyToken, async ( req, res ) => {
     const id = req.params.id;
     try {
         await beginTransactionAsync();
-        const existing = await queryAsync(
+        const existing = await pool.query(
             `SELECT * FROM bandi_internal_admins WHERE id = ?`,
             [id]
         );
 
         if ( existing.length > 0 ) {
             const values = extractInternalAdminData( req.body, isActive, user_id, office_id, id );
-            await queryAsync( sql, values );
+            await pool.query( sql, values );
         }
 
         await commitAsync();
@@ -3164,8 +3164,8 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
     const values = [bandi_id, reason_id, decision_date, apply_date, nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
     try {
         beginTransactionAsync();
-        await queryAsync( insertSql, values );
-        await queryAsync( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
+        await pool.query( insertSql, values );
+        await pool.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
         await commitAsync();
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
@@ -3852,7 +3852,7 @@ router.post( '/create_mudda', verifyToken, async ( req, res ) => {
     const values = [req.body.mudda_name, req.body.mudda_group_id, user_id, user_id, office_id] ;
 
     try {
-        await queryAsync( insertSql, values );
+        await pool.query( insertSql, values );
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
         console.error( "Insert error:", err );
