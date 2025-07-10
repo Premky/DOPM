@@ -3648,14 +3648,22 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
   `;
     const values = [bandi_id, reason_id, decision_date, apply_date, nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
     try {
-        beginTransactionAsync();
-        await pool.query( insertSql, values );
-        await pool.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
-        await commitAsync();
+        let connection = await pool.getConnection();
+        // beginTransactionAsync();
+        // await pool.query( insertSql, values );
+        await connection.beginTransaction();
+        await connection.query(insertSql, values);
+
+        // await pool.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
+        // await commitAsync();
+        await connection.query(`UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }`)
+        await connection.commit();
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
         console.error( "Insert error:", err );
         res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
+    }finally{
+        await connection.rollback();
     }
 } );
 
