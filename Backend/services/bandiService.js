@@ -404,34 +404,34 @@ async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
 
 
 
-async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
-  if ( !contacts.length ) return;
+// async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
+//   if ( !contacts.length ) return;
 
-  // Filter out contacts with missing or blank relation_id
-  const filteredContacts = contacts.filter( c =>
-    typeof c.relation_id === 'string' && c.relation_id.trim() !== ''
-  );
+//   // Filter out contacts with missing or blank relation_id
+//   const filteredContacts = contacts.filter( c =>
+//     typeof c.relation_id === 'string' && c.relation_id.trim() !== ''
+//   );
 
-  if ( !filteredContacts.length ) return;
+//   if ( !filteredContacts.length ) return;
 
-  const values = filteredContacts.map( c => [
-    bandi_id,
-    c.relation_id,
-    c.contact_name,
-    c.contact_address,
-    c.contact_contact_details,
-    user_id,
-    user_id,
-    office_id
-  ] );
+//   const values = filteredContacts.map( c => [
+//     bandi_id,
+//     c.relation_id,
+//     c.contact_name,
+//     c.contact_address,
+//     c.contact_contact_details,
+//     user_id,
+//     user_id,
+//     office_id
+//   ] );
 
-  const sql = `INSERT INTO bandi_contact_person (
-    bandi_id, relation_id, contact_name, contact_address,
-    contact_contact_details, created_by, updated_by, current_office_id
-  ) VALUES ?`;
+//   const sql = `INSERT INTO bandi_contact_person (
+//     bandi_id, relation_id, contact_name, contact_address,
+//     contact_contact_details, created_by, updated_by, current_office_id
+//   ) VALUES ?`;
 
-  await queryAsync( sql, [values] );
-}
+//   await queryAsync( sql, [values] );
+// }
 
 async function updateContactPerson( contactId, contact, user_id, office_id ) {
   if (
@@ -477,20 +477,20 @@ async function updateContactPerson( contactId, contact, user_id, office_id ) {
   }
 }
 
-async function insertDiseasesDetails1( bandi_id, diseases = [], user_id, office_id ) {
-  for ( const disease of diseases ) {
-    if ( Number( disease.is_ill ) === 1 ) {
-      const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, created_by, updated_by, created_office_id)
-        VALUES(?)`;
-      const values = [bandi_id,
-        disease.disease_id || 0,
-        disease.disease_name?.trim() || null,
-        user_id, user_id, office_id
-      ];
-      await queryAsync( sql, [values] );
-    }
-  }
-}
+// async function insertDiseasesDetails1( bandi_id, diseases = [], user_id, office_id ) {
+//   for ( const disease of diseases ) {
+//     if ( Number( disease.is_ill ) === 1 ) {
+//       const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, created_by, updated_by, created_office_id)
+//         VALUES(?)`;
+//       const values = [bandi_id,
+//         disease.disease_id || 0,
+//         disease.disease_name?.trim() || null,
+//         user_id, user_id, office_id
+//       ];
+//       await queryAsync( sql, [values] );
+//     }
+//   }
+// }
 
 async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_id ) {
   try {
