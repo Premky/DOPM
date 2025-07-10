@@ -1,5 +1,6 @@
 import express from 'express';
 import con from '../utils/db.js';
+import pool from '../utils/db3.js'
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
@@ -2830,7 +2831,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     `;
 
     try {
-        const result = await query( baseSql, params );
+        const result = await pool.query( baseSql, params );
         res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
