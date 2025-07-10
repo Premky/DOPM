@@ -15,9 +15,9 @@ import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 
-import fetchBandiDisabilities from '../../Apis_to_fetch/fetchBandiDisabilities';
-
 import DisabilityModal from '../../Dialogs/DisabilityModal';
+import fetchBandiTransferHistory from '../../../ReuseableComponents/FetchApis/fetchBandiTransferHistory';
+import BandiTransfer from '../../Dialogs/BandiTransferModal';
 
 const BandiTransferHistoryTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
@@ -28,7 +28,7 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
 
     // ✅ Fetch data
     
-    const { records: bandiTransferHistory, loading: bandiTransferHistoryLoading, refetch } = fetchBandiDisabilities(bandi_id);    
+    const { records: bandiTransferHistory, loading: bandiTransferHistoryLoading, refetch } = fetchBandiTransferHistory(bandi_id);    
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -112,15 +112,20 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                         <TableHead>
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">अशक्तता</TableCell>                              
+                                <TableCell align="center">कारागार</TableCell>                              
+                                <TableCell align="center">देखी</TableCell>                              
+                                <TableCell align="center">सम्म</TableCell>                              
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {bandiDisability.map( ( opt, index ) => (
+                            {bandiTransferHistory.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.disability_id==100 ?<>{`(${opt.disablility_name_np}) ${opt.disability_name_if_other}`} </> : opt.disablility_name_np}</TableCell>                                   
+                                    <TableCell align="center">{index + 1}</TableCell>
+                                    <TableCell align="center">{index + 1}</TableCell>
+                                    <TableCell align="center">{index + 1}</TableCell>
+                                    
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
@@ -137,7 +142,7 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                     </Table>
                 </TableContainer>
             </Grid>
-            <DisabilityModal
+            <BandiTransfer
                 open={modalOpen}
                 onClose={() => setModalOpen( false )}
                 onSave={handleSave}

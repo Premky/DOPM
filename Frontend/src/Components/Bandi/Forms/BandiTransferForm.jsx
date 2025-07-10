@@ -15,11 +15,12 @@ import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import FamilyTable from '../Tables/For View/FamilyTable';
-import fetchBandiFamily from '../Apis_to_fetch/fetchBandiFamily';
+
+
 import fetchBandi from '../Apis_to_fetch/fetchBandi';
 import BandiDiseasesTable from '../Tables/For View/BandiDiseasesTable';
 import BandiDisabilityTable from '../Tables/For View/BandiDisabilityTable';
+import BandiTransferHistoryTable from '../Tables/For View/BandiTransferHistoryTable';
 
 const BandiTransferForm = () => {
     const BASE_URL = useBaseURL();
@@ -32,7 +33,7 @@ const BandiTransferForm = () => {
     const bandi_id = watch( 'bandi_id' );
 
     const { records: bandi, optrecords: bandiOpt, loading: bandiLoading } = fetchBandi( bandi_id );
-    const { records: bandiFamily, optrecords: bandiFamilyOpt, loading: bandiFamilyLoading } = fetchBandiFamily( bandi_id );
+    
     const { records: releaseReasons, optrecords: releaseRecordsOptions, loading: realeseReasonsLoading } = fetchReleaseReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
 
@@ -104,7 +105,7 @@ const BandiTransferForm = () => {
                                 <BandiDisabilityTable bandi_id={bandi_id}/>
                             </Grid2>
                             <Grid2 size={{sm:4, xs:12}}>
-                                <BandiDisabilityTable bandi_id={bandi_id}/>
+                                <BandiTransferHistoryTable bandi_id={bandi_id}/>
                             </Grid2>
                         </Grid2> 
 

@@ -2564,8 +2564,10 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     const baki_kaid_duration = baki_duration.formattedDuration || 0;
     const baki_kaid_percent = baki_duration.percentage || 0;
 
+    let connection;
     try {
-        await beginTransactionAsync();
+        // await beginTransactionAsync();
+        connection = await pool.getConnection();
 
         const [existing] = await pool.query(
             `SELECT * FROM payrole_decisions WHERE payrole_id = ?`,
@@ -2619,7 +2621,8 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
                 payrole_id,
             ];
 
-            await pool.query( sql, values );
+            // await pool.query( sql, values );
+            await connection.query(sql, values)
         } else {
             const insertSql = `
         INSERT INTO payrole_decisions (
@@ -2652,7 +2655,8 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
                 user_office_id,
             ];
 
-            await pool.query( insertSql, insertValues );
+            // await pool.query( insertSql, insertValues );
+            await connection.query(insertSql, insertValues)
         }
 
         if ( hajir_current_date_bs ) {
@@ -2671,17 +2675,22 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
                 hajir_office,
             ];
 
-            await pool.query( logSql, logValues );
+            // await pool.query( logSql, logValues );
+            await connection.query(logSql, logValues);
         }
 
-        await pool.query( `UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id] );
+        await connection.query( `UPDATE payroles SET status=? WHERE id=?`, [payrole_result, payrole_id] );
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
         return res.json( { Status: true, Message: "Updated successfully" } );
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "Payrole update error:", error );
         return res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }finally{
+        await connection.release();
     }
 } );
 

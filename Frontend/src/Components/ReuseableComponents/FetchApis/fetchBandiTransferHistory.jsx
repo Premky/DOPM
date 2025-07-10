@@ -1,7 +1,7 @@
 // hooks/useInternalAdmins.js
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useBaseURL } from "../../Context/BaseURLProvider";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
 
 const fetchBandiTransferHistory = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
@@ -11,7 +11,7 @@ const fetchBandiTransferHistory = ( bandi_id ) => {
     
     const fetchBandiRecords = async () => {
         try {
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_transfer_history`, { withCredentials: true } );
+            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_transfer_history/${bandi_id}`, { withCredentials: true } );
             // console.log( response );
             const { Status, Result, Error } = response.data;
             if ( Status ) {
