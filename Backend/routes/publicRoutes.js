@@ -111,7 +111,7 @@ router.get( '/get_relations/', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_bandi_release_reasons/', async ( req, res ) => {
+router.get( '/get_bandi_release_reasons1/', async ( req, res ) => {
     const sql = `SELECT * FROM bandi_release_reasons`;
 
     pool.query( sql, ( err, result ) => {
@@ -121,7 +121,18 @@ router.get( '/get_bandi_release_reasons/', async ( req, res ) => {
         }
         return res.json( { Status: true, Result: result } );
     } );
+} );
 
+router.get( '/get_bandi_release_reasons/', async ( req, res ) => {
+    const sql = `SELECT * FROM bandi_release_reasons`;
+    try {
+        const [result] = await pool.query( sql );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
 } );
 
 router.get( '/get_fine_types/', async ( req, res ) => {

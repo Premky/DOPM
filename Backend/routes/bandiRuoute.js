@@ -168,7 +168,10 @@ LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
 
-router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+    let connection 
+
+
     const bandi_id = req.params.id;
     const { bandi_name, office_bandi_id } = req.body;
     const photoFile = req.file;
@@ -179,6 +182,7 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
     }
 
     try {
+        connection = await pool.getConnection();
         await beginTransactionAsync();
 
         // Fetch old photo for cleanup
@@ -216,6 +220,70 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
         res.status( 500 ).json( { success: false, message: 'फोटो अपडेट असफल भयो', error: err.message } );
     }
 } );
+
+router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async (req, res) => {
+  let connection;
+
+  const bandi_id = req.params.id;
+  const { bandi_name, office_bandi_id } = req.body;
+  const photoFile = req.file;
+  const photo_path = photoFile ? `/uploads/bandi_photos/${photoFile.filename}` : null;
+
+  if (!photoFile || !bandi_name || !office_bandi_id) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Fetch old photo
+    const [result] = await connection.query(
+      `SELECT photo_path FROM bandi_person WHERE id = ?`,
+      [bandi_id]
+    );
+    const oldPhotoPath = result?.[0]?.photo_path;
+
+    // Update photo
+    await connection.query(
+      `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
+      [photo_path, bandi_id]
+    );
+
+    await connection.commit();
+
+    // Delete old photo after successful commit
+    if (oldPhotoPath && fs.existsSync(`.${oldPhotoPath}`)) {
+      fs.unlink(`.${oldPhotoPath}`, (err) => {
+        if (err) console.error('Failed to delete old photo:', err);
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'फोटो सफलतापूर्वक अपडेट भयो',
+      photo_path
+    });
+  } catch (err) {
+    if (connection) await connection.rollback();
+
+    // Delete newly uploaded photo on failure
+    if (photoFile && fs.existsSync(photoFile.path)) {
+      fs.unlink(photoFile.path, (unlinkErr) => {
+        if (unlinkErr) console.error('Rollback failed to delete uploaded file:', unlinkErr);
+      });
+    }
+
+    console.error('Update transaction failed:', err);
+    res.status(500).json({
+      success: false,
+      message: 'फोटो अपडेट असफल भयो',
+      error: err.message
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
 
 
 router.post('/create_bandi', verifyToken, upload.single('photo'), async (req, res) => {
