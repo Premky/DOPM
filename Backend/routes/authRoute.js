@@ -402,7 +402,7 @@ router.post('/login_ping', verifyToken, async (req, res) => {
     const user_id = req.user.id;
 
     // Corrected logic
-    if (active_office !== 1 && active_office !== 2) return;
+    // if (active_office !== 1 && active_office !== 2) return;
 
     try {
         await pool.query(
