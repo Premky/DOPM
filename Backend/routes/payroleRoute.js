@@ -174,7 +174,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     }
 
     if ( searchpyarole_rakhan_upayukat ) {
-        baseWhere += `AND pr.searchpyarole_rakhan_upayukat=${ searchpyarole_rakhan_upayukat } `;
+        baseWhere += `AND pr.pyarole_rakhan_upayukat=${ searchpyarole_rakhan_upayukat } `;
     }
 
     if ( nationality ) {
@@ -193,7 +193,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
         ${ baseWhere } ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
 
-        const [idRows] = await con.promise().query( idQuery, [limit, offset] );
+        const [idRows] = await pool.query( idQuery, [limit, offset] );
 
         const bandiIds = idRows.map( row => row.id );
         // console.log('bandi_id:', bandiIds)
@@ -206,7 +206,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN payroles p ON bp.id=p.bandi_id 
             LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
             ${ baseWhere }`;
-        const [countResult] = await con.promise().query( countSQL );
+        const [countResult] = await pool.query( countSQL );
         const totalCount = countResult[0].total;
 
         // STEP 3: Get full records for selected bandis
@@ -270,7 +270,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 
         // console.log( fullQuery );
 
-        const [fullRows] = await con.promise().query( fullQuery, bandiIds );
+        const [fullRows] = await pool.query( fullQuery, bandiIds );
         // console.log( fullRows );
         // STEP 4: Group muddas under each bandi
         const grouped = {};
@@ -430,8 +430,9 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     }
 
     try {
-        await beginTransactionAsync();
-
+        let connection = await pool.getConnection();
+        // await beginTransactionAsync();
+        await connection.beginTransaction();
         let sql = '';
         let values = [];
 
@@ -460,15 +461,16 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
             ];
             sql = `
                 INSERT INTO payroles(
-        payrole_no_bandi_id,payrole_mudda_id, ganana_date, payrole_entery_date, payrole_reason,
-        other_details, remark, status, payrole_no_id, bandi_id, user_id, created_by, created_office
-    ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
-        `;
+                payrole_no_bandi_id,payrole_mudda_id, ganana_date, payrole_entery_date, payrole_reason,
+                other_details, remark, status, payrole_no_id, bandi_id, user_id, created_by, created_office
+            ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+                `;
 
             const [result] = await pool.query( sql, values );
             const inserted_id = result.insertId;
             console.log( inserted_id );
-            await commitAsync();
+            // await commitAsync();
+            await connection.commit();
 
             return res.json( {
                 // Result: inserted_id,
@@ -478,13 +480,16 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         }
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    }finally{
+        await connection.release();
     }
 } );
 
