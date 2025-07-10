@@ -75,7 +75,19 @@ router.get( '/get_parole_status/', async ( req, res ) => {
 
 } );
 
-router.get( '/get_id_cards/', async ( req, res ) => {
+router.get( '/get_id_cards', async ( req, res ) => {
+    const sql = `SELECT * FROM govt_id_types`;
+    try {
+        const [result] = await pool.query( sql );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_id_cards1/', async ( req, res ) => {
     const sql = `SELECT * FROM govt_id_types`;
 
     await pool.query( sql, ( err, result ) => {
@@ -88,6 +100,18 @@ router.get( '/get_id_cards/', async ( req, res ) => {
 } );
 
 router.get( '/get_relations/', async ( req, res ) => {
+    const sql = `SELECT * FROM relationships`;
+    try {
+        const [result] = await pool.query( sql );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_relations1/', async ( req, res ) => {
     const sql = `SELECT * FROM relationships`;
 
     await pool.query( sql, ( err, result ) => {
