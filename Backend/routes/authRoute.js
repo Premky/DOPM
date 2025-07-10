@@ -311,7 +311,7 @@ router.post( '/login', async ( req, res ) => {
 
         // Update online status
         // await promiseCon.query("UPDATE users SET is_online = 1 WHERE id = ?", [user.id]);
-        await promiseCon.query( "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?", [user.id] );
+        await pool.query( "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?", [user.id] );
 
         return res.json( {
             loginStatus: true,
@@ -334,7 +334,7 @@ router.post( '/logout', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
 
     try {
-        await promiseCon.query( "UPDATE users SET is_online = 0 WHERE id = ?", [user_id] );
+        await pool.query( "UPDATE users SET is_online = 0 WHERE id = ?", [user_id] );
 
         res.clearCookie( 'token', {
             httpOnly: true,
