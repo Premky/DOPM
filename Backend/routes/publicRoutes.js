@@ -26,7 +26,7 @@ const fy_date = fy + '-04-01';
 router.get( "/get_offices", async ( req, res ) => {
     const sql = `SELECT * from offices ORDER BY office_name_with_letter_address`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result, message: 'Records fetched successfully.' } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -37,7 +37,7 @@ router.get( "/get_offices", async ( req, res ) => {
 router.get( '/get_all_punarabedan_offices', async ( req, res ) => {
     const sql = `SELECT * from offices WHERE office_categories_id=5 ORDER BY letter_address`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         // console.log(result)
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -128,7 +128,7 @@ router.get( '/get_fine_types/', async ( req, res ) => {
 router.get( '/get_diseases', async ( req, res ) => {
     const sql = `SELECT * from diseases ORDER BY id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -139,7 +139,7 @@ router.get( '/get_diseases', async ( req, res ) => {
 router.get( '/get_disabilities', async ( req, res ) => {
     const sql = `SELECT * from disabilities ORDER BY id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -150,7 +150,7 @@ router.get( '/get_disabilities', async ( req, res ) => {
 router.get( '/muddas_groups', async ( req, res ) => {
     const sql = `SELECT * from muddas_groups ORDER BY id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -164,7 +164,7 @@ router.get( '/muddas_groups', async ( req, res ) => {
 router.get( '/get_countries', async ( req, res ) => {
     const sql = `SELECT * from np_country ORDER BY id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -175,7 +175,7 @@ router.get( '/get_countries', async ( req, res ) => {
 router.get( '/get_states', async ( req, res ) => {
     const sql = `SELECT * from np_state ORDER BY state_id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -186,7 +186,7 @@ router.get( '/get_states', async ( req, res ) => {
 router.get( '/get_districts', async ( req, res ) => {
     const sql = `SELECT * from np_district ORDER BY did`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -197,7 +197,7 @@ router.get( '/get_districts', async ( req, res ) => {
 router.get( '/get_municipalities', async ( req, res ) => {
     const sql = `SELECT * from np_city ORDER BY cid`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -208,7 +208,7 @@ router.get( '/get_municipalities', async ( req, res ) => {
 router.get( '/get_bandi_type', async ( req, res ) => {
     const sql = `SELECT * from bandi_types`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
 
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -220,7 +220,7 @@ router.get( '/get_bandi_type', async ( req, res ) => {
 router.get( '/get_mudda', async ( req, res ) => {
     const sql = `SELECT * from muddas`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -231,7 +231,7 @@ router.get( '/get_mudda', async ( req, res ) => {
 router.get( '/get_payrole_nos', async ( req, res ) => {
     const sql = `SELECT * from payrole_nos ORDER BY -id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -242,7 +242,7 @@ router.get( '/get_payrole_nos', async ( req, res ) => {
 router.get( '/get_payrole_status', async ( req, res ) => {
     const sql = `SELECT * from payrole_status ORDER BY id`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -266,7 +266,7 @@ router.get( '/get_usertypes/', async ( req, res ) => {
     // const {reason_type} = req.params;
     const sql = `SELECT * FROM usertypes;`;
     try {
-        const result = await pool.query( sql );
+        const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
