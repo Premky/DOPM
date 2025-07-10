@@ -168,59 +168,6 @@ LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
 
-// router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-//     let connection 
-
-
-//     const bandi_id = req.params.id;
-//     const { bandi_name, office_bandi_id } = req.body;
-//     const photoFile = req.file;
-//     const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
-
-//     if ( !photoFile || !bandi_name || !office_bandi_id ) {
-//         return res.status( 400 ).json( { success: false, message: 'Missing required fields' } );
-//     }
-
-//     try {
-//         connection = await pool.getConnection();
-//         await beginTransactionAsync();
-
-//         // Fetch old photo for cleanup
-//         const [result] = await pool.query( `SELECT photo_path FROM bandi_person WHERE id = ?`, [bandi_id] );
-//         const oldPhotoPath = result?.[0]?.photo_path;
-
-//         // Update photo path in DB
-//         await pool.query(
-//             `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
-//             [photo_path, bandi_id]
-//         );
-
-//         await commitAsync();
-
-//         // Delete old photo AFTER commit (non-blocking)
-//         if ( oldPhotoPath && fs.existsSync( `.${ oldPhotoPath }` ) ) {
-//             fs.unlink( `.${ oldPhotoPath }`, ( err ) => {
-//                 if ( err ) console.error( 'Failed to delete old photo:', err );
-//             } );
-//         }
-
-//         res.status( 200 ).json( { success: true, message: 'फोटो सफलतापूर्वक अपडेट भयो', photo_path } );
-
-//     } catch ( err ) {
-//         await rollbackAsync();
-
-//         // ❌ Delete the uploaded file if transaction fails
-//         if ( photoFile && fs.existsSync( photoFile.path ) ) {
-//             fs.unlink( photoFile.path, ( unlinkErr ) => {
-//                 if ( unlinkErr ) console.error( 'Rollback failed to delete uploaded file:', unlinkErr );
-//             } );
-//         }
-
-//         console.error( 'Update transaction failed:', err );
-//         res.status( 500 ).json( { success: false, message: 'फोटो अपडेट असफल भयो', error: err.message } );
-//     }
-// } );
-
 router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     let connection;
 
@@ -370,110 +317,6 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     }
 } );
 
-
-// router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-//     const user_id = req.user.id;
-//     const office_id = req.user.office_id;
-//     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
-//     const data = req.body;
-//     console.log( req.user.office_np );
-//     try {
-//         await beginTransactionAsync();
-
-//         console.log( '🟢 Transaction started' );
-
-//         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
-//         console.log( '✅ insertBandiPerson', bandi_id );
-
-//         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
-//         console.log( '✅ insertKaidDetails' );
-
-//         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
-//         console.log( '✅ insertCardDetails' );
-
-//         await insertAddress( bandi_id, { ...req.body, user_id, office_id } );
-//         console.log( '✅ insertAddress' );
-
-//         const muddaIndexes = [...new Set( Object.keys( req.body ).filter( k => k.startsWith( 'mudda_id_' ) ).map( k => k.split( '_' )[2] ) )];
-//         const muddas = muddaIndexes.map( i => ( {
-//             mudda_id: req.body[`mudda_id_${ i }`],
-//             mudda_no: req.body[`mudda_no_${ i }`],
-//             is_last: req.body[`is_last_mudda_${ i }`],
-//             is_main: req.body[`is_main_mudda_${ i }`],
-//             condition: req.body[`mudda_condition_${ i }`],
-//             district: req.body[`mudda_district_${ i }`],
-//             office: req.body[`mudda_office_${ i }`],
-//             date: req.body[`mudda_phesala_date_${ i }`],
-//             vadi: req.body[`vadi_${ i }`],
-//         } ) );
-//         await insertMuddaDetails( bandi_id, muddas, office_id );
-//         console.log( '✅ insertMuddaDetails' );
-
-
-//         let fineArray = [];
-//         try {
-//             fineArray = JSON.parse( req.body.fine );
-//         } catch ( e ) {
-//             console.error( "Invalid fine JSON:", e.message );
-//             fineArray = [];
-//         }
-//         console.log( fineArray );
-//         if ( Array.isArray( fineArray ) ) {
-//             await insertFineDetails( bandi_id, fineArray, user_id, office_id );
-//         } else {
-//             console.error( "Invalid or missing 'fine' array in request body" );
-//         }
-
-//         if ( data.punarabedan_office_id && data.punarabedan_office_district &&
-//             data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
-//             await insertPunarabedan( bandi_id, req.body );
-//             console.log( '✅ insertPunarabedan' );
-//         }
-
-//         await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ), user_id, office_id );
-//         console.log( '✅ insertFamily' );
-
-//         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
-//         console.log( '✅ insertContacts' );
-
-//         await insertDiseasesDetails( bandi_id, JSON.parse( req.body.disease ), user_id, office_id );
-//         console.log( '✅ insertDiseasesDetails' );
-
-//         await insertDisablilityDetails( bandi_id, JSON.parse( req.body.disability ), user_id, office_id );
-//         console.log( '✅ insertDisabilityDetails' );
-
-//         if ( data.health_insurance?.length ) {
-//             await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
-//             console.log( '✅ Health Details' );
-//         }
-
-//         await commitAsync();
-//         console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${ req.user.office_np }` );
-
-//         res.json( {
-//             Status: true,
-//             Result: bandi_id,
-//             message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
-//         } );
-
-//     } catch ( error ) {
-//         await rollbackAsync();
-//         console.error( '❌ Transaction rolled back:', error );
-
-//         if ( req.file ) {
-//             const photoFullPath = path.join( __dirname, '..', 'uploads', 'bandi_photos', req.file.filename );
-//             fs.unlink( photoFullPath, () => {
-//                 console.log( '🗑️ Photo deleted due to error' );
-//             } );
-//         }
-
-//         res.status( 500 ).json( {
-//             Status: false,
-//             Error: error.message,
-//             message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।'
-//         } );
-//     }
-// } );
 
 router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     let connection;
@@ -1293,102 +1136,67 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put('/update_bandi_address/:id', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const user_id = req.user.id;
-  const id = req.params.id;
+router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const id = req.params.id;
 
-  const {
-    bandi_id,
-    nationality_id,
-    province_id,
-    district_id,
-    gapa_napa_id,
-    wardno,
-    bidesh_nagarik_address_details
-  } = req.body;
+    const {
+        bandi_id,
+        nationality_id,
+        province_id,
+        district_id,
+        gapa_napa_id,
+        wardno,
+        bidesh_nagarik_address_details
+    } = req.body;
 
-  let connection;
+    let connection;
 
-  try {
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
-    let sql = '';
-    let values = [];
+        let sql = '';
+        let values = [];
 
-    if (Number(nationality_id) === 1) {
-      sql = `
+        if ( Number( nationality_id ) === 1 ) {
+            sql = `
         UPDATE bandi_address
         SET nationality_id = ?, province_id = ?, district_id = ?, gapa_napa_id = ?, wardno = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
-      values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, user_id, active_office, id];
-    } else {
-      sql = `
+            values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, user_id, active_office, id];
+        } else {
+            sql = `
         UPDATE bandi_address
         SET nationality_id = ?, bidesh_nagarik_address_details = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
-      values = [nationality_id, bidesh_nagarik_address_details || null, user_id, active_office, id];
+            values = [nationality_id, bidesh_nagarik_address_details || null, user_id, active_office, id];
+        }
+
+        const [result] = await connection.query( sql, values );
+
+        await connection.commit();
+        res.json( {
+            Status: true,
+            message: "बन्दी ठेगाना सफलतापूर्वक अद्यावधिक गरियो।"
+        } );
+
+    } catch ( error ) {
+        if ( connection ) await connection.rollback();
+        console.error( "❌ Address update failed:", error );
+        res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो।"
+        } );
+
+    } finally {
+        if ( connection ) connection.release();
     }
-
-    const [result] = await connection.query(sql, values);
-
-    await connection.commit();
-    res.json({
-      Status: true,
-      message: "बन्दी ठेगाना सफलतापूर्वक अद्यावधिक गरियो।"
-    });
-
-  } catch (error) {
-    if (connection) await connection.rollback();
-    console.error("❌ Address update failed:", error);
-    res.status(500).json({
-      Status: false,
-      Error: error.message,
-      message: "सर्भर त्रुटि भयो।"
-    });
-
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
-
-// router.put( '/update_bandi_address1/:id', verifyToken, async ( req, res ) => {
-//     const active_office = req.user.office_id;
-//     const user_id = req.user.id;
-
-//     const id = req.params.id;
-//     console.log( id );
-//     const { bandi_id, nationality_id, province_id, district_id, gapa_napa_id, wardno, bidesh_nagarik_address_details } = req.body;
-//     try {
-//         let sql = '';
-//         let values = '';
-//         if ( nationality_id == 1 ) {
-//             values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, id];
-//             sql = `
-//                 UPDATE bandi_address
-//                 SET nationality_id = ?, province_id = ?, district_id = ?, gapa_napa_id = ? , wardno=? WHERE id = ?`;
-//         } else {
-//             values = [nationality_id, bidesh_nagarik_address_details, id];
-//             sql = `UPDATE bandi_address SET nationality_id=?, bidesh_nagarik_address_details=? WHERE id =?`;
-//         }
-//         const [result] = await pool.query( sql, values );
-//         return res.json( {
-//             Status: true,
-//             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-//         } );
-//     } catch ( error ) {
-//         console.error( "Transaction failed:", error );
-//         return res.status( 500 ).json( {
-//             Status: false,
-//             Error: error.message,
-//             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-//         } );
-//     }
-// } );
+} );
 
 router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
     const { id } = req.params;
@@ -1410,154 +1218,93 @@ router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
     }
 } );
 
-router.put('/update_bandi_kaid_details/:id', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const user_id = req.user.id;
-  const id = req.params.id;
+router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const id = req.params.id;
 
-  const {
-    bandi_id,
-    bandi_type,
-    hirasat_years,
-    hirasat_months,
-    hirasat_days,
-    thuna_date_bs,
-    release_date_bs
-  } = req.body;
+    const {
+        bandi_id,
+        bandi_type,
+        hirasat_years,
+        hirasat_months,
+        hirasat_days,
+        thuna_date_bs,
+        release_date_bs
+    } = req.body;
 
-  let connection;
+    let connection;
 
-  try {
-    // Date conversion
-    const thunaDateAd = thuna_date_bs ? await bs2ad(thuna_date_bs) : '1900-01-01';
-    const releaseDateAd = release_date_bs ? await bs2ad(release_date_bs) : '1900-01-01';
+    try {
+        // Date conversion
+        const thunaDateAd = thuna_date_bs ? await bs2ad( thuna_date_bs ) : '1900-01-01';
+        const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '1900-01-01';
 
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
-    let updateKaidSql = '';
-    let kaidValues = [];
+        let updateKaidSql = '';
+        let kaidValues = [];
 
-    if (bandi_type === 'कैदी') {
-      updateKaidSql = `
+        if ( bandi_type === 'कैदी' ) {
+            updateKaidSql = `
         UPDATE bandi_kaid_details
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
             thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?, release_date_ad = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
-      kaidValues = [
-        hirasat_years, hirasat_months, hirasat_days,
-        thuna_date_bs, thunaDateAd,
-        release_date_bs, releaseDateAd,
-        user_id, active_office,
-        id
-      ];
-    } else if (bandi_type === 'थुनुवा') {
-      updateKaidSql = `
+            kaidValues = [
+                hirasat_years, hirasat_months, hirasat_days,
+                thuna_date_bs, thunaDateAd,
+                release_date_bs, releaseDateAd,
+                user_id, active_office,
+                id
+            ];
+        } else if ( bandi_type === 'थुनुवा' ) {
+            updateKaidSql = `
         UPDATE bandi_kaid_details
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
             thuna_date_bs = ?, thuna_date_ad = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
-      kaidValues = [
-        hirasat_years, hirasat_months, hirasat_days,
-        thuna_date_bs, thunaDateAd,
-        user_id, active_office,
-        id
-      ];
-    } else {
-      throw new Error('Invalid bandi_type');
+            kaidValues = [
+                hirasat_years, hirasat_months, hirasat_days,
+                thuna_date_bs, thunaDateAd,
+                user_id, active_office,
+                id
+            ];
+        } else {
+            throw new Error( 'Invalid bandi_type' );
+        }
+
+        // Update kaid details
+        await connection.query( updateKaidSql, kaidValues );
+
+        // Update bandi type in bandi_person
+        await connection.query(
+            `UPDATE bandi_person SET bandi_type = ?, updated_by = ?, current_office_id = ? WHERE id = ?`,
+            [bandi_type, user_id, active_office, bandi_id]
+        );
+
+        await connection.commit();
+        return res.json( {
+            Status: true,
+            message: "बन्दी कैद विवरण सफलतापूर्वक अद्यावधिक गरियो।"
+        } );
+
+    } catch ( error ) {
+        if ( connection ) await connection.rollback();
+        console.error( "❌ Update failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+
+    } finally {
+        if ( connection ) connection.release();
     }
-
-    // Update kaid details
-    await connection.query(updateKaidSql, kaidValues);
-
-    // Update bandi type in bandi_person
-    await connection.query(
-      `UPDATE bandi_person SET bandi_type = ?, updated_by = ?, current_office_id = ? WHERE id = ?`,
-      [bandi_type, user_id, active_office, bandi_id]
-    );
-
-    await connection.commit();
-    return res.json({
-      Status: true,
-      message: "बन्दी कैद विवरण सफलतापूर्वक अद्यावधिक गरियो।"
-    });
-
-  } catch (error) {
-    if (connection) await connection.rollback();
-    console.error("❌ Update failed:", error);
-    return res.status(500).json({
-      Status: false,
-      Error: error.message,
-      message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-    });
-
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
-
-// router.put( '/update_bandi_kaid_details1/:id', verifyToken, async ( req, res ) => {
-//     const active_office = req.user.office_id;
-//     const user_id = req.user.id;
-
-//     const id = req.params.id;
-//     console.log( id );
-//     const { bandi_id, bandi_type, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs } = req.body;
-
-//     // console.log(req.body)
-//     let thunaDateAd = '1900-01-01';
-//     let releaseDateAd = '1900-01-01';
-//     if ( thuna_date_bs ) {
-//         thunaDateAd = await bs2ad( thuna_date_bs );
-//     }
-//     if ( release_date_bs ) {
-//         releaseDateAd = await bs2ad( release_date_bs );
-//     }
-
-//     try {
-//         await beginTransactionAsync();
-//         let sql1 = '';
-//         let values1 = '';
-//         let sql2 = '';
-//         let values2 = '';
-//         if ( bandi_type == 'कैदी' ) {
-//             values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, release_date_bs, releaseDateAd, id];
-//             sql1 = `
-//                 UPDATE bandi_kaid_details
-//                 SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?, thuna_date_bs = ? , thuna_date_ad=?,
-//                     release_date_bs=?, release_date_ad=?  WHERE id = ?`;
-//         } else if ( bandi_type == 'थुनुवा' ) {
-//             values1 = [hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thunaDateAd, id];
-//             sql1 = `UPDATE bandi_kaid_details SET hirasat_years=?, hirasat_months=?, hirasat_days=?,
-//                     thuna_date_bs=?, thuna_date_ad=? WHERE id =?`;
-//         }
-
-//         await pool.query( sql1, values1 );
-
-//         sql2 = `UPDATE bandi_person SET bandi_type=? WHERE id=?`;
-//         values2 = [bandi_type, bandi_id];
-//         await pool.query( sql2, values2 );
-
-//         await commitAsync(); // Commit the transaction
-//         return res.json( {
-//             Status: true,
-//             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-//         } );
-
-//     } catch ( error ) {
-//         await rollbackAsync(); // Rollback the transaction if error occurs
-
-//         console.error( "Transaction failed:", error );
-//         return res.status( 500 ).json( {
-//             Status: false,
-//             Error: error.message,
-//             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-//         } );
-//     }
-// } );
+} );
 
 router.get( '/get_bandi_family/:id', async ( req, res ) => {
     const { id } = req.params;
@@ -1581,81 +1328,47 @@ router.get( '/get_bandi_family/:id', async ( req, res ) => {
     }
 } );
 
-router.post('/create_bandi_family', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const user_id = req.user.id;
-  const { bandi_id, relation_np, relative_name, relative_address, contact_no } = req.body;
+router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const { bandi_id, relation_np, relative_name, relative_address, contact_no } = req.body;
 
-  let connection;
-  try {
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
-    const sql = `
+        const sql = `
       INSERT INTO bandi_relative_info
         (bandi_id, relative_name, relation_id, relative_address, contact_no, created_by, updated_by, current_office_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const values = [bandi_id, relative_name, relation_np, relative_address, contact_no, user_id, user_id, active_office];
+        const values = [bandi_id, relative_name, relation_np, relative_address, contact_no, user_id, user_id, active_office];
 
-    await connection.query(sql, values);
+        await connection.query( sql, values );
 
-    await connection.commit();
+        await connection.commit();
 
-    res.json({
-      Result: bandi_id,
-      Status: true,
-      message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-    });
-  } catch (error) {
-    if (connection) await connection.rollback();
+        res.json( {
+            Result: bandi_id,
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+    } catch ( error ) {
+        if ( connection ) await connection.rollback();
 
-    console.error("Transaction failed:", error);
-    res.status(500).json({
-      Status: false,
-      Error: error.message,
-      message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-    });
-  } finally {
-    if (connection) connection.release();
-  }
-});
+        console.error( "Transaction failed:", error );
+        res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
 
-
-// router.post( '/create_bandi_family1', verifyToken, async ( req, res ) => {
-//     const active_office = req.user.office_id;
-//     const user_id = req.user.id;
-
-//     const { bandi_id, relation_np, relative_name, relative_address, contact_no } = req.body;
-//     // console.log(req.body)
-//     try {
-//         await beginTransactionAsync();
-//         let sql = '';
-//         let values = '';
-
-//         values = [bandi_id, relative_name, relation_np, relative_address, contact_no, user_id, user_id, active_office];
-//         sql = `INSERT INTO bandi_relative_info(
-//             bandi_id, relative_name, relation_id, relative_address, contact_no, created_by, updated_by, current_office_id) VALUES(?)`;
-//         const [result] = await pool.query( sql, [values] );
-//         await commitAsync(); // Commit the transaction
-//         return res.json( {
-//             Result: bandi_id,
-//             Status: true,
-//             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-//         } );
-
-//     } catch ( error ) {
-//         await rollbackAsync(); // Rollback the transaction if error occurs
-
-//         console.error( "Transaction failed:", error );
-//         return res.status( 500 ).json( {
-//             Status: false,
-//             Error: error.message,
-//             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-//         } );
-//     }
-// } );
 
 router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -1681,7 +1394,7 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
             `;
 
         // const [result] = await pool.query( sql, values );
-        const [result] = connection.query(sql, values);
+        const [result] = connection.query( sql, values );
 
         // await commitAsync(); // Commit the transaction
         await connection.commit();
@@ -1692,7 +1405,7 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
 
     } catch ( error ) {
         // await rollbackAsync(); // Rollback the transaction if error occurs
-        if(connection) await connection.rollback();
+        if ( connection ) await connection.rollback();
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
@@ -1700,8 +1413,8 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
-    }finally{
-        if(connection) connection.release();
+    } finally {
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1737,7 +1450,7 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
     // console.log(req.body)
 
     try {
-        let connection= await pool.getConnection();
+        let connection = await pool.getConnection();
         // await beginTransactionAsync();
         let sql = '';
         let values = '';
@@ -1746,7 +1459,7 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
         sql = `INSERT INTO bandi_id_card_details(
             bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, updated_by, current_office_id) VALUES(?)`;
         // const [result] = await pool.query( sql, [values] );
-        await connection.query(sql, [values])
+        await connection.query( sql, [values] );
         // await commitAsync(); // Commit the transaction
         await connection.commit();
         return res.json( {
@@ -1757,15 +1470,15 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
 
     } catch ( error ) {
         // await rollbackAsync(); // Rollback the transaction if error occurs
-        if(connection) await connection.rollback();
+        if ( connection ) await connection.rollback();
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
-    } finally{
-        if(connection) connection.release();
+    } finally {
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1779,7 +1492,7 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
     // console.log(req.body)
 
     try {
-        let connection= await pool.getConnection();
+        let connection = await pool.getConnection();
         // await beginTransactionAsync();
         await connection.beginTransaction();
         let sql = '';
@@ -1794,7 +1507,7 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
 
         // const [result] = await pool.query( sql, values );
         // await commitAsync(); // Commit the transaction
-        await connection.query(sql, values)
+        await connection.query( sql, values );
         await connection.commit();
         return res.json( {
             Status: true,
@@ -1843,7 +1556,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
                 created_by, updated_by, current_office_id) VALUES(?)`;
         // const [result] = await pool.query( sql, [values] );
         // await commitAsync(); // Commit the transaction
-        const [result] = await connection.query(sql, values);
+        const [result] = await connection.query( sql, values );
         return res.json( {
             // Result: bandi_id,
             Status: true,
@@ -1860,8 +1573,8 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
-    }finally{
-        if(connection) connection.release();
+    } finally {
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1894,7 +1607,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 
         // const [result] = await pool.query( sql, values );
         // await commitAsync(); // Commit the transaction
-        const [result] = await connection.query(sql, values);
+        const [result] = await connection.query( sql, values );
         await connection.commit();
         return res.json( {
             Status: true,
@@ -1903,7 +1616,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 
     } catch ( error ) {
         // await rollbackAsync(); // Rollback the transaction if error occurs
-        if(connection) connection.rollback();        
+        if ( connection ) connection.rollback();
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
@@ -1911,8 +1624,8 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
-    }finally{
-        if(connection) connection.release();
+    } finally {
+        if ( connection ) connection.release();
     }
 } );
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
@@ -2024,7 +1737,7 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
         ];
     }
     try {
-        const result = await query( sql, values );
+        const [result] = await pool.query( sql, values );
         console.log( result );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -2038,7 +1751,7 @@ router.delete( '/delete_bandi_fine/:id', verifyToken, async ( req, res ) => {
     console.log( id );
     try {
         const sql = `DELETE FROM bandi_fine_details WHERE id =? `;
-        const result = await query( sql, id );
+        const [result] = await pool.query( sql, id );
         return res.json( { Status: true, Result: 'Record Deleted Successfully!' } );
     } catch ( err ) {
         console.error( 'Error Deleting Record:', err );
@@ -2087,7 +1800,7 @@ router.put( '/update_bandi_punrabedn/:id', verifyToken, async ( req, res ) => {
         punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date, user_id, user_office_id, id
     ];
     try {
-        const result = await query( sql, values );
+        const [result] = await pool.query( sql, values );
         console.log( result );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -2101,6 +1814,7 @@ router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
 
     try {
+        let connection = await pool.getConnection();
         console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertDiseasesDetails(
@@ -2111,7 +1825,8 @@ router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
         );
 
         if ( insertCount === 0 ) {
-            await rollbackAsync();
+            // await rollbackAsync();
+            await connection.rollback();
             console.warn( "⚠️ No rows inserted. Possible bad data structure." );
             return res.status( 400 ).json( {
                 Status: false,
@@ -2119,20 +1834,24 @@ router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    } finally {
+        await connection.release();
     }
 } );
 
@@ -2164,6 +1883,7 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
     const disabilityId = req.params.id;
 
     try {
+        let connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
         const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
 
@@ -2174,7 +1894,8 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
 
         return res.json( {
             Status: true,
@@ -2182,7 +1903,8 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Update failed:", error );
 
         return res.status( 500 ).json( {
@@ -2190,6 +1912,8 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, अपाङ्गता विवरण अपडेट गर्न असफल।"
         } );
+    } finally {
+        await connection.release();
     }
 } );
 
@@ -2200,7 +1924,7 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
 
     try {
         // console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
-
+        let connection = await pool.getConnection();
         const insertCount = await insertDisablilityDetails(
             req.body.bandi_id,
             req.body.bandi_disability,
@@ -2209,7 +1933,8 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
         );
 
         if ( insertCount === 0 ) {
-            await rollbackAsync();
+            // await rollbackAsync();
+            await connection.rollback();
             console.warn( "⚠️ No rows inserted. Possible bad data structure." );
             return res.status( 400 ).json( {
                 Status: false,
@@ -2217,20 +1942,24 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    } finally {
+        await connection.release();
     }
 } );
 
@@ -2262,6 +1991,7 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
     const disabilityId = req.params.id;
 
     try {
+        let connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
         const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
 
@@ -2272,7 +2002,8 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
 
         return res.json( {
             Status: true,
@@ -2280,7 +2011,8 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Update failed:", error );
 
         return res.status( 500 ).json( {
@@ -2288,6 +2020,8 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
         } );
+    }finally{
+        await connection.release();
     }
 } );
 
@@ -2296,6 +2030,7 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
     const user_id = req.user.id;
 
     try {
+        let connection= await pool.getConnection();
         console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertContacts(
@@ -2306,7 +2041,8 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
         );
 
         if ( insertCount === 0 ) {
-            await rollbackAsync();
+            // await rollbackAsync();
+            await connection.rollback();
             console.warn( "⚠️ No rows inserted. Possible bad data structure." );
             return res.status( 400 ).json( {
                 Status: false,
@@ -2314,20 +2050,24 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    }finally{
+        await connection.release();
     }
 } );
 
@@ -2359,6 +2099,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
     const contactId = req.params.id;
 
     try {
+        let connection= await pool.getConnection();
         console.log( "📝 Update contact request:", req.body );
 
         const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
@@ -2370,7 +2111,8 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
 
         return res.json( {
             Status: true,
@@ -2378,7 +2120,8 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Update failed:", error );
 
         return res.status( 500 ).json( {
@@ -2386,6 +2129,8 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
         } );
+    }finally{
+        await connection.release();
     }
 } );
 
@@ -2395,6 +2140,7 @@ router.post( '/create_bandi_karagar_history', verifyToken, async ( req, res ) =>
     const user_id = req.user.id;
 
     try {
+        let connection = await pool.getConnection();
         console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertContacts(
@@ -2405,7 +2151,8 @@ router.post( '/create_bandi_karagar_history', verifyToken, async ( req, res ) =>
         );
 
         if ( insertCount === 0 ) {
-            await rollbackAsync();
+            // await rollbackAsync();
+            await connection.rollback();
             console.warn( "⚠️ No rows inserted. Possible bad data structure." );
             return res.status( 400 ).json( {
                 Status: false,
@@ -2413,20 +2160,24 @@ router.post( '/create_bandi_karagar_history', verifyToken, async ( req, res ) =>
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    } finally {
+        connection.release();
     }
 } );
 //
@@ -2458,6 +2209,7 @@ router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res )
     const contactId = req.params.id;
 
     try {
+        let connection= await pool.getConnection();
         console.log( "📝 Update contact request:", req.body );
 
         const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
@@ -2469,7 +2221,8 @@ router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res )
             } );
         }
 
-        await commitAsync();
+        // await commitAsync();
+        await connection.commit();
 
         return res.json( {
             Status: true,
@@ -2477,7 +2230,8 @@ router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res )
         } );
 
     } catch ( error ) {
-        await rollbackAsync();
+        // await rollbackAsync();
+        await connection.rollback();
         console.error( "❌ Update failed:", error );
 
         return res.status( 500 ).json( {
@@ -2485,6 +2239,8 @@ router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res )
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
         } );
+    }finally{
+        await connection.release();
     }
 } );
 
@@ -3652,17 +3408,17 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         // beginTransactionAsync();
         // await pool.query( insertSql, values );
         await connection.beginTransaction();
-        await connection.query(insertSql, values);
+        await connection.query( insertSql, values );
 
         // await pool.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
         // await commitAsync();
-        await connection.query(`UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }`)
+        await connection.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
         await connection.commit();
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
         console.error( "Insert error:", err );
         res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
-    }finally{
+    } finally {
         await connection.rollback();
     }
 } );
@@ -4068,261 +3824,6 @@ ORDER BY rgp.reason_id, rgp.gender, rgp.period;
         } );
     } catch ( err ) {
         console.error( "DB Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Query failed" } );
-    }
-} );
-
-
-
-router.get( "/released_bandi_count2", verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const targetOffice = req.query.office_id || active_office;
-    const officeParams = [targetOffice];
-
-    const todayBS = new NepaliDate().format( "YYYY-MM-DD" );
-    const fy = new NepaliDate().format( "YYYY" );
-    const fyStart = `${ fy - 1 }-04-01`;
-
-    const from_date_bs = req.query.from_date || fyStart;
-    const to_date_bs = req.query.to_date || todayBS;
-    const currentMonth = todayBS.slice( 0, 7 );
-    const monthStart = `${ currentMonth }-01`;
-
-    const formatGenderCounts = ( rows, base = { Male: 0, Female: 0, Other: 0 } ) => {
-        const counts = { ...base };
-        rows.forEach( ( { gender, count } ) => {
-            if ( gender && counts.hasOwnProperty( gender ) ) {
-                counts[gender] += Number( count );
-            }
-        } );
-        counts.Total = counts.Male + counts.Female + counts.Other;
-        return counts;
-    };
-
-    try {
-        // 📤 Original release reasons
-        const releaseSql = `
-      WITH reasons AS (
-  SELECT id AS reason_id, reasons_np FROM bandi_release_reasons
-),
-genders AS (
-  SELECT 'Male' AS gender
-  UNION ALL SELECT 'Female'
-  UNION ALL SELECT 'Other'
-),
-periods AS (
-  SELECT 'this_month' AS period
-  UNION ALL SELECT 'till_last_month'
-),
-reason_gender_periods AS (
-  SELECT r.reason_id, r.reasons_np, g.gender, p.period
-  FROM reasons r
-  CROSS JOIN genders g
-  CROSS JOIN periods p
-),
-actual_counts AS (
-  SELECT 
-    brd.reason_id,
-    bp.gender,
-    CASE 
-      WHEN LEFT(brd.karnayan_miti, 7) = ? THEN 'this_month'
-      ELSE 'till_last_month'
-    END AS period,
-    COUNT(*) AS count
-  FROM bandi_release_details brd
-  JOIN bandi_person bp ON brd.bandi_id = bp.id
-  WHERE brd.karnayan_miti IS NOT NULL
-    AND bp.is_active = 0
-    AND bp.current_office_id = ?
-    AND brd.karnayan_miti BETWEEN ? AND ?
-  GROUP BY brd.reason_id, bp.gender, period
-)
-SELECT 
-  rgp.reason_id,
-  rgp.reasons_np,
-  rgp.gender,
-  rgp.period,
-  COALESCE(ac.count, 0) AS count
-FROM reason_gender_periods rgp
-LEFT JOIN actual_counts ac ON
-  rgp.reason_id = ac.reason_id AND
-  rgp.gender = ac.gender AND
-  rgp.period = ac.period
-ORDER BY rgp.reason_id, rgp.gender, rgp.period;
-    `;
-
-        const releaseResults = await query( releaseSql, [
-            currentMonth,
-            ...officeParams,
-            from_date_bs,
-            to_date_bs
-        ] );
-
-        const formatted = {};
-
-        releaseResults.forEach( ( { reason_id, reasons_np, gender, count, period } ) => {
-            if ( !formatted[reason_id] ) {
-                formatted[reason_id] = {
-                    reason_id,
-                    reason: reasons_np,
-                    till_last_month: { Male: 0, Female: 0, Other: 0, Total: 0 },
-                    this_month: { Male: 0, Female: 0, Other: 0, Total: 0 }
-                };
-            }
-            formatted[reason_id][period][gender] = count;
-            formatted[reason_id][period].Total =
-                ( formatted[reason_id][period].Male || 0 ) +
-                ( formatted[reason_id][period].Female || 0 ) +
-                ( formatted[reason_id][period].Other || 0 );
-        } );
-
-        // 🔄 New aggregates
-        const [
-            activeBeforeThisMonth,
-            releasedThisMonth,
-            addedThisMonth,
-            dependentActive
-        ] = await Promise.all( [
-            query( `
-        SELECT bp.gender, COUNT(*) AS count
-        FROM bandi_person bp
-        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-        WHERE bp.is_active = 1 AND bp.current_office_id = ?
-          AND LEFT(bkd.thuna_date_bs, 7) < ?
-        GROUP BY bp.gender;
-      `, [targetOffice, currentMonth] ),
-
-            query( `
-        SELECT bp.gender, COUNT(*) AS count
-        FROM bandi_release_details brd
-        JOIN bandi_person bp ON bp.id = brd.bandi_id
-        WHERE bp.current_office_id = ?
-          AND LEFT(brd.karnayan_miti, 7) = ?
-        GROUP BY bp.gender;
-      `, [targetOffice, currentMonth] ),
-
-            query( `
-        SELECT bp.gender, COUNT(*) AS count
-        FROM bandi_person bp
-        JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-        WHERE bp.current_office_id = ?
-          AND bkd.thuna_date_bs BETWEEN ? AND ?
-        GROUP BY bp.gender;
-      `, [targetOffice, monthStart, to_date_bs] ),
-
-            query( `
-        SELECT bp.gender, COUNT(*) AS count
-        FROM bandi_person bp
-        JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
-        WHERE bp.current_office_id = ?
-          AND bp.is_active = 1
-          AND bri.is_dependent = 1
-        GROUP BY bp.gender;
-      `, [targetOffice] )
-        ] );
-
-        // 🧩 Add to unified output
-        formatted['active_count_till_last_month'] = {
-            till_last_month: formatGenderCounts( [...activeBeforeThisMonth, ...releasedThisMonth] ),
-            this_month: formatGenderCounts( [] )
-        };
-
-        formatted['added_this_month'] = {
-            till_last_month: formatGenderCounts( [] ),
-            this_month: formatGenderCounts( addedThisMonth )
-        };
-
-        formatted['dependent_active'] = {
-            till_last_month: formatGenderCounts( dependentActive ),
-            this_month: formatGenderCounts( [] )
-        };
-
-        res.json( {
-            Status: true,
-            from_date: from_date_bs,
-            to_date: to_date_bs,
-            Result: formatted
-        } );
-    } catch ( err ) {
-        console.error( "DB Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Query failed" } );
-    }
-} );
-
-router.get( "/released_bandi_count1", verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const targetOffice = req.query.office_id || active_office;
-    const isSuperOffice = active_office === 1 || active_office === 2;
-
-    const officeCondition = "bp.current_office_id = ?";
-    const officeParams = [targetOffice];
-
-
-    // Determine default range
-    const todayBS = new NepaliDate().format( 'YYYY-MM-DD' );
-    const fy = new NepaliDate().format( 'YYYY' ); // e.g., '2081'
-    const fyStart = `${ fy - 1 }-04-01`;
-
-    // Accept query override
-    const from_date_bs = req.query.from_date || fyStart;
-    const to_date_bs = req.query.to_date || todayBS;
-
-    // console.log('fyStart:', fyStart)
-    // console.log('now:', to_date_bs)
-    // Used for separating this month vs earlier
-    const currentMonth = todayBS.slice( 0, 7 );
-
-    try {
-        const sql = `
-      SELECT 
-        brr.id AS reason_id,
-        brr.reasons_np,
-        bp.gender,
-        COUNT(*) AS count,
-        CASE 
-          WHEN LEFT(brd.karnayan_miti, 7) = ? THEN 'this_month'
-          ELSE 'till_last_month'
-        END AS period
-      FROM bandi_release_details brd
-      JOIN bandi_release_reasons brr ON brd.reason_id = brr.id
-      JOIN bandi_person bp ON brd.bandi_id = bp.id
-      WHERE brd.karnayan_miti IS NOT NULL AND bp.is_active=0
-        AND ${ officeCondition }
-        AND brd.karnayan_miti BETWEEN ? AND ?
-      GROUP BY brr.id, bp.gender, period
-      ORDER BY brr.id, bp.gender;
-    `;
-
-        const results = await query( sql, [
-            currentMonth,      // for CASE
-            ...officeParams,
-            from_date_bs,
-            to_date_bs
-        ] );
-        // console.log('officeCondition',con.format(sql, currentMonth,...officeParams,from_date_bs, to_date_bs))
-        // console.log(results)
-        const formatted = {};
-        results.forEach( ( { reason_id, reasons_np, gender, count, period } ) => {
-            if ( !formatted[reason_id] ) {
-                formatted[reason_id] = {
-                    reason_id: reason_id,
-                    reason: reasons_np,
-                    till_last_month: { Male: 0, Female: 0, Other: 0 },
-                    this_month: { Male: 0, Female: 0, Other: 0 }
-                };
-            }
-            formatted[reason_id][period][gender] = count;
-        } );
-
-        res.json( {
-            Status: true,
-            from_date: from_date_bs,
-            to_date: to_date_bs,
-            Result: formatted
-        } );
-
-    } catch ( error ) {
-        console.error( "DB Error:", error );
         res.status( 500 ).json( { Status: false, Error: "Query failed" } );
     }
 } );
