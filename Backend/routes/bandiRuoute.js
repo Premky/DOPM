@@ -1666,7 +1666,10 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
     const { relation_np, relative_name, relative_address, contact_no } = req.body;
     // console.log(req.body)
     try {
-        await beginTransactionAsync();
+        let connection = await pool.getConnection();
+        await connection.beginTransaction();
+        // await beginTransactionAsync();
+
         let sql = '';
         let values = '';
 
@@ -1677,15 +1680,19 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
             WHERE id = ?
             `;
 
-        const [result] = await pool.query( sql, values );
-        await commitAsync(); // Commit the transaction
+        // const [result] = await pool.query( sql, values );
+        const [result] = connection.query(sql, values);
+
+        // await commitAsync(); // Commit the transaction
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
+        // await rollbackAsync(); // Rollback the transaction if error occurs
+        if(connection) await connection.rollback();
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
@@ -1693,6 +1700,8 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    }finally{
+        if(connection) connection.release();
     }
 } );
 
@@ -1728,15 +1737,18 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
     // console.log(req.body)
 
     try {
-        await beginTransactionAsync();
+        let connection= await pool.getConnection();
+        // await beginTransactionAsync();
         let sql = '';
         let values = '';
 
         values = [bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, user_id, user_id, active_office];
         sql = `INSERT INTO bandi_id_card_details(
             bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, updated_by, current_office_id) VALUES(?)`;
-        const [result] = await pool.query( sql, [values] );
-        await commitAsync(); // Commit the transaction
+        // const [result] = await pool.query( sql, [values] );
+        await connection.query(sql, [values])
+        // await commitAsync(); // Commit the transaction
+        await connection.commit();
         return res.json( {
             Result: bandi_id,
             Status: true,
@@ -1744,14 +1756,16 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
         } );
 
     } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
-
+        // await rollbackAsync(); // Rollback the transaction if error occurs
+        if(connection) await connection.rollback();
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    } finally{
+        if(connection) connection.release();
     }
 } );
 
@@ -1765,7 +1779,9 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
     // console.log(req.body)
 
     try {
-        await beginTransactionAsync();
+        let connection= await pool.getConnection();
+        // await beginTransactionAsync();
+        await connection.beginTransaction();
         let sql = '';
         let values = '';
 
@@ -1776,15 +1792,18 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
             WHERE id = ?
             `;
 
-        const [result] = await pool.query( sql, values );
-        await commitAsync(); // Commit the transaction
+        // const [result] = await pool.query( sql, values );
+        // await commitAsync(); // Commit the transaction
+        await connection.query(sql, values)
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
+        // await rollbackAsync(); // Rollback the transaction if error occurs
+        await connection.rollback();
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
@@ -1807,7 +1826,9 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
     // console.log(req.body)
 
     try {
-        await beginTransactionAsync();
+        let connection = await pool.getConnection();
+        // await beginTransactionAsync();
+        await connection.beginTransaction();
         let sql = '';
         let values = '';
         values = [bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
@@ -1820,8 +1841,9 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
                 mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
                 is_main_mudda, is_last_mudda, 
                 created_by, updated_by, current_office_id) VALUES(?)`;
-        const [result] = await pool.query( sql, [values] );
-        await commitAsync(); // Commit the transaction
+        // const [result] = await pool.query( sql, [values] );
+        // await commitAsync(); // Commit the transaction
+        const [result] = await connection.query(sql, values);
         return res.json( {
             // Result: bandi_id,
             Status: true,
@@ -1829,7 +1851,8 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
         } );
 
     } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
+        // await rollbackAsync(); // Rollback the transaction if error occurs
+        await connection.rollback();
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
@@ -1837,6 +1860,8 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    }finally{
+        if(connection) connection.release();
     }
 } );
 
@@ -1848,11 +1873,11 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
     const { bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
         mudda_phesala_antim_office_district, mudda_phesala_antim_office_date,
         is_main_mudda, is_last_mudda } = req.body;
-
     // console.log(req.body)
-
     try {
-        await beginTransactionAsync();
+        let connection = await pool.getConnection();
+        await connection.beginTransaction();
+        // await beginTransactionAsync();
         let sql = '';
         let values = '';
 
@@ -1867,15 +1892,18 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             WHERE id = ?
             `;
 
-        const [result] = await pool.query( sql, values );
-        await commitAsync(); // Commit the transaction
+        // const [result] = await pool.query( sql, values );
+        // await commitAsync(); // Commit the transaction
+        const [result] = await connection.query(sql, values);
+        await connection.commit();
         return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
 
     } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
+        // await rollbackAsync(); // Rollback the transaction if error occurs
+        if(connection) connection.rollback();        
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
@@ -1883,6 +1911,8 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    }finally{
+        if(connection) connection.release();
     }
 } );
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
@@ -1898,7 +1928,6 @@ router.get( '/get_bandi_mudda/', async ( req, res ) => {
         LEFT JOIN np_district nd ON bmd.mudda_phesala_antim_office_district = nd.did
 
     `;
-
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
