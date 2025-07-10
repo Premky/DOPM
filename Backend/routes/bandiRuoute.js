@@ -1370,7 +1370,7 @@ router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
 } );
 
 
-router.put('/update_bandi_family/:id', verifyToken, async (req, res) => {
+router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const id = req.params.id;
@@ -1389,28 +1389,28 @@ router.put('/update_bandi_family/:id', verifyToken, async (req, res) => {
         `;
         const values = [relative_name, relation_np, relative_address, contact_no, id];
 
-        await connection.query(sql, values); // ✅ Use await here
+        await connection.query( sql, values ); // ✅ Use await here
 
         await connection.commit();
-        return res.json({
+        return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        });
+        } );
 
-    } catch (error) {
-        if (connection) await connection.rollback(); // ✅ Safely rollback if connection is defined
+    } catch ( error ) {
+        if ( connection ) await connection.rollback(); // ✅ Safely rollback if connection is defined
 
-        console.error("Transaction failed:", error);
-        return res.status(500).json({
+        console.error( "Transaction failed:", error );
+        return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        });
+        } );
 
     } finally {
-        if (connection) connection.release(); // ✅ Always release connection if obtained
+        if ( connection ) connection.release(); // ✅ Always release connection if obtained
     }
-});
+} );
 
 
 router.get( '/get_bandi_id_card/:id', async ( req, res ) => {
@@ -1443,9 +1443,9 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
     const { bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date } = req.body;
 
     // console.log(req.body)
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         // await beginTransactionAsync();
         let sql = '';
         let values = '';
@@ -1485,9 +1485,9 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
     const { card_type_id, card_no, card_name, card_issue_district, card_issue_date } = req.body;
 
     // console.log(req.body)
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         // await beginTransactionAsync();
         await connection.beginTransaction();
         let sql = '';
@@ -1532,9 +1532,9 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
     } = req.body;
 
     // console.log(req.body)
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         // await beginTransactionAsync();
         await connection.beginTransaction();
         let sql = '';
@@ -1573,7 +1573,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put('/update_bandi_mudda/:id', verifyToken, async (req, res) => {
+router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const id = req.params.id;
@@ -1615,28 +1615,28 @@ router.put('/update_bandi_mudda/:id', verifyToken, async (req, res) => {
             id
         ];
 
-        await connection.query(sql, values);
+        await connection.query( sql, values );
         await connection.commit();
 
-        return res.json({
+        return res.json( {
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        });
+        } );
 
-    } catch (error) {
-        if (connection) await connection.rollback();
+    } catch ( error ) {
+        if ( connection ) await connection.rollback();
 
-        console.error("Transaction failed:", error);
-        return res.status(500).json({
+        console.error( "Transaction failed:", error );
+        return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        });
+        } );
 
     } finally {
-        if (connection) connection.release();
+        if ( connection ) connection.release();
     }
-});
+} );
 
 
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
@@ -1823,9 +1823,9 @@ router.put( '/update_bandi_punrabedn/:id', verifyToken, async ( req, res ) => {
 router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertDiseasesDetails(
@@ -1892,9 +1892,9 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const disabilityId = req.params.id;
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
         const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
 
@@ -1932,10 +1932,10 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
 router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-
+    let connection;
     try {
         // console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         const insertCount = await insertDisablilityDetails(
             req.body.bandi_id,
             req.body.bandi_disability,
@@ -2001,8 +2001,9 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
     const disabilityId = req.params.id;
 
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
         const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
 
@@ -2031,7 +2032,7 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
         } );
-    }finally{
+    } finally {
         await connection.release();
     }
 } );
@@ -2040,8 +2041,9 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
     const active_office = req.user.office_id;
     const user_id = req.user.id;
 
+    let connection;
     try {
-        let connection= await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertContacts(
@@ -2077,7 +2079,7 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
-    }finally{
+    } finally {
         await connection.release();
     }
 } );
@@ -2109,8 +2111,9 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
     const user_id = req.user.id;
     const contactId = req.params.id;
 
+    let connection;
     try {
-        let connection= await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📝 Update contact request:", req.body );
 
         const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
@@ -2140,7 +2143,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
         } );
-    }finally{
+    } finally {
         await connection.release();
     }
 } );
@@ -2149,9 +2152,9 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
 router.post( '/create_bandi_karagar_history', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
         const insertCount = await insertContacts(
@@ -2219,8 +2222,9 @@ router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res )
     const user_id = req.user.id;
     const contactId = req.params.id;
 
+    let connection;
     try {
-        let connection= await pool.getConnection();
+        connection = await pool.getConnection();
         console.log( "📝 Update contact request:", req.body );
 
         const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
@@ -2250,7 +2254,7 @@ router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res )
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
         } );
-    }finally{
+    } finally {
         await connection.release();
     }
 } );
@@ -3414,8 +3418,9 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
     ) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?)
   `;
     const values = [bandi_id, reason_id, decision_date, apply_date, nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         // beginTransactionAsync();
         // await pool.query( insertSql, values );
         await connection.beginTransaction();
