@@ -78,10 +78,10 @@ router.get( '/get_parole_status/', async ( req, res ) => {
 router.get( '/get_id_cards/', async ( req, res ) => {
     const sql = `SELECT * FROM govt_id_types`;
 
-    pool.query( sql, ( err, result ) => {
+    await pool.query( sql, ( err, result ) => {
         if ( err ) return res.json( { Status: false, Error: "Query Error" } );
         if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Parole Status not found" } );
+            return res.json( { Status: false, Error: "ID Cards not found" } );
         }
         return res.json( { Status: true, Result: result } );
     } );
@@ -90,7 +90,7 @@ router.get( '/get_id_cards/', async ( req, res ) => {
 router.get( '/get_relations/', async ( req, res ) => {
     const sql = `SELECT * FROM relationships`;
 
-    pool.query( sql, ( err, result ) => {
+    await pool.query( sql, ( err, result ) => {
         if ( err ) return res.json( { Status: false, Error: "Query Error" } );
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Relationship not found" } );
