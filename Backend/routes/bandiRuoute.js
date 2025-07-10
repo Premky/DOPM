@@ -168,58 +168,58 @@ LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
 
-router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-    let connection 
+// router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+//     let connection 
 
 
-    const bandi_id = req.params.id;
-    const { bandi_name, office_bandi_id } = req.body;
-    const photoFile = req.file;
-    const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
+//     const bandi_id = req.params.id;
+//     const { bandi_name, office_bandi_id } = req.body;
+//     const photoFile = req.file;
+//     const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
 
-    if ( !photoFile || !bandi_name || !office_bandi_id ) {
-        return res.status( 400 ).json( { success: false, message: 'Missing required fields' } );
-    }
+//     if ( !photoFile || !bandi_name || !office_bandi_id ) {
+//         return res.status( 400 ).json( { success: false, message: 'Missing required fields' } );
+//     }
 
-    try {
-        connection = await pool.getConnection();
-        await beginTransactionAsync();
+//     try {
+//         connection = await pool.getConnection();
+//         await beginTransactionAsync();
 
-        // Fetch old photo for cleanup
-        const [result] = await pool.query( `SELECT photo_path FROM bandi_person WHERE id = ?`, [bandi_id] );
-        const oldPhotoPath = result?.[0]?.photo_path;
+//         // Fetch old photo for cleanup
+//         const [result] = await pool.query( `SELECT photo_path FROM bandi_person WHERE id = ?`, [bandi_id] );
+//         const oldPhotoPath = result?.[0]?.photo_path;
 
-        // Update photo path in DB
-        await pool.query(
-            `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
-            [photo_path, bandi_id]
-        );
+//         // Update photo path in DB
+//         await pool.query(
+//             `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
+//             [photo_path, bandi_id]
+//         );
 
-        await commitAsync();
+//         await commitAsync();
 
-        // Delete old photo AFTER commit (non-blocking)
-        if ( oldPhotoPath && fs.existsSync( `.${ oldPhotoPath }` ) ) {
-            fs.unlink( `.${ oldPhotoPath }`, ( err ) => {
-                if ( err ) console.error( 'Failed to delete old photo:', err );
-            } );
-        }
+//         // Delete old photo AFTER commit (non-blocking)
+//         if ( oldPhotoPath && fs.existsSync( `.${ oldPhotoPath }` ) ) {
+//             fs.unlink( `.${ oldPhotoPath }`, ( err ) => {
+//                 if ( err ) console.error( 'Failed to delete old photo:', err );
+//             } );
+//         }
 
-        res.status( 200 ).json( { success: true, message: 'फोटो सफलतापूर्वक अपडेट भयो', photo_path } );
+//         res.status( 200 ).json( { success: true, message: 'फोटो सफलतापूर्वक अपडेट भयो', photo_path } );
 
-    } catch ( err ) {
-        await rollbackAsync();
+//     } catch ( err ) {
+//         await rollbackAsync();
 
-        // ❌ Delete the uploaded file if transaction fails
-        if ( photoFile && fs.existsSync( photoFile.path ) ) {
-            fs.unlink( photoFile.path, ( unlinkErr ) => {
-                if ( unlinkErr ) console.error( 'Rollback failed to delete uploaded file:', unlinkErr );
-            } );
-        }
+//         // ❌ Delete the uploaded file if transaction fails
+//         if ( photoFile && fs.existsSync( photoFile.path ) ) {
+//             fs.unlink( photoFile.path, ( unlinkErr ) => {
+//                 if ( unlinkErr ) console.error( 'Rollback failed to delete uploaded file:', unlinkErr );
+//             } );
+//         }
 
-        console.error( 'Update transaction failed:', err );
-        res.status( 500 ).json( { success: false, message: 'फोटो अपडेट असफल भयो', error: err.message } );
-    }
-} );
+//         console.error( 'Update transaction failed:', err );
+//         res.status( 500 ).json( { success: false, message: 'फोटो अपडेट असफल भयो', error: err.message } );
+//     }
+// } );
 
 router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async (req, res) => {
   let connection;
@@ -371,206 +371,221 @@ router.post('/create_bandi', verifyToken, upload.single('photo'), async (req, re
 });
 
 
-router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-    const user_id = req.user.id;
-    const office_id = req.user.office_id;
-    const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
-    const data = req.body;
-    console.log( req.user.office_np );
-    try {
-        await beginTransactionAsync();
+// router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+//     const user_id = req.user.id;
+//     const office_id = req.user.office_id;
+//     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
+//     const data = req.body;
+//     console.log( req.user.office_np );
+//     try {
+//         await beginTransactionAsync();
 
-        console.log( '🟢 Transaction started' );
+//         console.log( '🟢 Transaction started' );
 
-        const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
-        console.log( '✅ insertBandiPerson', bandi_id );
+//         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path } );
+//         console.log( '✅ insertBandiPerson', bandi_id );
 
-        await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
-        console.log( '✅ insertKaidDetails' );
+//         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id } );
+//         console.log( '✅ insertKaidDetails' );
 
-        await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
-        console.log( '✅ insertCardDetails' );
+//         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id } );
+//         console.log( '✅ insertCardDetails' );
 
-        await insertAddress( bandi_id, { ...req.body, user_id, office_id } );
-        console.log( '✅ insertAddress' );
+//         await insertAddress( bandi_id, { ...req.body, user_id, office_id } );
+//         console.log( '✅ insertAddress' );
 
-        const muddaIndexes = [...new Set( Object.keys( req.body ).filter( k => k.startsWith( 'mudda_id_' ) ).map( k => k.split( '_' )[2] ) )];
-        const muddas = muddaIndexes.map( i => ( {
-            mudda_id: req.body[`mudda_id_${ i }`],
-            mudda_no: req.body[`mudda_no_${ i }`],
-            is_last: req.body[`is_last_mudda_${ i }`],
-            is_main: req.body[`is_main_mudda_${ i }`],
-            condition: req.body[`mudda_condition_${ i }`],
-            district: req.body[`mudda_district_${ i }`],
-            office: req.body[`mudda_office_${ i }`],
-            date: req.body[`mudda_phesala_date_${ i }`],
-            vadi: req.body[`vadi_${ i }`],
-        } ) );
-        await insertMuddaDetails( bandi_id, muddas, office_id );
-        console.log( '✅ insertMuddaDetails' );
+//         const muddaIndexes = [...new Set( Object.keys( req.body ).filter( k => k.startsWith( 'mudda_id_' ) ).map( k => k.split( '_' )[2] ) )];
+//         const muddas = muddaIndexes.map( i => ( {
+//             mudda_id: req.body[`mudda_id_${ i }`],
+//             mudda_no: req.body[`mudda_no_${ i }`],
+//             is_last: req.body[`is_last_mudda_${ i }`],
+//             is_main: req.body[`is_main_mudda_${ i }`],
+//             condition: req.body[`mudda_condition_${ i }`],
+//             district: req.body[`mudda_district_${ i }`],
+//             office: req.body[`mudda_office_${ i }`],
+//             date: req.body[`mudda_phesala_date_${ i }`],
+//             vadi: req.body[`vadi_${ i }`],
+//         } ) );
+//         await insertMuddaDetails( bandi_id, muddas, office_id );
+//         console.log( '✅ insertMuddaDetails' );
 
 
-        let fineArray = [];
-        try {
-            fineArray = JSON.parse( req.body.fine );
-        } catch ( e ) {
-            console.error( "Invalid fine JSON:", e.message );
-            fineArray = [];
-        }
-        console.log( fineArray );
-        if ( Array.isArray( fineArray ) ) {
-            await insertFineDetails( bandi_id, fineArray, user_id, office_id );
-        } else {
-            console.error( "Invalid or missing 'fine' array in request body" );
-        }
+//         let fineArray = [];
+//         try {
+//             fineArray = JSON.parse( req.body.fine );
+//         } catch ( e ) {
+//             console.error( "Invalid fine JSON:", e.message );
+//             fineArray = [];
+//         }
+//         console.log( fineArray );
+//         if ( Array.isArray( fineArray ) ) {
+//             await insertFineDetails( bandi_id, fineArray, user_id, office_id );
+//         } else {
+//             console.error( "Invalid or missing 'fine' array in request body" );
+//         }
  
-        if ( data.punarabedan_office_id && data.punarabedan_office_district &&
-            data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
-            await insertPunarabedan( bandi_id, req.body );
-            console.log( '✅ insertPunarabedan' );
-        }
+//         if ( data.punarabedan_office_id && data.punarabedan_office_district &&
+//             data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
+//             await insertPunarabedan( bandi_id, req.body );
+//             console.log( '✅ insertPunarabedan' );
+//         }
 
-        await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ), user_id, office_id );
-        console.log( '✅ insertFamily' );
+//         await insertFamily( bandi_id, JSON.parse( req.body.family || '[]' ), user_id, office_id );
+//         console.log( '✅ insertFamily' );
 
-        await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
-        console.log( '✅ insertContacts' );
+//         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id );
+//         console.log( '✅ insertContacts' );
 
-        await insertDiseasesDetails( bandi_id, JSON.parse( req.body.disease ), user_id, office_id );
-        console.log( '✅ insertDiseasesDetails' );
+//         await insertDiseasesDetails( bandi_id, JSON.parse( req.body.disease ), user_id, office_id );
+//         console.log( '✅ insertDiseasesDetails' );
 
-        await insertDisablilityDetails( bandi_id, JSON.parse( req.body.disability ), user_id, office_id );
-        console.log( '✅ insertDisabilityDetails' );
+//         await insertDisablilityDetails( bandi_id, JSON.parse( req.body.disability ), user_id, office_id );
+//         console.log( '✅ insertDisabilityDetails' );
 
-        if ( data.health_insurance?.length ) {
-            await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
-            console.log( '✅ Health Details' );
-        }
+//         if ( data.health_insurance?.length ) {
+//             await insertHealthInsurance( bandi_id, { ...req.body, user_id, office_id } );
+//             console.log( '✅ Health Details' );
+//         }
 
-        await commitAsync();
-        console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${ req.user.office_np }` );
+//         await commitAsync();
+//         console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${ req.user.office_np }` );
 
-        res.json( {
-            Status: true,
-            Result: bandi_id,
-            message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
-        } );
+//         res.json( {
+//             Status: true,
+//             Result: bandi_id,
+//             message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
+//         } );
 
-    } catch ( error ) {
-        await rollbackAsync();
-        console.error( '❌ Transaction rolled back:', error );
+//     } catch ( error ) {
+//         await rollbackAsync();
+//         console.error( '❌ Transaction rolled back:', error );
 
-        if ( req.file ) {
-            const photoFullPath = path.join( __dirname, '..', 'uploads', 'bandi_photos', req.file.filename );
-            fs.unlink( photoFullPath, () => {
-                console.log( '🗑️ Photo deleted due to error' );
-            } );
-        }
+//         if ( req.file ) {
+//             const photoFullPath = path.join( __dirname, '..', 'uploads', 'bandi_photos', req.file.filename );
+//             fs.unlink( photoFullPath, () => {
+//                 console.log( '🗑️ Photo deleted due to error' );
+//             } );
+//         }
 
-        res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।'
-        } );
-    }
-} );
+//         res.status( 500 ).json( {
+//             Status: false,
+//             Error: error.message,
+//             message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।'
+//         } );
+//     }
+// } );
 
-router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
-    const user_id = req.user.id;
-    const current_office_id = req.user.office_id;
-    const {
+router.post('/create_bandi_punrabedn', verifyToken, async (req, res) => {
+  let connection;
+  const user_id = req.user.id;
+  const current_office_id = req.user.office_id;
+
+  const {
+    bandi_id,
+    punarabedan_office_id,
+    punarabedan_office_name,
+    punarabedan_office_district,
+    punarabedan_office_ch_no,
+    punarabedan_office_date
+  } = req.body;
+
+  // Basic validation
+  if (!bandi_id || !punarabedan_office_id || !punarabedan_office_ch_no || !punarabedan_office_date) {
+    return res.status(400).json({
+      Status: false,
+      message: "सबै आवश्यक फिल्डहरू भरिएको हुनुपर्छ।"
+    });
+  }
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const insertQuery = `
+      INSERT INTO bandi_punarabedan_details (
         bandi_id,
         punarabedan_office_id,
         punarabedan_office_name,
         punarabedan_office_district,
         punarabedan_office_ch_no,
-        punarabedan_office_date
-    } = req.body;
+        punarabedan_office_date,
+        created_by,
+        updated_by,
+        current_office_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    // Basic validation
-    if ( !bandi_id || !punarabedan_office_id || !punarabedan_office_ch_no || !punarabedan_office_date ) {
-        return res.status( 400 ).json( {
-            Status: false,
-            message: "सबै आवश्यक फिल्डहरू भरिएको हुनुपर्छ।"
-        } );
-    }
+    const values = [
+      bandi_id,
+      punarabedan_office_id,
+      punarabedan_office_name || null,
+      punarabedan_office_district,
+      punarabedan_office_ch_no,
+      punarabedan_office_date,
+      user_id,
+      user_id,
+      current_office_id
+    ];
 
-    try {
-        await beginTransactionAsync();
+    await connection.query(insertQuery, values);
 
-        const insertQuery = `
-            INSERT INTO bandi_punarabedan_details (
-                bandi_id,
-                punarabedan_office_id,
-                punarabedan_office_name,
-                punarabedan_office_district,
-                punarabedan_office_ch_no,
-                punarabedan_office_date,
-                created_by,
-                updated_by,
-                current_office_id
-            ) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?)
-        `;
+    await connection.commit();
 
-        const values = [
-            bandi_id,
-            punarabedan_office_id,
-            punarabedan_office_name || null,
-            punarabedan_office_district,
-            punarabedan_office_ch_no,
-            punarabedan_office_date,
-            user_id,
-            user_id,
-            current_office_id
-        ];
+    res.json({
+      Status: true,
+      message: "पुनरावेदन विवरण सफलतापूर्वक थपियो।"
+    });
 
-        await pool.query( insertQuery, values );
+  } catch (error) {
+    if (connection) await connection.rollback();
 
-        await commitAsync();
+    console.error("Insert failed:", error);
+    res.status(500).json({
+      Status: false,
+      message: "सर्भर त्रुटि भयो।",
+      Error: error.message
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
 
-        res.json( {
-            Status: true,
-            message: "पुनरावेदन विवरण सफलतापूर्वक थपियो।"
-        } );
 
-    } catch ( error ) {
-        await rollbackAsync();
-        console.error( "Insert failed:", error );
-        res.status( 500 ).json( {
-            Status: false,
-            message: "सर्भर त्रुटि भयो।",
-            Error: error.message
-        } );
-    }
-} );
+router.post('/create_bandi_fine', verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const user_id = req.user.id;
+  const data = req.body;
 
-router.post( '/create_bandi_fine', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.id;
-    const data = req.body;
+  let connection;
 
-    try {
-        await beginTransactionAsync();
-        let sql = '';
-        let values = '';
-        await insertSingleFineDetails( data.bandi_id, data, user_id, user_id, active_office );
-        await commitAsync(); // Commit the transaction
-        return res.json( {
-            Result: data.bandi_id,
-            Status: true,
-            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        } );
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    } catch ( error ) {
-        await rollbackAsync(); // Rollback the transaction if error occurs
-        console.error( "Transaction failed:", error );
-        return res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        } );
-    }
-} );
+    // ✅ Use the connection inside the helper
+    await insertSingleFineDetails(data.bandi_id, data, user_id, active_office, connection);
+
+    await connection.commit();
+
+    res.json({
+      Result: data.bandi_id,
+      Status: true,
+      message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+    });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error("Transaction failed:", error);
+
+    res.status(500).json({
+      Status: false,
+      Error: error.message,
+      message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
 
 // bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
 // bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
