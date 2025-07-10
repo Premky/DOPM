@@ -97,10 +97,13 @@ const BandiTransferForm = () => {
                         <Grid2 container spacing={2} size={{ xs: 12 }}>
                             <BandiAddressTable bandi_id={bandi_id} />
                             <BandiMuddaTable bandi_id={bandi_id} />
-                            <Grid2 size={{sm:6, xs:12}}>
+                            <Grid2 size={{sm:4, xs:12}}>
                                 <BandiDiseasesTable bandi_id={bandi_id}/>
                             </Grid2>
-                            <Grid2 size={{sm:6, xs:12}}>
+                            <Grid2 size={{sm:4, xs:12}}>
+                                <BandiDisabilityTable bandi_id={bandi_id}/>
+                            </Grid2>
+                            <Grid2 size={{sm:4, xs:12}}>
                                 <BandiDisabilityTable bandi_id={bandi_id}/>
                             </Grid2>
                         </Grid2> 

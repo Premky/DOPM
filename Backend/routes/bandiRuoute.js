@@ -1537,18 +1537,21 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
         connection = await pool.getConnection();
         // await beginTransactionAsync();
         await connection.beginTransaction();
-        let sql = '';
-        let values = '';
-        values = [bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
+        const values = [
+            bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
             mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
             is_main_mudda, is_last_mudda,
             user_id, user_id, active_office
         ];
-        sql = `INSERT INTO bandi_mudda_details(
+
+        const sql = `
+            INSERT INTO bandi_mudda_details (
                 bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
                 mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
                 is_main_mudda, is_last_mudda, 
-                created_by, updated_by, current_office_id) VALUES(?)`;
+                created_by, updated_by, current_office_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
         // const [result] = await pool.query( sql, [values] );
         // await commitAsync(); // Commit the transaction
         const [result] = await connection.query( sql, values );
@@ -2195,14 +2198,18 @@ router.post( '/create_bandi_karagar_history', verifyToken, async ( req, res ) =>
     }
 } );
 //
-router.get( '/get_bandi_karagar_history/:id', async ( req, res ) => {
+router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT bcp.id, bcp.bandi_id, bcp.relation_id, relation_np as relation_np, bcp.contact_name, bcp.contact_address,
-        bcp.contact_contact_details        
-        FROM bandi_contact_person bcp        
-        LEFT JOIN relationships r ON bcp.relation_id = r.id
-        WHERE bandi_id = ?
+    SELECT bth.*, 
+    o.office_name_with_letter_address AS transfer_to_office_fn,
+    oo.office_name_with_letter_address AS transfer_from_office_fn,
+    btr.transfer_reason_np
+    FROM bandi_transfer_history bth
+    LEFT JOIN offices o ON bth.transfer_office_id = o.id
+    LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason_id=btr.id
+    LEFT JOIN offices oo ON bth.created_office_id = oo.id
+    WHERE bandi_id=?
     `;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
@@ -2217,7 +2224,7 @@ router.get( '/get_bandi_karagar_history/:id', async ( req, res ) => {
     }
 } );
 //
-router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res ) => {
+router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const contactId = req.params.id;
