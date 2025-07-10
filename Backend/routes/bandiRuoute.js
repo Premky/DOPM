@@ -3306,7 +3306,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     `;
 
     try {
-        const [result] = await query( finalSql, params );
+        const [result] = await pool.query( finalSql, params );
         res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -3335,7 +3335,7 @@ router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res 
               AND DATE_FORMAT(STR_TO_DATE(bkd.thuna_date_bs, '%Y-%m-%d'), '%Y-%m') <= '2081-02'
             GROUP BY gender`,
 
-        addedThisMonth: `
+            addedThisMonth: `
             SELECT gender, COUNT(*) AS count
             FROM bandi_person bp
             WHERE bp.is_active = 1
