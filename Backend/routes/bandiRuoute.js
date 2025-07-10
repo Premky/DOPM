@@ -3306,7 +3306,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     `;
 
     try {
-        const result = await query( finalSql, params );
+        const [result] = await query( finalSql, params );
         res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
