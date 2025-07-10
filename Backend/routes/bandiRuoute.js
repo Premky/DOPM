@@ -217,7 +217,6 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
     }
 } );
 
-import pool from '../utils/db3.js';
 
 router.post('/create_bandi', verifyToken, upload.single('photo'), async (req, res) => {
   const user_id = req.user.id;
