@@ -542,6 +542,19 @@ router.get( '/get_bandi', async ( req, res ) => {
 
 router.get( '/get_bandi/:id', async ( req, res ) => {
     const { id } = req.params;
+    const sql = `${ getBandiQuery } AND b.id =? `;
+    try {
+        const [result] = await pool.query( sql );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_bandi1/:id', async ( req, res ) => {
+    const { id } = req.params;
     console.log( 'Fetching bandi with ID:', id );
     const sql = `${ getBandiQuery } AND b.id =? `;
     pool.query( sql, [id], ( err, result ) => {
