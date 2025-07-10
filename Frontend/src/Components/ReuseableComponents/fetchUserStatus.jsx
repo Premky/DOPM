@@ -4,34 +4,42 @@ import { useBaseURL } from "../../Context/BaseURLProvider";
 
 const useOnlineOffices = () => {
   const BASE_URL = useBaseURL();
-  const [records, setRecords] = useState([]);
-  const [optrecords, setOptRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState( [] );
+  const [optrecords, setOptRecords] = useState( [] );
+  const [loading, setLoading] = useState( true );
 
-  useEffect(() => {
+  useEffect( () => {
     const fetchRecords = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/auth/get_online_status`, {
+        const response = await axios.get( `${ BASE_URL }/auth/get_online_status`, {
           withCredentials: true,
-        });
+        } );
         const { success, data } = response.data;
-        if (success && Array.isArray(data)) {
-          setRecords(data);
-          const formatted = data.map((item) => ({
-            label: `${item.office_name} || ${item.is_online ? "Online" : "Offline"}`,
+        if ( success && Array.isArray( data ) ) {
+          setRecords( data );
+          const formatted = data.map( ( item ) => ( {
+            label: `${ item.office_name } || ${ item.is_online ? "Online" : "Offline" }`,
             value: item.office_id,
-          }));
-          setOptRecords(formatted);
+          } ) );
+          setOptRecords( formatted );
         }
-      } catch (error) {
-        console.error("Failed to fetch online offices:", error);
+      } catch ( error ) {
+        console.error( "Failed to fetch online offices:", error );
       } finally {
-        setLoading(false);
+        setLoading( false );
       }
     };
 
     fetchRecords();
-  }, [BASE_URL]);
+  }, [BASE_URL] );
+
+  useEffect( () => {
+    const interval = setInterval( () => {
+      axios.post( `${ BASE_URL }/auth/login_ping`, {}, { withCredentials: true } );
+    }, 60 * 1000 ); // every 1 minute
+
+    return () => clearInterval( interval ); // Cleanup on unmount
+  }, [] );
 
   return { records, optrecords, loading };
 };

@@ -1,5 +1,7 @@
 import express from 'express';
 import con, { promiseCon } from '../utils/db.js';
+import pool from '../utils/db3.js'
+
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
@@ -7,6 +9,11 @@ import session from 'express-session';
 import verifyToken from '../middlewares/verifyToken.js';
 
 const router = express.Router();
+
+const queryAsync = promisify( con.query ).bind( con );
+const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
+const commitAsync = promisify( con.commit ).bind( con );
+const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
 
 // Function to hash passwords
@@ -239,15 +246,15 @@ router.post( '/login1', async ( req, res ) => {
     }
 } );
 
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  const validation = validateLoginInput(username, password);
+router.post( '/login', async ( req, res ) => {
+    const { username, password } = req.body;
+    const validation = validateLoginInput( username, password );
 
-  if (!validation.isValid) {
-    return res.status(400).json({ loginStatus: false, Error: validation.message });
-  }
+    if ( !validation.isValid ) {
+        return res.status( 400 ).json( { loginStatus: false, Error: validation.message } );
+    }
 
-  const fetchUserQuery = `
+    const fetchUserQuery = `
     SELECT DISTINCT u.*,
       o.office_name_with_letter_address AS office_np, o.office_name_eng AS office_en,
       o.id AS office_id, ut.usertype_en, ut.usertype_np
@@ -256,101 +263,102 @@ router.post('/login', async (req, res) => {
     LEFT JOIN usertypes ut ON u.usertype = ut.id
     WHERE u.user_login_id = ?`;
 
-  try {
-    // Use promise-based query
-    const [result] = await promiseCon.query(fetchUserQuery, [username]);
+    try {
+        // Use promise-based query
+        const [result] = await promiseCon.query( fetchUserQuery, [username] );
 
-    if (result.length === 0) {
-      return res.status(401).json({ loginStatus: false, Error: "Invalid username or password" });
+        if ( result.length === 0 ) {
+            return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
+        }
+
+        const user = result[0];
+
+        const isMatch = await bcrypt.compare( password, user.password );
+        if ( !isMatch ) {
+            return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
+        }
+
+        const userdetails = {
+            id: user.id,
+            name_en: user.user_name,
+            username: user.user_login_id,
+            email: user.email,
+            user_permission: user.user_permission,
+            is_staff: user.is_staff,
+            is_active: user.is_active,
+            is_online: 1,
+            is_superuser: user.issuperuser,
+            last_login: user.last_login,
+            join_date: user.join_date,
+            office_id: user.office_id,
+            office_np: user.office_np,
+            office_en: user.office_en,
+            branch_name: user.branch_name,
+            usertype_en: user.usertype_en,
+            usertype_np: user.usertype_np
+        };
+
+        const token = jwt.sign( userdetails, process.env.JWT_SECRET, { expiresIn: '1h' } );
+
+        res.cookie( 'token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+            maxAge: 60 * 60 * 1000,
+        } );
+
+        req.session.user = { userdetails };
+
+        // Update online status
+        // await promiseCon.query("UPDATE users SET is_online = 1 WHERE id = ?", [user.id]);
+        await promiseCon.query( "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?", [user.id] );
+
+        return res.json( {
+            loginStatus: true,
+            userdetails,
+        } );
+
+    } catch ( err ) {
+        console.error( "Unexpected error:", err );
+        return res.status( 500 ).json( { loginStatus: false, Error: "Server error" } );
     }
-
-    const user = result[0];
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ loginStatus: false, Error: "Invalid username or password" });
-    }
-
-    const userdetails = {
-      id: user.id,
-      name_en: user.user_name,
-      username: user.user_login_id,
-      email: user.email,
-      user_permission: user.user_permission,
-      is_staff: user.is_staff,
-      is_active: user.is_active,
-      is_online: 1,
-      is_superuser: user.issuperuser,
-      last_login: user.last_login,
-      join_date: user.join_date,
-      office_id: user.office_id,
-      office_np: user.office_np,
-      office_en: user.office_en,
-      branch_name: user.branch_name,
-      usertype_en: user.usertype_en,
-      usertype_np: user.usertype_np
-    };
-
-    const token = jwt.sign(userdetails, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-      maxAge: 60 * 60 * 1000,
-    });
-
-    req.session.user = { userdetails };
-
-    // Update online status
-    await promiseCon.query("UPDATE users SET is_online = 1 WHERE id = ?", [user.id]);
-
-    return res.json({
-      loginStatus: true,
-      userdetails,
-    });
-
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return res.status(500).json({ loginStatus: false, Error: "Server error" });
-  }
-});
+} );
 
 // Logout Route
 // Include this middleware if you're using JWT to extract req.user
-router.post('/logout', verifyToken, async (req, res) => {
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+router.post( '/logout', verifyToken, async ( req, res ) => {
+    if ( !req.user || !req.user.id ) {
+        return res.status( 401 ).json( { success: false, message: 'Unauthorized' } );
+    }
 
-  const user_id = req.user.id;
-
-  try {
-    await promiseCon.query("UPDATE users SET is_online = 0 WHERE id = ?", [user_id]);
-
-    res.clearCookie('token', {
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-    });
-
-    return res.status(200).json({ success: true, message: 'Logout successful' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    return res.status(500).json({ success: false, message: 'Logout failed' });
-  }
-});
-
-
-
-router.post('/logout1', verifyToken, async (req, res) => {
     const user_id = req.user.id;
-    console.log(`User ${req.user.user_name} Logged Out.`);
+
+    try {
+        await promiseCon.query( "UPDATE users SET is_online = 0 WHERE id = ?", [user_id] );
+
+        res.clearCookie( 'token', {
+            httpOnly: true,
+            sameSite: 'Lax',
+            secure: process.env.NODE_ENV === 'production',
+        } );
+
+        return res.status( 200 ).json( { success: true, message: 'Logout successful' } );
+    } catch ( error ) {
+        console.error( 'Logout error:', error );
+        return res.status( 500 ).json( { success: false, message: 'Logout failed' } );
+    }
+} );
+
+
+
+router.post( '/logout1', verifyToken, async ( req, res ) => {
+    const user_id = req.user.id;
+    console.log( `User ${ req.user.user_name } Logged Out.` );
 
     try {
         // Update is_online status
-        await con.query("UPDATE users SET is_online = 0 WHERE id = ?", [user_id]);
-        console.log('is_online_test')
+        await con.query( "UPDATE users SET is_online = 0 WHERE id = ?", [user_id] );
+        console.log( 'is_online_test' );
 
         // Destroy session if using express-session
         // req.session.destroy((err) => {
@@ -358,35 +366,56 @@ router.post('/logout1', verifyToken, async (req, res) => {
         // });
 
         // Clear JWT cookie
-        res.clearCookie('token', {
+        res.clearCookie( 'token', {
             httpOnly: true,
             sameSite: 'Lax',
             secure: process.env.NODE_ENV === 'production',
             maxAge: 0,
-        });
+        } );
 
-        return res.status(200).json({ success: true, message: 'Logout successful' });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: 'Logout failed' });
+        return res.status( 200 ).json( { success: true, message: 'Logout successful' } );
+    } catch ( error ) {
+        return res.status( 500 ).json( { success: false, message: 'Logout failed' } );
     }
-});
+} );
 
-router.get('/get_online_status', verifyToken, async (req, res) => {
-  try {
-    const sql = `
+router.get( '/get_online_status', verifyToken, async ( req, res ) => {
+    try {
+        const sql = `
       SELECT o.id AS office_id, o.letter_address AS office_name, MAX(u.is_online) AS is_online
       FROM offices o
       LEFT JOIN users u ON o.id = u.office_id
       WHERE o.office_categories_id= 2 OR office_categories_id=3
       GROUP BY o.id
     `;
-    const result = await query(sql);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    console.error('Online status fetch error:', err);
-    res.status(500).json({ success: false, message: 'Failed to fetch online status' });
-  }
+        const [result] = await promiseCon.query(sql)
+
+        res.json( { success: true, data: result } );
+    } catch ( err ) {
+        console.error( 'Online status fetch error:', err );
+        res.status( 500 ).json( { success: false, message: 'Failed to fetch online status' } );
+    }
+} );
+
+router.post('/login_ping', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    // Corrected logic
+    if (active_office !== 1 && active_office !== 2) return;
+
+    try {
+        await pool.query(
+            "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?",
+            [user_id]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Ping error:", error);
+        res.status(500).json({ success: false });
+    }
 });
+
 
 
 // Session Validation Route
@@ -412,7 +441,6 @@ router.get( '/session', verifyToken, ( req, res ) => {
         }
     } );
 } );
-
 
 // Health Check Route
 router.get( '/health', ( req, res ) => {

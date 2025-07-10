@@ -12,6 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import errorHandler from './middlewares/errorHandler.js';
+import './services/markOffline.js';
 
 import { authRouter } from './routes/authRoute.js';
 import { publicRouter } from './routes/publicRoutes.js';

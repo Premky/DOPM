@@ -18,7 +18,9 @@ const initialState = {
 const authReducer = ( state, action ) => {
     switch ( action.type ) {
         case "LOGIN":
-            return { ...state, ...action.payload };
+            return { ...state, ...action.payload, justLoggedIn: true };
+        case "CLEAR_JUST_LOGGED_IN":
+            return { ...state, justLoggedIn: false };
         case "LOGOUT":
             return initialState;
         default:
@@ -45,9 +47,10 @@ export const AuthProvider = ( { children } ) => {
                     usertype_np: response.data.user.usertype_np,
                     is_online: response.data.user.is_online,
                     valid: true,
+                    justLoggedIn: true,
                 };
                 // console.log(authData)
-                dispatch( { type: "LOGIN", payload: authData } );
+                dispatch( { type: "LOGIN", payload:authData } );
             } else {
                 dispatch( { type: "LOGOUT" } );
             }
@@ -58,30 +61,46 @@ export const AuthProvider = ( { children } ) => {
         }
     };
 
-    useEffect(() => {
-        fetchSession();
-    }, []);
+    useEffect( () => {
+        fetchSession(); // always run once on mount
+    }, [] );
+
 
     useEffect( () => {
-       if(!state.valid) return; // don't run inactivity timer if not logged in 
+        if ( state.justLoggedIn ) {
+            dispatch( { type: "CLEAR_JUST_LOGGED_IN" } );
+        }
+    }, [state.justLoggedIn] );
 
-       let timeout; 
-       const resetTimer=()=>{
-        clearTimeout(timeout);
-        timeout=setTimeout(()=>{
-            dispatch({type:'LOGOUT'});
-            axios.post(`${BASE_URL}/auth/logout`,{}, {withCredentials:true});
-        }, 11*60*1000); // 11 minutes
-       };
 
-       //List of events that reset the timer
-       const events = ['mousemove', 'keydown', 'click', 'scroll'];
-       events.forEach(event=>window.addEventListener(event, resetTimer));
-       resetTimer();
-       return()=>{
-        clearTimeout(timeout);
-        events.forEach(event=>window.removeEventListener(event, resetTimer));
-       };
+    useEffect( () => {
+        if ( !state.valid ) return; // don't run inactivity timer if not logged in 
+
+        let timeout;
+        const resetTimer = () => {
+            clearTimeout( timeout );
+            timeout = setTimeout( () => {
+                dispatch( { type: 'LOGOUT' } );
+                axios.post( `${ BASE_URL }/auth/logout`, {}, { withCredentials: true } );
+            }, 11 * 60 * 1000 ); // 11 minutes
+        };
+
+        //List of events that reset the timer
+        const events = ['mousemove', 'keydown', 'click', 'scroll'];
+        events.forEach( event => window.addEventListener( event, resetTimer ) );
+        resetTimer();
+        return () => {
+            clearTimeout( timeout );
+            events.forEach( event => window.removeEventListener( event, resetTimer ) );
+        };
+    }, [state.valid, BASE_URL] );
+
+    //For Logout Mark
+    useEffect( () => {
+        const interval = setInterval( () => {
+            axios.post( `${ BASE_URL }/auth/login_ping`, {}, { withCredentials: true } );
+        }, 60 * 1000 );
+        return () => clearInterval( interval );
     }, [state.valid, BASE_URL] );
 
 

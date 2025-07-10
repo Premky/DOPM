@@ -30,9 +30,37 @@ const AantarikPrashasanTable = lazy( () => import( './Components/Bandi/Kaamdari_
 const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm' ) );
 const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
+
+axios.interceptors.response.use(
+  res => res,
+  error => {
+    if ( error.response?.status === 401 ) {
+      // localStorage.clear();
+      sessionStorage.clear();
+      if ( window.location.pathname !== '/login' ) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject( error );
+  }
+);
+
+// import { createBrowserHistory } from 'history';
+// export const history = createBrowserHistory();
+
+// // then inside your interceptor
+// if (error.response?.status === 401) {
+//   sessionStorage.clear();
+//   if (history.location.pathname !== '/login') {
+//     history.push('/login');
+//   }
+// }
+
+
 import { Outlet } from 'react-router-dom';
 import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
 import BandiTransferForm from './Components/Bandi/Forms/BandiTransferForm';
+import axios from 'axios';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;

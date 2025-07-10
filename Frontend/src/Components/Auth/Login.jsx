@@ -22,7 +22,7 @@ const Login = () => {
     const [error, setError] = useState( '' );
 
     if ( loading ) return <>Loading...</>;
-    if ( state?.valid ) {
+    if ( state?.valid && !state.justLoggedIn) {
         return <Navigate to='/bandi' replace />;
     }
 
@@ -45,7 +45,7 @@ const Login = () => {
 
             if ( response.data.loginStatus ) {
                 await fetchSession();
-                dispatch( { type: "LOGIN", payload: response.data } );
+                // dispatch( { type: "LOGIN", payload:{ ...response.data, justLoggedIn:true }} );
                 Swal.fire( { title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false } );
                 navigate( '/bandi' );
             } else {
