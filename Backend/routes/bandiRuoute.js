@@ -1616,7 +1616,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 
     } catch ( error ) {
         // await rollbackAsync(); // Rollback the transaction if error occurs
-        if ( connection ) connection.rollback();
+        if ( connection ) await connection.rollback();
 
         console.error( "Transaction failed:", error );
         return res.status( 500 ).json( {
