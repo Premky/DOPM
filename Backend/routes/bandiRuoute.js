@@ -632,7 +632,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
         // STEP 2: Get total count
         const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp ${ baseWhere }`;
-        const [countResult] = await con.query( countSQL );
+        const [countResult] = await pool.query( countSQL );
         const totalCount = countResult[0].total;
 
         // STEP 3: Get full records for selected bandis
