@@ -1578,56 +1578,72 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
+router.put('/update_bandi_mudda/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const id = req.params.id;
-    // console.log(id)
-    const { bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-        mudda_phesala_antim_office_district, mudda_phesala_antim_office_date,
-        is_main_mudda, is_last_mudda } = req.body;
-    // console.log(req.body)
-    try {
-        let connection = await pool.getConnection();
-        await connection.beginTransaction();
-        // await beginTransactionAsync();
-        let sql = '';
-        let values = '';
 
-        values = [mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-            mudda_phesala_antim_office_district, mudda_phesala_antim_office_date,
-            is_main_mudda, is_last_mudda, id];
-        sql = `
+    const {
+        bandi_id,
+        mudda_id,
+        mudda_no,
+        mudda_condition,
+        mudda_phesala_antim_office_id,
+        mudda_phesala_antim_office_district,
+        mudda_phesala_antim_office_date,
+        is_main_mudda,
+        is_last_mudda
+    } = req.body;
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const sql = `
             UPDATE bandi_mudda_details 
             SET mudda_id=?, mudda_no=?, mudda_condition=?, mudda_phesala_antim_office_id=?,
-            mudda_phesala_antim_office_district=?, mudda_phesala_antim_office_date=?,
-            is_main_mudda=?, is_last_mudda=? 
+                mudda_phesala_antim_office_district=?, mudda_phesala_antim_office_date=?,
+                is_main_mudda=?, is_last_mudda=? 
             WHERE id = ?
-            `;
+        `;
 
-        // const [result] = await pool.query( sql, values );
-        // await commitAsync(); // Commit the transaction
-        const [result] = await connection.query( sql, values );
+        const values = [
+            mudda_id,
+            mudda_no,
+            mudda_condition,
+            mudda_phesala_antim_office_id,
+            mudda_phesala_antim_office_district,
+            mudda_phesala_antim_office_date,
+            is_main_mudda,
+            is_last_mudda,
+            id
+        ];
+
+        await connection.query(sql, values);
         await connection.commit();
-        return res.json( {
+
+        return res.json({
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        } );
+        });
 
-    } catch ( error ) {
-        // await rollbackAsync(); // Rollback the transaction if error occurs
-        if ( connection ) await connection.rollback();
+    } catch (error) {
+        if (connection) await connection.rollback();
 
-        console.error( "Transaction failed:", error );
-        return res.status( 500 ).json( {
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        } );
+        });
+
     } finally {
-        if ( connection ) connection.release();
+        if (connection) connection.release();
     }
-} );
+});
+
+
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
     // const active_office = req.user.office_id;
     const { id } = req.params;
