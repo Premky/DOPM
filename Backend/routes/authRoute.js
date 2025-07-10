@@ -388,7 +388,7 @@ router.get( '/get_online_status', verifyToken, async ( req, res ) => {
       WHERE o.office_categories_id= 2 OR office_categories_id=3
       GROUP BY o.id
     `;
-        const [result] = await promiseCon.query(sql)
+        const [result] = await pool.query(sql)
 
         res.json( { success: true, data: result } );
     } catch ( err ) {
