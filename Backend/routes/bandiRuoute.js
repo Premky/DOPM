@@ -619,10 +619,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         let idRows;
 
         if ( forSelect ) {
-            [idRows] = await con.promise().query( idQuery );
+            [idRows] = await pool.query( idQuery );
         } else {
             idQuery += ` LIMIT ? OFFSET ?`;
-            [idRows] = await con.promise().query( idQuery, [limit, offset] );
+            [idRows] = await pool.query( idQuery, [limit, offset] );
         }
 
         const bandiIds = idRows.map( row => row.id );
@@ -682,7 +682,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
-        const [fullRows] = await con.promise().query( fullQuery, bandiIds );
+        const [fullRows] = await pool.query( fullQuery, bandiIds );
 
         // STEP 4: Group muddas under each bandi
         const grouped = {};
@@ -3488,7 +3488,7 @@ LEFT JOIN actual_counts ac ON
 ORDER BY rgp.reason_id, rgp.gender, rgp.period;
     `;
 
-        const releaseResults = await query( releaseSql, [
+        const [releaseResults] = await pool.query( releaseSql, [
             currentMonth,
             ...officeParams,
             from_date_bs,
