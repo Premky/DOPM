@@ -5,13 +5,11 @@ import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { useAuth } from '../../../Context/AuthContext';
 
-import fetchReleaseReasons from '../../ReuseableComponents/fetchReleaseReasons';
 import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
 
 import BandiMuddaTable from '../Tables/For View/BandiMuddaTable';
 import BandiAddressTable from '../Tables/For View/BandiAddressTable';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
-import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import Swal from 'sweetalert2';
 import axios from 'axios';
@@ -21,6 +19,8 @@ import fetchBandi from '../Apis_to_fetch/fetchBandi';
 import BandiDiseasesTable from '../Tables/For View/BandiDiseasesTable';
 import BandiDisabilityTable from '../Tables/For View/BandiDisabilityTable';
 import BandiTransferHistoryTable from '../Tables/For View/BandiTransferHistoryTable';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import fetchBandiTransferReasons from '../../ReuseableComponents/fetchBandiTransferReasons';
 
 const BandiTransferForm = () => {
     const BASE_URL = useBaseURL();
@@ -33,50 +33,42 @@ const BandiTransferForm = () => {
     const bandi_id = watch( 'bandi_id' );
 
     const { records: bandi, optrecords: bandiOpt, loading: bandiLoading } = fetchBandi( bandi_id );
-    
-    const { records: releaseReasons, optrecords: releaseRecordsOptions, loading: realeseReasonsLoading } = fetchReleaseReasons( bandi_id );
+
+    const { records: transferReasons, optrecords: transferReasonsOptions, loading: realeseReasonsLoading } = fetchBandiTransferReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
 
-    const onFormSubmit = async ( data ) => {
-        setLoading( true );
-        try {
-            // console.log(data)
-            const url = editing ? `${ BASE_URL }/bandi/update_release_bandi/${ editableData.id }` : `${ BASE_URL }/bandi/create_release_bandi`;
-            const method = editing ? 'PUT' : 'POST';
-            const response = await axios( {
-                method, url, data: data,
-                withCredentials: true
-            } );
-            const { Status, Result, Error } = response.data;
-            console.log( response );
-            if ( Status ) {
-                Swal.fire( {
-                    title: `Office ${ editing ? 'updated' : 'created' } successfully!`,
-                    icon: "success",
-                    draggable: true
-                } );
-                reset();
-                setEditing( false );
-                // fetchOffices();
-            } else {
-                Swal.fire( {
-                    title: response.data.nerr,
-                    icon: 'error',
-                    draggable: true
-                } );
-            }
-
-        } catch ( err ) {
-            console.error( err );
-            Swal.fire( {
-                title: err?.response?.data?.nerr || err.message || "सर्भरमा समस्या आयो।",
-                icon: 'error',
-                draggable: true
-            } );
-        } finally {
-            setLoading( false );
+    const onFormSubmit = async (formData) => {
+    try {
+        let response;
+        if (editing) {
+            response = await axios.put(
+                `${BASE_URL}/bandi/update_bandi_transfer_history/${editingId}`,
+                formData,
+                { withCredentials: true }
+            );
+        } else {
+            response = await axios.post(
+                `${BASE_URL}/bandi/create_bandi_transfer_request`,
+                {
+                    bandi_id,
+                    bandi_transfer_details: [formData],
+                },
+                { withCredentials: true }
+            );
         }
-    };
+
+        if (response.data.Status) {
+            Swal.fire('सफल भयो !', editing ? 'डेटा अपडेट गरियो' : 'नयाँ डेटा थपियो ।', 'success');
+            reset(); // clear form after submit
+        } else {
+            throw new Error(response.data.message || 'कारबाही असफल भयो।');
+        }
+    } catch (error) {
+        console.error("❌ Axios Error:", error);
+        Swal.fire('त्रुटि!', error.message || 'सर्भर अनुरोध असफल भयो ।', 'error');
+    }
+};
+
 
     return (
         <>
@@ -94,23 +86,70 @@ const BandiTransferForm = () => {
                                 type='allbandi'
                             />
                         </Grid2>
-                        
+
                         <Grid2 container spacing={2} size={{ xs: 12 }}>
                             <BandiAddressTable bandi_id={bandi_id} />
                             <BandiMuddaTable bandi_id={bandi_id} />
-                            <Grid2 size={{sm:4, xs:12}}>
-                                <BandiDiseasesTable bandi_id={bandi_id}/>
+                            <Grid2 size={{ sm: 4, xs: 12 }}>
+                                <BandiDiseasesTable bandi_id={bandi_id} />
                             </Grid2>
-                            <Grid2 size={{sm:4, xs:12}}>
-                                <BandiDisabilityTable bandi_id={bandi_id}/>
+                            <Grid2 size={{ sm: 4, xs: 12 }}>
+                                <BandiDisabilityTable bandi_id={bandi_id} />
                             </Grid2>
-                            <Grid2 size={{sm:4, xs:12}}>
-                                <BandiTransferHistoryTable bandi_id={bandi_id}/>
-                            </Grid2>
-                        </Grid2> 
 
-                        <Grid2 size={{xs:12}}>
-                            
+                        </Grid2>
+                        <Grid2 size={{ xs: 12 }}>
+                            <BandiTransferHistoryTable bandi_id={bandi_id} />
+                        </Grid2>
+
+                        <Grid2 container size={{ xs: 12 }} sx={{ marginTop: 2 }} spacing={2}>
+                            <Grid2 size={{ xs: 5 }}>
+                                <ReuseKaragarOffice
+                                    name="transfer_to_office_id"
+                                    label="चाहेको कार्यालय"
+                                    control={control}
+                                    required={true}
+                                    error={!!errors.transfer_to_office_id}
+                                />
+                            </Grid2>
+                            <Grid2 size={{ xs: 5 }}>
+                                <ReuseSelect
+                                    name="transfer_reason_id"
+                                    label="सरुवाको कारण"
+                                    options={transferReasonsOptions}
+                                    control={control}
+                                    required={true}
+                                    error={!!errors.transfer_reason_id}
+                                />
+                            </Grid2>
+                            {bandi[0]?.bandi_type == 'थुनुवा' && (
+                                <Grid2 size={{ xs: 2 }}>
+                                    <ReuseSelect
+                                        name="is_thunuwa_permission"
+                                        label="थुनुवाको हकमा स्विकृति छ/छैन?"
+                                        options={transferReasonsOptions}
+                                        control={control}
+                                        required={true}
+                                        error={!!errors.transfer_reason_id}
+                                    />
+                                </Grid2>
+                            )}
+                        </Grid2>
+
+                        <Grid2>
+                            <ReuseInput
+                                name="transfer_reason"
+                                label="सरुवा विवरण"
+                                control={control}
+                                margin="dense"
+                                error={!!errors.transfer_reason}
+                                helperText={errors.transfer_reason?.message}
+                            />
+                        </Grid2>
+                        <Grid2>
+                            <Button variant='contained' type='submit'>
+                                थप्नुहोस्
+                            </Button>
                         </Grid2>
 
                         <hr />
@@ -166,11 +205,11 @@ const BandiTransferForm = () => {
                                         </TableCell>
                                         <TableCell>{bandi[0]?.thuna_date_bs}</TableCell>
                                         <TableCell>{bandi[0]?.bandi_type}</TableCell>
-                                        {Array.isArray(bandi?.[0]?.history)?(
-                                            bandi?.[0]?.history((i, index)=>(
-                                              <>000</>  
-                                            ))
-                                        ):(<></>)}
+                                        {Array.isArray( bandi?.[0]?.history ) ? (
+                                            bandi?.[0]?.history( ( i, index ) => (
+                                                <>000</>
+                                            ) )
+                                        ) : ( <></> )}
 
                                     </TableBody>
                                 </Table>

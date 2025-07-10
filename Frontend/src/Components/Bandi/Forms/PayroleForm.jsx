@@ -61,7 +61,7 @@ const PayroleForm = () => {
   const onFormSubmit = async ( data ) => {
     setLoading( true );
     try {
-      // console.log(data)
+      console.log(data)
       const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/bandi/create_payrole`;
       const method = editing ? 'PUT' : 'POST';
       const response = await axios( {

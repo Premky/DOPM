@@ -12,7 +12,7 @@ import fetchDiseases from "../../ReuseableComponents/fetchDiseases";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 
 const DiseasesModal = ( { open, onClose, onSave, editingData } ) => {
-    console.log( editingData );
+    // console.log( editingData );
     const {
         control,
         handleSubmit,

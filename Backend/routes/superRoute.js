@@ -1,6 +1,5 @@
 import express from 'express';
 import con from '../utils/db.js';
-import con2 from '../utils/db2.js';
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';

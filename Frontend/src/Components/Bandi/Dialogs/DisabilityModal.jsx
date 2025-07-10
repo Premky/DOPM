@@ -12,7 +12,7 @@ import fetchDisabilities from "../../ReuseableComponents/fetchDisabilities";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 const DisabilityModal = ( { open, onClose, onSave, editingData } ) => {
         
-    console.log( editingData );
+    // console.log( editingData );
     const {
         control,
         handleSubmit,

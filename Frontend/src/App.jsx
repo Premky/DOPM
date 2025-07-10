@@ -31,19 +31,19 @@ const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_sub
 const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
 
-// axios.interceptors.response.use(
-//   res => res,
-//   error => {
-//     if ( error.response?.status === 401 ) {
-//       // localStorage.clear();
-//       sessionStorage.clear();
-//       if ( window.location.pathname !== '/login' ) {
-//         window.location.href = '/login';
-//       }
-//     }
-//     return Promise.reject( error );
-//   }
-// );
+axios.interceptors.response.use(
+  res => res,
+  error => {
+    if ( error.response?.status === 401 ) {
+      // localStorage.clear();
+      sessionStorage.clear();
+      if ( window.location.pathname !== '/login' ) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject( error );
+  }
+);
 
 // import { createBrowserHistory } from 'history';
 // export const history = createBrowserHistory();

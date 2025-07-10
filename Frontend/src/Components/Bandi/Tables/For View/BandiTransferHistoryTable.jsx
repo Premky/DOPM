@@ -27,8 +27,9 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-    
-    const { records: bandiTransferHistory, loading: bandiTransferHistoryLoading, refetch } = fetchBandiTransferHistory(bandi_id);    
+
+    const { records: bandiTransferHistory, loading: bandiTransferHistoryLoading, refetch } = fetchBandiTransferHistory( bandi_id );
+    // console.log(bandiTransferHistory)
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -62,39 +63,45 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
     };
 
     const handleSave = async ( formData, id ) => {
-        // const id = editingData?.id; // ✅ Get the ID if editing
-        console.log(id)
         try {
-
+            let response;
             if ( id ) {
                 // Update existing contact
-                await axios.put(
+                response = await axios.put(
                     `${ BASE_URL }/bandi/update_bandi_transfer_history/${ id }`,
                     formData,
                     { withCredentials: true }
                 );
-                Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
+
+                if ( response.data.Status ) {
+                    Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
+                } else {
+                    throw new Error( response.data.message || 'अपडेट गर्न सकिएन ।' );
+                }
             } else {
-                // Create new contact (wrap formData in array)
-                await axios.post(
+                // Create new contact
+                response = await axios.post(
                     `${ BASE_URL }/bandi/create_bandi_transfer_history`,
                     {
                         bandi_id: bandi_id,
-                        bandi_disability: [formData],
+                        bandi_transfer_details: [formData],
                     },
                     { withCredentials: true }
                 );
-                Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
+                if ( response.data.Status ) {
+                    Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
+                } else {
+                    throw new Error( response.data.message || 'थप्न सकिएन ।' );
+                }
             }
-
-            await refetch();
-            setModalOpen(false);
-
+            // await refetch();
+            setModalOpen( false );
         } catch ( error ) {
-            console.error( "❌ Axios Error:", error ); // Helpful for debugging
-            Swal.fire( 'त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error' );
+            console.error( "❌ Axios Error:", error );
+            Swal.fire( 'त्रुटि!', error.message || 'सर्भर अनुरोध असफल भयो ।', 'error' );
         }
     };
+
 
     return (
         <Grid container spacing={2}>
@@ -112,9 +119,11 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                         <TableHead>
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">कारागार</TableCell>                              
-                                <TableCell align="center">देखी</TableCell>                              
-                                <TableCell align="center">सम्म</TableCell>                              
+                                <TableCell align="center">कारागार</TableCell>
+                                <TableCell align="center">देखी</TableCell>
+                                <TableCell align="center">सम्म</TableCell>
+                                <TableCell align="center">कारण</TableCell>
+                                <TableCell align="center">कैफियत</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -122,10 +131,12 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                             {bandiTransferHistory.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    
+                                    <TableCell align="center">{opt.transfer_to_office_fn}</TableCell>
+                                    <TableCell align="center">{opt.transfer_from_date}</TableCell>
+                                    <TableCell align="center">{opt.transfer_to_date}</TableCell>
+                                    <TableCell align="center">{opt.transfer_reason_np}</TableCell>
+                                    <TableCell align="center">{opt.transfer_reason}</TableCell>
+
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>

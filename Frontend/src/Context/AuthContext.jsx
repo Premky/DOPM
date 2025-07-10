@@ -77,13 +77,29 @@ export const AuthProvider = ( { children } ) => {
         if ( !state.valid ) return; // don't run inactivity timer if not logged in 
 
         let timeout;
+        let warningTimeout;
+
+        const logoutUser = ()=>{
+            dispatch({type:'LOGOUT'});
+            axios.post(`${BASE_URL}/auth/logout`,{}, {withCredentials: true});
+        };
+
+        const showInactivityWarning = ()=>{
+            const extend = window.confirm(`तपाई लामो समय सम्म निष्क्रिय हुनु भयो। 
+                सत्रलाई निरन्तर राख्न चाहनुहुन्छ?`);
+            if(extend){
+                resetTimer();
+            }else{
+                logoutUser();
+            }
+        };
+
         const resetTimer = () => {
             clearTimeout( timeout );
-            timeout = setTimeout( () => {
-                dispatch( { type: 'LOGOUT' } );
-                axios.post( `${ BASE_URL }/auth/logout`, {}, { withCredentials: true } );
-            }, 30 * 60 * 1000 ); // 11 minutes
-        };
+            clearInterval(warningTimeout);
+            warningTimeout=setTimeout(showInactivityWarning, 25*60*1000);
+            timeout=setTimeout(logoutUser, 30*60*1000);
+        };        
 
         //List of events that reset the timer
         const events = ['mousemove', 'keydown', 'click', 'scroll'];
@@ -91,6 +107,7 @@ export const AuthProvider = ( { children } ) => {
         resetTimer();
         return () => {
             clearTimeout( timeout );
+            clearTimeout(warningTimeout);            
             events.forEach( event => window.removeEventListener( event, resetTimer ) );
         };
     }, [state.valid, BASE_URL] );

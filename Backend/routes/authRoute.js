@@ -415,8 +415,6 @@ router.post('/login_ping', verifyToken, async (req, res) => {
     }
 });
 
-
-
 // Session Validation Route
 router.get( '/session', verifyToken, ( req, res ) => {
     // console.log('session', req.user)

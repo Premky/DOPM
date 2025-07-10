@@ -12,7 +12,7 @@ const fetchBandiTransferReasons = ( bandi_id ) => {
     const fetchRecords = async () => {
         try {
             const response = await axios.get( `${ BASE_URL }/public/get_bandi_transfer_reasons`, { withCredentials: true } );
-            console.log( response );
+            // console.log( response );
             const { Status, Result, Error } = response.data;
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {

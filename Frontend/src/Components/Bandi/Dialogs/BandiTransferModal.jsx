@@ -6,14 +6,21 @@ import {
     DialogActions,
     TextField,
     Button,
+    Grid2,
+    TextareaAutosize,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import fetchBandiTransferReasons from "../../ReuseableComponents/fetchBandiTransferReasons";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
+import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
+import { Label } from "@mui/icons-material";
+import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
+import ReuseInput from "../../ReuseableComponents/ReuseInput";
+import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 
-const BandiTransfer = ( { open, onClose, onSave, editingData } ) => {
+const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
     // console.log(editingData)
-    const { records: transferReasons, optrecords:transferReasonsOpt, loading: transferReasonsLoading, refetch } = fetchBandiTransferReasons( bandi_id );
+    const { records: transferReasons, optrecords: transferReasonsOpt, loading: transferReasonsLoading, refetch } = fetchBandiTransferReasons( bandi_id );
     const {
         control,
         handleSubmit,
@@ -22,10 +29,13 @@ const BandiTransfer = ( { open, onClose, onSave, editingData } ) => {
     } = useForm( {
         defaultValues: {
             bandi_id: "",
-            relation_id: "",
-            contact_name: "",
-            contact_address: "",
-            contact_contact_details: "",
+            transfer_from_office_id: "",
+            transfer_to_office_id: "",
+            transfer_from_date: "",
+            transfer_to_date: "",
+            transfer_reason_id: "",
+            transfer_reason: "",
+            
         },
     } );
     // console.log(editingData)
@@ -33,18 +43,24 @@ const BandiTransfer = ( { open, onClose, onSave, editingData } ) => {
         if ( editingData ) {
             reset( {
                 bandi_id: editingData.bandi_id || "",
-                relation_id: editingData.relation_id || "",
-                contact_name: editingData.contact_name || "",
-                contact_address: editingData.contact_address || "",
-                contact_contact_details: editingData.contact_contact_details || "",
+                transfer_from_office_id: editingData.transfer_from_office_id || "",
+                transfer_to_office_id: editingData.transfer_to_office_id || "",
+                transfer_from_date: editingData.transfer_from_date || "",
+                transfer_to_date: editingData.transfer_to_date || "",
+                transfer_reason_id: editingData.transfer_reason_id || "",
+                transfer_reason: editingData.transfer_reason || "",
+                
             } );
         } else {
             reset( {
                 bandi_id: "",
-                relation_id: "",
-                contact_name: "",
-                contact_address: "",
-                contact_contact_details: "",
+                transfer_from_office_id: "",
+                transfer_to_office_id: "",
+                transfer_from_date: "",
+                transfer_to_date: "",
+                transfer_reason_id: "",
+                transfer_reason: "",
+                
             } );
         }
     }, [editingData, reset] );
@@ -61,68 +77,81 @@ const BandiTransfer = ( { open, onClose, onSave, editingData } ) => {
                 <input type="text" name="bandi_id" value={editingData?.bandi_id}
                     hidden
                 />
-
-                <ReuseSelect
-                    name="relation_id"
-                    label="नाता"
-                    options={transferReasonsOpt}
-                    control={control}
-                    required={true}
-                />
-
-                <Controller
-                    name="contact_name"
-                    control={control}
-                    rules={{ required: "नामथर आवश्यक छ" }}
-                    render={( { field } ) => (
-                        <TextField
-                            {...field}
-                            label="नामथर"
-                            fullWidth
-                            margin="dense"
-                            error={!!errors.contact_name}
-                            helperText={errors.contact_name?.message}
+                <Grid2 container>
+                    <Grid2 size={{ xs: 6 }}>
+                        <ReuseKaragarOffice
+                            name="transfer_from_office_id"
+                            label="हालको कार्यालय"
+                            control={control}
+                            required={true}
+                            error={!!errors.transfer_from_office_id}
                         />
-                    )}
-                />
-
-                <Controller
-                    name="contact_address"
-                    control={control}
-                    rules={{ required: "ठेगाना आवश्यक छ" }}
-                    render={( { field } ) => (
-                        <TextField
-                            {...field}
-                            label="ठेगाना"
-                            fullWidth
-                            margin="dense"
-                            error={!!errors.contact_address}
-                            helperText={errors.contact_address?.message}
+                    </Grid2>
+                    <Grid2 size={{ xs: 6 }}>
+                        <ReuseKaragarOffice
+                            name="transfer_to_office_id"
+                            label="जान चाहेको कार्यालय"
+                            control={control}
+                            required={true}
+                            error={!!errors.transfer_to_office_id}
                         />
-                    )}
-                />
+                    </Grid2>
+                </Grid2>
 
-                <Controller
-                    name="contact_contact_details"
-                    control={control}
-                    rules={{
-                        required: "सम्पर्क नम्बर आवश्यक छ",
-                        pattern: {
-                            value: /^[0-9]{7,15}$/,
-                            message: "मान्य सम्पर्क नम्बर राख्नुहोस्",
-                        },
-                    }}
-                    render={( { field } ) => (
-                        <TextField
-                            {...field}
-                            label="सम्पर्क नं."
-                            fullWidth
-                            margin="dense"
-                            error={!!errors.contact_contact_details}
-                            helperText={errors.contact_contact_details?.message}
+                <Grid2>
+                    <ReuseSelect
+                        name="transfer_reason_id"
+                        label="सरुवाको कारण"
+                        options={transferReasonsOpt}
+                        control={control}
+                        required={true}
+                        error={!!errors.transfer_reason_id}
+                    />
+                </Grid2>
+
+                <Grid2>
+                    <ReuseInput
+                        name="transfer_reason"
+                        label="सरुवा विवरण"
+                        control={control}
+                        margin="dense"
+                        error={!!errors.transfer_reason}
+                        helperText={errors.transfer_reason?.message}
+                    />
+                </Grid2>
+
+                <Grid2 container>
+                    <Grid2 size={{ xs: 6 }}>
+                        <ReuseDatePickerBS
+                            name='transfer_from_date'
+                            label='देखी'
+                            required={true}
+                            control={control}
+                            error={!!errors.transfer_from_date}
                         />
-                    )}
-                />
+                    </Grid2>
+                    <Grid2 size={{ xs: 6 }}>
+                        <ReuseDatePickerBS
+                            name='transfer_to_date'
+                            label='सम्म'
+                            required={true}
+                            control={control}
+                            error={!!errors.transfer_to_date}
+                        />
+                    </Grid2>
+                    {/* <Grid2 size={{xs:12}}>
+                        <ReuseInput
+                            name="remarks"
+                            label="कैफियत"
+                            control={control}
+                            margin="dense"
+                            error={!!errors.remarks}
+                            helperText={errors.remarks?.message}
+                        />
+                    </Grid2> */}
+                </Grid2>
+
+
             </DialogContent>
 
             <DialogActions>
