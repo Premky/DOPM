@@ -73,7 +73,7 @@ async function generateUniqueBandiId() {
 
     for ( let i = 0; i < maxAttempts; i++ ) {
         const randId = Math.floor( 1000000 + Math.random() * 9000000 ); // 7-digit random number
-        const result = await pool.query(
+        const [result] = await pool.query(
             `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [randId]
         );
