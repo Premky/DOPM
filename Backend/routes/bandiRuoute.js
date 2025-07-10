@@ -1237,8 +1237,8 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
 
     try {
         // Date conversion
-        const thunaDateAd = thuna_date_bs ? await bs2ad( thuna_date_bs ) : '1900-01-01';
-        const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '1900-01-01';
+        const thunaDateAd = thuna_date_bs ? await bs2ad( thuna_date_bs ) : '2001-01-01';
+        const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '2001-01-01';
 
         connection = await pool.getConnection();
         await connection.beginTransaction();
