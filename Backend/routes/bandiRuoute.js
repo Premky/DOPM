@@ -544,7 +544,7 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `${ getBandiQuery } AND b.id =? `;
     try {
-        const [result] = await pool.query( sql );
+        const [result] = await pool.query( sql , id);
         // console.log(result)
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -1179,7 +1179,7 @@ router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
         WHERE bandi_id = ?
     `;
     try {
-        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi Kaid Details not found" } );
