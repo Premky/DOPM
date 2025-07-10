@@ -111,19 +111,6 @@ router.get( '/get_relations/', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_relations1/', async ( req, res ) => {
-    const sql = `SELECT * FROM relationships`;
-
-    await pool.query( sql, ( err, result ) => {
-        if ( err ) return res.json( { Status: false, Error: "Query Error" } );
-        if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Relationship not found" } );
-        }
-        return res.json( { Status: true, Result: result } );
-    } );
-
-} );
-
 router.get( '/get_bandi_release_reasons/', async ( req, res ) => {
     const sql = `SELECT * FROM bandi_release_reasons`;
 
@@ -136,18 +123,31 @@ router.get( '/get_bandi_release_reasons/', async ( req, res ) => {
     } );
 
 } );
+
 router.get( '/get_fine_types/', async ( req, res ) => {
     const sql = `SELECT * FROM fine_types`;
-
-    pool.query( sql, ( err, result ) => {
-        if ( err ) return res.json( { Status: false, Error: "Query Error" } );
-        if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi release reasons not found" } );
-        }
+    try {
+        const [result] = await pool.query( sql );
+        // console.log(result)
         return res.json( { Status: true, Result: result } );
-    } );
-
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
 } );
+
+// router.get( '/get_fine_types1/', async ( req, res ) => {
+//     const sql = `SELECT * FROM fine_types`;
+
+//     pool.query( sql, ( err, result ) => {
+//         if ( err ) return res.json( { Status: false, Error: "Query Error" } );
+//         if ( result.length === 0 ) {
+//             return res.json( { Status: false, Error: "Bandi release reasons not found" } );
+//         }
+//         return res.json( { Status: true, Result: result } );
+//     } );
+
+// } );
 
 router.get( '/get_diseases', async ( req, res ) => {
     const sql = `SELECT * from diseases ORDER BY id`;
