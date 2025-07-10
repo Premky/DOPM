@@ -403,7 +403,6 @@ router.post('/login_ping', verifyToken, async (req, res) => {
 
     // Corrected logic
     // if (active_office !== 1 && active_office !== 2) return;
-
     try {
         await pool.query(
             "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?",

@@ -2389,6 +2389,104 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
     }
 } );
 
+//
+router.post( '/create_bandi_karagar_history', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+
+    try {
+        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+
+        const insertCount = await insertContacts(
+            req.body.bandi_id,
+            req.body.contact_person,
+            user_id,
+            active_office
+        );
+
+        if ( insertCount === 0 ) {
+            await rollbackAsync();
+            console.warn( "⚠️ No rows inserted. Possible bad data structure." );
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा इन्सर्ट गर्न सकेनौं। सम्भवत: 'relation_id' छुट्यो वा गलत ढाँचा।"
+            } );
+        }
+
+        await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Transaction failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+    }
+} );
+//
+router.get( '/get_bandi_karagar_history/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bcp.id, bcp.bandi_id, bcp.relation_id, relation_np as relation_np, bcp.contact_name, bcp.contact_address,
+        bcp.contact_contact_details        
+        FROM bandi_contact_person bcp        
+        LEFT JOIN relationships r ON bcp.relation_id = r.id
+        WHERE bandi_id = ?
+    `;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+//
+router.put( '/update_bandi_karagar_history/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    const contactId = req.params.id;
+
+    try {
+        console.log( "📝 Update contact request:", req.body );
+
+        const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
+
+        if ( updatedCount === 0 ) {
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
+            } );
+        }
+
+        await commitAsync();
+
+        return res.json( {
+            Status: true,
+            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+
+    } catch ( error ) {
+        await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+        } );
+    }
+} );
 
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

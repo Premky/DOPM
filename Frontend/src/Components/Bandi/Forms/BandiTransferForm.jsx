@@ -18,6 +18,8 @@ import axios from 'axios';
 import FamilyTable from '../Tables/For View/FamilyTable';
 import fetchBandiFamily from '../Apis_to_fetch/fetchBandiFamily';
 import fetchBandi from '../Apis_to_fetch/fetchBandi';
+import BandiDiseasesTable from '../Tables/For View/BandiDiseasesTable';
+import BandiDisabilityTable from '../Tables/For View/BandiDisabilityTable';
 
 const BandiTransferForm = () => {
     const BASE_URL = useBaseURL();
@@ -91,12 +93,21 @@ const BandiTransferForm = () => {
                                 type='allbandi'
                             />
                         </Grid2>
-                        {/* 
-                        <Grid2 size={{ xs: 12 }}>
+                        
+                        <Grid2 container spacing={2} size={{ xs: 12 }}>
                             <BandiAddressTable bandi_id={bandi_id} />
                             <BandiMuddaTable bandi_id={bandi_id} />
-                            <FamilyTable bandi_id={bandi_id} />
-                        </Grid2> */}
+                            <Grid2 size={{sm:6, xs:12}}>
+                                <BandiDiseasesTable bandi_id={bandi_id}/>
+                            </Grid2>
+                            <Grid2 size={{sm:6, xs:12}}>
+                                <BandiDisabilityTable bandi_id={bandi_id}/>
+                            </Grid2>
+                        </Grid2> 
+
+                        <Grid2 size={{xs:12}}>
+                            
+                        </Grid2>
 
                         <hr />
                         <Grid2 container>
