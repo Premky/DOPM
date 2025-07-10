@@ -3,6 +3,7 @@
 //गाडीका विवरणहरुः नाम सुची
 // Promisify specific methods
 import con from '../utils/db.js';
+import pool from '../utils/db3.js';
 import { promisify } from 'util';
 const queryAsync = promisify( con.query ).bind( con );
 const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
@@ -11,6 +12,8 @@ const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
 
 import { bs2ad } from '../utils/bs2ad.js';
+let connection;
+connection = await pool.getConnection();
 
 async function insertBandiPerson( data ) {
   const dob_ad = await bs2ad( data.dob );
@@ -26,7 +29,8 @@ async function insertBandiPerson( data ) {
     bandi_education, height, weight, bandi_huliya, remarks, created_by, updated_by, current_office_id
   ) VALUES (?)`;
 
-  const result = await queryAsync( sql, [values] );
+  // const result = await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
   return result.insertId;
 }
 
@@ -74,7 +78,8 @@ async function insertKaidDetails( bandi_id, data ) {
     created_by, updated_by, current_office_id
   ) VALUES (?)`;
   }
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+   const [result] = await connection.query(sql, [values]);
 }
 
 async function insertCardDetails( bandi_id, data ) {
@@ -85,7 +90,8 @@ async function insertCardDetails( bandi_id, data ) {
   const sql = `INSERT INTO bandi_id_card_details (
     bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, current_office_id
   ) VALUES (?)`;
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
 }
 
 async function insertAddress( bandi_id, data ) {
@@ -124,7 +130,8 @@ async function insertAddress( bandi_id, data ) {
     ) VALUES (?)`;
   }
 
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
 }
 
 async function insertMuddaDetails( bandi_id, muddas = [], office_id ) {
@@ -151,7 +158,8 @@ async function insertMuddaDetails( bandi_id, muddas = [], office_id ) {
       m.vadi,
       office_id
     ];
-    await queryAsync( sql, [values] );
+    // await queryAsync( sql, [values] );
+    const [result] = await connection.query(sql, [values]);
   }
 }
 
@@ -226,7 +234,8 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
       ];
     }
 
-    await queryAsync( sql, [values] );
+    // await queryAsync( sql, [values] );
+    const [result] = await connection.query(sql, [values]);
   }
 }
 
@@ -301,7 +310,8 @@ async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
     ];
   }
 
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
 }
 
 async function insertPunarabedan( bandi_id, data ) {
@@ -311,7 +321,8 @@ async function insertPunarabedan( bandi_id, data ) {
     data.punarabedan_office_ch_no, data.punarabedan_office_date
   ];
   const sql = `INSERT INTO bandi_punarabedan_details (...) VALUES (?)`;
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
 }
 
 
@@ -342,7 +353,8 @@ async function insertFamily( bandi_id, family = [], user_id, office_id ) {
     created_by, updated_by, current_office_id
   ) VALUES ?`;
 
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
 }
 
 async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
@@ -379,7 +391,8 @@ async function insertContacts( bandi_id, contacts = [], user_id, office_id ) {
       contact_contact_details, created_by, updated_by, current_office_id
     ) VALUES ?`;
 
-    const result = await queryAsync( sql, [values] );
+    // const result = await queryAsync( sql, [values] );
+    const [result] = await connection.query(sql, [values]);
     console.log( "✅ Insert result:", result );
     return result.affectedRows || 0;
 
@@ -454,7 +467,8 @@ async function updateContactPerson( contactId, contact, user_id, office_id ) {
   ];
 
   try {
-    const result = await queryAsync( sql, values );
+    // const result = await queryAsync( sql, values );
+    const [result] = await connection.query(sql, values);
     console.log( "✅ Update result:", result );
     return result.affectedRows || 0;
   } catch ( error ) {
@@ -508,7 +522,8 @@ async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_i
     const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, 
     created_by, updated_by, created_office_id) VALUES ?`;
 
-    const result = await queryAsync( sql, [values] );
+    // const result = await queryAsync( sql, [values] );
+    const [result] = await connection.query(sql, [values]);
     console.log( "✅ Insert result:", result );
     return result.affectedRows || 0;
 
@@ -547,7 +562,8 @@ async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id )
   ];
 
   try {
-    const result = await queryAsync( sql, values );
+    // const result = await queryAsync( sql, values );
+    const [result] = await connection.query(sql, values);
     console.log( "✅ Update result:", result );
     return result.affectedRows || 0;
   } catch ( error ) {
@@ -606,7 +622,8 @@ async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, o
       bandi_id, disability_id, disability_name, created_by, updated_by, created_office_id
     ) VALUES ?`;
 
-    const result = await queryAsync( sql, [values] );
+    // const result = await queryAsync( sql, [values] );
+    const [result] = await connection.query(sql, [values]);
     // console.log( "✅ Disabilities insert result:", result );
     console.log( "✅ Disabilities inserted" )
 
@@ -648,7 +665,8 @@ async function updateDisabilities( disabilityId, disability, user_id, office_id 
   ];
 
   try {
-    const result = await queryAsync( sql, values );
+    // const result = await queryAsync( sql, values );
+    const [result] = await connection.query(sql, values);
     console.log( "✅ Update result:", result );
     return result.affectedRows || 0;
   } catch ( error ) {
@@ -666,7 +684,8 @@ async function insertHealthInsurance( bandi_id, health_insurance = [], user_id, 
     bandi_id, is_active, insurance_from, insurance_to,
     created_by, current_office_id
   ) VALUES ?`;
-  await queryAsync( sql, [values] );
+  // await queryAsync( sql, [values] );
+  const [result] = await connection.query(sql, [values]);
 }
 
 export {

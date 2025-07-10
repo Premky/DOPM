@@ -217,8 +217,94 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
     }
 } );
 
+import pool from '../utils/db3.js';
 
-router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+router.post('/create_bandi', verifyToken, upload.single('photo'), async (req, res) => {
+  const user_id = req.user.id;
+  const office_id = req.user.office_id;
+  const photo_path = req.file ? `/uploads/bandi_photos/${req.file.filename}` : null;
+  const data = req.body;
+
+  let connection;
+
+  try {
+    // ✅ get a dedicated connection from the pool
+    connection = await pool.getConnection();
+
+    await connection.beginTransaction();
+    console.log('🟢 Transaction started');
+
+    const bandi_id = await insertBandiPerson({ ...req.body, user_id, office_id, photo_path }, connection);
+    await insertKaidDetails(bandi_id, { ...req.body, user_id, office_id }, connection);
+    await insertCardDetails(bandi_id, { ...req.body, user_id, office_id }, connection);
+    await insertAddress(bandi_id, { ...req.body, user_id, office_id }, connection);
+
+    const muddaIndexes = [...new Set(Object.keys(req.body).filter(k => k.startsWith('mudda_id_')).map(k => k.split('_')[2]))];
+    const muddas = muddaIndexes.map(i => ({
+      mudda_id: req.body[`mudda_id_${i}`],
+      mudda_no: req.body[`mudda_no_${i}`],
+      is_last: req.body[`is_last_mudda_${i}`],
+      is_main: req.body[`is_main_mudda_${i}`],
+      condition: req.body[`mudda_condition_${i}`],
+      district: req.body[`mudda_district_${i}`],
+      office: req.body[`mudda_office_${i}`],
+      date: req.body[`mudda_phesala_date_${i}`],
+      vadi: req.body[`vadi_${i}`],
+    }));
+    await insertMuddaDetails(bandi_id, muddas, office_id, connection);
+
+    const fineArray = JSON.parse(req.body.fine || '[]');
+    await insertFineDetails(bandi_id, fineArray, user_id, office_id, connection);
+
+    if (data.punarabedan_office_id && data.punarabedan_office_district &&
+        data.punarabedan_office_ch_no && data.punarabedan_office_date) {
+      await insertPunarabedan(bandi_id, req.body, connection);
+    }
+
+    await insertFamily(bandi_id, JSON.parse(req.body.family || '[]'), user_id, office_id, connection);
+    await insertContacts(bandi_id, JSON.parse(req.body.conatact_person || '[]'), user_id, office_id, connection);
+    await insertDiseasesDetails(bandi_id, JSON.parse(req.body.disease || '[]'), user_id, office_id, connection);
+    await insertDisablilityDetails(bandi_id, JSON.parse(req.body.disability || '[]'), user_id, office_id, connection);
+
+    if (data.health_insurance?.length) {
+      await insertHealthInsurance(bandi_id, [{ ...req.body }], user_id, office_id, connection);
+    }
+
+    await connection.commit();
+    console.log(`🟩 Transaction committed with Bandi ID ${bandi_id} by ${req.user.office_np}`);
+
+    connection.release();
+
+    res.json({
+      Status: true,
+      Result: bandi_id,
+      message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
+    });
+
+  } catch (error) {
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
+
+    if (req.file) {
+      const photoFullPath = path.join(__dirname, '..', 'uploads', 'bandi_photos', req.file.filename);
+      fs.unlink(photoFullPath, () => {
+        console.log('🗑️ Photo deleted due to error');
+      });
+    }
+
+    console.error('❌ Error:', error);
+    res.status(500).json({
+      Status: false,
+      Error: error.message,
+      message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।'
+    });
+  }
+});
+
+
+router.post( '/create_bandi1', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.id;
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
