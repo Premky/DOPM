@@ -72,7 +72,7 @@ async function generateUniqueBandiId() {
 
     for ( let i = 0; i < maxAttempts; i++ ) {
         const randId = Math.floor( 100000 + Math.random() * 900000 ); // 6-digit random number
-        const result = await pool.query(
+        const [result] = await pool.query(
             `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [randId]
         );
@@ -347,7 +347,7 @@ router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
                     WHERE bmd.is_main_mudda=1 WHERE bp.current_office_id=${ active_office }`;
     }
     try {
-        const result = await pool.query( sql ); // Use promise-wrapped query
+        const [result] = await pool.query( sql ); // Use promise-wrapped query
 
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi not found for select" } );
@@ -371,7 +371,7 @@ router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
                 LEFT JOIN muddas m ON bmd.mudda_id=m.id
                 WHERE bmd.is_main_mudda=1 AND bp.current_office_id=?`;
     try {
-        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log('id', result)
 
         if ( result.length === 0 ) {
@@ -395,7 +395,7 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     `;
 
     try {
-        const result = await pool.query( sql, [id] ); // Use promise-wrapped query
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
 
         if ( result.length === 0 ) {
             return res.json( { Status: false, Error: "Bandi not found" } );
@@ -465,7 +465,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
         `;
 
-            const result = await pool.query( sql, values );
+            const [result] = await pool.query( sql, values );
             const inserted_id = result.insertId;
             console.log( inserted_id );
             await commitAsync();
@@ -518,7 +518,7 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
 
         // console.log(finalQuery)
 
-        const result = await pool.query( finalQuery, queryParams );
+        const [result] = await pool.query( finalQuery, queryParams );
         console.log( 'acceptedpayrole', user_office_id );
         if ( !result.length ) {
             return res.json( { Status: false, Error: 'No payrole records found' } );
@@ -676,7 +676,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     try {
         await beginTransactionAsync();
 
-        const existing = await pool.query(
+        const [existing] = await pool.query(
             `SELECT * FROM payrole_decisions WHERE payrole_id = ?`,
             [payrole_id]
         );
@@ -1008,7 +1008,7 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
 
         // console.log(finalQuery)
 
-        const result = await pool.query( finalQuery, queryParams );
+        const [result] = await pool.query( finalQuery, queryParams );
         console.log( 'acceptedpayrole', user_office_id );
         if ( !result.length ) {
             return res.json( { Status: false, Error: 'No payrole records found' } );
