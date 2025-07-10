@@ -265,7 +265,7 @@ router.post( '/login', async ( req, res ) => {
 
     try {
         // Use promise-based query
-        const [result] = await promiseCon.query( fetchUserQuery, [username] );
+        const [result] = await pool.query( fetchUserQuery, [username] );
 
         if ( result.length === 0 ) {
             return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
