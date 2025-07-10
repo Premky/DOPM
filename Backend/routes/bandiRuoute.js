@@ -1370,53 +1370,48 @@ router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
 } );
 
 
-router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
+router.put('/update_bandi_family/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-
     const id = req.params.id;
-    console.log( id );
     const { relation_np, relative_name, relative_address, contact_no } = req.body;
-    // console.log(req.body)
+
+    let connection; // ✅ Declare outside
+
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection(); // ✅ Initialize inside
         await connection.beginTransaction();
-        // await beginTransactionAsync();
 
-        let sql = '';
-        let values = '';
-
-        values = [relative_name, relation_np, relative_address, contact_no, id];
-        sql = `
+        const sql = `
             UPDATE bandi_relative_info 
             SET relative_name = ?, relation_id = ?, relative_address = ?, contact_no = ? 
             WHERE id = ?
-            `;
+        `;
+        const values = [relative_name, relation_np, relative_address, contact_no, id];
 
-        // const [result] = await pool.query( sql, values );
-        const [result] = connection.query( sql, values );
+        await connection.query(sql, values); // ✅ Use await here
 
-        // await commitAsync(); // Commit the transaction
         await connection.commit();
-        return res.json( {
+        return res.json({
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
-        } );
+        });
 
-    } catch ( error ) {
-        // await rollbackAsync(); // Rollback the transaction if error occurs
-        if ( connection ) await connection.rollback();
+    } catch (error) {
+        if (connection) await connection.rollback(); // ✅ Safely rollback if connection is defined
 
-        console.error( "Transaction failed:", error );
-        return res.status( 500 ).json( {
+        console.error("Transaction failed:", error);
+        return res.status(500).json({
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        } );
+        });
+
     } finally {
-        if ( connection ) connection.release();
+        if (connection) connection.release(); // ✅ Always release connection if obtained
     }
-} );
+});
+
 
 router.get( '/get_bandi_id_card/:id', async ( req, res ) => {
     const { id } = req.params;
