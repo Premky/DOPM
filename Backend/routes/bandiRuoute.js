@@ -850,7 +850,8 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
             LEFT JOIN (
             SELECT bth.bandi_id, 
                     bth.transfer_from_office_id, 
-                    bth.transfer_to_office_id, 
+                    bth.recommended_to_office_id, 
+                    bth.final_to_office_id, 
                     bth.transfer_from_date, 
                     bth.transfer_to_date, 
                     bth.transfer_reason_id, 
@@ -1242,25 +1243,25 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
     try {
         // Date conversion
         const thunaDateAd = thuna_date_bs ? await bs2ad( thuna_date_bs ) : '2001-01-01';
-        const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '2001-01-01';
+        // const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '2001-01-01';
 
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
         let updateKaidSql = '';
         let kaidValues = [];
-
+//  release_date_ad = ?, releaseDateAd,
         if ( bandi_type === 'कैदी' ) {
             updateKaidSql = `
         UPDATE bandi_kaid_details
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
-            thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?, release_date_ad = ?,
+            thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
             kaidValues = [
                 hirasat_years, hirasat_months, hirasat_days,
                 thuna_date_bs, thunaDateAd,
-                release_date_bs, releaseDateAd,
+                release_date_bs, 
                 user_id, active_office,
                 id
             ];
@@ -2270,7 +2271,7 @@ router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
     FROM bandi_transfer_history bth
     LEFT JOIN offices o ON bth.transfer_from_office_id = o.id
     LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason_id=btr.id
-    LEFT JOIN offices oo ON bth.transfer_to_office_id = oo.id
+    LEFT JOIN offices oo ON bth.final_to_office_id = oo.id
     WHERE bandi_id=?
     `;
     try {
@@ -2995,7 +2996,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     if ( nationality ) {
         filters.push( 'AND bp.nationality = ?' );
         params.push( nationality.trim() );
-    }
+    }    
 
     // Build office-level and office category filters together
     const officeFilters = ['o.office_categories_id = ?'];
