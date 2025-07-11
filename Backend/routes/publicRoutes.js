@@ -265,7 +265,7 @@ router.get( '/get_bandi_type', async ( req, res ) => {
 } );
 
 router.get( '/get_mudda', async ( req, res ) => {
-    const sql = `SELECT * from muddas`;
+    const sql = `SELECT * from muddas ORDER BY mudda_name`;
     try {
         const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
