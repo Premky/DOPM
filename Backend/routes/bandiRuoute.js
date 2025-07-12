@@ -269,7 +269,7 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
           console.error('❌ Failed to reset photo_path to NULL:', dbErr);
         }
       }
-      
+
         console.error( "❌ Update transaction failed:", err );
         res.status( 500 ).json( {
             success: false,
@@ -1675,6 +1675,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
         mudda_id,
         mudda_no,
         mudda_condition,
+        vadi,
         mudda_phesala_antim_office_id,
         mudda_phesala_antim_office_district,
         mudda_phesala_antim_office_date,
@@ -1689,7 +1690,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 
         const sql = `
             UPDATE bandi_mudda_details 
-            SET mudda_id=?, mudda_no=?, mudda_condition=?, mudda_phesala_antim_office_id=?,
+            SET mudda_id=?, mudda_no=?, mudda_condition=?, vadi=?, mudda_phesala_antim_office_id=?,
                 mudda_phesala_antim_office_district=?, mudda_phesala_antim_office_date=?,
                 is_main_mudda=?, is_last_mudda=? 
             WHERE id = ?
@@ -1699,6 +1700,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             mudda_id,
             mudda_no,
             mudda_condition,
+            vadi,
             mudda_phesala_antim_office_id,
             mudda_phesala_antim_office_district,
             mudda_phesala_antim_office_date,
