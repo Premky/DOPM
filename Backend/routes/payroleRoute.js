@@ -321,6 +321,49 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
+    const office_id = req.query.office_id; // extract if passed manually
+    const filters = [];
+    const params = [];
+
+    // Apply filters based on office
+    if ( active_office !== 1 && active_office !== 2 ) {
+        filters.push( '1=1' );
+        // params.push( active_office );
+    } else if ( office_id ) {
+        filters.push( 'o.id = ?' );
+        params.push( office_id );
+    }
+
+    // Filter only कैदी type
+    filters.push( 'bp.bandi_type = ?' );
+    params.push( 'कैदी' );
+
+    const whereClause = filters.length > 0 ? `WHERE ${ filters.join( ' AND ' ) }` : '';
+
+        const sql = `
+        SELECT 
+        bp.id, bp.office_bandi_id, bp.bandi_name, bp.bandi_type, 
+        bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+        bkd.release_date_bs, bkd.release_date_ad, 
+        bkd.thuna_date_bs, bkd.thuna_date_ad 
+        FROM bandi_person bp
+        LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
+        LEFT JOIN offices o ON o.id = bp.current_office_id
+        ${ whereClause }
+    `;
+
+    try {
+        const [result] = await pool.query( sql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
 
 router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -488,7 +531,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
-    }finally{
+    } finally {
         await connection.release();
     }
 } );
