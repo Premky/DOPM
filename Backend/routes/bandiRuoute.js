@@ -248,8 +248,8 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         // ✅ get a dedicated connection from the pool
         connection = await pool.getConnection();
 
-        await connection.beginTransaction();
-        console.log( '🟢 Transaction started' );
+        await connection.beginTransaction();        
+        console.log( `🟢 Transaction started with Bandi ID ${ bandi_id } by ${ req.user.office_np }` );
 
         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path }, connection );
         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id }, connection );
