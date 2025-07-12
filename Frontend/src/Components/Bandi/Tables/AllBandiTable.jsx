@@ -18,6 +18,7 @@ import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 
 
 const AllBandiTable = () => {
@@ -74,8 +75,10 @@ const AllBandiTable = () => {
         setLoading( true );
         try {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
-                params: { page, limit: rowsPerPage, searchOffice, nationality,
-                    gender,bandi_type, search_name },
+                params: {
+                    page, limit: rowsPerPage, searchOffice, nationality,
+                    gender, bandi_type, search_name
+                },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
 
@@ -164,7 +167,16 @@ const AllBandiTable = () => {
                 </Typography> */}
 
                 {/* <form onSubmit={handleSubmit(onSubmit)}> */}
+                {/* <form> */}
                 <Grid2 container spacing={2}>
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseInput
+                            name="search_name"
+                            label="नाम/संकेत नं."
+                            control={control}
+                        />
+                    </Grid2>
+
                     <Grid2 size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
@@ -206,24 +218,24 @@ const AllBandiTable = () => {
                             options={[
                                 { label: 'सबै', value: '' },
                                 { label: 'कैदी', value: 'कैदी' },
-                                { label: 'थुनुवा', value: 'थुनुवा' }                                
+                                { label: 'थुनुवा', value: 'थुनुवा' }
                             ]}
                             control={control}
                         />
                     </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <ReuseInput
-                            name="search_name"
-                            label="नाम/संकेत नं."
+                    {/* <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseMudda
+                            name="mudda_id"
+                            label='बन्दी प्रकार'                           
                             control={control}
                         />
-                    </Grid2>
+                    </Grid2> */}
+
 
                     <Grid2 xs={12}>
                         <Button
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
-                            onClick={fetchKaidi}
-                        >
+                            onClick={fetchKaidi}>
                             Search
                         </Button>
                         <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
