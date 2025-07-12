@@ -699,6 +699,7 @@ async function insertTransferDetails( bandi_id, data = [], user_id, active_offic
     item.transfer_to_date,
     item.transfer_reason_id,
     item.transfer_reason,
+    status=7,
     item.remarks,
     user_id,
     user_id,
