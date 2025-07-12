@@ -224,7 +224,7 @@ const AllBandiTable = () => {
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
                             onClick={fetchKaidi}
                         >
-                            रिपोर्ट लिई ल्याउनुहोस्
+                            Search
                         </Button>
                         <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
                             एक्सेल निर्यात
