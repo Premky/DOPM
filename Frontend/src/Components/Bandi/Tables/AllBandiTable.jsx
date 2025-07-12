@@ -1,4 +1,7 @@
-import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
+import {
+    Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow,
+    Dialog, DialogContent, DialogTitle, Stack, Avatar
+} from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
@@ -59,7 +62,7 @@ const AllBandiTable = () => {
     //Watch Variables:
     const searchOffice = watch( 'searchOffice' );
     const nationality = watch( 'nationality' );
-    const search_name = watch( 'search_name')
+    const search_name = watch( 'search_name' );
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -146,14 +149,12 @@ const AllBandiTable = () => {
         }
     };
 
+    const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
+    const [photoToPreview, setPhotoToPreview] = useState( '' );
+
     return (
         <>
-            <PayroleStatusModal
-                open={editDialogOpen}
-                onClose={() => setEditDialogOpen( false )}
-                data={selectedData}
-                onSave={handleSave}
-            />
+
             <Box sx={{ p: 2 }}>
                 {/* <Typography variant="h6" gutterBottom>
                     Welcome {authState.user} from {authState.office_np}
@@ -191,10 +192,10 @@ const AllBandiTable = () => {
                     </Grid2>
 
                     <Grid2 xs={12}>
-                        <Button 
+                        <Button
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
                             onClick={fetchKaidi}
-                            >
+                        >
                             रिपोर्ट लिई ल्याउनुहोस्
                         </Button>
                         <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
@@ -205,6 +206,23 @@ const AllBandiTable = () => {
                 {/* </form> */}
             </Box>
             <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
+
+                <Dialog open={photoPreviewOpen} onClose={() => setPhotoPreviewOpen( false )} maxWidth="sm" fullWidth>
+                    <DialogTitle>फोटो पूर्वावलोकन</DialogTitle>
+                    <DialogContent sx={{ textAlign: 'center' }}>
+                        <img
+                            src={photoToPreview}
+                            alt="Preview"
+                            style={{
+                                width: '100%',
+                                maxWidth: '400px',
+                                borderRadius: '8px',
+                                objectFit: 'contain',
+                            }}
+                        />
+                    </DialogContent>
+                </Dialog>
+
 
                 <TableContainer sx={{ maxHeight: '100%', overflowY: 'auto' }}>
                     <Table size="small" stickyHeader border={1}>
@@ -240,6 +258,12 @@ const AllBandiTable = () => {
                                     className="table_head_bg"
                                     sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
                                 >
+                                    फोटो
+                                </TableCell>
+                                <TableCell
+                                    className="table_head_bg"
+                                    sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
+                                >
                                     उमेर
                                 </TableCell>
                                 <TableCell
@@ -258,29 +282,29 @@ const AllBandiTable = () => {
                                     जाहेरवाला
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    मुद्दा अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति
+                                    मुद्दा अन्तिम कारवाही गर्ने निकाय
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     थुना/कैदमा परेको मिति
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    तोकिएको कैद (वर्ष, महिना, दिन)
+                                    तोकिएको कैद
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     कैदी पुर्जीमा उल्लेखित छुटि जाने मिती
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    भुक्तान कैद (वर्ष, महिना, दिन र प्रतिशत)
+                                    भुक्तान कैद
                                 </TableCell>
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     बाँकी कैद अवधी
                                 </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                {/* <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
+                                </TableCell> */}
+                                {/* <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     कैफियत
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
                                     #
                                 </TableCell>
@@ -297,6 +321,7 @@ const AllBandiTable = () => {
                                 const kaidiMuddas = fetchedMuddas[data.id] || [];
                                 return (
                                     <>
+
 
                                         <TableRow sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }} key={index * data.id}>
                                             <TableCell sx={{
@@ -326,6 +351,24 @@ const AllBandiTable = () => {
                                                         ${ data.state_name_np },${ data.country_name_np }`
                                                     : `${ data.bidesh_nagarik_address_details },${ data.country_name_np }`}
                                             </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                <img
+                                                    src={data.photo_path ? `${ BASE_URL }${ data.photo_path }` : '/icons/male_icon-1.png'}
+                                                    alt="Bandi"
+                                                    onClick={() => {
+                                                        setPhotoToPreview( data.photo_path ? `${ BASE_URL }${ data.photo_path }` : '/icons/male_icon-1.png' );
+                                                        setPhotoPreviewOpen( true );
+                                                    }}
+                                                    style={{
+                                                        height: 100,
+                                                        width: 100,
+                                                        objectFit: 'contain',
+                                                        borderRadius: 4,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                />
+                                            </TableCell>
+
                                             <TableCell rowSpan={kaidiMuddas.length || 1} >
                                                 {data.current_age}
                                             </TableCell>
@@ -382,8 +425,8 @@ const AllBandiTable = () => {
                                             {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
                                             </TableCell>
 
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
+                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell> */}
+                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell> */}
 
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                 <Link to={`/bandi/view_saved_record/${ data.id }`} style={{ color: 'inherit' }}>
