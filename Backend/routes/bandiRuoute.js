@@ -300,8 +300,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
 
     } catch ( error ) {
         if ( connection ) {
-            await connection.rollback();
-            connection.release();
+            await connection.rollback();            
         }
 
         if ( req.file ) {
@@ -317,6 +316,8 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             Error: error.message,
             message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।'
         } );
+    }finally{
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1068,10 +1069,10 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_bandi_address/:id', async ( req, res ) => {
+router.get('/get_bandi_address/:id', async (req, res) => {
     const { id } = req.params;
     const sql = `
-            SELECT 
+        SELECT 
             ba.id,
             bp.id AS bandi_id,
             ba.wardno,
@@ -1084,8 +1085,6 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
             nd.district_name_np,
             ng.cid AS city_id,
             ng.city_name_np,
-
-            -- Full Nepali formatted address
             CONCAT_WS(
                 ', ',
                 ng.city_name_np,
@@ -1094,7 +1093,6 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
                 ns.state_name_np,
                 nc.country_name_np
             ) AS nepali_address
-
         FROM bandi_person bp
         LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
         LEFT JOIN np_country nc ON ba.nationality_id = nc.id
@@ -1103,18 +1101,22 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
         LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid
         WHERE bp.id = ?
     `;
+
     try {
-        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
-        // console.log(result)
-        if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi Address not found" } );
+        console.log("🔍 Getting bandi address for ID:", id);
+        const [result] = await pool.query(sql, [id]);
+
+        if (!result || result.length === 0) {
+            return res.status(404).json({ Status: false, Error: "Bandi Address not found" });
         }
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( err );
-        return res.json( { Status: false, Error: "Query Error" } );
+
+        return res.status(200).json({ Status: true, Result: result });
+    } catch (err) {
+        console.error("❌ Error in /get_bandi_address:", err);
+        return res.status(500).json({ Status: false, Error: "Query Error" });
     }
-} );
+});
+
 
 router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
@@ -1524,6 +1526,8 @@ router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
+    }finally{
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1870,7 +1874,7 @@ router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1932,7 +1936,7 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
             message: "सर्भर त्रुटि भयो, अपाङ्गता विवरण अपडेट गर्न असफल।"
         } );
     } finally {
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -1978,7 +1982,7 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -2041,7 +2045,7 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
             message: "सर्भर त्रुटि भयो, रोग विवरण अपडेट गर्न असफल।"
         } );
     } finally {
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -2089,7 +2093,7 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -2153,7 +2157,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
             message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
         } );
     } finally {
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -2200,7 +2204,7 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -2257,7 +2261,7 @@ router.post( '/create_bandi_transfer_request', verifyToken, async ( req, res ) =
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        connection.release();
+        if ( connection ) connection.release();
     }
 } );
 //
@@ -2331,7 +2335,7 @@ router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) =
       message: "सर्भर त्रुटि भयो, विवरण अपडेट गर्न असफल।",
     });
   } finally {
-    if (connection) connection.release();
+    if ( connection ) connection.release();
   }
 });
 
@@ -2760,7 +2764,7 @@ router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
         console.error( "Payrole update error:", error );
         return res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }finally{
-        await connection.release();
+        if ( connection ) connection.release();
     }
 } );
 
@@ -3228,7 +3232,7 @@ LEFT JOIN prioritized_mudda pm ON pm.bandi_id = bp.id AND pm.rn = 1
         console.error('Database query error:', error);
         return res.status(500).json({Status:false, Error:'Database query failed'});
     }finally{
-        connection.release();
+        if ( connection ) connection.release();
     }    
 } );
 
@@ -3294,10 +3298,11 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         await connection.commit();
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
+        await connection.rollback();
         console.error( "Insert error:", err );
         res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
     } finally {
-        await connection.rollback();
+        if ( connection ) connection.release();
     }
 } );
 

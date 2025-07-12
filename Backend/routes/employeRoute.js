@@ -1,32 +1,95 @@
 import express from 'express';
 import { promisify } from 'util';
-import con from '../utils/db.js';
-import { v2 as cloudinary } from 'cloudinary';
-import { upload, cloudinaryUpload } from '../middlewares/cloudinaryUpload.js';
-import NepaliDateConverter from 'nepali-date-converter';
+import pool from '../utils/db3.js';
 import verifyToken from '../middlewares/verifyToken.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { insertEmpRoute } from '../services/empService.js';
 
 const router = express.Router();
-const query = promisify(con.query).bind(con);
+const query = promisify(pool.query).bind(pool);
 
 // Cloudinary Configuration
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// cloudinary.config({
+//     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//     api_key: process.env.CLOUDINARY_API_KEY,
+//     api_secret: process.env.CLOUDINARY_API_SECRET
+// });
 
-// Convert BS date to AD
-function convertToAD(bsdate) {
-    try {
-        const dobAD = NepaliDateConverter.parse(bsdate);
-        const ad = dobAD.getAD();
-        return `${ad.year}-${(ad.month + 1).toString().padStart(2, '0')}-${ad.date.toString().padStart(2, '0')}`;
-    } catch (err) {
-        console.error(err);
-        return null;
+const storage = multer.diskStorage( {
+    destination: function ( req, file, cb ) {
+        const uploadDir = './uploads/emp_photos';
+        // console.log(uploadDir)
+        if ( !fs.existsSync( uploadDir ) ) {
+            fs.mkdirSync( uploadDir, { recursive: true } );
+        }
+        cb( null, uploadDir );
+    },
+
+    filename: function ( req, file, cb ) {
+        const { sanket_no, name_in_english } = req.body;
+        if ( !sanket_no || !name_in_english ) {
+            return cb( new Error( 'sanket_no and name_in_english are required' ), null );
+        }
+        const ext = path.extname( file.originalname );
+        const dateStr = new Date().toISOString().split( 'T' )[0];
+        const safeName = name_in_english.replace( /\s+/g, '_' ); //sanitize spaces
+
+        const uniqueName = `${ sanket_no }_${ safeName }_${ dateStr }${ ext }`;
+        cb( null, uniqueName );
     }
-}
+} );
+
+// File filter (only images allowed)
+const fileFilter = ( req, file, cb ) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp|jfif/;
+    const extname = allowedTypes.test( path.extname( file.originalname ).toLowerCase() );
+    const mimetype = allowedTypes.test( file.mimetype );
+
+    if ( extname && mimetype ) return cb( null, true );
+    cb( new Error( 'Only image files are allowed!' ) );
+};
+
+//Size limit (1 MB max For now)
+const upload = multer( {
+    storage,
+    fileFilter,
+    limits: { fileSize: 1 * 1024 * 1024 },
+} );
+
+router.post('/create_employee', verifyToken, upload.single('photo'), async(req, res)=>{
+    const user_id = req.user.id;
+    const active_office = req.user.office_id;
+    const photo_path = req.file?`/uploads/emp_photo/${req.file.filename}`:null;
+    const data = req.body;
+    let connection;
+    try{
+        connection=await pool.getConnection();        
+        console.log( '🟢 Transaction started for', req.user.ofice_np );
+        const emp_id = await insertEmpRoute( { ...req.body, user_id, active_office, photo_path }, connection );
+        // await insertKaidDetails( emp_id, { ...req.body, user_id, active_office }, connection );
+    }catch(error){
+        await connection.rollback();
+        console.log(error)
+    }finally{
+        if(connection) await connection.release();
+    }
+} )
+
+router.get("/get_employees", verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+
+  const sql = `SELECT * FROM employees WHERE current_office_id=?`;
+
+  try {
+    const [result] = await pool.query(sql, active_office);
+    res.json({ Status: true, Result: result, message: 'Records fetched successfully.' });
+  } catch (err) {
+    console.error("Database Query Error:", err);
+    res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
 
 //Get Darbandi:
 router.get("/get_darbandi", verifyToken, async(req, res)=>{
@@ -37,7 +100,7 @@ router.get("/get_darbandi", verifyToken, async(req, res)=>{
             LEFT JOIN posts p ON d.post_id = p.id
             LEFT JOIN classes c ON d.class_id = c.id
             LEFT JOIN offices o ON d.office_id = o.id       
-                `;
+            `;
     try {
         const result = await query(sql);
         return res.json({ Status: true, Result: result, message:'Records fetched successfully.' })
@@ -47,169 +110,21 @@ router.get("/get_darbandi", verifyToken, async(req, res)=>{
     }
 })
 
-router.get("/get_ranks", verifyToken, async(req, res)=>{
-    const sql = `SELECT * FROM posts`;
-    try {
-        const result = await query(sql);
-        return res.json({ Status: true, Result: result, message:'Records fetched successfully.' })
-    } catch (err) {
-        console.error("Database Query Error:", err);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" })
-    }
-})
+router.get("/get_posts", verifyToken, async (req, res) => {
+  const sql = `SELECT * FROM emp_post`;
 
-// ADD Driver API
-router.post("/add_driver", upload.single("image"), cloudinaryUpload, async (req, res) => {
-    try {
-        const {
-            vehicledistrict, drivername, driverdob, vehicle_no, vehicle_name, state, district,
-            municipality, driverward, country, driverfather, lisence_no, lisencecategory, driverctz_no,
-            ctz_iss, mentalhealth, drivereye, driverear, drivermedicine, start_route, end_route, remarks,
-        } = req.body;
-
-        const driverdobAD = convertToAD(driverdob);
-        console.log(req.file); // Cloudinary response will be available here
-
-        // Cloudinary image URL is now available as req.file.secure_url
-        const imageUrl = req.file ? req.file.secure_url : null;  // Use the secure_url from Cloudinary
-
-        const created_by = '0';
-
-        const sql = `
-            INSERT INTO tango_driver 
-            (vehicledistrict, drivername, driverdob, driverdob_ad, vehicle_no, vehicle_name, state, district, municipality, 
-            driverward, country, driverfather, lisence_no, lisencecategory, driverctz_no, ctz_iss, mentalhealth, 
-            drivereye, driverear, drivermedicine, start_route, end_route, remarks, driverphoto, created_by) 
-            VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        const values = [
-            vehicledistrict, drivername, driverdob, driverdobAD, vehicle_no, vehicle_name, state, district, municipality,
-            driverward, country, driverfather, lisence_no, lisencecategory, driverctz_no, ctz_iss, mentalhealth,
-            drivereye, driverear, drivermedicine, start_route, end_route, remarks, imageUrl, created_by
-        ];
-
-        const result = await query(sql, values);
-        res.json({ Status: true, message: "Driver added successfully", driverId: result.insertId, imageUrl });
-    } catch (error) {
-        console.error("Error adding driver:", error);
-        res.status(500).json({ Status: false, message: "Database error", error });
-    }
+  try {
+    const [result] = await pool.query(sql);
+    res.json({ Status: true, Result: result, message: 'Records fetched successfully.' });
+  } catch (err) {
+    console.error("Database Query Error:", err);
+    res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
 });
 
 
 
-// GET All Drivers API
-router.get("/get_drivers", async (req, res) => {
-    const sql = `SELECT 
-                td.id,
-                td.vehicle_no, td.start_route, td.end_route, td.drivername, td.driverdob, 
-                td.driverward, td.driverfather, td.lisence_no, td.driverctz_no, td.mentalhealth, 
-                td.drivereye, td.driverear, td.drivermedicine, td.driverphoto, td.remarks,
-                td.vehicledistrict AS vehicledistrict_id, td.vehicle_name AS vehiclename_id, 
-                td.country AS country_id, td.state AS state_id, td.district AS district_id, 
-                td.municipality AS municipality_id, td.lisencecategory AS category_id, 
-                td. ctz_iss AS ctziss_id,
-                nd1.name_np AS vehicledistrict, v.name_np AS vehicle_name, nc.name_np AS country, 
-                ns.name_np AS state, nd2.name_np AS district, nm.name_np AS municipality, 
-                lc.name_en AS lisencecategory, nd3.name_np AS ctz_iss, u.name AS created_by
-            FROM 
-                tango_driver td
-            LEFT JOIN np_districts nd1 ON td.vehicledistrict = nd1.id
-            LEFT JOIN vehicles v ON td.vehicle_name = v.id
-            LEFT JOIN np_country nc ON td.country = nc.id
-            LEFT JOIN np_states ns ON td.state = ns.id
-            LEFT JOIN np_districts nd2 ON td.district = nd2.id
-            LEFT JOIN np_municipalities nm ON td.municipality = nm.id
-            LEFT JOIN lisence_category lc ON td.lisencecategory = lc.id
-            LEFT JOIN np_districts nd3 ON td.ctz_iss = nd3.id
-            LEFT JOIN users u ON td.created_by = u.id;          
-                `;
-    try {
-        const result = await query(sql);
-        return res.json({ Status: true, Result: result, message:'Records fetched successfully.' })
-    } catch (err) {
-        console.error("Database Query Error:", err);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" })
-    }
-});
 
-
-// Update Driver API
-router.put("/update_driver/:id", upload.single("image"), cloudinaryUpload, async (req, res) => {
-    try {
-        const { id } = req.params;  // Driver ID from URL params
-        const {
-            vehicledistrict, drivername, driverdob, vehicle_no, vehicle_name, state, district,
-            municipality, driverward, country, driverfather, lisence_no, lisencecategory, driverctz_no,
-            ctz_iss, mentalhealth, drivereye, driverear, drivermedicine, start_route, end_route, remarks,
-        } = req.body;
-
-        const driverdobAD = convertToAD(driverdob);
-        console.log(req.file);  // Cloudinary response will be available here
-
-        // Get current image URL from Cloudinary (if no new image, keep the old image URL)
-        const imageUrl = req.file ? req.file.secure_url : null;
-
-        const sql = `
-            UPDATE tango_driver SET
-                vehicledistrict = ?, drivername = ?, driverdob = ?, driverdob_ad = ?, vehicle_no = ?, vehicle_name = ?, 
-                state = ?, district = ?, municipality = ?, driverward = ?, country = ?, driverfather = ?, 
-                lisence_no = ?, lisencecategory = ?, driverctz_no = ?, ctz_iss = ?, mentalhealth = ?, drivereye = ?, 
-                driverear = ?, drivermedicine = ?, start_route = ?, end_route = ?, remarks = ?, driverphoto = ?
-            WHERE id = ?
-        `;
-
-        const values = [
-            vehicledistrict, drivername, driverdob, driverdobAD, vehicle_no, vehicle_name, state, district, municipality,
-            driverward, country, driverfather, lisence_no, lisencecategory, driverctz_no, ctz_iss, mentalhealth,
-            drivereye, driverear, drivermedicine, start_route, end_route, remarks, imageUrl, id
-        ];
-
-        const result = await query(sql, values);
-        
-        if (result.affectedRows > 0) {
-            res.json({ Status: true, message: "Driver updated successfully", driverId: id, imageUrl });
-        } else {
-            res.status(404).json({ Status: false, message: "Driver not found" });
-        }
-    } catch (error) {
-        console.error("Error updating driver:", error);
-        res.status(500).json({ Status: false, message: "Database error", error });
-    }
-});
-
-
-// DELETE Driver API
-router.delete("/delete_driver/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const existingDriver = await query("SELECT driverphoto FROM tango_driver WHERE id = ?", [id]);
-        
-        if (!existingDriver.length) {
-            return res.status(404).json({ Status: false, message: "Driver not found" });
-        }
-
-        // Extract the public ID from the Cloudinary URL
-        const driverPhotoUrl = existingDriver[0].driverphoto;
-        
-        if (driverPhotoUrl) {
-            const oldImagePublicId = driverPhotoUrl.split('/').pop().split('.')[0];  // Get public ID from the URL
-            
-            // Cloudinary destroy API to delete the image using the public ID
-            const result = await cloudinary.uploader.destroy(oldImagePublicId);
-            console.log("Image deleted from Cloudinary:", result);
-        }
-
-        // Delete the driver record from the database
-        await query("DELETE FROM tango_driver WHERE id = ?", [id]);
-        
-        res.json({ Status: true, message: "Driver and image deleted successfully" });
-    } catch (error) {
-        console.error("Error deleting driver:", error);
-        res.status(500).json({ Status: false, message: "Database error", error });
-    }
-});
 
 
 export { router as employeRouter };

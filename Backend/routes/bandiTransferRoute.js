@@ -26,32 +26,52 @@ const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
 const fy_date = fy + '-04-01';
 
 import { bs2ad } from '../utils/bs2ad.js';
-import {
-    insertBandiPerson, insertKaidDetails, insertCardDetails, insertAddress,
-    insertMuddaDetails, insertFineDetails, insertPunarabedan, insertFamily, insertContacts, insertHealthInsurance,
-    insertSingleFineDetails,
-    insertDiseasesDetails,
-    insertDisablilityDetails,
-    updateContactPerson,
-    updateDiseasesDetails,
-    updateDisabilities,
+import {    
     insertTransferDetails
-} from '../services/bandiService.js';
+} from '../services/bandiTransferService.js';
 // console.log(current_date);
 // console.log(fy_date)
 
-router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => {
+router.get('/get_bandi_for_payrole', verifyToken, async(req, res) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id
+    let connection;
+
+    try{
+        connection = await pool.getConnection();
+        const sql = `
+        SELECT * 
+        FROM bandi_person bp
+        WHERE bp.bandi_type=?, bp.is_active=?
+        `
+        [result]= connection.query(sql, 'कैदी', 1);
+        console.log(result)
+        
+    } catch(error){
+        connection.rollback();
+        console.log(error);
+    } finally{
+        connection.release();
+    }
+})
+
+router.post( '/create_initial_bandi_transfer1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-
+    const metadata = req.body;
+    const transfer_details = req.body.bandi_transfer_details;
     let connection;
     try {
         connection = await pool.getConnection();
-        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+        // console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
 
+        const [InitialStatus] = await pool.query(`SELECT id FROM bandi_transfer_statuses WHERE
+            status_key='initiate_transfer'`)
+            
         const insertCount = await insertTransferDetails(
-            req.body.bandi_id,
-            req.body,
+            metadata.bandi_id,
+            transfer_details,
+            InitialStatus,
             user_id,
             active_office,
             connection
@@ -267,4 +287,4 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
     }
 } );
 
-export { router as bandiRouter };
+export { router as bandiTransferRouter };
