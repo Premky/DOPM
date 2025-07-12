@@ -588,6 +588,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     console.log( 'forSelect', forSelect );
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
+    const gender = req.query.gender || 0;
+    const bandi_type = req.query.bandi_type || 0;
     const search_name = req.query.search_name || 0;
     const page = parseInt( req.query.page ) || 0;
     const limit = parseInt( req.query.limit ) || 25;
@@ -613,6 +615,20 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere += ` AND bp.nationality = '${ nationality }'`;  // Note quotes for string
         } else {
             baseWhere = `WHERE bp.nationality = '${ nationality }'`;
+        }
+    }
+    if(gender){
+        if(baseWhere){
+            baseWhere+=` AND bp.gender='${gender}'`;            
+        }else{
+            baseWhere+=`WHERE bp.gender='${gender}'`;
+        }
+    }
+    if(bandi_type){
+        if(baseWhere){
+            baseWhere+=` AND bp.bandi_type='${bandi_type}'`;            
+        }else{
+            baseWhere+=`WHERE bp.bandi_type='${bandi_type}'`;
         }
     }
 

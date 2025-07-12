@@ -63,6 +63,8 @@ const AllBandiTable = () => {
     const searchOffice = watch( 'searchOffice' );
     const nationality = watch( 'nationality' );
     const search_name = watch( 'search_name' );
+    const gender = watch( 'gender' );
+    const bandi_type = watch( 'bandi_type' );
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -72,7 +74,8 @@ const AllBandiTable = () => {
         setLoading( true );
         try {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
-                params: { page, limit: rowsPerPage, searchOffice, nationality, search_name },
+                params: { page, limit: rowsPerPage, searchOffice, nationality,
+                    gender,bandi_type, search_name },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
 
@@ -122,7 +125,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality] );
+    }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender] );
 
 
 
@@ -179,6 +182,31 @@ const AllBandiTable = () => {
                                 { label: 'सबै', value: '' },
                                 { label: 'स्वदेशी', value: 'स्वदेशी' },
                                 { label: 'विदेशी', value: 'विदेशी' }
+                            ]}
+                            control={control}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="gender"
+                            label='लिङ्ग'
+                            options={[
+                                { label: 'सबै', value: '' },
+                                { label: 'पुरुष', value: 'Male' },
+                                { label: 'महिला', value: 'Female' },
+                                { label: 'अन्य', value: 'Other' }
+                            ]}
+                            control={control}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="bandi_type"
+                            label='बन्दी प्रकार'
+                            options={[
+                                { label: 'सबै', value: '' },
+                                { label: 'कैदी', value: 'कैदी' },
+                                { label: 'थुनुवा', value: 'थुनुवा' }                                
                             ]}
                             control={control}
                         />
