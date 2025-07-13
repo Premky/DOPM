@@ -108,14 +108,16 @@ const storage = multer.diskStorage( {
 
     filename: function ( req, file, cb ) {
         const { office_bandi_id, bandi_name } = req.body;
-        if ( !office_bandi_id || !bandi_name ) {
+        // if ( !office_bandi_id || !bandi_name ) {
+        if ( !office_bandi_id ) {
             return cb( new Error( 'bandi_id and bandi_name are required' ), null );
         }
         const ext = path.extname( file.originalname );
         const dateStr = new Date().toISOString().split( 'T' )[0];
-        const safeName = bandi_name.replace( /\s+/g, '_' ); //sanitize spaces
+        // const safeName = bandi_name.replace( /\s+/g, '_' ); //sanitize spaces
 
-        const uniqueName = `${ office_bandi_id }_${ safeName }_${ dateStr }${ ext }`;
+        // const uniqueName = `${ office_bandi_id }_${ safeName }_${ dateStr }${ ext }`;
+        const uniqueName = `${ office_bandi_id }_${ dateStr }${ ext }`;
         cb( null, uniqueName );
     }
 } );
