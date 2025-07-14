@@ -19,6 +19,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
+import ReusableTable from '../../ReuseableComponents/ReuseTable';
 
 
 const AllBandiTable = () => {
@@ -87,6 +88,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
+                // console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -158,6 +160,82 @@ const AllBandiTable = () => {
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
     const [photoToPreview, setPhotoToPreview] = useState( '' );
 
+    const columns = [
+        { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
+        { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
+        { field: "bandi_address", headerName: "ठेगाना", width: 100 },
+        {
+            field: "photo_path",
+            headerName: "फोटो",
+            width: 100,
+            renderCell: ( params ) =>
+                params.value ? (
+                    <img
+                        src={`${ BASE_URL }${ params.value }`}
+                        alt="बन्दी"
+                        style={{
+                            width: 50,
+                            height: 50,
+                            borderRadius: "50%",
+                            cursor: "pointer",
+                            objectFit: "cover",
+                        }}
+                        onClick={() =>
+                            Swal.fire( {
+                                imageUrl: `${ BASE_URL }${ params.value }`,
+                                imageAlt: "बन्दी फोटो",
+                                showConfirmButton: false,
+                            } )
+                        }
+                    />
+                ) : (
+                    "No Image"
+                ),
+        },
+        { field: "age", headerName: "उमेर", width: 100 },
+        { field: "gender", headerName: "लिङ्ग", width: 100 },
+        { field: "nationality", headerName: "राष्ट्रियता", width: 100 },
+        { field: "mudda_name", headerName: "मुद्दा", width: 100 },
+        { field: "vadi", headerName: "जाहेरवाला", width: 100 },
+        {
+            field: "phesala_office_n_date",
+            headerName: "फैसला कार्यालय/मिति",
+            width: 180,
+            renderCell: ( params ) => (
+                <div style={{ whiteSpace: "pre-line" }}>
+                    {params.value || ""}
+                </div>
+            ),
+        },
+        { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
+        { field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100 },
+
+    ];
+
+    const rows = filteredKaidi.flatMap( ( data, prisonerIndex ) => {
+        const muddās = data.muddas?.length ? data.muddas : [{}]; // Ensure at least one mudda
+
+        return muddās.map( ( mudda, muddaIndex ) => ( {
+            id: `${ data.id }-${ muddaIndex }`, // Unique id for DataGrid
+            office_bandi_id: data.office_bandi_id || '',
+            bandi_name: data.bandi_name || '',
+            bandi_address: data.nationality === 'स्वदेशी'
+                ? `${ data.city_name_np }-${ data.wardno }, ${ data.district_name_np }, ${ data.state_name_np }, ${ data.country_name_np }`
+                : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }`,
+            photo_path: data.photo_path ? `${BASE_URL}${data.photo_path}` : '',  // ⬅️ absolute URL required
+            age: data.current_age || '',
+            gender: data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य',
+            nationality: data.nationality || '',
+            mudda_name: mudda?.mudda_name || '',
+            vadi: mudda?.vadi || '',
+            phesala_office_n_date: `${ mudda?.mudda_phesala_antim_office || '' }\n${ mudda?.mudda_phesala_antim_office_date || '' }`,
+            bandi_id: data.id,
+            thuna_date_bs: data.thuna_date_bs || '',
+            release_date_bs: data.release_date_bs || '',
+        } ) );
+    } );
+
+
     return (
         <>
 
@@ -169,20 +247,20 @@ const AllBandiTable = () => {
                 {/* <form onSubmit={handleSubmit(onSubmit)}> */}
                 {/* <form> */}
                 <Grid2 container spacing={2}>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <ReuseInput
-                            name="search_name"
-                            label="नाम/संकेत नं."
-                            control={control}
-                        />
-                    </Grid2>
-
                     <Grid2 size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
                             control={control}
                             disabled={authState.office_id >= 3}
+                        />
+                    </Grid2>
+
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseInput
+                            name="search_name"
+                            label="नाम/संकेत नं."
+                            control={control}
                         />
                     </Grid2>
 
@@ -238,17 +316,17 @@ const AllBandiTable = () => {
                             onClick={fetchKaidi}>
                             Search
                         </Button>
-                        <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
+                        {/* <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
                             एक्सेल निर्यात
-                        </Button>
+                        </Button> */}
                     </Grid2>
                 </Grid2>
                 {/* </form> */}
             </Box>
-            <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ height: '200vh', display: 'flex', flexDirection: 'column' }}>
 
                 <Dialog open={photoPreviewOpen} onClose={() => setPhotoPreviewOpen( false )} maxWidth="sm" fullWidth>
-                    <DialogTitle>फोटो पूर्वावलोकन</DialogTitle>
+                    <DialogTitle>फोटो</DialogTitle>
                     <DialogContent sx={{ textAlign: 'center' }}>
                         <img
                             src={photoToPreview}
@@ -263,248 +341,18 @@ const AllBandiTable = () => {
                     </DialogContent>
                 </Dialog>
 
-
-                <TableContainer sx={{ maxHeight: '100%', overflowY: 'auto' }}>
-                    <Table size="small" stickyHeader border={1}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell
-                                    className="table_head_bg"
-                                    sx={{
-                                        position: 'sticky',
-                                        left: 0,
-                                        top: 0,
-                                        backgroundColor: 'blue',
-                                        zIndex: 4,
-                                        minWidth: 60,
-                                    }}
-                                >
-                                    सि.नं.
-                                </TableCell>
-                                <TableCell
-                                    className="table_head_bg"
-                                    sx={{
-                                        position: 'sticky',
-                                        top: 0,
-                                        left: 60, // ← match width of first sticky column
-                                        backgroundColor: 'blue',
-                                        zIndex: 4,
-                                        minWidth: 250,
-                                    }}
-                                >
-                                    कैदीको नामथर स्थायी ठेगाना
-                                </TableCell>
-                                <TableCell
-                                    className="table_head_bg"
-                                    sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
-                                >
-                                    फोटो
-                                </TableCell>
-                                <TableCell
-                                    className="table_head_bg"
-                                    sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
-                                >
-                                    उमेर
-                                </TableCell>
-                                <TableCell
-                                    className="table_head_bg"
-                                    sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}
-                                >
-                                    लिङ्ग
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    राष्ट्रियता
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    मुद्दा
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    जाहेरवाला
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    मुद्दा अन्तिम कारवाही गर्ने निकाय
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    थुना/कैदमा परेको मिति
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    तोकिएको कैद
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    कैदी पुर्जीमा उल्लेखित छुटि जाने मिती
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    भुक्तान कैद
-                                </TableCell>
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    बाँकी कैद अवधी
-                                </TableCell>
-                                {/* <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने
-                                </TableCell> */}
-                                {/* <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    कैफियत
-                                </TableCell> */}
-                                <TableCell className="table_head_bg" sx={{ position: 'sticky', top: 0, backgroundColor: 'blue', zIndex: 2 }}>
-                                    #
-                                </TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-
-
-
-                            {filteredKaidi.map( ( data, index ) => {
-                                {/* {filteredKaidi
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((data, index) => { */}
-                                const kaidiMuddas = fetchedMuddas[data.id] || [];
-                                return (
-                                    <>
-
-
-                                        <TableRow sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }} key={index * data.id}>
-                                            <TableCell sx={{
-                                                position: 'sticky', left: 0,
-                                                // backgroundColor: 'white',
-                                                backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
-                                                zIndex: 3
-                                            }} rowSpan={kaidiMuddas.length || 1}>
-                                                {page * rowsPerPage + index + 1} <br />
-                                                {data.id}
-
-                                            </TableCell>
-                                            <TableCell
-                                                sx={{
-                                                    position: 'sticky',
-                                                    left: 60, // ✅ should match header exactly
-                                                    backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5',
-                                                    zIndex: 3,
-                                                }}
-                                                rowSpan={kaidiMuddas.length || 1}
-                                            >
-                                                {data.office_bandi_id} <br />
-                                                <b>{data.bandi_type} {data.bandi_name}</b><br />
-
-                                                {data.nationality === 'स्वदेशी'
-                                                    ? `${ data.city_name_np }-${ data.wardno },${ data.district_name_np },
-                                                        ${ data.state_name_np },${ data.country_name_np }`
-                                                    : `${ data.bidesh_nagarik_address_details },${ data.country_name_np }`}
-                                            </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                <img
-                                                    src={data.photo_path ? `${ BASE_URL }${ data.photo_path }` : '/icons/male_icon-1.png'}
-                                                    alt="Bandi"
-                                                    onClick={() => {
-                                                        setPhotoToPreview( data.photo_path ? `${ BASE_URL }${ data.photo_path }` : '/icons/male_icon-1.png' );
-                                                        setPhotoPreviewOpen( true );
-                                                    }}
-                                                    style={{
-                                                        height: 100,
-                                                        width: 100,
-                                                        objectFit: 'contain',
-                                                        borderRadius: 4,
-                                                        cursor: 'pointer'
-                                                    }}
-                                                />
-                                            </TableCell>
-
-                                            <TableCell rowSpan={kaidiMuddas.length || 1} >
-                                                {data.current_age}
-                                            </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य'}
-                                            </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.nationality}
-                                            </TableCell>
-                                            <TableCell >
-                                                {kaidiMuddas[0]?.mudda_name || ''}
-                                            </TableCell>
-                                            <TableCell>
-                                                {kaidiMuddas[0]?.vadi || ''}
-                                            </TableCell>
-                                            <TableCell>
-                                                {kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
-                                                {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
-                                            </TableCell>
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
-                                            {/* तोकिएको कैद  */}
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.thuna_date_bs && data.release_date_bs ? ( <>
-                                                    {calculateBSDate(
-                                                        data.thuna_date_bs,
-                                                        data.release_date_bs
-                                                    ).formattedDuration || ''} <br />
-                                                    {calculateBSDate( data.thuna_date_bs, data.release_date_bs ).percentage || ''}
-                                                </> ) : ''}
-                                            </TableCell>
-
-                                            {/* छुट्ने मिति */}
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
-                                            {/* भुक्तान अवधी */}
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {formattedDateNp && data.thuna_date_bs ? ( <>
-                                                    {calculateBSDate(
-                                                        data.thuna_date_bs,
-                                                        formattedDateNp
-                                                    ).formattedDuration || ''} <br />
-                                                    {calculateBSDate( data.thuna_date_bs, formattedDateNp ).percentage || ''}
-                                                </> ) : ''}
-
-                                                {/* {calculateBSDate(formattedDateNp, data.thuna_date_bs).formattedDuration || ''} <br />
-                                            {calculateBSDate(formattedDateNp, data.thuna_date_bs).percentage || ''} */}
-                                            </TableCell>
-                                            {/* बाँकी अवधी */}
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                {data.release_date_bs && formattedDateNp ? ( <>
-                                                    {calculateBSDate( formattedDateNp, data.release_date_bs ).formattedDuration || ''} <br />
-                                                    {calculateBSDate( formattedDateNp, data.release_date_bs ).percentage || ''}
-                                                </> ) : ''}
-                                                {/* {calculateBSDate(data.release_date_bs, formattedDateNp).formattedDuration || ''} <br />
-                                            {calculateBSDate(data.release_date_bs, formattedDateNp).percentage || ''} */}
-                                            </TableCell>
-
-                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell> */}
-                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell> */}
-
-                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                <Link to={`/bandi/view_saved_record/${ data.id }`} style={{ color: 'inherit' }}>
-                                                    View
-                                                </Link>
-
-
-                                                {/* <Button onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
-                                                    View
-                                                </Button> */}
-                                            </TableCell>
-                                        </TableRow>
-
-                                        {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (
-                                            <TableRow key={`mudda-${ data.id }-${ i }`} sx={{ backgroundColor: data.status === 1 ? '#bbeba4' : '#f9d1d5' }}>
-                                                <TableCell>{mudda.mudda_name}</TableCell>
-                                                <TableCell>{mudda.jaherwala}</TableCell>
-                                                <TableCell>{mudda.antim_nikaya_faisala_miti}</TableCell>
-                                            </TableRow>
-                                        ) )}
-                                    </>
-                                );
-                            } )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
-                <Box sx={{ mt: 'auto' }}>
-                    <TablePagination
-                        rowsPerPageOptions={[25, 50, 100, 500]}
-                        component="div"
-                        count={totalKaidi}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Box>
+                <ReusableTable
+                    columns={columns}
+                    rows={rows}
+                    loading={loading}
+                    showView
+                    // showEdit
+                    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+                    // onEdit={ handleEdit }
+                    enableExport
+                    includeSerial
+                    serialLabel='सि.नं. '
+                />                
             </Box>
         </>
     );

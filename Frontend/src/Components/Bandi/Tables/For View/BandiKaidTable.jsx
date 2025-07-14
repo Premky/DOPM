@@ -141,7 +141,10 @@ const BandiKaidTable = ({ bandi_id }) => {
 
                                     <TableCell align="center">{opt.hirasat_years || '0'}|{opt.hirasat_months || '0'}|{opt.hirasat_days || '0'}</TableCell>
                                     <TableCell align="center">{opt.thuna_date_bs || ''}</TableCell>
-                                    <TableCell align="center">{opt.release_date_bs || ''}</TableCell>
+                                    <TableCell align="center">
+                                        
+                                        {opt.release_date_bs || ''}
+                                        </TableCell>
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>

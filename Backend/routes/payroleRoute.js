@@ -174,7 +174,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     }
 
     if ( searchpyarole_rakhan_upayukat ) {
-        baseWhere += `AND pr.pyarole_rakhan_upayukat=${ searchpyarole_rakhan_upayukat } `;
+        baseWhere += `AND pr.pyarole_rakhan_upayukat= '${ searchpyarole_rakhan_upayukat }' `;
     }
 
     if ( nationality ) {
@@ -327,7 +327,7 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
     const office_id = req.query.office_id; // extract if passed manually
     const filters = [];
     const params = [];
-
+    
     // Apply filters based on office
     if ( active_office !== 1 && active_office !== 2 ) {
         filters.push( '1=1' );
@@ -340,9 +340,9 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
     // Filter only कैदी type
     filters.push( 'bp.bandi_type = ?' );
     params.push( 'कैदी' );
+    filters.push('(bfd.amount_fixed IS NULL OR (bfd.amount_fixed = 0 OR bfd.amount_deposited>0))'); // Ensure no fines or only paid fines
 
     const whereClause = filters.length > 0 ? `WHERE ${ filters.join( ' AND ' ) }` : '';
-
         const sql = `
         SELECT 
         bp.id, bp.office_bandi_id, bp.bandi_name, bp.bandi_type, 
@@ -351,8 +351,11 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
         bkd.thuna_date_bs, bkd.thuna_date_ad 
         FROM bandi_person bp
         LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
+        LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
         LEFT JOIN offices o ON o.id = bp.current_office_id
         ${ whereClause }
+        GROUP BY bp.id
+        ORDER BY bp.id DESC
     `;
 
     try {
@@ -471,9 +474,9 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         let payrole_no_bandi = String( payrole_no ) + String( bandi_id );
         payrole_no_bandi_id = payrole_no_bandi;
     }
-
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         // await beginTransactionAsync();
         await connection.beginTransaction();
         let sql = '';
@@ -488,8 +491,8 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         } else {
             values = [
                 payrole_no_bandi_id,
-                mudda_id,
-                payrole_count_date,
+                // mudda_id,
+                // payrole_count_date,
                 payrole_entry_date,
                 payrole_reason,
                 other_details,
@@ -502,11 +505,12 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                 active_office,
                 active_office
             ];
+            // payrole_mudda_id ganana_date,
             sql = `
                 INSERT INTO payroles(
-                payrole_no_bandi_id,payrole_mudda_id, ganana_date, payrole_entery_date, payrole_reason,
-                other_details, remark, status, payrole_no_id, bandi_id, user_id, created_by, created_office
-            ) VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+                payrole_no_bandi_id,  payrole_entery_date, payrole_reason,
+                other_details, remark, status, payrole_no_id, bandi_id, user_id, created_by, created_office, updated_office
+            ) VALUES(?, ?,  ?, ?, ?, ?, ?, ?, ?, ?,?,?)
                 `;
 
             const [result] = await pool.query( sql, values );
@@ -532,7 +536,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        await connection.release();
+        if(connection) connection.release();
     }
 } );
 
@@ -560,7 +564,7 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
 
         // Restrict results for lower-level offices (office_id >= 2)
         if ( user_office_id > 2 ) {
-            finalQuery += ` AND (p.created_office = ? OR p.updated_office = ?)`;
+            finalQuery += ` AND (p.created_office = '?' OR p.updated_office = '?')`;
             queryParams = [user_office_id, user_office_id];
         }
 
@@ -1048,7 +1052,7 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
         finalQuery += ` WHERE bp.is_active=1`;
         // Restrict results for lower-level offices (office_id >= 2)
         if ( user_office_id > 2 ) {
-            finalQuery += ` AND (p.created_office = ? OR p.updated_office = ?)`;
+            finalQuery += ` AND (p.created_office = '?' OR p.updated_office = '?')`;
             queryParams = [user_office_id, user_office_id];
         }
 

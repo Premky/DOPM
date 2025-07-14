@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
+import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos';
 import { useForm } from 'react-hook-form';
 import { Box, Button, Grid2, useScrollTrigger } from '@mui/material';
-import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
-import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
-import ViewBandi from '../ViewBandi';
-import ReuseInput from '../../ReuseableComponents/ReuseInput';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
+import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
+import ViewBandi from '../../ViewBandi';
+import ReuseInput from '../../../ReuseableComponents/ReuseInput';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { useAuth } from '../../../Context/AuthContext';
-import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-const PayroleForm = () => {
+import { useAuth } from '../../../../Context/AuthContext';
+import useFetchBandi from '../useApi/useFetchBandi';
+import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+
+const PreviousPayroleForm = () => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -61,8 +62,9 @@ const PayroleForm = () => {
   const onFormSubmit = async ( data ) => {
     setLoading( true );
     try {
-      console.log(data)
-      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/bandi/create_payrole`;
+      console.log( data );
+      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }`
+        : `${ BASE_URL }/payrole/create_initial_payrole`;
       const method = editing ? 'PUT' : 'POST';
       const response = await axios( {
         method, url, data: data,
@@ -72,7 +74,7 @@ const PayroleForm = () => {
       console.log( response );
       if ( Status ) {
         Swal.fire( {
-          title: `Office ${ editing ? 'updated' : 'created' } successfully!`,
+          title: `Payrole ${ editing ? 'updated' : 'created' } successfully!`,
           icon: "success",
           draggable: true
         } );
@@ -98,13 +100,24 @@ const PayroleForm = () => {
       setLoading( false );
     }
   };
+  const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
   return (
     <>
       <Box sx={{ flexGrow: 1 }}>
         <form onSubmit={handleSubmit( onFormSubmit )}>
           <Grid2 container spacing={1}>
             <Grid2 size={12}>
-              कार्यालयको विवरणः
+              कारागार कार्यालयको नामः
+            </Grid2>
+            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseSelect
+                name='bandi_id'
+                label='बन्दी'
+                required={true}
+                control={control}
+                options={payroleBandiOpt}
+                error={errors.bandi_id}
+              />
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <ReusePayroleNos
@@ -112,10 +125,10 @@ const PayroleForm = () => {
                 label='प्यारोल संख्या'
                 required={true}
                 control={control}
-                error={errors._no}
+                error={errors.payrole_no}
               />
             </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            {/* <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
                 name='payrole_count_date'
                 label='प्यारोल गणना मिति'
@@ -123,7 +136,7 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.payrole_count_date}
               />
-            </Grid2>
+            </Grid2> */}
 
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
@@ -144,17 +157,7 @@ const PayroleForm = () => {
                 error={errors.mudda_id}
               />
             </Grid2> */}
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-              <ReuseBandi
-                name='bandi_id'
-                label='बन्दी'
-                required={true}
-                control={control}
-                error={errors.bandi_id}
-                current_office={authState.office_np}
-                type='allbandi'
-              />
-            </Grid2>
+
           </Grid2>
           <Grid2 container spacing={2}>
             {bandi?.payrole_id ?
@@ -214,4 +217,4 @@ const PayroleForm = () => {
   );
 };
 
-export default PayroleForm;
+export default PreviousPayroleForm;

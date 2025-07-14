@@ -240,7 +240,7 @@ const PayroleTable = () => {
                     <Grid2 size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
                             name='searchOffice'
-                            label='कार्यालय'
+                            label='कारागार कार्यालयको नाम'
                             control={control}
 
                             disabled={authState.office_id >= 3}
@@ -257,8 +257,14 @@ const PayroleTable = () => {
                     <Grid2 size={{ xs: 12, sm: 1 }}>
                         <ReuseSelect
                             name='pyarole_rakhan_upayukat'
-                            label='पास/फेल'
-                            options={[{ label: 'सबै', value: '' }, { label: 'पास', value: 'छ' }, { label: 'फेल', value: 'छैन' }]}
+                            label='नतिजा'
+                            options={[
+                                { label: 'सबै', value: '' },
+                                { label: 'पास', value: 'पास' },
+                                { label: 'फेल', value: 'फेल' },
+                                { label: 'छलफल', value: 'छलफल' },
+                                { label: 'कागजात अपुग', value: 'कागजात अपुग' }
+                            ]}
                             control={control}
                         />
                     </Grid2>
@@ -455,9 +461,14 @@ const PayroleTable = () => {
 
                                                     <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                         {data.payrole_status === 1 ? (
-                                                            <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 2 )}>
-                                                                पेश गर्नुहोस्
-                                                            </Button>
+
+                                                            authState.office_id >= 2 && (
+                                                                <>
+                                                                    <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 2 )}>
+                                                                        पेश गर्नुहोस्
+                                                                    </Button>
+                                                                </>
+                                                            )
                                                         ) : authState.office_id <= 3 ? (
                                                             data.payrole_status === 2 ? (
                                                                 <>

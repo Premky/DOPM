@@ -21,7 +21,8 @@ const BandiReleaseForm = lazy( () => import( './Components/Bandi/Forms/BandiRele
 const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
 const PayroleMakebari = lazy( () => import( './Components/Bandi/Tables/PayroleMakebari' ) );
-const PayroleForm = lazy( () => import( './Components/Bandi/Forms/PayroleForm' ) );
+const PayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PayroleForm' ) );
+const PreviousPayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PreviousPayroleForm' ) );
 const PayroleTable = lazy( () => import( './Components/Bandi/Tables/PayroleTable' ) );
 const PayroleLogForm = lazy( () => import( './Components/Bandi/Forms/PayroleLogForm' ) );
 
@@ -61,6 +62,8 @@ import { Outlet } from 'react-router-dom';
 import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
 import BandiTransferForm from './Components/Bandi/Forms/BandiTransferForm';
 import axios from 'axios';
+import EmployeeForm from './Components/Employee/Forms/EmployeeForm';
+import AllEmpTable from './Components/Employee/Tables/AllEmpTable';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -131,10 +134,18 @@ function App() {
                 {/* Payrole Routes */}
                 <Route path="payrole" element={<OutletLayout />}>
                   <Route index element={<PayroleMakebari />} />
+                  <Route path="create_previous_payrole" element={<PreviousPayroleForm />} />
                   <Route path="create_payrole" element={<PayroleForm />} />
                   <Route path="payrole_table" element={<PayroleTable />} />
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
                   <Route path="payrole_log" element={<PayroleLogForm />} />
+                </Route>
+
+                {/* Payrole Routes */}
+                <Route path="emp" element={<OutletLayout />}>
+                  <Route index element={<PayroleMakebari />} />
+                  <Route path="create_employee" element={<EmployeeForm />} />
+                  <Route path="view_employee" element={<AllEmpTable />} />
                 </Route>
 
               </Route>

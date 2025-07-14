@@ -68,7 +68,7 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
 
                     <ReuseSelect
                         name="bandi_type"
-                        label="देश"
+                        label="बन्दी प्रकार"
                         options={[
                             { label: 'कैदी', value: 'कैदी' }, { label: 'थुनुवा', value: 'थुनुवा' }
                         ]}

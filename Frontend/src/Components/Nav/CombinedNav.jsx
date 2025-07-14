@@ -39,7 +39,8 @@ const CombinedNav = ( { user } ) => {
       name: 'प्यारोल',
       defaultPath: '/payrole',
       submenu: [
-        { name: 'प्यारोल थप', path: '/payrole/create_payrole' },
+        { name: 'प्यारोल थप(पुरानोको हकमा)', path: '/payrole/create_previous_payrole' },
+        { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/payrole/create_payrole' },
         { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
         { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
         { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
@@ -61,6 +62,17 @@ const CombinedNav = ( { user } ) => {
         // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
         { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },
         { name: 'स्थानान्तरण', path: '/bandi_transfer/aantarik_prashasan_table' },
+        // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
+      ]
+    },
+    {
+      name: 'कर्मचारी',
+      defaultPath: '/bandi_transfer',
+      submenu: [
+        // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
+        { name: 'नयाँ थप', path: '/emp/create_employee' },
+        { name: 'कर्मचारी विवरण', path: '/emp/view_employee' },
+        // { name: 'स्थानान्तरण', path: '/emp/aantarik_prashasan_table' },
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
     }

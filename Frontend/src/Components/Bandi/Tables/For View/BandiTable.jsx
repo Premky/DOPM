@@ -86,7 +86,7 @@ const BandiTable = ( { bandi_id } ) => {
                 onClose={() => setPhotoModalOpen( false )}
                 currentPhoto={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : ''}
                 onSave={async ( formData ) => {
-                    try {                        
+                    try {
                         await axios.put(
                             `${ BASE_URL }/bandi/update_bandi_photo/${ fetchedBandi.bandi_id }`,
                             formData,
@@ -103,7 +103,7 @@ const BandiTable = ( { bandi_id } ) => {
                     }
                 }}
                 bandiMeta={{
-                    office_bandi_id:fetchedBandi.office_bandi_id,
+                    office_bandi_id: fetchedBandi.office_bandi_id,
                     bandi_name: fetchedBandi.bandi_name
                 }}
             />
@@ -141,7 +141,7 @@ const BandiTable = ( { bandi_id } ) => {
                                             src={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : '/icons/male_icon-1.png'}
                                             alt="Bandi"
                                             onClick={() => setPhotoModalOpen( true )} // 👈 click to edit
-                                            style={{ height: 150, width: 150, objectFit: 'cover', borderRadius: 4, cursor: 'pointer' }}
+                                            style={{ height: 150, width: 150, objectFit: 'contain', borderRadius: 4, cursor: 'pointer' }}
                                         />
                                     </TableCell>
                                 </TableRow>
@@ -155,7 +155,12 @@ const BandiTable = ( { bandi_id } ) => {
                                     <TableCell>जन्म मिति/उमेरः</TableCell>
                                     <TableCell>{fetchedBandi.dob} ({fetchedBandi.current_age} वर्ष)</TableCell>
                                     <TableCell>वैवाहिक अवस्था</TableCell>
-                                    <TableCell>{fetchedBandi.married_status}</TableCell>
+                                    <TableCell>
+                                        {fetchedBandi.married_status=='Unmarried' ? 'अविवाहित' :
+                                            fetchedBandi.married_status=='Married' ? 'विवाहित' :
+                                            fetchedBandi.married_status
+                                        }
+                                    </TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>शेक्षिक योग्यता</TableCell>

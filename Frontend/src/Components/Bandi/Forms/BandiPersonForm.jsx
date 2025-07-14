@@ -30,10 +30,11 @@ import fetchFineTypes from '../../ReuseableComponents/fetchFineTypes';
 import fetchDiseases from '../../ReuseableComponents/fetchDiseases';
 import fetchDisabilities from '../../ReuseableComponents/fetchDisabilities';
 import AddSubMuddaModal from '../Dialogs/AddSubMuddaModal';
+import { useAuth } from '../../../Context/AuthContext';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
-
+  const { state: authState } = useAuth();
   const {
     handleSubmit, watch, setValue, register, reset, control, formState: { errors },
   } = useForm( {
@@ -199,9 +200,9 @@ const BandiPersonForm = () => {
 
       if ( Status ) {
         Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
-        console.log( response );
+        // console.log( response );
         const bandi_id = Result;
-        console.log( bandi_id );
+        // console.log( bandi_id );
         navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
         reset();
         setEditing( false );
@@ -211,7 +212,9 @@ const BandiPersonForm = () => {
       }
     } catch ( error ) {
       console.error( 'Error submitting form:', error );
-      Swal.fire( 'त्रुटि!', 'डेटा बुझाउँदा समस्या आयो।', 'error' );
+      const errMsg=error.message? error.message:'डेटा बुझाउँदा समस्या आयो।'
+      Swal.fire( 'त्रुटि!', errMsg, 'error' );
+      // Swal.fire( 'त्रुटि!', 'डेटा बुझाउँदा समस्या आयो।', 'error' );
     }
   };
 
@@ -219,7 +222,7 @@ const BandiPersonForm = () => {
   const { optrecords: diseasesOpt, loading: diseasesLoading } = fetchDiseases();
   const { optrecords: disabilitiesOpt, loading: disablilitiesLoading } = fetchDisabilities();
 
-  const formHeadStyle = { color: 'red', fontWeight: 'bold' };
+  const formHeadStyle = { color: 'blue', fontWeight: 'bold' };
 
   return (
     <form onSubmit={handleSubmit( onSubmit )}>
@@ -385,7 +388,10 @@ const BandiPersonForm = () => {
 
       <Grid container spacing={0}>
         <Grid item xs={12} sx={{ mb: 0, ...formHeadStyle }}>
-          बन्दीको मुद्दा विवरणः  <button onClick={() => handleAdd()}>Add</button>
+          बन्दीको मुद्दा विवरणः          
+          {(authState.office_id===1) || (authState.office_id===2) && (
+           <button onClick={() => handleAdd()}>Add</button>
+          )}
           <AddSubMuddaModal
             open={modalOpen}
             onClose={() => setModalOpen( false )}
