@@ -43,6 +43,7 @@ const AllBandiTable = () => {
     const [loading, setLoading] = useState( false );
 
     //For Pagination
+    const [pageSizeOptions, setPageSizeOptions] = useState( [25, 50, 100] );
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
     const handleChangePage = ( event, newPage ) => {
@@ -76,8 +77,9 @@ const AllBandiTable = () => {
         setLoading( true );
         try {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
+                // page, limit: rowsPerPage,
                 params: {
-                    page, limit: rowsPerPage, searchOffice, nationality,
+                     searchOffice, nationality,
                     gender, bandi_type, search_name
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
@@ -222,7 +224,7 @@ const AllBandiTable = () => {
             bandi_address: data.nationality === 'स्वदेशी'
                 ? `${ data.city_name_np }-${ data.wardno }, ${ data.district_name_np }, ${ data.state_name_np }, ${ data.country_name_np }`
                 : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }`,
-            photo_path: data.photo_path ? `${BASE_URL}${data.photo_path}` : '',  // ⬅️ absolute URL required
+            photo_path: data.photo_path ? `${ BASE_URL }${ data.photo_path }` : '',  // ⬅️ absolute URL required
             age: data.current_age || '',
             gender: data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य',
             nationality: data.nationality || '',
@@ -323,7 +325,7 @@ const AllBandiTable = () => {
                 </Grid2>
                 {/* </form> */}
             </Box>
-            <Box sx={{ height: '200vh', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
 
                 <Dialog open={photoPreviewOpen} onClose={() => setPhotoPreviewOpen( false )} maxWidth="sm" fullWidth>
                     <DialogTitle>फोटो</DialogTitle>
@@ -352,7 +354,23 @@ const AllBandiTable = () => {
                     enableExport
                     includeSerial
                     serialLabel='सि.नं. '
-                />                
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    pageSizeOptions={pageSizeOptions}
+                    page={page}
+                />
+                {/* <ReusableTable
+                    columns={columns}
+                    rows={rows}
+                    loading={loading}
+                    showView
+                    // showEdit
+                    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+                    // onEdit={ handleEdit }
+                    enableExport
+                    includeSerial
+                    serialLabel='सि.नं. '
+                /> */}
             </Box>
         </>
     );

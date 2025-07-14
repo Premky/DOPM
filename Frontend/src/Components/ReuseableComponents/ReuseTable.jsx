@@ -22,6 +22,10 @@ const ReusableTable = ( {
   enableExport = false,
   includeSerial = true,
   serialLabel = "S.No", // or "सि.नं."
+  onPageChange,
+  onRowsPerPageChange,
+  pageSizeOptions,
+  page
 } ) => {
   // const [pageSize, setPageSize] = useState(10);
   const defaultPageSize = parseInt( localStorage.getItem( "pageSize" ) ) || 25;;
@@ -221,7 +225,9 @@ const ReusableTable = ( {
           paginationModel={paginationModel}
           // onPaginationModelChange={( newModel ) => setPaginationModel( newModel )}
           onPaginationModelChange={handlePaginationChange}
-          pageSizeOptions={[25, 50, 100, 200, 500]}
+          // pageSizeOptions={[25, 50, 100, 200, 500]}
+          pageSizeOptions={pageSizeOptions || [25, 50, 100 ]}
+          onPageChange={onPageChange}
 
           initialState={{
 

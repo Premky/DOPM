@@ -211,14 +211,14 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
         //     } );
         // }
 
-        if(oldPhotoPath){
-            const oldPath = path.join('.', oldPhotoPath );
-            try{
-                await fs.promises.access(oldPath);
-                await fs.promises.unlink(oldPath);
-                console.log(`🗑️ Old photo deleted: ${oldPath}`)
-            }catch{
-                console.warn('⚠️ Old photo not found or already deleted');
+        if ( oldPhotoPath ) {
+            const oldPath = path.join( '.', oldPhotoPath );
+            try {
+                await fs.promises.access( oldPath );
+                await fs.promises.unlink( oldPath );
+                console.log( `🗑️ Old photo deleted: ${ oldPath }` );
+            } catch {
+                console.warn( '⚠️ Old photo not found or already deleted' );
             }
         }
 
@@ -253,24 +253,24 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
         //     } );}
 
         // Send error response
-        
-              if (photoFile) {
-        const uploadedPath = photoFile.path;
-        try {
-          await fs.promises.access(uploadedPath);
-          await fs.promises.unlink(uploadedPath);
-          console.log(`🗑️ Uploaded photo deleted due to error`);
-        } catch {
-          console.warn('⚠️ Uploaded photo already missing');
+
+        if ( photoFile ) {
+            const uploadedPath = photoFile.path;
+            try {
+                await fs.promises.access( uploadedPath );
+                await fs.promises.unlink( uploadedPath );
+                console.log( `🗑️ Uploaded photo deleted due to error` );
+            } catch {
+                console.warn( '⚠️ Uploaded photo already missing' );
+            }
+            // Optional: cleanup DB in case path was saved before error
+            try {
+                await pool.query( 'UPDATE bandi_person SET photo_path = NULL WHERE id = ?', [bandi_id] );
+                console.log( '📛 photo_path set to NULL after failed upload' );
+            } catch ( dbErr ) {
+                console.error( '❌ Failed to reset photo_path to NULL:', dbErr );
+            }
         }
-        // Optional: cleanup DB in case path was saved before error
-        try {
-          await pool.query('UPDATE bandi_person SET photo_path = NULL WHERE id = ?', [bandi_id]);
-          console.log('📛 photo_path set to NULL after failed upload');
-        } catch (dbErr) {
-          console.error('❌ Failed to reset photo_path to NULL:', dbErr);
-        }
-      }
 
         console.error( "❌ Update transaction failed:", err );
         res.status( 500 ).json( {
@@ -657,9 +657,9 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const gender = req.query.gender || 0;
     const bandi_type = req.query.bandi_type || 0;
     const search_name = req.query.search_name || 0;
-    const page = parseInt( req.query.page ) || 0;
-    const limit = parseInt( req.query.limit ) || 25;
-    const offset = page * limit;
+    // const page = parseInt( req.query.page ) || 0;
+    // const limit = parseInt( req.query.limit ) || 25;
+    // const offset = page * limit;
 
     let baseWhere = '';
     // console.log(search_name)
@@ -713,13 +713,14 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         let idQuery = `SELECT bp.id FROM bandi_person bp ${ baseWhere } ORDER BY bp.id DESC`;
         let idRows;
 
-        if ( forSelect ) {
-            [idRows] = await pool.query( idQuery );
-        } else {
-            idQuery += ` LIMIT ? OFFSET ?`;
-            [idRows] = await pool.query( idQuery, [limit, offset] );
-        }
-
+        // if ( forSelect ) {
+        //     [idRows] = await pool.query( idQuery );
+        // } else {
+        //     idQuery += ` LIMIT ? OFFSET ?`;
+        //     [idRows] = await pool.query( idQuery, [limit, offset] );
+        // }
+        [idRows] = await pool.query( idQuery );
+        
         const bandiIds = idRows.map( row => row.id );
         if ( bandiIds.length === 0 ) {
             return res.json( { Status: true, Result: [], TotalCount: 0 } );
