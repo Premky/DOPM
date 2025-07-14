@@ -304,6 +304,18 @@ const AllBandiTable = () => {
                         />
                     </Grid2>
                     {/* <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="is_active"
+                            label='बन्दी स्थिति'
+                            options={[
+                                { label: 'सबै', value: '' },
+                                { label: 'कार्यालयमा रहेका', value: '1' },
+                                { label: 'छुटेर गएका', value: '0' }
+                            ]}
+                            control={control}
+                        />
+                    </Grid2> */}
+                    {/* <Grid2 size={{ xs: 12, sm: 2 }}>
                         <ReuseMudda
                             name="mudda_id"
                             label='बन्दी प्रकार'                           
