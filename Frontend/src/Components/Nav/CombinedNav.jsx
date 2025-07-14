@@ -64,18 +64,19 @@ const CombinedNav = ( { user } ) => {
         { name: 'स्थानान्तरण', path: '/bandi_transfer/aantarik_prashasan_table' },
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
-    },
-    {
-      name: 'कर्मचारी',
-      defaultPath: '/bandi_transfer',
-      submenu: [
-        // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
-        { name: 'नयाँ थप', path: '/emp/create_employee' },
-        { name: 'कर्मचारी विवरण', path: '/emp/view_employee' },
-        // { name: 'स्थानान्तरण', path: '/emp/aantarik_prashasan_table' },
-        // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
-      ]
     }
+    // ,
+    // {
+    //   name: 'कर्मचारी',
+    //   defaultPath: '/bandi_transfer',
+    //   submenu: [
+    //     // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
+    //     { name: 'नयाँ थप', path: '/emp/create_employee' },
+    //     { name: 'कर्मचारी विवरण', path: '/emp/view_employee' },
+    //     // { name: 'स्थानान्तरण', path: '/emp/aantarik_prashasan_table' },
+    //     // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
+    //   ]
+    // }
   ];
 
   const handleTopNavClick = ( menu ) => {
