@@ -97,16 +97,21 @@ router.post( '/create_employee', verifyToken, upload.single( 'photo' ), async ( 
 router.get( "/get_employees", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     let baseWhere = `WHERE e.is_active>=1 `;
-    const sql = `SELECT e.*, eph.*, o.letter_address AS current_office_np
+    const sql = `SELECT e.*, eph.*, el.level_name_np, el.emp_rank_np,
+                ep.post_name_np, esg.service_name_np, esg.group_name_np,
+                o.letter_address AS current_office_np
                 FROM employees e
                 LEFT JOIN offices o ON e.current_office_id = o.id
                 LEFT JOIN employee_post_history eph ON e.id= eph.employee_id 
-                    AND eph.appointment_date_ad = (
-                        SELECT MAX(appointment_date_ad) 
-                        FROM employee_post_history eph2
-                        WHERE eph2.employee_id = e.id
+                AND eph.appointment_date_ad = (
+                    SELECT MAX(appointment_date_ad) 
+                    FROM employee_post_history eph2
+                    WHERE eph2.employee_id = e.id
                     )
-                ${baseWhere }`;   
+                    LEFT JOIN emp_level el ON eph.level_id = el.id
+                    LEFT JOIN emp_service_groups esg ON eph.service_group_id = esg.id
+                    LEFT JOIN emp_post ep ON eph.post_id = ep.id
+                ${ baseWhere }`;
     try {
         const [result] = await pool.query( sql, active_office );
         res.json( { Status: true, Result: result, message: 'Records fetched successfully.' } );
@@ -172,7 +177,7 @@ router.get( "/get_service_groups", verifyToken, async ( req, res ) => {
 } );
 
 router.get( "/get_emp_sanket_no", verifyToken, async ( req, res ) => {
-    const sanket_no  = req.query.sanket_no;
+    const sanket_no = req.query.sanket_no;
     console.log( "Fetching employee with sanket_no:", sanket_no );
     const sql = `SELECT * FROM employees WHERE sanket_no =?`;
     try {
@@ -184,7 +189,7 @@ router.get( "/get_emp_sanket_no", verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
+router.get( "/next_sanket_no_for_karar", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
 
     try {
@@ -193,7 +198,7 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
             [active_office]
         );
 
-        if (!officeRow) return res.status(400).json({ Status: false, message: "Invalid office" });
+        if ( !officeRow ) return res.status( 400 ).json( { Status: false, message: "Invalid office" } );
 
         const district_id = officeRow.district_id;
 
@@ -206,14 +211,14 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
         );
 
         const nextCount = countRow.count + 1;
-        const sanket_no = `${district_id}-${nextCount}`;
+        const sanket_no = `${ district_id }-${ nextCount }`;
 
-        res.json({ Status: true, sanket_no });
-    } catch (error) {
-        console.error("❌ Sanket no generation failed:", error);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" });
+        res.json( { Status: true, sanket_no } );
+    } catch ( error ) {
+        console.error( "❌ Sanket no generation failed:", error );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
-});
+} );
 
 
 

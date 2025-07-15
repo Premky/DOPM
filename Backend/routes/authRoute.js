@@ -153,99 +153,6 @@ router.delete( '/delete_user/:id', async ( req, res ) => {
     }
 } );
 
-// Login Route
-router.post( '/login1', async ( req, res ) => {
-    const { username, password } = req.body;
-    // console.log(req.body)
-    const validation = validateLoginInput( username, password );
-    console.log( username );
-    if ( !validation.isValid ) {
-        return res.status( 400 ).json( { loginStatus: false, Error: validation.message } );
-    }
-
-    const fetchUserQuery = `
-        SELECT DISTINCT u.*,
-                        o.office_name_with_letter_address AS office_np, o.office_name_eng AS office_en,                     
-                        o.id AS office_id, ut.usertype_en, ut.usertype_np
-                        FROM users u
-                        LEFT JOIN offices o ON u.office_id = o.id
-                        LEFT JOIN usertypes ut ON u.usertype=ut.id    
-                        WHERE u.user_login_id = ?`;
-    // , b.name_np AS branch_name
-    // LEFT JOIN branch b ON u.branch_id = b.id
-
-    try {
-        con.query( fetchUserQuery, [username], async ( err, result ) => {
-            if ( err ) {
-                console.error( "Database error:", err );
-                return res.status( 500 ).json( { loginStatus: false, Error: "Database error" } );
-            }
-
-            if ( result.length === 0 ) {
-                return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
-            }
-
-            const user = result[0];
-            const isMatch = await bcrypt.compare( password, user.password );
-            if ( !isMatch ) {
-                return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
-            }
-
-            // console.log('user', user)
-
-            const userdetails = {
-                id: user.id,
-                name_en: user.user_name,
-                username: user.user_login_id,
-                email: user.email,
-                user_permission: user.user_permission,
-                is_staff: user.is_staff,
-                is_active: user.is_active,
-                is_online: 1,
-                is_superuser: user.issuperuser,
-                last_login: user.last_login,
-                join_date: user.join_date,
-                office_id: user.office_id,
-                office_np: user.office_np,
-                office_en: user.office_en,
-                branch_name: user.branch_name,
-                usertype_en: user.usertype_en,
-                usertype_np: user.usertype_np
-            };
-
-            const token = jwt.sign( userdetails, process.env.JWT_SECRET, { expiresIn: '1h' } );
-
-            // res.cookie('token', token, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === 'production' && !process.env.DISABLE_SECURE_COOKIES,
-            //     sameSite: 'strict',
-            //     path: '/',
-            //     maxAge: 86400000
-            // });
-            res.cookie( 'token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // only over HTTPS
-                sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // needed for cross-site cookies
-                maxAge: 60 * 60 * 1000,
-            } );
-
-            req.session.user = { userdetails };
-
-            // After token is generated and before res.json()
-            await con.query( "UPDATE users SET is_online = 1 WHERE id = ?", [user.id] );
-
-            return res.json( {
-                loginStatus: true,
-                userdetails: userdetails,
-            } );
-        } );
-
-    } catch ( err ) {
-        console.error( "Unexpected error:", err );
-        return res.status( 500 ).json( { loginStatus: false, Error: "Server error" } );
-    }
-} );
-
 router.post( '/login', async ( req, res ) => {
     const { username, password } = req.body;
     const validation = validateLoginInput( username, password );
@@ -257,12 +164,13 @@ router.post( '/login', async ( req, res ) => {
     const fetchUserQuery = `
     SELECT DISTINCT u.*,
       o.office_name_with_letter_address AS office_np, o.office_name_eng AS office_en,
-      o.id AS office_id, ut.usertype_en, ut.usertype_np
+      o.id AS office_id, ut.usertype_en, ut.usertype_np, ur.id AS role_id, ur.role_name, b.branch_np
     FROM users u
     LEFT JOIN offices o ON u.office_id = o.id
+    LEFT JOIN branch b ON u.branch_id = b.id
     LEFT JOIN usertypes ut ON u.usertype = ut.id
+    LEFT JOIN user_roles ur ON u.role_id = ur.id
     WHERE u.user_login_id = ?`;
-
     try {
         // Use promise-based query
         const [result] = await pool.query( fetchUserQuery, [username] );
@@ -272,7 +180,7 @@ router.post( '/login', async ( req, res ) => {
         }
 
         const user = result[0];
-
+        console.log( user );
         const isMatch = await bcrypt.compare( password, user.password );
         if ( !isMatch ) {
             return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
@@ -295,7 +203,9 @@ router.post( '/login', async ( req, res ) => {
             office_en: user.office_en,
             branch_name: user.branch_name,
             usertype_en: user.usertype_en,
-            usertype_np: user.usertype_np
+            usertype_np: user.usertype_np,
+            role_id: user.role_id,
+            role_name: user.role_name
         };
 
         const token = jwt.sign( userdetails, process.env.JWT_SECRET, { expiresIn: '1h' } );
@@ -323,6 +233,11 @@ router.post( '/login', async ( req, res ) => {
         return res.status( 500 ).json( { loginStatus: false, Error: "Server error" } );
     }
 } );
+
+
+
+
+
 
 // Logout Route
 // Include this middleware if you're using JWT to extract req.user
@@ -419,8 +334,9 @@ router.post('/login_ping', verifyToken, async (req, res) => {
 router.get( '/session', verifyToken, ( req, res ) => {
     // console.log('session', req.user)
     if ( !req.user ) return res.status( 401 ).json( { loggedIn: false } );
-
-    const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date, office_id, office_np, office_en, usertype_en, usertype_np } = req.user;
+    console.log( 'session', req.user );
+    const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date, 
+        office_id, office_np, office_en, usertype_en, usertype_np, role_id, role_name } = req.user;
 
     return res.json( {
         loggedIn: true,
@@ -434,7 +350,7 @@ router.get( '/session', verifyToken, ( req, res ) => {
             last_login,
             join_date,
             office_id, office_np, office_en,
-            usertype_en, usertype_np
+            usertype_en, usertype_np, role_id, role_name
         }
     } );
 } );

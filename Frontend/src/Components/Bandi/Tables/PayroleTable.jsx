@@ -1,11 +1,11 @@
-import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Checkbox } from '@mui/material';
+import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Checkbox, Menu, MenuItem } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
-import ReusePayroleStatus from '../../ReuseableComponents/ReusePayroleStatus';
+// import ReusePayroleStatus from '../../ReuseableComponents/ReusePayroleStatus';
 import PayroleStatusModal from '../Dialogs/PayroleStatusModal';
 import Swal from 'sweetalert2';
 import { calculateBSDate } from '../../../../Utils/dateCalculator';
@@ -18,8 +18,9 @@ import PyarolKaragarStatusModal from '../Dialogs/PyarolKaragarStatus';
 import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
 import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-const PayroleTable = () => {
+const PayroleTable = ( status ) => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
     const navigate = useNavigate();
@@ -67,7 +68,7 @@ const PayroleTable = () => {
     //Watch Variables:
     const searchOffice = watch( 'searchOffice' );
     const nationality = watch( 'nationality' );
-    const searchpayroleStatus = watch( 'searchPayroleStatus' );
+    let searchpayroleStatus = watch( 'searchPayroleStatus' );
     const searchpyarole_rakhan_upayukat = watch( 'pyarole_rakhan_upayukat' );
     const searchpayrole_no_id = watch( 'payrole_no_id' );
     const searchmudda_id = watch( 'mudda_id' );
@@ -75,6 +76,11 @@ const PayroleTable = () => {
     const searchchecked = watch( 'checked' );
     const searchis_checked = watch( 'is_checked' );
     //Watch Variables
+    if ( status == 'user_not_submitted' ) {
+        searchpayroleStatus = 1; // Default to 'user_not_submitted' status
+    } else if ( status == 'user_submitted' ) {
+        searchpayroleStatus = 2; // Default to 'user_submitted' status
+    }
 
     const [allKaidi, setAllKaidi] = useState( [] );
     const [filteredKaidi, setFilteredKaidi] = useState( [] );
@@ -108,7 +114,6 @@ const PayroleTable = () => {
         }
     };
 
-
     const [fetchedMuddas, setFetchedMuddas] = useState( [] );
     const fetchMuddas = async () => {
         try {
@@ -139,9 +144,6 @@ const PayroleTable = () => {
         fetchMuddas();
     }, [page, rowsPerPage, searchOffice, nationality, searchpayroleStatus, searchpyarole_rakhan_upayukat,
         searchpayrole_no_id, searchmudda_id, searchbandi_name, searchchecked, searchis_checked] );
-
-
-
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -192,7 +194,7 @@ const PayroleTable = () => {
         let title = '';
 
         if ( value === 2 ) {
-            title = 'के तपाई यो विवरण विभागमा पेश गर्न चाहनुहुन्छ?';
+            title = 'के तपाई यो विवरण कार्यालय प्रमुखमा पेश गर्न चाहनुहुन्छ?';
         } else if ( value === 3 ) {
             title = 'के तपाई यो विवरण स्विकार गर्दै हुनुहुन्छ ?';
         } else if ( value === 4 ) {
@@ -218,6 +220,27 @@ const PayroleTable = () => {
                 Swal.fire( 'Changes are not saved', '', 'info' );
             }
         } );
+    };
+
+    const roleBasedStatus = {
+        user: [
+            { label: 'पेश नगरेको', value: '1' },
+            { label: 'पेश गरेको', value: '2' },
+        ]
+        , office_approver: [
+            { label: 'पेश नगरेको', value: '1' },
+            { label: 'पेश गरेको', value: '2' },
+        ],
+    };
+    // console.log(searchpayroleStatus)
+
+    const [anchorEl, setAnchorEl] = useState( null );
+    const openEl = Boolean( anchorEl );
+    const handleElClick = ( event ) => {
+        setAnchorEl( event.currentTarget );
+    };
+    const handleElClose = () => {
+        setAnchorEl( null );
     };
 
     return (
@@ -247,11 +270,18 @@ const PayroleTable = () => {
                         />
                     </Grid2>
                     <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <ReusePayroleStatus
+                        {/* <ReusePayroleStatus
                             name='searchPayroleStatus'
                             label='अवस्था'
                             control={control}
                             defaultvalue={1}
+                        /> */}
+                        <ReuseSelect
+                            name='searchPayroleStatus'
+                            label='अवस्था'
+                            options={roleBasedStatus[authState.role] || roleBasedStatus[authState.role_name]}
+                            control={control}
+                        // defaultvalue={1}
                         />
                     </Grid2>
                     <Grid2 size={{ xs: 12, sm: 1 }}>
@@ -384,158 +414,171 @@ const PayroleTable = () => {
                                 return (
                                     <>
                                         {/* {authState.office_id}, {data.payrole_status} */}
-                                        {( ( authState.office_id <= 2 ) || ( data.payrole_status !== 3 ) ) ? <>
-                                            <React.Fragment key={data.id}>
-                                                <TableRow sx={rowStyle}>
-                                                    <TableCell sx={{
-                                                        position: 'sticky', left: 0,
-                                                        backgroundColor: rowStyle,
-                                                        zIndex: 3
-                                                    }} rowSpan={kaidiMuddas.length || 1}>
-                                                        <Checkbox
-                                                            key={data.payrole_id}
-                                                            checked={data.is_checked}
-                                                            onChange={() => handleCheckboxChange( data.pr_id, !data.is_checked )}
-                                                        />
 
-                                                    </TableCell>
-                                                    <TableCell sx={{
-                                                        position: 'sticky', left: 0,
-                                                        // backgroundColor: 'white',
-                                                        backgroundColor: rowStyle,
-                                                        zIndex: 3
-                                                    }} rowSpan={kaidiMuddas.length || 1}>
-                                                        {index + 1}
-                                                    </TableCell>
-                                                    <TableCell sx={{
-                                                        position: 'sticky', left: 50,
-                                                        // backgroundColor: 'white',
-                                                        backgroundColor: rowStyle,
-                                                        zIndex: 3
-                                                    }} rowSpan={kaidiMuddas.length || 1}>
-                                                        {data.id} <br />{data.bandi_name}<br />
-                                                        {data.nationality === 'स्वदेशी'
-                                                            ? `${ data.city_name_np }-${ data.wardno },${ data.district_name_np },${ data.state_name_np },${ data.country_name_np }`
-                                                            : `${ data.bidesh_nagarik_address_details },${ data.country_name_np }`}
-                                                    </TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1} >{data.current_age}</TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य'}</TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np}</TableCell>
+                                        <React.Fragment key={data.id}>
+                                            <TableRow sx={rowStyle}>
+                                                <TableCell sx={{
+                                                    position: 'sticky', left: 0,
+                                                    backgroundColor: rowStyle,
+                                                    zIndex: 3
+                                                }} rowSpan={kaidiMuddas.length || 1}>
+                                                    <Checkbox
+                                                        key={data.payrole_id}
+                                                        checked={data.is_checked}
+                                                        onChange={() => handleCheckboxChange( data.pr_id, !data.is_checked )}
+                                                    />
 
-                                                    <TableCell >{kaidiMuddas[0]?.mudda_name || ''}<br />{kaidiMuddas[0]?.mudda_no || ''}</TableCell>
-                                                    <TableCell>{kaidiMuddas[0]?.vadi || ''}</TableCell>
-                                                    <TableCell>{kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
-                                                        {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
-                                                    </TableCell>
+                                                </TableCell>
+                                                <TableCell sx={{
+                                                    position: 'sticky', left: 0,
+                                                    // backgroundColor: 'white',
+                                                    backgroundColor: rowStyle,
+                                                    zIndex: 3
+                                                }} rowSpan={kaidiMuddas.length || 1}>
+                                                    {index + 1}
+                                                </TableCell>
+                                                <TableCell sx={{
+                                                    position: 'sticky', left: 50,
+                                                    // backgroundColor: 'white',
+                                                    backgroundColor: rowStyle,
+                                                    zIndex: 3
+                                                }} rowSpan={kaidiMuddas.length || 1}>
+                                                    {data.id} <br />{data.bandi_name}<br />
+                                                    {data.nationality === 'स्वदेशी'
+                                                        ? `${ data.city_name_np }-${ data.wardno },${ data.district_name_np },${ data.state_name_np },${ data.country_name_np }`
+                                                        : `${ data.bidesh_nagarik_address_details },${ data.country_name_np }`}
+                                                </TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1} >{data.current_age}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य'}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np}</TableCell>
 
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration || ''} <br />
-                                                        {calculateBSDate( data.thuna_date_bs, data.release_date_bs ).percentage || ''}
-                                                    </TableCell>
+                                                <TableCell >{kaidiMuddas[0]?.mudda_name || ''}<br />{kaidiMuddas[0]?.mudda_no || ''}</TableCell>
+                                                <TableCell>{kaidiMuddas[0]?.vadi || ''}</TableCell>
+                                                <TableCell>{kaidiMuddas[0]?.office_name_with_letter_address || ''} <br />
+                                                    {kaidiMuddas[0]?.mudda_phesala_antim_office_date || ''}
+                                                </TableCell>
 
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {calculateBSDate( formattedDateNp, data.thuna_date_bs ).formattedDuration || ''} <br />
-                                                        {calculateBSDate( formattedDateNp, data.thuna_date_bs ).percentage || ''}
-                                                    </TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {calculateBSDate( data.release_date_bs, formattedDateNp ).formattedDuration || ''} <br />
-                                                        {calculateBSDate( data.release_date_bs, formattedDateNp ).percentage || ''}
-                                                    </TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {`${ data.office_name_with_letter_address }को च.नं. ${ data.punarabedan_office_ch_no } मिति ${ data.punarabedan_office_date } गतेको पत्रानुसार ।` || ''}
-                                                    </TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {data.fine_summary}
-                                                    </TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs || ''}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( data.thuna_date_bs, data.release_date_bs ).percentage || ''}
+                                                </TableCell>
 
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {( authState.office_id <= 2 || data.payrole_status === 2 ) ? (
-                                                            data.dopmremark || ''
-                                                        ) : null}
-                                                    </TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs || ''}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {calculateBSDate( formattedDateNp, data.thuna_date_bs ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( formattedDateNp, data.thuna_date_bs ).percentage || ''}
+                                                </TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {calculateBSDate( data.release_date_bs, formattedDateNp ).formattedDuration || ''} <br />
+                                                    {calculateBSDate( data.release_date_bs, formattedDateNp ).percentage || ''}
+                                                </TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {`${ data.office_name_with_letter_address }को च.नं. ${ data.punarabedan_office_ch_no } मिति ${ data.punarabedan_office_date } गतेको पत्रानुसार ।` || ''}
+                                                </TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {data.fine_summary}
+                                                </TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
 
-                                                    <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                        {data.payrole_status === 1 ? (
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {( authState.office_id <= 2 || data.payrole_status === 2 ) ? (
+                                                        data.dopmremark || ''
+                                                    ) : null}
+                                                </TableCell>
 
-                                                            authState.office_id >= 2 && (
-                                                                <>
-                                                                    <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 2 )}>
-                                                                        पेश गर्नुहोस्
-                                                                    </Button>
-                                                                </>
-                                                            )
-                                                        ) : authState.office_id <= 3 ? (
-                                                            data.payrole_status === 2 ? (
-                                                                <>
-                                                                    <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
-                                                                        कैफियत
-                                                                    </Button>
-                                                                    <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 3 )}>
-                                                                        स्विकार गर्नुहोस्
-                                                                    </Button>
-                                                                </>
-                                                            ) : data.payrole_status === 3 ? (
-                                                                <>
-                                                                    <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
-                                                                        कैफियत
-                                                                    </Button>
-                                                                    <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 4 )}>
-                                                                        प्यारोल बोर्डको निर्णय अनुसार पेश
-                                                                    </Button>
-                                                                </>
-                                                            ) : data.payrole_status === 4 ? (
-                                                                <>
+                                                <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {data.payrole_status === 1 ? (
 
-                                                                </> ) : <></>
-                                                        ) : <>
-                                                            {data.payrole_status === 2 ? (
-                                                                <>
-                                                                    {/* onClick={() => handleUpdatePayrole(data)} */}
-                                                                    {/* <Button variant="contained" color="warning" >
+                                                        authState.office_id >= 2 && (
+                                                            <>
+                                                                <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 2 )}>
+                                                                    पेश गर्नुहोस्
+                                                                </Button>
+                                                            </>
+                                                        )
+                                                    ) : authState.office_id <= 3 ? (
+                                                        data.payrole_status === 2 ? (
+                                                            <>
+                                                                <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
+                                                                    कैफियत
+                                                                </Button>
+                                                                <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 3 )}>
+                                                                    स्विकार गर्नुहोस्
+                                                                </Button>
+                                                            </>
+                                                        ) : data.payrole_status === 3 ? (
+                                                            <>
+                                                                <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
+                                                                    कैफियत
+                                                                </Button>
+                                                                <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 4 )}>
+                                                                    प्यारोल बोर्डको निर्णय अनुसार पेश
+                                                                </Button>
+                                                            </>
+                                                        ) : data.payrole_status === 4 ? (
+                                                            <>
+
+                                                            </> ) : <></>
+                                                    ) : <>
+                                                        {data.payrole_status === 2 ? (
+                                                            <>
+                                                                {/* onClick={() => handleUpdatePayrole(data)} */}
+                                                                {/* <Button variant="contained" color="warning" >
                                                                         Edit
                                                                     </Button> */}
-                                                                    <Button variant="contained" color="warning"
-                                                                        onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
-                                                                        Edit
+                                                                <Button variant="contained" color="warning"
+                                                                    onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
+                                                                    Edit
+                                                                </Button>
+                                                                <Button variant='contained' color='primary'
+                                                                    // id="basic-button"
+                                                                    aria-controls={openEl ? 'basic-menu' : undefined}
+                                                                    aria-haspopup="true"
+                                                                    aria-expanded={openEl ? 'true' : undefined}
+                                                                    onClick={handleElClick}
+                                                                > <MoreVertIcon/></Button>
+                                                                <Menu
+                                                                    // id="basic-menu"
+                                                                    anchorEl={anchorEl}
+                                                                    open={openEl}
+                                                                    onClose={handleElClose}
+                                                                    slotProps={{list:{'arial-labelledby':'basic-button',},}}
+                                                                    >
+                                                                        <MenuItem onClick={handleElClose}>फिर्ता पठाउनुहोस्</MenuItem>
+                                                                        <MenuItem onClick={handleElClose}>विभागमा पठाउनुहोस्</MenuItem>
+                                                                    </Menu>
+                                                            </>
+                                                        ) : <>
+                                                            {data.payrole_status === 4 ? (
+                                                                <>
+                                                                    <Button variant="contained" color="success" onClick={() => handleUpdatePayrole( data )}>
+                                                                        प्यारोल पाए/नपाएको
                                                                     </Button>
-                                                                </>
-                                                            ) : <>
-                                                                {data.payrole_status === 4 ? (
-                                                                    <>
-                                                                        <Button variant="contained" color="success" onClick={() => handleUpdatePayrole( data )}>
-                                                                            प्यारोल पाए/नपाएको
-                                                                        </Button>
-                                                                        {/* <Button variant="contained" color="warning" onClick={() => handleUpdatePayrole( data )}>
+                                                                    {/* <Button variant="contained" color="warning" onClick={() => handleUpdatePayrole( data )}>
                                                                             प्यारोल नपाएको
                                                                         </Button> */}
-                                                                    </>
-                                                                ) : <>
-                                                                </>}
+                                                                </>
+                                                            ) : <>
                                                             </>}
                                                         </>}
+                                                    </>}
 
-                                                    </TableCell>
+                                                </TableCell>
+                                            </TableRow>
+
+                                            {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (
+                                                <TableRow key={`mudda-${ data.id }-${ i }`} sx={rowStyle}>
+                                                    <TableCell>{mudda.mudda_name}</TableCell>
+                                                    <TableCell>{mudda.jaherwala}</TableCell>
+                                                    <TableCell>{mudda.antim_nikaya_faisala_miti}</TableCell>
+
                                                 </TableRow>
+                                            ) )}
+                                        </React.Fragment>
 
-                                                {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (
-                                                    <TableRow key={`mudda-${ data.id }-${ i }`} sx={rowStyle}>
-                                                        <TableCell>{mudda.mudda_name}</TableCell>
-                                                        <TableCell>{mudda.jaherwala}</TableCell>
-                                                        <TableCell>{mudda.antim_nikaya_faisala_miti}</TableCell>
-
-                                                    </TableRow>
-                                                ) )}
-                                            </React.Fragment>
-                                        </> : <>
-                                            <Box sx={{ color: 'red' }}>
-                                                Not allowed ! Please Don't try!
-                                            </Box>
-                                        </>}
                                     </>
 
                                 );

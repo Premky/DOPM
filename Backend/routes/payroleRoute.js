@@ -14,6 +14,17 @@ import dateConverter from 'nepali-datetime/dateConverter';
 import { calculateBSDate } from '../utils/dateCalculator.js';
 import verifyToken from '../middlewares/verifyToken.js';
 
+const userBasedStatusMap = {
+    user: [1, 2],
+    office_approver: [1, 2],
+    jr_officer: [3, 4],
+    sr_officer: [4, 5],
+    headoffice_approver: [5, 6],
+    branch_superadmin: [1, 2, 3, 4, 5, 6],
+    office_superadmin: [1, 2, 3, 4],
+    superadmin: 'all',
+};
+
 
 const router = express.Router();
 // const query = promisify(con.query).bind(con);
@@ -145,11 +156,33 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const searchchecked = req.query.searchchecked || 0;
     const searchis_checked = req.query.searchis_checked || 0;
 
+
     const page = parseInt( req.query.page ) || 0;
     const limit = parseInt( req.query.limit ) || 25;
     const offset = page * limit;
 
-    let baseWhere = `WHERE p.status>=1 `;
+    let baseWhere = ` WHERE 1=1 `;
+    const userRole = req.user.role_name;
+    const allowedStatuses = userBasedStatusMap[userRole] ?? [];
+
+    if ( searchpayroleStatus ) {
+        const status = Number( searchpayroleStatus );
+        if ( allowedStatuses === 'all' || allowedStatuses.includes( status ) ) {
+            baseWhere += ` AND p.status = ${ status } `;
+        } else {
+            // Block access to unauthorized status
+            return res.status( 403 ).json( {
+                Status: false,
+                Error: `You are not authorized to view payroles with status ${ status }`,
+            } );
+        }
+    } else {
+        if ( allowedStatuses !== 'all' ) {
+            const statusList = allowedStatuses.join( ',' );
+            baseWhere += ` AND p.status IN (${ statusList }) `;
+        }
+    }
+
     if ( searchOffice ) {
         baseWhere += `AND bp.current_office_id = ${ searchOffice } `;
     } else if ( active_office == 1 || active_office == 2 ) {
@@ -158,20 +191,20 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         baseWhere += `AND bp.current_office_id = ${ active_office } `;
     }
 
-    if ( searchpayroleStatus ) {
-        const status = Number( searchpayroleStatus );
-        if ( status !== 3 ) {
-            baseWhere += ` AND p.status = ${ status } `;
-        } else if ( active_office === 1 || active_office === 2 ) {
-            baseWhere += ` AND p.status = 3 `;
-        } else {
-            baseWhere += ` AND p.status != 3 `;
-        }
-    } else {
-        if ( active_office !== 1 && active_office !== 2 ) {
-            baseWhere += ` AND p.status != 3 `;
-        }
-    }
+    // if ( searchpayroleStatus ) {
+    //     const status = Number( searchpayroleStatus );
+    //     if ( status !== 3 ) {
+    //         baseWhere += ` AND p.status = ${ status } `;
+    //     } else if ( active_office === 1 || active_office === 2 ) {
+    //         baseWhere += ` AND p.status = 3 `;
+    //     } else {
+    //         baseWhere += ` AND p.status != 3 `;
+    //     }
+    // } else {
+    //     if ( active_office !== 1 && active_office !== 2 ) {
+    //         baseWhere += ` AND p.status != 3 `;
+    //     }
+    // }
 
     if ( searchpyarole_rakhan_upayukat ) {
         baseWhere += `AND pr.pyarole_rakhan_upayukat= '${ searchpyarole_rakhan_upayukat }' `;
@@ -327,23 +360,24 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
     const office_id = req.query.office_id; // extract if passed manually
     const filters = [];
     const params = [];
-    
-    // Apply filters based on office
-    if ( active_office !== 1 && active_office !== 2 ) {
-        filters.push( '1=1' );
-        // params.push( active_office );
-    } else if ( office_id ) {
-        filters.push( 'o.id = ?' );
-        params.push( office_id );
-    }
 
+    // Apply filters based on office
+    // if ( active_office !== 1 && active_office !== 2 ) {
+    //     filters.push( '1=1' );
+    //     // params.push( active_office );
+    // } else if ( office_id ) {
+    //     filters.push( 'o.id = ?' );
+    //     params.push( office_id );
+    // }
+    filters.push( 'o.id=?' );
+    params.push( office_id || active_office );
     // Filter only कैदी type
     filters.push( 'bp.bandi_type = ?' );
     params.push( 'कैदी' );
-    filters.push('(bfd.amount_fixed IS NULL OR (bfd.amount_fixed = 0 OR bfd.amount_deposited>0))'); // Ensure no fines or only paid fines
+    filters.push( '(bfd.amount_fixed IS NULL OR (bfd.amount_fixed = 0 OR bfd.amount_deposited>0))' ); // Ensure no fines or only paid fines
 
     const whereClause = filters.length > 0 ? `WHERE ${ filters.join( ' AND ' ) }` : '';
-        const sql = `
+    const sql = `
         SELECT 
         bp.id, bp.office_bandi_id, bp.bandi_name, bp.bandi_type, 
         bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
@@ -354,8 +388,7 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
         LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
         LEFT JOIN offices o ON o.id = bp.current_office_id
         ${ whereClause }
-        GROUP BY bp.id
-        ORDER BY bp.id DESC
+        
     `;
 
     try {
@@ -536,7 +569,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
             message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
         } );
     } finally {
-        if(connection) connection.release();
+        if ( connection ) connection.release();
     }
 } );
 

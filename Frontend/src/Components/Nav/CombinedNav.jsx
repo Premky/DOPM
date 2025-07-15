@@ -5,6 +5,7 @@ import { useAuth } from '../../Context/AuthContext';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useBaseURL } from '../../Context/BaseURLProvider';
+import { menuAccess } from './Menues/menuAccess';
 
 const CombinedNav = ( { user } ) => {
   const BASE_URL = useBaseURL();
@@ -12,6 +13,15 @@ const CombinedNav = ( { user } ) => {
   const { state: authState } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const filterSubmenuByRole = ( menuKey, submenu ) => {
+    const role = authState.role_name;
+    const access = menuAccess[menuKey]?.[role];
+    if ( !access ) return [];
+    if ( access === 'all' ) return submenu;
+    return submenu.filter( sub => access.includes( sub.path ) );
+  };
+
   const [sidebarMenu, setSidebarMenu] = useState( '' );
 
   const topMenu = [
@@ -39,11 +49,15 @@ const CombinedNav = ( { user } ) => {
       name: 'प्यारोल',
       defaultPath: '/payrole',
       submenu: [
-        { name: 'प्यारोल थप(पुरानोको हकमा)', path: '/payrole/create_previous_payrole' },
+        // { name: 'प्यारोल थप(पुरानोको हकमा)', path: '/payrole/create_previous_payrole' },
         { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/payrole/create_payrole' },
+        { name: 'कार्यालय प्रमुखमा पेश', path: '/payrole/payrole_user_check' },
+        { name: 'प्यारोल रुजु(कार्यालय)', path: '/payrole/payrole_client_check' },
+        { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
+        { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
         { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
-        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
-        { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
+        // { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
+        // { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
       ]
     },
     {
@@ -65,20 +79,20 @@ const CombinedNav = ( { user } ) => {
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
     }
-    
-    // ,{
-    //   name: 'कर्मचारी',
-    //   defaultPath: '/bandi_transfer',
-    //   submenu: [
-    //     // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
-    //     { name: 'नयाँ थप', path: '/emp/create_employee' },
-    //     { name: 'कर्मचारी विवरण', path: '/emp/view_employee' },
-    //     // { name: 'स्थानान्तरण', path: '/emp/aantarik_prashasan_table' },
-    //     // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
-    //   ]
-    // }
-  ];
 
+    , {
+      name: 'कर्मचारी',
+      defaultPath: '/bandi_transfer',
+      submenu: [
+        // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
+        { name: 'नयाँ थप', path: '/emp/create_employee' },
+        { name: 'कर्मचारी विवरण', path: '/emp/view_employee' },
+        // { name: 'स्थानान्तरण', path: '/emp/aantarik_prashasan_table' },
+        // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
+      ]
+    }
+  ];
+  // console.log(authState)
   const handleTopNavClick = ( menu ) => {
     setSidebarMenu( menu.name );
     navigate( menu.defaultPath );
@@ -150,19 +164,27 @@ const CombinedNav = ( { user } ) => {
           </div>
           <div className="office-info">{authState.office_np}</div>
           <div className="user-info">({authState.user})</div>
+          {/* <div className="user-info">({authState})</div> */}
           <hr />
         </div>
 
-        {selectedMenu?.submenu.map( sub => (
+        {/* {selectedMenu?.submenu.map( sub => (
+          <a key={sub.path} onClick={() => handleSubmenuClick( sub.path )}>
+            {sub.name}
+          </a>
+        ) )} */}
+
+        {filterSubmenuByRole( selectedMenu?.defaultPath?.replace( '/', '' ), selectedMenu?.submenu || [] ).map( sub => (
           <a key={sub.path} onClick={() => handleSubmenuClick( sub.path )}>
             {sub.name}
           </a>
         ) )}
 
+
         <a onClick={handleLogout} style={{ color: 'red' }}>🔒 Logout</a>
       </div>
       {/* Main content rendered here */}
-      <div style={{ marginLeft: '180px', padding: '1rem', paddingTop:'60px' }}>
+      <div style={{ marginLeft: '180px', padding: '1rem', paddingTop: '60px' }}>
         <Outlet />
       </div>
     </div>

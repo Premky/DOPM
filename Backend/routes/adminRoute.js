@@ -1,10 +1,35 @@
 import express from 'express';
 import con from '../utils/db.js';
+import pool from '../utils/db3.js';
 import { promisify } from 'util';
+import verifyToken from '../middlewares/verifyToken.js';
 
 const router = express.Router();
 const query = promisify(con.query).bind(con);
 
+// PUT /assign_role
+router.get('/get_roles', async (req, res) => {
+  const sql = 'SELECT id, role_name  FROM user_roles';
+  try{
+    const [result] = await pool.query(sql);
+    return res.json({ Status: true, Result: result, message: 'Roles fetched successfully.' });    
+  }catch (err) {
+    console.error(err);
+    return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
+  }
+});
+
+router.put('/assign_role', verifyToken, async (req, res) => {
+  const { userId, roleId } = req.body;
+
+  try {
+    await pool.query('UPDATE users SET role_id = ? WHERE id = ?', [roleId, userId]);
+    return res.json({ message: 'Role assigned successfully.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to assign role.' });
+  }
+});
 
 // Create User Route
 router.post("/add_branch_name", async (req, res) => {

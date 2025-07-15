@@ -11,6 +11,8 @@ const initialState = {
     branch_np: null,
     office_id: null,
     is_online: null,
+    role_name: null,
+    branch_name: null,
     valid: false,
 };
 
@@ -46,6 +48,9 @@ export const AuthProvider = ( { children } ) => {
                     usertype_en: response.data.user.usertype_en,
                     usertype_np: response.data.user.usertype_np,
                     is_online: response.data.user.is_online,
+                    role_name: response.data.user.role_name,
+                    role_id: response.data.user.role_id,
+                    branch_np: response.data.user.branch_name,
                     valid: true,
                     justLoggedIn: true,
                 };

@@ -29,12 +29,13 @@ const exportToExcel = async (filteredKaidi, fetchedMuddas) => {
         footer: 0.3
     };
     // Add headers
+    // 'रोगी/अशक्त',
+        // 'सिफारिसको आधार',
     const row = worksheet.addRow([
         'सि.नं.', 'कारागार कार्यालय', 'कैदीको नामथर स्थायी ठेगाना', 'उमेर', 'लिङ्ग', 'राष्ट्रियता',
         'मुद्दा', 'जाहेरवाला', 'अन्तिम निकाय/मिति', 'पुनरावेदन प्रमाण', 'कैद परेको मिति',
         'तोकिएको कैद', 'छुट मिति', 'भुक्तान कैद', 'बाकी कैद',
-        'जरिवाना प्रमाण', 'रोगी/अशक्त',
-        'सिफारिसको आधार', 'कैफियत'
+        'जरिवाना प्रमाण',  'कैफियत'
     ]);
     row.eachCell((cell) => {
         cell.border = {
@@ -83,8 +84,8 @@ const exportToExcel = async (filteredKaidi, fetchedMuddas) => {
                 mIndex === 0 ? `${bakiDuration.formattedDuration}\n${bakiDuration.percentage}%` : '',
                 mIndex === 0
                     ? data.fine_summary : '',
-                mIndex === 0 ? data.other_details || '' : '',
-                mIndex === 0 ? data.payrole_reason || '' : '',
+                // mIndex === 0 ? data.other_details || '' : '',
+                // mIndex === 0 ? data.payrole_reason || '' : '',
                 mIndex === 0 ? data.remark || '' : '',
 
             ]);

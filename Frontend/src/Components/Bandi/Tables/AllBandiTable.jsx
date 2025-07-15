@@ -93,7 +93,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                console.log( Result );
+                // console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -105,7 +105,6 @@ const AllBandiTable = () => {
             setLoading( false );
         }
     };
-
 
     const [fetchedMuddas, setFetchedMuddas] = useState( [] );
     const fetchMuddas = async () => {
@@ -132,13 +131,11 @@ const AllBandiTable = () => {
             console.error( 'Error fetching muddas:', error );
         }
     };
+
     useEffect( () => {
         fetchKaidi();
         fetchMuddas();
     }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender, is_active] );
-
-
-
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -161,8 +158,6 @@ const AllBandiTable = () => {
             Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
         }
     };
-
-
 
     const columns = [
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },

@@ -15,6 +15,8 @@ import ReuseBranch from '../../ReuseableComponents/ReuseBranch';
 import { Navigate } from 'react-router-dom';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import useRoles from '../FetchApis/useRoles';
+import useBranches from '../FetchApis/useBranches';
 
 const CreateUser = () => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -251,6 +253,8 @@ const CreateUser = () => {
         fetchUsers();
     }, [])
 
+    const {records:userRoles,optrecords:optUserRoles, loading:userRolesLoading, refetch:fetchRecords} = useRoles();
+    const {records:branches,optrecords:optBranches, loading:branchesLoading, refetch:fetchBranches} = useBranches();
     return (
         <>
             <Box sx={{ flexGrow: 1 }}>
@@ -292,6 +296,16 @@ const CreateUser = () => {
                             />
                         </Grid2>
                         <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                            <ReuseSelect
+                                name='userrole'
+                                label='अधिकार'
+                                control={control}
+                                error={errors.userrole}
+                                required
+                                options={optUserRoles}
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseKaragarOffice
                                 name='office'
                                 label='कार्यालय'
@@ -301,12 +315,12 @@ const CreateUser = () => {
                             />
                         </Grid2>
                         <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
-                            <ReuseBranch
+                            <ReuseSelect
                                 name='branch'
                                 label='शाखा'
                                 control={control}
-                                error={errors.office}
-                                options={usertypes}
+                                error={errors.branch}
+                                options={optBranches}
                                 required={true}
                             />
                         </Grid2>

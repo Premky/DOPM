@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos';
 import { useForm } from 'react-hook-form';
-import { Box, Button, Grid2, useScrollTrigger } from '@mui/material';
+import { Box, Button, FormControlLabel, Grid2, useScrollTrigger } from '@mui/material';
 import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
 import ReuseBandi from '../../../ReuseableComponents/ReuseBandi';
 import ViewBandi from '../../ViewBandi';
@@ -10,6 +10,11 @@ import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useAuth } from '../../../../Context/AuthContext';
+import useFetchBandi from '../useApi/useFetchBandi';
+import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import { CheckBox } from '@mui/icons-material';
+import ReuseCheckboxGroup from '../../ReusableComponents/ReuseCharactersCheckbox';
+import useFetchPayroleConditions from '../useApi/useFetchPayroleConditions';
 
 const PayroleForm = () => {
   const BASE_URL = useBaseURL();
@@ -61,7 +66,7 @@ const PayroleForm = () => {
   const onFormSubmit = async ( data ) => {
     setLoading( true );
     try {
-      console.log(data)
+      console.log( data );
       const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/payrole/create_payrole`;
       const method = editing ? 'PUT' : 'POST';
       const response = await axios( {
@@ -98,6 +103,8 @@ const PayroleForm = () => {
       setLoading( false );
     }
   };
+  const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
+  const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
     <>
       <Box sx={{ flexGrow: 1 }}>
@@ -107,14 +114,13 @@ const PayroleForm = () => {
               कारागार कार्यालयको नामः
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-              <ReuseBandi
+              <ReuseSelect
                 name='bandi_id'
                 label='बन्दी'
                 required={true}
                 control={control}
+                options={payroleBandiOpt}
                 error={errors.bandi_id}
-                current_office={authState.office_np}
-                type='allbandi'
               />
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -155,7 +161,7 @@ const PayroleForm = () => {
                 error={errors.mudda_id}
               />
             </Grid2> */}
-            
+
           </Grid2>
           <Grid2 container spacing={2}>
             {bandi?.payrole_id ?
@@ -174,23 +180,15 @@ const PayroleForm = () => {
             }
           </Grid2>
           <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12 }}>
-              <ReuseInput
-                name='other_details'
-                label="बृद्ध, रोगी, वा अशक्त भए सो समेत उल्लेख गर्ने"
-                // defaultValue={band_rand_id}
-                required={true}
+            <Grid2 size={{ xs: 12 }}>              
+              <ReuseCheckboxGroup
+                name="character_conditions"
+                label="चरित्र सर्तहरू"
                 control={control}
-                error={errors.other_details} />
-            </Grid2>
-            <Grid2 size={{ xs: 12 }}>
-              <ReuseInput
-                name='payrole_reason'
-                label="प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण"
-                // defaultValue={band_rand_id}
+                options={conditions} // [{ id: 1, name: "शुद्ध आचरण" }, ...]
                 required={true}
-                control={control}
-                error={errors.payrole_reason} />
+                error={errors.character_conditions}
+              />
             </Grid2>
             <Grid2 size={{ xs: 12 }}>
               <ReuseInput

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../../Context/BaseURLProvider";
 
-const useFetchBandi = ( bandi_id ) => {
+const useFetchPayroleConditions = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -13,7 +13,7 @@ const useFetchBandi = ( bandi_id ) => {
         const fetchRecords = async () => {
             try {
 
-                const response = await axios.get( `${ BASE_URL }/payrole/get_bandi_for_payrole`,
+                const response = await axios.get( `${ BASE_URL }/public/get_character_conditions`,
                     {
                         withCredentials: true
                     } );
@@ -24,7 +24,7 @@ const useFetchBandi = ( bandi_id ) => {
                         const resultArray = Object.values( Result );
 
                         const formatted = resultArray.map( ( opt, index ) => ( {
-                            label: `${ opt.office_bandi_id || '' }||${ opt.bandi_type || '' } ${ opt.bandi_name || '' }`,
+                            label: `${ opt.characters_np }`,
                             value: opt.id || index  // fallback for value if id is missing
                         } ) );
 
@@ -49,4 +49,4 @@ const useFetchBandi = ( bandi_id ) => {
     return { records, optrecords, loading };
 };
 
-export default useFetchBandi;
+export default useFetchPayroleConditions;
