@@ -215,20 +215,20 @@ const AllBandiTable = () => {
         { field: "age", headerName: "उमेर", width: 100 },
         { field: "gender", headerName: "लिङ्ग", width: 100 },
         { field: "nationality", headerName: "राष्ट्रियता", width: 100 },
-        { field: "mudda_name", headerName: "मुद्दा", width: 100 },
-        { field: "vadi", headerName: "जाहेरवाला", width: 100 },
-        {
-            field: "phesala_office_n_date",
-            headerName: "फैसला कार्यालय/मिति",
-            width: 180,
-            renderCell: ( params ) => (
-                <div style={{ whiteSpace: "pre-line" }}>
-                    {params.value || ""}
-                </div>
-            ),
-        },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
         { field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100 },
+        // { field: "mudda_name", headerName: "मुद्दा", width: 100 },
+        // { field: "vadi", headerName: "जाहेरवाला", width: 100 },
+        // {
+        //     field: "phesala_office_n_date",
+        //     headerName: "फैसला कार्यालय/मिति",
+        //     width: 180,
+        //     renderCell: ( params ) => (
+        //         <div style={{ whiteSpace: "pre-line" }}>
+        //             {params.value || ""}
+        //         </div>
+        //     ),
+        // },
     ];
 
 
