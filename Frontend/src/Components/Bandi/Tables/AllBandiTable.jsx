@@ -20,6 +20,7 @@ import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 import ReusableTable from '../../ReuseableComponents/ReuseTable';
+import ReusableBandiTable from '../ReusableComponents/ReusableBandiTable';
 
 
 const AllBandiTable = () => {
@@ -68,6 +69,7 @@ const AllBandiTable = () => {
     const search_name = watch( 'search_name' );
     const gender = watch( 'gender' );
     const bandi_type = watch( 'bandi_type' );
+    const is_active = watch( 'is_active' );
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -79,8 +81,9 @@ const AllBandiTable = () => {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
                 // page, limit: rowsPerPage,
                 params: {
-                     searchOffice, nationality,
-                    gender, bandi_type, search_name
+                    searchOffice, nationality,
+                    gender, bandi_type, search_name,
+                    is_active
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
@@ -90,7 +93,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                // console.log( Result );
+                console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -132,7 +135,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender] );
+    }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender, is_active] );
 
 
 
@@ -159,13 +162,28 @@ const AllBandiTable = () => {
         }
     };
 
-    const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
-    const [photoToPreview, setPhotoToPreview] = useState( '' );
+
 
     const columns = [
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
         { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
-        { field: "bandi_address", headerName: "ठेगाना", width: 100 },
+        // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
+        {
+            field: "bandi_address",
+            headerName: "ठेगाना",
+            width: 200,
+            renderCell: ( params ) => {
+                const row = params.row;
+                if ( row.nationality === 'स्वदेशी' ) {
+                    // Build Nepali address string
+                    return `${ row.state_name_np || '' }, ${ row.district_name_np || '' }, ${ row.city_name_np || '' }, - ${ row.wardno || '' }, ${ row.country_name_np || '' }`;
+                } else {
+                    // Foreign address + country
+                    return `${ row.bidesh_nagarik_address_details || '' }, ${ row.country_name_np || '' }`;
+                }
+            }
+        },
+
         {
             field: "photo_path",
             headerName: "फोटो",
@@ -211,31 +229,9 @@ const AllBandiTable = () => {
         },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
         { field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100 },
-
     ];
 
-    const rows = filteredKaidi.flatMap( ( data, prisonerIndex ) => {
-        const muddās = data.muddas?.length ? data.muddas : [{}]; // Ensure at least one mudda
 
-        return muddās.map( ( mudda, muddaIndex ) => ( {
-            id: `${ data.id }-${ muddaIndex }`, // Unique id for DataGrid
-            office_bandi_id: data.office_bandi_id || '',
-            bandi_name: data.bandi_name || '',
-            bandi_address: data.nationality === 'स्वदेशी'
-                ? `${ data.city_name_np }-${ data.wardno }, ${ data.district_name_np }, ${ data.state_name_np }, ${ data.country_name_np }`
-                : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }`,
-            photo_path: data.photo_path ? `${ BASE_URL }${ data.photo_path }` : '',  // ⬅️ absolute URL required
-            age: data.current_age || '',
-            gender: data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य',
-            nationality: data.nationality || '',
-            mudda_name: mudda?.mudda_name || '',
-            vadi: mudda?.vadi || '',
-            phesala_office_n_date: `${ mudda?.mudda_phesala_antim_office || '' }\n${ mudda?.mudda_phesala_antim_office_date || '' }`,
-            bandi_id: data.id,
-            thuna_date_bs: data.thuna_date_bs || '',
-            release_date_bs: data.release_date_bs || '',
-        } ) );
-    } );
 
 
     return (
@@ -303,18 +299,18 @@ const AllBandiTable = () => {
                             control={control}
                         />
                     </Grid2>
-                    {/* <Grid2 size={{ xs: 12, sm: 2 }}>
+                    <Grid2 size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="is_active"
-                            label='बन्दी स्थिति'
-                            options={[
-                                { label: 'सबै', value: '' },
-                                { label: 'कार्यालयमा रहेका', value: '1' },
-                                { label: 'छुटेर गएका', value: '0' }
+                            label='छुटेर गएको/नगएको'
+                            options={[                                
+                                { label: 'छुटेर गएको', value: '0' },
+                                { label: 'छुटेर नगएको', value: '1' }
                             ]}
+                            defaultValue='1'
                             control={control}
                         />
-                    </Grid2> */}
+                    </Grid2>
                     {/* <Grid2 size={{ xs: 12, sm: 2 }}>
                         <ReuseMudda
                             name="mudda_id"
@@ -339,23 +335,16 @@ const AllBandiTable = () => {
             </Box>
             <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
 
-                <Dialog open={photoPreviewOpen} onClose={() => setPhotoPreviewOpen( false )} maxWidth="sm" fullWidth>
-                    <DialogTitle>फोटो</DialogTitle>
-                    <DialogContent sx={{ textAlign: 'center' }}>
-                        <img
-                            src={photoToPreview}
-                            alt="Preview"
-                            style={{
-                                width: '100%',
-                                maxWidth: '400px',
-                                borderRadius: '8px',
-                                objectFit: 'contain',
-                            }}
-                        />
-                    </DialogContent>
-                </Dialog>
-
-                <ReusableTable
+                <ReusableBandiTable
+                    columns={columns}
+                    rows={filteredKaidi}
+                    loading={loading}
+                    primaryMergeKey="bandi_id"
+                    title="बन्दीहरुको सूची"
+                    showView
+                    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+                />
+                {/* <ReusableTable
                     columns={columns}
                     rows={rows}
                     loading={loading}
@@ -370,18 +359,6 @@ const AllBandiTable = () => {
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     pageSizeOptions={pageSizeOptions}
                     page={page}
-                />
-                {/* <ReusableTable
-                    columns={columns}
-                    rows={rows}
-                    loading={loading}
-                    showView
-                    // showEdit
-                    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
-                    // onEdit={ handleEdit }
-                    enableExport
-                    includeSerial
-                    serialLabel='सि.नं. '
                 /> */}
             </Box>
         </>

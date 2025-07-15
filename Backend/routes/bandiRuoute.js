@@ -657,6 +657,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const gender = req.query.gender || 0;
     const bandi_type = req.query.bandi_type || 0;
     const search_name = req.query.search_name || 0;
+    const is_active = req.query.is_active || 1; // Default to 1 (active)
     // const page = parseInt( req.query.page ) || 0;
     // const limit = parseInt( req.query.limit ) || 25;
     // const offset = page * limit;
@@ -703,9 +704,9 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         baseWhere += ` AND (bp.bandi_name LIKE ${ escapedName } OR bp.office_bandi_id = ${ con.escape( search_name ) })`;
     }
 
-    baseWhere += ` AND bp.is_active=1 `;
+    baseWhere += ` AND bp.is_active= ${ is_active } `;
     if ( forSelect ) {
-        baseWhere += ` AND bp.is_active=1 `;
+        baseWhere += ` AND bp.is_active= ${is_active}`;
     }
 
     try {

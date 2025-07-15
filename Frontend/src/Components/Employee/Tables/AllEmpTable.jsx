@@ -2,7 +2,7 @@ import React from 'react';
 
 import useAllEmployes from '../APIs/useAllEmp';
 import ReusableTable from '../../ReuseableComponents/ReuseTable';
-
+import ReusableBandiTable from '../../Bandi/ReusableComponents/ReusableBandiTable';
 const AllEmpTable = () => {
 
   const columns = [
@@ -39,7 +39,7 @@ const AllEmpTable = () => {
   return (
     <div>
 
-      <ReusableTable
+      {/* <ReusableTable
         columns={columns}
         rows={rows}
         loading={loading}
@@ -50,7 +50,7 @@ const AllEmpTable = () => {
         enableExport
         includeSerial
         serialLabel="सि.नं."
-      />
+      /> */}
     </div>
   );
 };
