@@ -80,6 +80,13 @@ const ReusableBandiTable = ( {
                             }
                             return mudda[col.field] || '';
                         }
+                        if ( col.field === 'bandi_address' ) {
+                            if ( bandi.nationality === 'स्वदेशी' ) {
+                                return ` ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.country_name_np || '' }`;
+                            } else {
+                                return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }`;
+                            }
+                        }
                         return idx === 0 ? bandi[col.field] || '' : '';
                     } )
                 ];
@@ -275,14 +282,14 @@ const ReusableBandiTable = ( {
                                                 </Button>
                                             )}
                                             {showDelete && (
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                color="error"
-                                                onClick={() => onDelete?.( bandi )}
-                                            >
-                                                Delete
-                                            </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => onDelete?.( bandi )}
+                                                >
+                                                    Delete
+                                                </Button>
                                             )}
                                         </TableCell>
                                     )}
