@@ -533,23 +533,25 @@ const PayroleTable = ( status ) => {
                                                                     onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
                                                                     Edit
                                                                 </Button>
-                                                                <Button variant='contained' color='primary'
-                                                                    // id="basic-button"
-                                                                    aria-controls={openEl ? 'basic-menu' : undefined}
-                                                                    aria-haspopup="true"
-                                                                    aria-expanded={openEl ? 'true' : undefined}
-                                                                    onClick={handleElClick}
-                                                                > <MoreVertIcon/></Button>
-                                                                <Menu
-                                                                    // id="basic-menu"
-                                                                    anchorEl={anchorEl}
-                                                                    open={openEl}
-                                                                    onClose={handleElClose}
-                                                                    slotProps={{list:{'arial-labelledby':'basic-button',},}}
+                                                                {authState.role_name === 'office_approver' && ( <>
+                                                                    <Button variant='contained' color='primary'
+                                                                        // id="basic-button"
+                                                                        aria-controls={openEl ? 'basic-menu' : undefined}
+                                                                        aria-haspopup="true"
+                                                                        aria-expanded={openEl ? 'true' : undefined}
+                                                                        onClick={handleElClick}
+                                                                    > <MoreVertIcon /></Button>
+                                                                    <Menu
+                                                                        // id="basic-menu"
+                                                                        anchorEl={anchorEl}
+                                                                        open={openEl}
+                                                                        onClose={handleElClose}
+                                                                        slotProps={{ list: { 'arial-labelledby': 'basic-button', }, }}
                                                                     >
-                                                                        <MenuItem onClick={handleElClose}>फिर्ता पठाउनुहोस्</MenuItem>
-                                                                        <MenuItem onClick={handleElClose}>विभागमा पठाउनुहोस्</MenuItem>
+                                                                        <MenuItem onClick={handleElClose} sx={{ color: 'red' }}>फिर्ता पठाउनुहोस्</MenuItem>
+                                                                        <MenuItem onClick={() => handleChangePayroleStatus( data, 4 )} sx={{ color: 'green' }}>विभागमा पठाउनुहोस्</MenuItem>
                                                                     </Menu>
+                                                                </> )}
                                                             </>
                                                         ) : <>
                                                             {data.payrole_status === 4 ? (

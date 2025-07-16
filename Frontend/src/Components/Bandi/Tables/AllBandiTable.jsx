@@ -161,6 +161,7 @@ const AllBandiTable = () => {
 
     const columns = [
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
+        { field: "bandi_type", headerName: "बन्दी प्रकार", width: 100 },
         { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
         // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
         {

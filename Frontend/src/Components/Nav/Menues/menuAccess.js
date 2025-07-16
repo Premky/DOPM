@@ -24,8 +24,12 @@ export const menuAccess = {
 
   bandi: {
     user: [
+      '/bandi/dashboard',
+      '/bandi/count_ac_office',
+      '/bandi/maskebari',
       '/bandi/create_bandi',
       '/bandi/bandi_details',
+      '/bandi/bandi_release',
     ],
     superadmin: 'all',
   },

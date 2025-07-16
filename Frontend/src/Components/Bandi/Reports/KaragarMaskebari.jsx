@@ -216,17 +216,22 @@ const KaragarMaskebari = () => {
                     </form>
                 </Box>
             </Grid2>
-            <Grid2 container sx={{ marginTop: 1 }}>
+            {/* <Grid2 container sx={{ marginTop: 1 }}>
                 <TotalofAllFields totals={totals} />
             </Grid2>
 
             <Grid2 container sx={{ marginTop: 1 }}>
                 <TotalReleaseDetails totals={totals} />
+            </Grid2> */}
+            <Grid2 container sx={{ marginTop: 1 }}>
+                स्वदेशी बन्दीहरुको संख्या
             </Grid2>
-
             <Grid2 container sx={{ marginTop: 1 }}>
                 {/* <CountAcMuddaTable /> */}
                 <TotalCountAc2Mudda muddawiseCount={swadeshiCount} muddawisetotal={swadeshiTotal} />
+            </Grid2>
+            <Grid2 container sx={{ marginTop: 1 }}>
+                विदेशी बन्दीहरुको संख्या
             </Grid2>
             <Grid2 container sx={{ marginTop: 1 }}>
                 {/* <CountAcMuddaTable /> */}
