@@ -53,7 +53,7 @@ const CombinedNav = ( { user } ) => {
         { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/payrole/create_payrole' },
         { name: 'कार्यालय प्रमुखमा पेश', path: '/payrole/payrole_user_check' },
         { name: 'प्यारोल रुजु(कार्यालय)', path: '/payrole/payrole_client_check' },
-        { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
+        { name: 'प्यारोल रुजु', path: '/payrole/payrole_jr_check' },
         { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
         { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
         // { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },

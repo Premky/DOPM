@@ -10,9 +10,9 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
-import ReuseBandi from "../../ReuseableComponents/ReuseBandi";
+import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
 
-const PayroleStatusModal = ( { open, onClose, data, kaidimuddas, onSave, payrole_status } ) => {
+const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole_status } ) => {
   const {
     handleSubmit,
     register,
@@ -62,24 +62,8 @@ const PayroleStatusModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
               InputProps={{ readOnly: true }}
             />
           </Grid>
-          <input type="text" value={`${ data?.mudda_id || '' }`} hidden />
-          <Grid item xs={12}>
-
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              {...register( "dopmremark" )}
-              label="कैफियत"
-              defaultValue={data?.dopmremark}
-              fullWidth
-              multiline
-              rows={3}
-              error={!!errors.dopmremark}
-            />
-          </Grid>
-          {payrole_status != 1 || payrole_status != 2(
-            <Grid item xs={12}>
+          <input type="text" value={`${ data?.mudda_id || '' }`} hidden />          
+              <Grid item xs={12}>
               <TextField
                 select
                 label="प्यारोल पास / फेल"
@@ -94,8 +78,19 @@ const PayroleStatusModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
                 <MenuItem value="छलफल">छलफल</MenuItem>
                 <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
               </TextField>
-            </Grid>
-          )}
+            </Grid>          
+
+          <Grid item xs={12}>
+            <TextField
+              {...register( "dopmremark" )}
+              label="कैफियत"
+              defaultValue={data?.dopmremark}
+              fullWidth
+              multiline
+              rows={3}
+              error={!!errors.dopmremark}
+            />
+          </Grid>          
         </Grid>
       </DialogContent>
       <DialogActions>
@@ -108,4 +103,4 @@ const PayroleStatusModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
   );
 };
 
-export default PayroleStatusModal;
+export default PayroleResultModal;

@@ -16,6 +16,7 @@ import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import FamilyTable from '../Tables/For View/FamilyTable';
+import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 
 const BandiReleaseForm = () => {
     const BASE_URL = useBaseURL();
@@ -107,7 +108,7 @@ const BandiReleaseForm = () => {
                             </Grid2>
 
                             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                <ReuseDatePickerBS
+                                <ReuseDateField
                                     name='decision_date'
                                     label='निर्णय मिति'
                                     control={control}
@@ -116,7 +117,7 @@ const BandiReleaseForm = () => {
                             </Grid2>
 
                             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                                <ReuseDatePickerBS
+                                <ReuseDateField
                                     name='apply_date'
                                     label='कार्यान्वयन मिति'
                                     required={true}

@@ -19,6 +19,9 @@ import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
 import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ForwardDialog from '../Payrole/Dialogs/ForwardDialog';
+import PayroleReturnStatusModal from '../Payrole/Dialogs/PayroleReturnStatusModal';
+import PayroleResultModal from '../Payrole/Dialogs/PayroleResultModal copy';
 
 const PayroleTable = ( status ) => {
     const BASE_URL = useBaseURL();
@@ -80,6 +83,8 @@ const PayroleTable = ( status ) => {
         searchpayroleStatus = 1; // Default to 'user_not_submitted' status
     } else if ( status == 'user_submitted' ) {
         searchpayroleStatus = 2; // Default to 'user_submitted' status
+    } else if ( status == 'jr_not_submitted' ) {
+        searchpayroleStatus = 3;
     }
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -102,7 +107,7 @@ const PayroleTable = ( status ) => {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
-                console.log( filteredKaidi );
+                // console.log( filteredKaidi );
             } else {
                 console.warn( Error || 'No records found.' );
                 setAllKaidi( [] );
@@ -152,6 +157,18 @@ const PayroleTable = ( status ) => {
         setEditDialogOpen( true );
     };
 
+    const [returnDialogOpen, setReturnDialogOpen] = useState( false );
+    const handleReturn = ( data ) => {
+        setSelectedData( data );
+        setReturnDialogOpen( true );
+    };
+
+    const [resultDialogOpen, setResultDialogOpen] = useState( false );
+    const handleResult = ( data ) => {
+        setSelectedData( data );
+        setResultDialogOpen( true );
+    };
+
     const handleSave = async ( updatedData ) => {
         try {
             await axios.put(
@@ -179,6 +196,12 @@ const PayroleTable = ( status ) => {
             console.error( 'Update failed:', err );
         }
     };
+    const [forwardData, setForwardData] = useState( null );
+    const [forwardModalOpen, setForwardModalOpen] = useState( false );
+    const handleForwardDialog = ( data, bandi_id ) => {
+        setForwardData( data, bandi_id );
+        setForwardModalOpen( true );
+    };
 
     const handleChangePayroleStatus = ( data, value ) => {
         const pesh = async () => {
@@ -196,10 +219,13 @@ const PayroleTable = ( status ) => {
         if ( value === 2 ) {
             title = 'के तपाई यो विवरण कार्यालय प्रमुखमा पेश गर्न चाहनुहुन्छ?';
         } else if ( value === 3 ) {
-            title = 'के तपाई यो विवरण स्विकार गर्दै हुनुहुन्छ ?';
+            title = 'के तपाई यो विवरण विभागमा पेश गर्न चाहनुहुन्छ ?';
         } else if ( value === 4 ) {
             title = `तपाई यो विवरण ${ data.current_payrole_office } पठाउन चाहनुहुन्छ?`;
         }
+
+
+
         Swal.fire( {
             title: title,
             showDenyButton: true,
@@ -231,6 +257,11 @@ const PayroleTable = ( status ) => {
             { label: 'पेश नगरेको', value: '1' },
             { label: 'पेश गरेको', value: '2' },
         ],
+        jr_officer: [
+            { label: 'पेश गरेको', value: '3' },
+            { label: 'स्विकृत गरेको', value: '4' },
+            { label: 'प्यारोल सिफारिस भएको', value: '5' },
+        ],
     };
     // console.log(searchpayroleStatus)
 
@@ -245,6 +276,12 @@ const PayroleTable = ( status ) => {
 
     return (
         <>
+            <ForwardDialog
+                open={forwardModalOpen}
+                onClose={() => setForwardModalOpen( false )}
+                onSave={handleSave}
+                editingData={forwardData}
+            />
             <PayroleStatusModal
                 open={editDialogOpen}
                 onClose={() => setEditDialogOpen( false )}
@@ -256,6 +293,16 @@ const PayroleTable = ( status ) => {
                 onClose={() => setKaragarSatusDialogOpen( false )}
                 data={selectedData}
             // onSave={handleKaragarStatusChange}
+            />
+            <PayroleReturnStatusModal
+                open={returnDialogOpen}
+                onClose={() => setReturnDialogOpen( false )}
+                data={selectedData}
+            />
+            <PayroleResultModal
+                open={resultDialogOpen}
+                onClose={() => setResultDialogOpen( false )}
+                data={selectedData}
             />
             <Box>
                 <p>Welcome {authState.user} from {authState.office_np}</p>
@@ -401,7 +448,6 @@ const PayroleTable = ( status ) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-
                             {filteredKaidi.map( ( data, index ) => {
                                 const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                                 const rowStyle = {
@@ -499,74 +545,98 @@ const PayroleTable = ( status ) => {
                                                                 </Button>
                                                             </>
                                                         )
-                                                    ) : authState.office_id <= 3 ? (
-                                                        data.payrole_status === 2 ? (
-                                                            <>
-                                                                <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
-                                                                    कैफियत
-                                                                </Button>
-                                                                <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 3 )}>
-                                                                    स्विकार गर्नुहोस्
-                                                                </Button>
-                                                            </>
-                                                        ) : data.payrole_status === 3 ? (
-                                                            <>
-                                                                <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
-                                                                    कैफियत
-                                                                </Button>
-                                                                <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 4 )}>
-                                                                    प्यारोल बोर्डको निर्णय अनुसार पेश
-                                                                </Button>
-                                                            </>
-                                                        ) : data.payrole_status === 4 ? (
-                                                            <>
+                                                    ) : data.payrole_status === 3 ? (
+                                                        <>
+                                                            <Button variant='contained' color='primary'
+                                                                // id="basic-button"
+                                                                aria-controls={openEl ? 'basic-menu' : undefined}
+                                                                aria-haspopup="true"
+                                                                aria-expanded={openEl ? 'true' : undefined}
+                                                                onClick={handleElClick}
+                                                            > <MoreVertIcon /></Button>
+                                                            <Menu
+                                                                // id="basic-menu"
+                                                                anchorEl={anchorEl}
+                                                                open={openEl}
+                                                                onClose={handleElClose}
+                                                                slotProps={{ list: { 'arial-labelledby': 'basic-button', }, }}
+                                                            >
+                                                                <MenuItem onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )} sx={{ color: 'black' }}>View</MenuItem>
+                                                                <MenuItem onClick={() => handleForwardDialog( data, 4 )} sx={{ color: 'blue' }}>पेश</MenuItem>
+                                                                <MenuItem onClick={() => handleReturn( data, 4 )} sx={{ color: 'green' }}>फिर्ता</MenuItem>
+                                                                <MenuItem onClick={() => handleResult( data, 6 )} sx={{ color: 'red' }}>स्विकृत</MenuItem>
+                                                            </Menu>
+                                                        </>
+                                                    ) :
+                                                        authState.office_id >= 3 ? (
+                                                            data.payrole_status === 2 ? (
+                                                                <>
+                                                                    <Button variant="contained" color="warning"
+                                                                        onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
+                                                                        Edit
+                                                                    </Button>
+                                                                    {authState.role_name === 'office_approver' && ( <>
+                                                                        <Button variant='contained' color='primary'
+                                                                            // id="basic-button"
+                                                                            aria-controls={openEl ? 'basic-menu' : undefined}
+                                                                            aria-haspopup="true"
+                                                                            aria-expanded={openEl ? 'true' : undefined}
+                                                                            onClick={handleElClick}
+                                                                        > <MoreVertIcon /></Button>
+                                                                        <Menu
+                                                                            // id="basic-menu"
+                                                                            anchorEl={anchorEl}
+                                                                            open={openEl}
+                                                                            onClose={handleElClose}
+                                                                            slotProps={{ list: { 'arial-labelledby': 'basic-button', }, }}
+                                                                        >
+                                                                            <MenuItem onClick={() => handleReturn( data, 1 )} sx={{ color: 'red' }}>फिर्ता पठाउनुहोस्</MenuItem>
+                                                                            <MenuItem onClick={() => handleChangePayroleStatus( data, 3 )} sx={{ color: 'green' }}>विभागमा पठाउनुहोस्</MenuItem>
+                                                                        </Menu>
+                                                                    </> )}
+                                                                    {/* <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
+                                                                        कैफियत
+                                                                    </Button>
+                                                                    <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 3 )}>
+                                                                        स्विकार गर्नुहोस्
+                                                                    </Button> */}
+                                                                </>
+                                                            ) : data.payrole_status === 3 ? (
+                                                                <>
+                                                                    <Button variant="contained" color="success" onClick={() => handleEdit( data )}>
+                                                                        कैफियत
+                                                                    </Button>
+                                                                    <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 4 )}>
+                                                                        प्यारोल बोर्डको निर्णय अनुसार पेश
+                                                                    </Button>
+                                                                </>
+                                                            ) : data.payrole_status === 4 ? (
+                                                                <>
 
-                                                            </> ) : <></>
-                                                    ) : <>
-                                                        {data.payrole_status === 2 ? (
-                                                            <>
-                                                                {/* onClick={() => handleUpdatePayrole(data)} */}
-                                                                {/* <Button variant="contained" color="warning" >
+                                                                </> ) : <></>
+                                                        ) : <>
+                                                            {data.payrole_status === 2 ? (
+                                                                <>
+                                                                    {/* onClick={() => handleUpdatePayrole(data)} */}
+                                                                    {/* <Button variant="contained" color="warning" >
                                                                         Edit
                                                                     </Button> */}
-                                                                <Button variant="contained" color="warning"
-                                                                    onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
-                                                                    Edit
-                                                                </Button>
-                                                                {authState.role_name === 'office_approver' && ( <>
-                                                                    <Button variant='contained' color='primary'
-                                                                        // id="basic-button"
-                                                                        aria-controls={openEl ? 'basic-menu' : undefined}
-                                                                        aria-haspopup="true"
-                                                                        aria-expanded={openEl ? 'true' : undefined}
-                                                                        onClick={handleElClick}
-                                                                    > <MoreVertIcon /></Button>
-                                                                    <Menu
-                                                                        // id="basic-menu"
-                                                                        anchorEl={anchorEl}
-                                                                        open={openEl}
-                                                                        onClose={handleElClose}
-                                                                        slotProps={{ list: { 'arial-labelledby': 'basic-button', }, }}
-                                                                    >
-                                                                        <MenuItem onClick={handleElClose} sx={{ color: 'red' }}>फिर्ता पठाउनुहोस्</MenuItem>
-                                                                        <MenuItem onClick={() => handleChangePayroleStatus( data, 4 )} sx={{ color: 'green' }}>विभागमा पठाउनुहोस्</MenuItem>
-                                                                    </Menu>
-                                                                </> )}
-                                                            </>
-                                                        ) : <>
-                                                            {data.payrole_status === 4 ? (
-                                                                <>
-                                                                    <Button variant="contained" color="success" onClick={() => handleUpdatePayrole( data )}>
-                                                                        प्यारोल पाए/नपाएको
-                                                                    </Button>
-                                                                    {/* <Button variant="contained" color="warning" onClick={() => handleUpdatePayrole( data )}>
-                                                                            प्यारोल नपाएको
-                                                                        </Button> */}
+
                                                                 </>
                                                             ) : <>
+                                                                {data.payrole_status === 4 ? (
+                                                                    <>
+                                                                        <Button variant="contained" color="success" onClick={() => handleUpdatePayrole( data )}>
+                                                                            प्यारोल पाए/नपाएको
+                                                                        </Button>
+                                                                        {/* <Button variant="contained" color="warning" onClick={() => handleUpdatePayrole( data )}>
+                                                                            प्यारोल नपाएको
+                                                                        </Button> */}
+                                                                    </>
+                                                                ) : <>
+                                                                </>}
                                                             </>}
                                                         </>}
-                                                    </>}
 
                                                 </TableCell>
                                             </TableRow>

@@ -5,11 +5,10 @@ export const menuAccess = {
       '/payrole/payrole_user_check',
     ],
     office_approver: [
-      '/payrole/payrole_client_check',
-      '/payrole/payrole_client_pesh',
+      '/payrole/payrole_client_check',      
     ],
     jr_officer: [
-      '/payrole/payrole_client_pesh',
+      '/payrole/payrole_jr_check',
     ],
     sr_officer: [
       '/payrole/payrole_client_pesh',
@@ -33,6 +32,8 @@ export const menuAccess = {
     ],
     superadmin: 'all',
     null:'all',
+    user:'all',
+    office_approver:'all',
   },
 
   kaamdari_subidha: {

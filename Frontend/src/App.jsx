@@ -138,6 +138,7 @@ function App() {
                   <Route path="create_payrole" element={<PayroleForm />} />
                   <Route path="payrole_user_check" element={<PayroleTable status='user_not_submitted'/>} />
                   <Route path="payrole_client_check" element={<PayroleTable status='user_submitted'/>} />
+                  <Route path="payrole_jr_check" element={<PayroleTable status='jr_not_submitted'/>} />
                   <Route path="payrole_table" element={<PayroleTable />} />
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
                   <Route path="payrole_log" element={<PayroleLogForm />} />
