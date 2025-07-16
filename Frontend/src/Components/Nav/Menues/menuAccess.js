@@ -32,6 +32,7 @@ export const menuAccess = {
       '/bandi/bandi_release',
     ],
     superadmin: 'all',
+    null:'all',
   },
 
   kaamdari_subidha: {
