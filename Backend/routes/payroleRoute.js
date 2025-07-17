@@ -500,7 +500,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN np_state ns ON ba.province_id = ns.state_id
             LEFT JOIN np_district nd ON ba.district_id = nd.did
             LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
-            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id        
+            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id 
+            LEFT JOIN bandi_release_details brd ON bp.id = brd.bandi_id       
             LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id
             LEFT JOIN offices o ON bp.current_office_id = o.id
             LEFT JOIN (

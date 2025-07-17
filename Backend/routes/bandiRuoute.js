@@ -3534,10 +3534,10 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res ) => {
+router.get( '/get_prisioners_count_for_maskebari1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-
-    const {
+    const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+    let {
         startDate,
         endDate,
         nationality,
@@ -3547,7 +3547,8 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     } = req.query;
 
     // Parameters for SQL binding
-    const params = [startDate, endDate, startDate, endDate];
+    // const params = [startDate, endDate, startDate, endDate];
+    const params = [];
     const filters = [];
 
     const baseSql = `
@@ -3567,14 +3568,16 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
 
             -- 65+ उम्र
             SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
-            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65
 
             -- गिरफ्तारी / छुटे
-            SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
-            SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+            -- SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
+            -- SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+            
+
 
         FROM bandi_person bp
-       -- LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+       LEFT JOIN bandi_release_details brd ON bp.id = brd.bandi_id
        LEFT JOIN (
             SELECT *
             FROM (
@@ -3607,10 +3610,25 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     // filters.push( "bmd.is_last_mudda = 1" );
 
     // Age filter
-    if ( ageFrom && ageTo ) {
-        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
-        params.push( Number( ageFrom ), Number( ageTo ) );
+    // if ( ageFrom && ageTo ) {
+    //     filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
+    //     params.push( Number( ageFrom ), Number( ageTo ) );
+    // }
+
+    if ( !startDate && !endDate ) {
+        // Default: till today
+        endDate = today_date_bs; // get today’s BS date
+        startDate = '0000-00-00'; // or earliest valid BS date
+    } else if ( !startDate ) {
+        // till end date
+        startDate = '0000-00-00';
+    } else if ( !endDate ) {
+        // from start date till now
+        endDate = today_date_bs;
     }
+
+    filters.push( `bkd.thuna_date_bs <= ? AND (brd.karnayan_miti IS NULL OR brd.karnayan_miti >= ?)` );
+    params.push( endDate, startDate );
 
     // Nationality filter
     if ( nationality ) {
@@ -3618,26 +3636,22 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         params.push( nationality.trim() );
     }
 
-    if ( active_office == 1 || active_office == 2 ) {
-        if ( office_id ) {
-            filters.push( "bp.current_office_id=?" );
-            params.push( office_id );
-        } else {
-            filters.push( 1 == 1 );
+    if ( active_office === 1 || active_office === 2 ) {
+        // For super admin, use office_id if provided and valid, else no filter on office?
+        if ( office_id && office_id.trim() !== '' ) {
+            const parsedOfficeId = parseInt( office_id, 10 );
+            if ( !isNaN( parsedOfficeId ) ) {
+                filters.push( "bp.current_office_id = ?" );
+                params.push( parsedOfficeId );
+            }
         }
+        // If office_id not provided or invalid, no office filter (show all offices)
     } else {
-        filters.push( "bp.current_office_id=?" );
+        // For other users, always restrict to their own office
+        filters.push( "bp.current_office_id = ?" );
         params.push( active_office );
     }
 
-    // if ( office_id ) {
-    //     filters.push( "bp.current_office_id = ?" );
-    //     params.push( office_id );
-    // } else {
-    //     if ( active_office == 1 || active_office == 2 ) {
-    //         filters.push( 1 == 1 );
-    //     }
-    // }
 
     const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
 
@@ -3646,15 +3660,129 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         ${ whereClause }
         GROUP BY mg.id, mg.mudda_group_name
         HAVING 
-            KaidiTotal > 0 OR 
-            ThunuwaTotal > 0 OR 
-            TotalArrestedInDateRange > 0 OR 
-            TotalReleasedInDateRange > 0
+            -- KaidiTotal > 0 OR 
+            -- ThunuwaTotal > 0 OR 
+            -- TotalArrestedInDateRange > 0 OR 
+            -- TotalReleasedInDateRange > 0
+            Total > 0
         ORDER BY mg.mudda_group_name ASC
     `;
 
     try {
         const [result] = await pool.query( finalSql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+
+    let {
+        startDate,
+        endDate,
+        nationality,
+        ageFrom,
+        ageTo,
+        office_id // for super admin
+    } = req.query;
+
+    const filters = ['bp.is_active = 1'];
+    const params = [];
+
+    // Default date logic
+    if ( !startDate && !endDate ) {
+        startDate = '0000-00-00';
+        endDate = today_date_bs;
+    } else if ( !startDate ) {
+        startDate = '0000-00-00';
+    } else if ( !endDate ) {
+        endDate = today_date_bs;
+    }
+
+    filters.push( `bkd.thuna_date_bs <= ?` );
+    filters.push( `(brd.karnayan_miti IS NULL OR brd.karnayan_miti >= ?)` );
+
+    params.push( endDate, startDate );
+
+    if ( nationality && nationality.trim() !== '' ) {
+        filters.push( `bp.nationality = ?` );
+        params.push( nationality.trim() );
+    }
+
+    // Office filter logic
+    if ( active_office === 1 || active_office === 2 ) {
+        if ( office_id && office_id.trim() !== '' ) {
+            const parsedOfficeId = parseInt( office_id, 10 );
+            if ( !isNaN( parsedOfficeId ) ) {
+                filters.push( `bp.current_office_id = ?` );
+                params.push( parsedOfficeId );
+            }
+        }
+        // else no office filter (all offices for super admin)
+    } else {
+        filters.push( `bp.current_office_id = ?` );
+        params.push( active_office );
+    }
+
+    // Optional: age filter
+    if ( ageFrom && ageTo ) {
+        filters.push( `TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?` );
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+
+    const baseSql = `
+        SELECT 
+            mg.mudda_group_name AS mudda_name,
+            COUNT(DISTINCT bp.id) AS Total,
+
+            -- कैदी
+            SUM(CASE WHEN bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+            SUM(CASE WHEN bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+            SUM(CASE WHEN bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+
+            -- थुनुवा
+            SUM(CASE WHEN bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+            SUM(CASE WHEN bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+            SUM(CASE WHEN bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+
+            -- 65+ उम्र
+            SUM(CASE WHEN bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+            SUM(CASE WHEN bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65
+
+        FROM bandi_person bp
+        LEFT JOIN (
+                SELECT bandi_id, MAX(karnayan_miti) AS karnayan_miti
+                FROM bandi_release_details
+                GROUP BY bandi_id
+                ) brd ON brd.bandi_id = bp.id
+        LEFT JOIN (
+            SELECT *
+            FROM (
+                SELECT bmd.*,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY bmd.bandi_id 
+                        ORDER BY bmd.created_at DESC
+                    ) AS rn
+                FROM bandi_mudda_details bmd
+            ) AS ranked_mudda
+            WHERE ranked_mudda.rn = 1
+        ) AS bmd ON bp.id = bmd.bandi_id
+        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+        LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
+        LEFT JOIN offices o ON bp.current_office_id = o.id
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+        ${ filters.length ? 'WHERE ' + filters.join( ' AND ' ) : '' }
+        GROUP BY mg.id, mg.mudda_group_name
+        HAVING Total > 0
+        ORDER BY mg.mudda_group_name ASC
+    `;
+
+    try {
+        const [result] = await pool.query( baseSql, params );
         res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );

@@ -14,7 +14,7 @@ const BandiMaskebari = () => {
   return (
     <div>
       <Grid container>
-
+          
       </Grid>
       <Grid container>
         <TotalGenderWiseCount />

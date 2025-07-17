@@ -16,6 +16,7 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../../../Context/AuthContext';
 import { exportToExcel } from '../Exports/ExcelMaskebariCount';
 import NepaliDate from 'nepali-datetime';
+import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
@@ -35,8 +36,8 @@ const KaragarMaskebari = () => {
     const endDate = watch( 'endDate' );
 
     const filters = useMemo( () => ( {
-        startDate: startDate || current_date,
-        endDate: endDate || current_date,
+        startDate: startDate,
+        endDate: endDate,
         nationality: nationality || '',
         selectedOffice: selectedOffice || ''
     } ), [startDate, endDate, nationality, selectedOffice, current_date] );
@@ -48,15 +49,15 @@ const KaragarMaskebari = () => {
     } = fetchMuddaGroupWiseCount( { filters } );
 
     const swadeshiFilters = useMemo( () => ( {
-        startDate: startDate || current_date,
-        endDate: endDate || current_date,
+        startDate: startDate ,
+        endDate: endDate,
         nationality: 'स्वदेशी',
         selectedOffice: selectedOffice || ''
     } ), [startDate, endDate, selectedOffice, current_date] );
 
     const bideshiFilters = useMemo( () => ( {
-        startDate: startDate || current_date,
-        endDate: endDate || current_date,
+        startDate: startDate,
+        endDate: endDate,
         nationality: 'विदेशी',
         selectedOffice: selectedOffice || ''
     } ), [startDate, endDate, selectedOffice, current_date] );
@@ -126,48 +127,46 @@ const KaragarMaskebari = () => {
                     // onSubmit={handleSubmit( onSubmit )}
                     >
                         <Grid container spacing={2}>
-                        {authState.office_id==1 || authState.office_id==2 && (
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <ReuseKaragarOffice
-                                    name="searchOffice"
-                                    label="Office"
-                                    control={control}
-                                    name_type='short'
-                                    disabled={authState.office_id >= 3}
-                                />
-                            </Grid>
-                        )}
-
-                            {/* <Grid size={{ xs: 12, sm: 4 }}>
-                                <ReuseSelect
-                                    name="nationality"
-                                    label='राष्ट्रियता'
-                                    options={[
-                                        { label: 'स्वदेशी', value: 'स्वदेशी' },
-                                        { label: 'विदेशी', value: 'बिदेशी' }
-                                    ]}
-                                    control={control}
-                                />
-                            </Grid> */}
-
-                            {/* <Grid container size={{ xs: 12, sm: 4 }}>
+                            {/* {authState.office_id} */}
+                            {authState.office_id == 1 || authState.office_id == 2 && (
                                 <Grid size={{ xs: 12, sm: 6 }}>
-                                    <ReuseDatePickerBS
+                                    <ReuseKaragarOffice
+                                        name="searchOffice"
+                                        label="Office"
+                                        control={control}
+                                        name_type='short'
+                                        disabled={authState.office_id >= 3}
+                                    />
+                                </Grid>
+                            )}
+
+                            <Grid container size={{ xs: 12, sm: 6 }}>
+
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <ReuseDateField
                                         name="startDate"
                                         control={control}
-                                        label="देखी"
+                                        placeholder={"देखी"}
+                                        label="मिति"
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <ReuseDatePickerBS
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <ReuseDateField
                                         name="endDate"
                                         control={control}
-                                        label="सम्म"
+                                        placeholder={"सम्म"}
+                                        label="–"
                                     />
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <Button
+                                        variant='contained'
+                                        type='submit'
+                                    >Search</Button>
                                 </Grid>
                             </Grid>
 
-                            <Grid xs={6} sm={3}>
+                            {/*<Grid xs={6} sm={3}>
                                 <Controller
                                     name="ageFrom"
                                     control={control}
