@@ -1,4 +1,4 @@
-import { Box, Button, Grid2 } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
@@ -109,18 +109,18 @@ const PayroleLogForm = () => {
 
     return (
         <Box component="form" onSubmit={handleSubmit( onSubmit )}>
-            <Grid2 container spacing={2}>
-                <Grid2 size={{ xs: 12 }}>
+            <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
                     <ReusePayroleBandi
                         name="bandi_id"
                         label="कैदीको नामथर, ठेगाना, मुद्दा"
                         control={control}
                         required={true}
                     />
-                </Grid2>
+                </Grid>
 
-                <Grid2 container size={{ sm: 6 }} spacing={2}>
-                    <Grid2 size={{ sm: 6 }}>
+                <Grid container size={{ sm: 6 }} spacing={2}>
+                    <Grid size={{ sm: 6 }}>
                         <ReuseDateField
                             name="hajir_current_date"
                             label="हाजिर मिति"
@@ -128,8 +128,8 @@ const PayroleLogForm = () => {
                             control={control}
                             required={true}
                         />
-                    </Grid2>
-                    <Grid2 size={{ sm: 6 }}>
+                    </Grid>
+                    <Grid size={{ sm: 6 }}>
                         <ReuseSelect
                             name="hajir_status"
                             label="उपस्थित/अनुउपस्थित"
@@ -141,32 +141,32 @@ const PayroleLogForm = () => {
                             control={control}
                             required={true}
                         />
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
                 {hajir_status !== '3' && ( <>
-                    <Grid2 size={{ sm: 6 }}>
+                    <Grid size={{ sm: 6 }}>
                         <ReuseDateField
                             name="hajir_next_date"
                             label="हाजिर हुने मिति"
                             placeholder="YYYY-MM-DD"
                             control={control}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseKaragarOffice
                             name="hajir_office"
                             label="हाजिर हुने कार्यालय"
                             control={control}
                         />
-                    </Grid2>
+                    </Grid>
                 </> )}
 
 
 
                 {hajir_status === '2' && (
                     <>
-                        <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                             <ReuseSelect
                                 required
                                 name="no_hajir_reason"
@@ -180,27 +180,27 @@ const PayroleLogForm = () => {
                                 ]}
                                 control={control}
                             />
-                        </Grid2>
+                        </Grid>
 
                         {no_hajir_reason === 'अन्य मुद्दामा थुना/हिरासतमा रहेको' && (
                             <>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseMudda
                                         required
                                         name="no_hajir_mudda"
                                         label="मुद्दा"
                                         control={control}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseDistrict
                                         required
                                         name="no_hajir_mudda_district"
                                         label="थुना/हिरासतमा रहेको जिल्ला"
                                         control={control}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseSelect
                                         required
                                         name="no_hajir_reason_office_type"
@@ -211,31 +211,31 @@ const PayroleLogForm = () => {
                                         ]}
                                         control={control}
                                     />
-                                </Grid2>
+                                </Grid>
 
                                 {no_hajir_reason_office_type === 'कारागार' ? (
-                                    <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                         <ReuseKaragarOffice
                                             required
                                             name="office_name"
                                             label="कारागारको नाम"
                                             control={control}
                                         />
-                                    </Grid2>
+                                    </Grid>
                                 ) : (
-                                    <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                         <ReuseInput
                                             required
                                             name="office_name"
                                             label="कार्यालयको नाम"
                                             control={control}
                                         />
-                                    </Grid2>
+                                    </Grid>
                                 )}
                             </>
                         )}
 
-                        <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                             <ReuseSelect
                                 required
                                 name="no_hajir_is_pratibedan"
@@ -246,10 +246,10 @@ const PayroleLogForm = () => {
                                 ]}
                                 control={control}
                             />
-                        </Grid2>
+                        </Grid>
 
                         {no_hajir_is_pratibedan === '1' && (
-                            <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseSelect
                                     required
                                     name="no_hajir_is_aadesh"
@@ -260,29 +260,29 @@ const PayroleLogForm = () => {
                                     ]}
                                     control={control}
                                 />
-                            </Grid2>
+                            </Grid>
                         )}
                     </>
                 )}
 
-                <Grid2 size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }}>
                     <ReuseInput
                         name="hajir_remarks"
                         label="कैफियत"
                         control={control}
                     />
-                </Grid2>
+                </Grid>
 
-                <Grid2 xs={12}>
+                <Grid xs={12}>
                     <Button type="submit" variant="contained" color="primary">
                         सेभ गर्नुहोस्
                     </Button>
-                </Grid2>
-            </Grid2>
-            <Grid2 container>
+                </Grid>
+            </Grid>
+            <Grid container>
                 <PayroleLogTable records={logRecords} />
 
-            </Grid2>
+            </Grid>
         </Box>
     );
 };

@@ -1,5 +1,5 @@
 import {
-    Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow,
+    Box, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow,
     Dialog, DialogContent, DialogTitle, Stack, Avatar
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
@@ -240,25 +240,25 @@ const AllBandiTable = () => {
 
                 {/* <form onSubmit={handleSubmit(onSubmit)}> */}
                 {/* <form> */}
-                <Grid2 container spacing={2}>
-                    <Grid2 size={{ xs: 12, sm: 3 }}>
+                <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
                             control={control}
                             disabled={authState.office_id >= 3}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseInput
                             name="search_name"
                             label="नाम/संकेत नं."
                             control={control}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="nationality"
                             label='राष्ट्रियता'
@@ -269,8 +269,8 @@ const AllBandiTable = () => {
                             ]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="gender"
                             label='लिङ्ग'
@@ -282,8 +282,8 @@ const AllBandiTable = () => {
                             ]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="bandi_type"
                             label='बन्दी प्रकार'
@@ -294,8 +294,8 @@ const AllBandiTable = () => {
                             ]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="is_active"
                             label='छुटेर गएको/नगएको'
@@ -306,17 +306,17 @@ const AllBandiTable = () => {
                             defaultValue='1'
                             control={control}
                         />
-                    </Grid2>
-                    {/* <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    {/* <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseMudda
                             name="mudda_id"
                             label='बन्दी प्रकार'                           
                             control={control}
                         />
-                    </Grid2> */}
+                    </Grid> */}
 
 
-                    <Grid2 xs={12}>
+                    <Grid xs={12}>
                         <Button
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
                             onClick={fetchKaidi}>
@@ -325,8 +325,8 @@ const AllBandiTable = () => {
                         {/* <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
                             एक्सेल निर्यात
                         </Button> */}
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
                 {/* </form> */}
             </Box>
             <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>

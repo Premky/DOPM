@@ -119,7 +119,7 @@ const BandiFineTable = ( { bandi_id } ) => {
     return (
         <Grid container spacing={2}>
 
-            <Grid container item xs={12}>
+            <Grid container size={{xs:12}}>
                 <Grid>
                     <h3>कैदीबन्दीको जरिवाना/क्षतिपुर्ती/बिगो विवरणः</h3>
                 </Grid>
@@ -127,7 +127,7 @@ const BandiFineTable = ( { bandi_id } ) => {
                     &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
                 </Grid>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{xs:12}}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
                         <TableHead>

@@ -6,7 +6,7 @@ import {
     DialogActions,
     TextField,
     Button,
-    Grid2,
+    Grid,
     TextareaAutosize,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
@@ -77,8 +77,8 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                 <input type="text" name="bandi_id" value={editingData?.bandi_id}
                     hidden
                 />
-                <Grid2 container>
-                    <Grid2 size={{ xs: 6 }}>
+                <Grid container>
+                    <Grid size={{ xs: 6 }}>
                         <ReuseKaragarOffice
                             name="transfer_from_office_id"
                             label="हालको कार्यालय"
@@ -86,8 +86,8 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                             required={true}
                             error={!!errors.transfer_from_office_id}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 6 }}>
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
                         <ReuseKaragarOffice
                             name="transfer_to_office_id"
                             label="जान चाहेको कार्यालय"
@@ -95,10 +95,10 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                             required={true}
                             error={!!errors.transfer_to_office_id}
                         />
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
 
-                <Grid2>
+                <Grid>
                     <ReuseSelect
                         name="transfer_reason_id"
                         label="सरुवाको कारण"
@@ -107,9 +107,9 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                         required={true}
                         error={!!errors.transfer_reason_id}
                     />
-                </Grid2>
+                </Grid>
 
-                <Grid2>
+                <Grid>
                     <ReuseInput
                         name="transfer_reason"
                         label="सरुवा विवरण"
@@ -118,10 +118,10 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                         error={!!errors.transfer_reason}
                         helperText={errors.transfer_reason?.message}
                     />
-                </Grid2>
+                </Grid>
 
-                <Grid2 container>
-                    <Grid2 size={{ xs: 6 }}>
+                <Grid container>
+                    <Grid size={{ xs: 6 }}>
                         <ReuseDatePickerBS
                             name='transfer_from_date'
                             label='देखी'
@@ -129,8 +129,8 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                             control={control}
                             error={!!errors.transfer_from_date}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 6 }}>
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
                         <ReuseDatePickerBS
                             name='transfer_to_date'
                             label='सम्म'
@@ -138,8 +138,8 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                             control={control}
                             error={!!errors.transfer_to_date}
                         />
-                    </Grid2>
-                    {/* <Grid2 size={{xs:12}}>
+                    </Grid>
+                    {/* <Grid size={{xs:12}}>
                         <ReuseInput
                             name="remarks"
                             label="कैफियत"
@@ -148,8 +148,8 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                             error={!!errors.remarks}
                             helperText={errors.remarks?.message}
                         />
-                    </Grid2> */}
-                </Grid2>
+                    </Grid> */}
+                </Grid>
 
 
             </DialogContent>

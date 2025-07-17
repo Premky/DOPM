@@ -108,7 +108,7 @@ const BandiTable = ( { bandi_id } ) => {
                 }}
             />
             <Grid item container spacing={2}>
-                <Grid container item xs={12}>
+                <Grid container size={{xs:12}}>
                     <Grid>
                         <h3>बन्दी विवरणः</h3>
                     </Grid>
@@ -118,7 +118,7 @@ const BandiTable = ( { bandi_id } ) => {
                     </Grid>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{xs:12}}>
                     <TableContainer>
                         <Table size='small' border={1}>
                             <TableBody>

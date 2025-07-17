@@ -1,4 +1,4 @@
-import { Grid2, Table, TableCell, TableContainer, TableHead, TableBody, TableRow } from '@mui/material';
+import { Grid, Table, TableCell, TableContainer, TableHead, TableBody, TableRow } from '@mui/material';
 import React from 'react';
 
 const TotalReleaseDetails = ( { totals } ) => {
@@ -9,9 +9,9 @@ const TotalReleaseDetails = ( { totals } ) => {
 
     return (
         <div>
-            <Grid2 container>
-            </Grid2>
-            <Grid2 container>
+            <Grid container>
+            </Grid>
+            <Grid container>
                 <TableContainer>
                     <Table border='1' size='small'>
                         <TableHead>
@@ -46,7 +46,7 @@ const TotalReleaseDetails = ( { totals } ) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </Grid2>
+            </Grid>
         </div>
     );
 };

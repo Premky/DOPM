@@ -3,7 +3,7 @@ import {
   Button,
   DialogTitle,
   Dialog,
-  Grid2,
+  Grid,
   Table,
   TableBody,
   TableCell,
@@ -19,14 +19,14 @@ import {
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import ReuseInput from '../../../ReuseableComponents/ReuseInput';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
-import nepaliYearsMonths from '../../../../Utils/nepaliYearsMonths';
-import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import nepaliYearsMonths from '../../../../../Utils/nepaliYearsMonths';
+import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 import NepaliDate from 'nepali-datetime';
-import { useAuth } from '../../../Context/AuthContext';
+import { useAuth } from '../../../../Context/AuthContext';
 
 const PayroleMaskebariCountDialog = ({ open, onClose, data, onSave }) => {
   const BASE_URL = useBaseURL();
@@ -153,8 +153,8 @@ const PayroleMaskebariCountDialog = ({ open, onClose, data, onSave }) => {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>प्यारोल अवस्था </DialogTitle>
       <DialogContent>
-        <Grid2 container>
-          <Grid2 size={12}>
+        <Grid container>
+          <Grid size={12}>
             <TableContainer>
               <Table size="small">
                 <TableHead>
@@ -245,8 +245,8 @@ const PayroleMaskebariCountDialog = ({ open, onClose, data, onSave }) => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions>
         {isEdit && <Button color="error" onClick={handleDelete}>डिलिट गर्नुहोस्</Button>}

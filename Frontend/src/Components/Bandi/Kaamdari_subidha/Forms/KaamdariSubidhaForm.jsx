@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
-import { Box, Button, Grid2, useScrollTrigger } from '@mui/material';
+import { Box, Button, Grid, useScrollTrigger } from '@mui/material';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -101,11 +101,11 @@ const KaamdariSubidhaForm = () => {
     <>
       <Box sx={{ flexGrow: 1 }}>
         <form onSubmit={handleSubmit(onFormSubmit)}>
-          <Grid2 container spacing={1}>
-            <Grid2 size={12}>
+          <Grid container spacing={1}>
+            <Grid size={12}>
              पत्रको विवरणः
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseKaragarOffice
                 name='office_id'
                 label='कार्यालय'
@@ -113,8 +113,8 @@ const KaamdariSubidhaForm = () => {
                 control={control}
                 error={errors._no}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
                 name='payrole_count_date'
                 label='प्यारोल गणना मिति'
@@ -122,9 +122,9 @@ const KaamdariSubidhaForm = () => {
                 control={control}
                 error={errors.payrole_count_date}
               />
-            </Grid2>
+            </Grid>
 
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
                 name='payrole_entry_date'
                 label='प्यारोल दाखिला मिति'
@@ -132,9 +132,9 @@ const KaamdariSubidhaForm = () => {
                 control={control}
                 error={errors.payrole_entry_date}
               />
-            </Grid2>
+            </Grid>
 
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }} hidden>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} hidden>
               <ReuseMudda
                 name='mudda_id'
                 label='मुददा'
@@ -142,8 +142,8 @@ const KaamdariSubidhaForm = () => {
                 control={control}
                 error={errors.mudda_id}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseBandi
                 name='bandi_id'
                 label='बन्दी'
@@ -153,26 +153,26 @@ const KaamdariSubidhaForm = () => {
                 current_office={authState.office_np}
                 type='allbandi'
               />
-            </Grid2>
-          </Grid2>
-          <Grid2 container spacing={2}>
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
             {bandi?.payrole_id?
               <>
-                <Grid2 sx={{color:'red'}}>
+                <Grid sx={{color:'red'}}>
                 यो कैदीको प्यारोल अगाडी नै आवेदन गरी सकेको
-                </Grid2>
+                </Grid>
               </> : <></>
             }
-          </Grid2>
-          <Grid2 container spacing={2}>
+          </Grid>
+          <Grid container spacing={2}>
             {bandi_id ?
               <>
                 <ViewBandi bandi={bandi_id} /> <br />
               </> : <></>
             }
-          </Grid2>
-          <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12 }}>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12 }}>
               <ReuseInput
                 name='other_details'
                 label="बृद्ध, रोगी, वा अशक्त भए सो समेत उल्लेख गर्ने"
@@ -180,8 +180,8 @@ const KaamdariSubidhaForm = () => {
                 required={true}
                 control={control}
                 error={errors.other_details} />
-            </Grid2>
-            <Grid2 size={{ xs: 12 }}>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
               <ReuseInput
                 name='payrole_reason'
                 label="प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण"
@@ -189,8 +189,8 @@ const KaamdariSubidhaForm = () => {
                 required={true}
                 control={control}
                 error={errors.payrole_reason} />
-            </Grid2>
-            <Grid2 size={{ xs: 12 }}>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
               <ReuseInput
                 name='payrole_remarks'
                 label="कैफियत"
@@ -198,15 +198,15 @@ const KaamdariSubidhaForm = () => {
                 required={false}
                 control={control}
                 error={errors.payrole_remarks} />
-            </Grid2>
-          </Grid2>
-          <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Button variant="contained" type='save'
                 disabled={bandi?.payrole_id || ''} // Disable if payrole_id is falsy
               >Submit</Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
       </Box >
     </>

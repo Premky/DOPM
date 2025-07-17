@@ -1,27 +1,27 @@
-import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Checkbox, Menu, MenuItem } from '@mui/material';
+import { Box, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Checkbox, Menu, MenuItem } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import axios from 'axios';
-import { useAuth } from '../../../Context/AuthContext';
+import { useAuth } from '../../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
-import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
 // import ReusePayroleStatus from '../../ReuseableComponents/ReusePayroleStatus';
-import PayroleStatusModal from '../Dialogs/PayroleStatusModal';
+import PayroleStatusModal from '../../Dialogs/PayroleStatusModal';
 import Swal from 'sweetalert2';
-import { calculateBSDate } from '../../../../Utils/dateCalculator';
+import { calculateBSDate } from '../../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
-import exportToExcel from '../Exports/ExcelPayrole';
-import '../../../index.css';
+import exportToExcel from '../../Exports/ExcelPayrole';
+import '../../../../index.css'
 import { useNavigate } from 'react-router-dom';
-import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
-import PyarolKaragarStatusModal from '../Dialogs/PyarolKaragarStatus';
-import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
-import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import PyarolKaragarStatusModal from '../../Dialogs/PyarolKaragarStatus';
+import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos';
+import ReuseMudda from '../../../ReuseableComponents/ReuseMudda';
+import ReuseInput from '../../../ReuseableComponents/ReuseInput';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ForwardDialog from '../Payrole/Dialogs/ForwardDialog';
-import PayroleReturnStatusModal from '../Payrole/Dialogs/PayroleReturnStatusModal';
-import PayroleResultModal from '../Payrole/Dialogs/PayroleResultModal copy';
+import ForwardDialog from '../Dialogs/ForwardDialog';
+import PayroleReturnStatusModal from '../Dialogs/PayroleReturnStatusModal';
+import PayroleResultModal from '../Dialogs/PayroleResultModal';
 
 const PayroleTable = ( status ) => {
     const BASE_URL = useBaseURL();
@@ -170,9 +170,10 @@ const PayroleTable = ( status ) => {
     };
 
     const handleSave = async ( updatedData ) => {
+        // console.log(updatedData)
         try {
             await axios.put(
-                `${ BASE_URL }/bandi/update_payrole/${ updatedData.payrole_id }`,
+                `${ BASE_URL }/payrole/update_payrole/${ updatedData.payrole_id }`,
                 updatedData,
                 { withCredentials: true } // ✅ Fix: put this inside an object
             );
@@ -185,7 +186,7 @@ const PayroleTable = ( status ) => {
     };
 
     const handleCheckboxChange = async ( id, newValue ) => {
-        console.log( newValue );
+        // console.log( newValue );
         try {
             await axios.put( `${ BASE_URL }/payrole/update_is_payrole_checked/${ id }`, {
                 is_checked: newValue
@@ -303,11 +304,12 @@ const PayroleTable = ( status ) => {
                 open={resultDialogOpen}
                 onClose={() => setResultDialogOpen( false )}
                 data={selectedData}
+                onSave={handleSave}
             />
             <Box>
                 <p>Welcome {authState.user} from {authState.office_np}</p>
-                <Grid2 container={2}>
-                    <Grid2 size={{ xs: 12, sm: 3 }}>
+                <Grid container={2}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
                             name='searchOffice'
                             label='कारागार कार्यालयको नाम'
@@ -315,8 +317,8 @@ const PayroleTable = ( status ) => {
 
                             disabled={authState.office_id >= 3}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         {/* <ReusePayroleStatus
                             name='searchPayroleStatus'
                             label='अवस्था'
@@ -330,13 +332,15 @@ const PayroleTable = ( status ) => {
                             control={control}
                         // defaultvalue={1}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1 }}>
                         <ReuseSelect
                             name='pyarole_rakhan_upayukat'
                             label='नतिजा'
                             options={[
                                 { label: 'सबै', value: '' },
+                                { label: 'योग्य', value: 'योग्य' },
+                                { label: 'अयोग्य', value: 'अयोग्य' },
                                 { label: 'पास', value: 'पास' },
                                 { label: 'फेल', value: 'फेल' },
                                 { label: 'छलफल', value: 'छलफल' },
@@ -344,43 +348,43 @@ const PayroleTable = ( status ) => {
                             ]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1 }}>
                         <ReuseSelect
                             name='is_checked'
                             label='चेक भए/नभएको'
                             options={[{ label: 'सबै', value: '' }, { label: 'छ', value: '1' }, { label: 'छैन', value: '0' }]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1 }}>
                         <ReusePayroleNos
                             name='payrole_no_id'
                             label='प्यारोल संख्या'
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseMudda
                             name='mudda_id'
                             label='मुद्दा'
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseInput
                             name='bandi_name'
                             label='कैदी/बन्दीको नाम'
                             control={control}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
                             एक्सेल निर्यात
                         </Button>
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </Box>
 
             <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -409,7 +413,7 @@ const PayroleTable = ( status ) => {
                                         left: 0,
                                         backgroundColor: 'blue',
                                         zIndex: 3, // header + sticky column priority
-                                        minWidth: 60
+                                        minWidth: 10
                                     }}
 
                                 >
@@ -422,12 +426,12 @@ const PayroleTable = ( status ) => {
                                         left: 50, // width of previous sticky column
                                         backgroundColor: 'blue',
                                         zIndex: 3,
-                                        minWidth: 250
+                                        minWidth: 100
                                     }}
                                 >
                                     कैदीको नामथर स्थायी ठेगाना
                                 </TableCell>
-                                <TableCell className='table_head_bg'>उमेर</TableCell>
+                                <TableCell className='table_head_bg'>उमेर (वर्ष)</TableCell>
                                 <TableCell className='table_head_bg'>लिङ्ग</TableCell>
                                 <TableCell className='table_head_bg'>राष्ट्रियता</TableCell>
                                 <TableCell className='table_head_bg'>मुद्दा</TableCell>
@@ -439,10 +443,10 @@ const PayroleTable = ( status ) => {
                                 <TableCell className='table_head_bg'>भुक्तान कैद (वर्ष, महिना, दिन र प्रतिशत)</TableCell>
                                 <TableCell className='table_head_bg'>प्यारोलमा राख्नुपर्ने कैद (वर्ष, महिना, दिन र प्रतिशत)</TableCell>
                                 <TableCell className='table_head_bg'>पुनरावेदनमा नपरेको प्रमाण</TableCell>
-                                <TableCell className='table_head_bg'>वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने</TableCell>
                                 <TableCell className='table_head_bg'>तोकिएको जरिवाना/विगो तिरेको प्रमाण</TableCell>
-                                <TableCell className='table_head_bg'>प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण</TableCell>
-                                <TableCell className='table_head_bg'>कैफियत</TableCell>
+                                {/* <TableCell className='table_head_bg'>वृद्ध रोगी वा अशक्त भए सो समेत उल्लेख गर्ने</TableCell> */}
+                                {/* <TableCell className='table_head_bg'>प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण</TableCell> */}
+                                {/* <TableCell className='table_head_bg'>कैफियत</TableCell> */}
                                 <TableCell className='table_head_bg'>कैफियत(विभागबाट)</TableCell>
                                 <TableCell className='table_head_bg'>#</TableCell>
                             </TableRow>
@@ -471,7 +475,7 @@ const PayroleTable = ( status ) => {
                                                     <Checkbox
                                                         key={data.payrole_id}
                                                         checked={data.is_checked}
-                                                        onChange={() => handleCheckboxChange( data.pr_id, !data.is_checked )}
+                                                        onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )}
                                                     />
 
                                                 </TableCell>
@@ -489,7 +493,7 @@ const PayroleTable = ( status ) => {
                                                     backgroundColor: rowStyle,
                                                     zIndex: 3
                                                 }} rowSpan={kaidiMuddas.length || 1}>
-                                                    {data.id} <br />{data.bandi_name}<br />
+                                                    {data.bandi_id} <br />{data.bandi_name}<br />
                                                     {data.nationality === 'स्वदेशी'
                                                         ? `${ data.city_name_np }-${ data.wardno },${ data.district_name_np },${ data.state_name_np },${ data.country_name_np }`
                                                         : `${ data.bidesh_nagarik_address_details },${ data.country_name_np }`}
@@ -522,17 +526,18 @@ const PayroleTable = ( status ) => {
                                                 <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                     {`${ data.office_name_with_letter_address }को च.नं. ${ data.punarabedan_office_ch_no } मिति ${ data.punarabedan_office_date } गतेको पत्रानुसार ।` || ''}
                                                 </TableCell>
-                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell>
                                                 <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                     {data.fine_summary}
                                                 </TableCell>
-                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell>
-                                                <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell>
+                                                {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.other_details || ''}</TableCell> */}
+                                                {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.payrole_reason || ''}</TableCell> */}
+                                                {/* <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark || ''}</TableCell> */}
 
                                                 <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                    {( authState.office_id <= 2 || data.payrole_status === 2 ) ? (
+                                                    {data.dopm_remarks}
+                                                    {/* {( authState.office_id <= 2 || data.payrole_status === 2 ) ? (
                                                         data.dopmremark || ''
-                                                    ) : null}
+                                                    ) : null} */}
                                                 </TableCell>
 
                                                 <TableCell rowSpan={kaidiMuddas.length || 1}>
@@ -543,19 +548,23 @@ const PayroleTable = ( status ) => {
                                                                 <Button variant="contained" color="primary" onClick={() => handleChangePayroleStatus( data, 2 )}>
                                                                     पेश गर्नुहोस्
                                                                 </Button>
+                                                                <Button variant="contained" color="warning"
+                                                                    onClick={() => navigate( `/bandi/view_saved_record/${ data.id }` )}>
+                                                                    Edit
+                                                                </Button>
                                                             </>
                                                         )
                                                     ) : data.payrole_status === 3 ? (
                                                         <>
                                                             <Button variant='contained' color='primary'
-                                                                // id="basic-button"
+                                                                id="basic-button"
                                                                 aria-controls={openEl ? 'basic-menu' : undefined}
                                                                 aria-haspopup="true"
                                                                 aria-expanded={openEl ? 'true' : undefined}
                                                                 onClick={handleElClick}
                                                             > <MoreVertIcon /></Button>
                                                             <Menu
-                                                                // id="basic-menu"
+                                                                id="basic-menu"
                                                                 anchorEl={anchorEl}
                                                                 open={openEl}
                                                                 onClose={handleElClose}
@@ -577,14 +586,14 @@ const PayroleTable = ( status ) => {
                                                                     </Button>
                                                                     {authState.role_name === 'office_approver' && ( <>
                                                                         <Button variant='contained' color='primary'
-                                                                            // id="basic-button"
+                                                                            id="basic-button"
                                                                             aria-controls={openEl ? 'basic-menu' : undefined}
                                                                             aria-haspopup="true"
                                                                             aria-expanded={openEl ? 'true' : undefined}
                                                                             onClick={handleElClick}
                                                                         > <MoreVertIcon /></Button>
                                                                         <Menu
-                                                                            // id="basic-menu"
+                                                                            id="basic-menu"
                                                                             anchorEl={anchorEl}
                                                                             open={openEl}
                                                                             onClose={handleElClose}

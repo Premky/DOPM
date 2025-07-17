@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid2 } from '@mui/material';
+import { Grid } from '@mui/material';
 import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
 import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
 
@@ -13,15 +13,15 @@ const exportMaskebari = async()=>{
 const BandiMaskebari = () => {
   return (
     <div>
-      <Grid2 container>
+      <Grid container>
 
-      </Grid2>
-      <Grid2 container>
+      </Grid>
+      <Grid container>
         <TotalGenderWiseCount />
-      </Grid2>
-      <Grid2 container>
+      </Grid>
+      <Grid container>
         <TotalCountOfficeWise />
-      </Grid2>
+      </Grid>
     </div>
   );
 };

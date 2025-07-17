@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useState, useTransition } from 'react'
 import axios from 'axios'
 import { useForm, Controller } from 'react-hook-form'
-import { Box, Button, Divider, Grid2 } from '@mui/material';
+import { Box, Button, Divider, Grid } from '@mui/material';
 import Swal from 'sweetalert2'
 import NepaliDate from 'nepali-datetime'
 import sha256 from "crypto-js/sha256";
@@ -259,9 +259,9 @@ const CreateUser = () => {
         <>
             <Box sx={{ flexGrow: 1 }}>
                 <form onSubmit={handleSubmit(onFormSubmit)}>
-                    <Grid2 container spacing={1}>
-                        <Grid2 size={{ xs: 12 }}>प्रयोगकर्ता </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                    <Grid container spacing={1}>
+                        <Grid size={{ xs: 12 }}>प्रयोगकर्ता </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseInput
                                 name='name_np'
                                 label='दर्जा नामथर नेपालीमा'
@@ -269,8 +269,8 @@ const CreateUser = () => {
                                 error={errors.name_np}
                                 required
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseInput
                                 name='username'
                                 label='Username'
@@ -279,8 +279,8 @@ const CreateUser = () => {
                                 error={errors.username}
                                 required
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='usertype'
                                 label='प्रयोगकर्ताको प्रकार'
@@ -294,8 +294,8 @@ const CreateUser = () => {
                                 required
                                 options={usertypes}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='userrole'
                                 label='अधिकार'
@@ -304,8 +304,8 @@ const CreateUser = () => {
                                 required
                                 options={optUserRoles}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseKaragarOffice
                                 name='office'
                                 label='कार्यालय'
@@ -313,8 +313,8 @@ const CreateUser = () => {
                                 error={errors.office}
                                 required
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='branch'
                                 label='शाखा'
@@ -323,8 +323,8 @@ const CreateUser = () => {
                                 options={optBranches}
                                 required={true}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseInput
                                 name='password'
                                 type='password'
@@ -333,8 +333,8 @@ const CreateUser = () => {
                                 error={errors.password}
                                 required
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseInput
                                 name='repassword'
                                 type='password'
@@ -343,8 +343,8 @@ const CreateUser = () => {
                                 error={errors.repassword}
                                 required
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='is_active'
                                 label='सक्रिय छ/छैन'
@@ -353,16 +353,16 @@ const CreateUser = () => {
                                 options={defaultOptions}
                                 required
                             />
-                        </Grid2>
-                        <Grid2 container size={{ xs: 12 }}>
-                            <Grid2 size={{ xs: 3 }}>
+                        </Grid>
+                        <Grid container size={{ xs: 12 }}>
+                            <Grid size={{ xs: 3 }}>
                                 <Button variant='contained' type='submit'>Save</Button>
-                            </Grid2>
-                            <Grid2 size={{ xs: 3 }}>
+                            </Grid>
+                            <Grid size={{ xs: 3 }}>
                                 <Button variant='contained' color='error' onClick={clear}>Clear</Button>
-                            </Grid2>
-                        </Grid2>
-                    </Grid2>
+                            </Grid>
+                        </Grid>
+                    </Grid>
                 </form>
             </Box>
             <Box>

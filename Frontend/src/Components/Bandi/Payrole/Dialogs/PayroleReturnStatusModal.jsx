@@ -11,8 +11,12 @@ import {
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
+import axios from "axios";
+import { useBaseURL } from "../../../../Context/BaseURLProvider";
+import Swal from "sweetalert2";
 
 const PayroleReturnStatusModal = ( { open, onClose, data, kaidimuddas, onSave, payrole_status } ) => {
+  const BASE_URL = useBaseURL();
   const {
     handleSubmit,
     register,
@@ -35,9 +39,35 @@ const PayroleReturnStatusModal = ( { open, onClose, data, kaidimuddas, onSave, p
     }
   }, [data, reset] );
 
-  const onSubmit = ( formValues ) => {
-    onSave( { ...data, ...formValues } );
+  const onSubmit1 = ( formValues ) => {
+    // onSave( { ...data, ...formValues } );
+    console.log( data.payrole_id, data.status, formValues.dopmremark );
     onClose();
+  };
+
+  const onSubmit = async ( formValues ) => {    
+    // console.log(data)
+    const payload = {
+      ...formValues,
+      status: data.payrole_status
+    };
+    
+    // console.log( payload );
+    try {
+      await axios.put(
+        `${ BASE_URL }/payrole/return_payrole/${ data.payrole_id }`,
+        payload,
+        { withCredentials: true }
+      );
+
+      // fetchKaidi();
+      onClose();
+      Swal.fire('सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success');
+    } catch ( err ) {
+      console.error( err );
+      onClose();
+      Swal.fire('त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error');
+    }
   };
 
   const fullAddress =
@@ -77,7 +107,7 @@ const PayroleReturnStatusModal = ( { open, onClose, data, kaidimuddas, onSave, p
               rows={3}
               error={!!errors.dopmremark}
             />
-          </Grid>          
+          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>

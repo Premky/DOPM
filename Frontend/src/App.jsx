@@ -20,10 +20,10 @@ const BandiReleaseForm = lazy( () => import( './Components/Bandi/Forms/BandiRele
 // const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
 const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
-const PayroleMakebari = lazy( () => import( './Components/Bandi/Tables/PayroleMakebari' ) );
+const PayroleMakebari = lazy( () => import( './Components/Bandi/Payrole/Tables/PayroleMakebari' ) );
 const PayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PayroleForm' ) );
 const PreviousPayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PreviousPayroleForm' ) );
-const PayroleTable = lazy( () => import( './Components/Bandi/Tables/PayroleTable' ) );
+const PayroleTable = lazy( () => import( './Components/Bandi/Payrole/Tables/PayroleTable' ) );
 const PayroleLogForm = lazy( () => import( './Components/Bandi/Forms/PayroleLogForm' ) );
 
 const AantarikPrashasanForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/AantarikPrashasanForm' ) );

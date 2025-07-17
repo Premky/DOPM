@@ -6,7 +6,7 @@ import {
     DialogActions,
     TextField,
     Button,
-    Grid2,
+    Grid,
     MenuItem
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
@@ -91,7 +91,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     required={true}
                 />
     
-                <Grid2 size={{xs:12}}>
+                <Grid size={{xs:12}}>
                     <TextField
                         select
                         label="प्यारोल पास / फेल"
@@ -106,7 +106,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                         <MenuItem value="छलफल">छलफल</MenuItem>
                         <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
                     </TextField>
-                </Grid2>
+                </Grid>
 
                 <ReuseInput
                     name="remarks"

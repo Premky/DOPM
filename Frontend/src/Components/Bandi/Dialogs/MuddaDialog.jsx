@@ -6,7 +6,7 @@ import {
     DialogActions,
     TextField,
     Button,
-    Grid2,
+    Grid,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import ReuseMudda from "../../ReuseableComponents/ReuseMudda";
@@ -77,7 +77,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                     control={control}
                     required={true}
                 />
-                <Grid2 size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }}>
                     <ReuseInput
                         name="vadi"
                         label="वादी वा जाहेरवालाको नाम"
@@ -85,18 +85,18 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                         required={true}
                         errors={errors.vadi}
                     />
-                </Grid2>
+                </Grid>
 
-                <Grid2 container>
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Grid container>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <ReuseInput
                             name="mudda_no"
                             label="मुद्दा नं."
                             control={control}
                             required={true}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <ReuseSelect
                             name={`mudda_condition`}
                             label="मुद्दाको अवस्था?"
@@ -109,11 +109,11 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             error={errors[`mudda_condition`]}
                         />
 
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
 
-                <Grid2 container>
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Grid container>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <ReuseOffice
                             name="mudda_phesala_antim_office_id"
                             label="मुद्दा फैसला गर्ने कार्यालय"
@@ -121,8 +121,8 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                             error={errors.mudda_phesala_antim_office_id}
                         />
-                    </Grid2>
-                    {/* <Grid2 size={{ xs: 12, sm: 6 }}>
+                    </Grid>
+                    {/* <Grid size={{ xs: 12, sm: 6 }}>
                         <ReuseDistrict
                             name="mudda_phesala_antim_office_district"
                             label="मुद्दा फैसला गर्ने जिल्ला"
@@ -130,11 +130,11 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                             error={errors.mudda_phesala_antim_office_district}
                         />
-                    </Grid2> */}
-                </Grid2>
+                    </Grid> */}
+                </Grid>
 
-                <Grid2 container>
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Grid container>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <ReuseDateField
                             name="mudda_phesala_antim_office_date"
                             label="फैसला मिति"
@@ -143,8 +143,8 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                             error={errors.mudda_phesala_antim_office_district}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 6, sm: 4 }}>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
                         <ReuseSelect
                             name="is_main_mudda"
                             label="मुख्य मुद्दा हो/होइन?"
@@ -157,8 +157,8 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                             error={errors.is_main_mudda}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 6, sm: 4 }}>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
                         <ReuseSelect
                             name="is_last_mudda"
                             label="अन्तिम मुद्दा हो/होइन?"
@@ -170,8 +170,8 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                             error={errors.is_last_mudda}
                         />
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
 
             </DialogContent>
 

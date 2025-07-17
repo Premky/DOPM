@@ -1,17 +1,19 @@
-import { Box, Button, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
-import { useAuth } from '../../../Context/AuthContext';
-import PayroleMaskebariCountDialog from '../Dialogs/PayroleMaskebariCountDialog';
+
 import Swal from 'sweetalert2';
 import { useForm } from 'react-hook-form';
-import nepaliYearsMonths from '../../../../Utils/nepaliYearsMonths';
+import nepaliYearsMonths from "../../../../../Utils/nepaliYearsMonths.js"
 
-import exportMaskebariCountToExcel from '../Exports/ExcelPayroleMaskebariCount';
+
 // import ReuseOffice from '../../ReuseableComponents/ReuseKaragarOffice';
-import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
-import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import PayroleMaskebariCountDialog from '../Dialogs/PayroleMaskebariCountDialog.jsx';
+import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice.jsx';
+import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import { useAuth } from '../../../../Context/AuthContext';
+
 const PayroleMakebari = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
@@ -163,48 +165,48 @@ const PayroleMakebari = () => {
                 }} variant="contained" sx={{ mb: 2 }}>नयाँ थप्नुहोस्</Button>
 
 
-                <Grid2 container>
-                    <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid container>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <PayroleMaskebariCountDialog
                             open={editDialogOpen}
                             onClose={() => setEditDialogOpen(false)}
                             data={selectedData}
                             onSave={handleSave}
                         />
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
 
-                <Grid2 container>
-                    <Grid2 container size={{ xs: 12 }}>
-                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid container>
+                    <Grid container size={{ xs: 12 }}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <ReuseKaragarOffice
                                 name='selected_office'
                                 label='कार्यालय'
                                 control={control}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <ReuseSelect
                                 name='selected_year'
                                 label='वर्ष'
                                 options={nepaliYearsMonths.yearoptions}
                                 control={control}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}><ReuseSelect
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}><ReuseSelect
                             name='selected_month'
                             label='महिना'
                             options={nepaliYearsMonths.monthsoptions}
                             control={control}
-                        /></Grid2>
-                        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}><br /><br />
+                        /></Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}><br /><br />
                             <Button variant='contained' color='success' size='large'
                                 onClick={() => exportMaskebariCountToExcel(filteredRecords, totals)}>
                                 {/* <FontAwesomeIcon icon="fa-duotone fa-solid fa-file-spreadsheet" style={{ "--fa-primary-color": "#000000", "--fa-secondary-color": "#00ff59", }} /> */}
                                 Export to Excel
                             </Button>
-                        </Grid2>
-                    </Grid2>
+                        </Grid>
+                    </Grid>
                     <TableContainer>
                         <Table border='1'>
                             <TableHead>
@@ -353,7 +355,7 @@ const PayroleMakebari = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                </Grid2>
+                </Grid>
                 <Box>
 
 

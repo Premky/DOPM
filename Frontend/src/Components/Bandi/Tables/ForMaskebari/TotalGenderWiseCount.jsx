@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid2, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
+import { Box, Grid, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 
 const TotalGenderWiseCount = () => {
@@ -8,7 +8,7 @@ const TotalGenderWiseCount = () => {
     // console.log( totals );
     return (
         <Box>
-            <Grid2>
+            <Grid>
                 <TableContainer>
                     <Table size='small' border='1'>
                         <TableHead>
@@ -65,7 +65,7 @@ const TotalGenderWiseCount = () => {
                         </TableHead>
                     </Table>
                 </TableContainer>
-            </Grid2>
+            </Grid>
         </Box>
     );
 };

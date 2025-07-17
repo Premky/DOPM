@@ -5,7 +5,7 @@ import { useController, useForm, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import { useAuth } from '../../../../Context/AuthContext';
-import { Grid2, Box, Typography, Button, TextField } from '@mui/material';
+import { Grid, Box, Typography, Button, TextField } from '@mui/material';
 import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
 import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
 import ReusePayroleStatus from '../../../ReuseableComponents/ReusePayroleStatus';
@@ -60,7 +60,7 @@ const CountReport = () => {
 
             // console.log(office_id)
             const fullUrl = `${ url }?${ queryParams.toString() }`;
-            console.log( "Fetching URL:", fullUrl );
+            // console.log( "Fetching URL:", fullUrl );
 
             const response = await axios.get( fullUrl, { withCredentials: true } );
 
@@ -124,15 +124,15 @@ const CountReport = () => {
     return (
         <>
 
-            <Grid2 container >
+            <Grid container >
                 <Box sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                         {/* Welcome {authState.user} from {authState.office_np} */}
                     </Typography>
 
                     <form onSubmit={handleSubmit( onSubmit )}>
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={{ xs: 12, sm: 4 }}>
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <ReuseKaragarOffice
                                     name="searchOffice"
                                     label="Office"
@@ -140,9 +140,9 @@ const CountReport = () => {
                                     name_type='short'
                                     disabled={authState.office_id >= 3}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 size={{ xs: 12, sm: 4 }}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <ReuseSelect
                                     name="nationality"
                                     label='राष्ट्रियता'
@@ -152,26 +152,26 @@ const CountReport = () => {
                                     ]}
                                     control={control}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            {/* <Grid2 container size={{ xs: 12, sm: 4 }}>
-                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                            {/* <Grid container size={{ xs: 12, sm: 4 }}>
+                                <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseDatePickerBS
                                         name="startDate"
                                         control={control}
                                         label="देखी"
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseDatePickerBS
                                         name="endDate"
                                         control={control}
                                         label="सम्म"
                                     />
-                                </Grid2>
-                            </Grid2>
+                                </Grid>
+                            </Grid>
 
-                            <Grid2 xs={6} sm={3}>
+                            <Grid xs={6} sm={3}>
                                 <Controller
                                     name="ageFrom"
                                     control={control}
@@ -184,9 +184,9 @@ const CountReport = () => {
                                         />
                                     )}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 xs={6} sm={3}>
+                            <Grid xs={6} sm={3}>
                                 <Controller
                                     name="ageTo"
                                     control={control}
@@ -199,25 +199,25 @@ const CountReport = () => {
                                         />
                                     )}
                                 />
-                            </Grid2> */}
+                            </Grid> */}
 
-                            <Grid2 xs={12}>
+                            <Grid xs={12}>
                                 <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
                                     रिपोर्ट लिई ल्याउनुहोस्
                                 </Button>
                                 <Button onClick={ExportCountReport} variant="outlined" sx={{ mt: 2, ml: 2 }}>
                                     एक्सेल निर्यात
                                 </Button>
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
                     </form>
                 </Box>
-            </Grid2>
-            <Grid2 container>
+            </Grid>
+            <Grid container>
                 <Suspense fallback={<div>Loading...</div>}>
                     {!isLoading && <LazyCountAcMuddaTableBody records={records} totals={totals} />}
                 </Suspense>
-            </Grid2>
+            </Grid>
         </>
     );
 };

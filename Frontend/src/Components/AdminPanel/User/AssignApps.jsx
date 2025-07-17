@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Autocomplete, Box, Button, Divider, Grid2, InputLabel, Paper,
+    Autocomplete, Box, Button, Divider, Grid, InputLabel, Paper,
     TextField, Typography
 } from '@mui/material';
-// import Grid2 from '@mui/material/Unstable_Grid2';
+// import Grid from '@mui/material/Unstable_Grid';
 
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
@@ -102,12 +102,12 @@ const AssignApps = () => {
     return (
         <Box sx={{ flexGrow: 1, margin: 2 }}>
             <form onSubmit={handleSubmit(onFormSubmit)}>
-                <Grid2 container spacing={1}>
-                    <Grid2 xs={12}>
+                <Grid container spacing={1}>
+                    <Grid xs={12}>
                         <Typography variant="h6">Assign Applications:</Typography>
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 xs={12} sm={6} md={3}>
+                    <Grid xs={12} sm={6} md={3}>
                         <InputLabel>Username:</InputLabel>
                         <Controller
                             name="user"
@@ -130,9 +130,9 @@ const AssignApps = () => {
                                 />
                             )}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 xs={12} sm={6} md={3}>
+                    <Grid xs={12} sm={6} md={3}>
                         <InputLabel>Apps:</InputLabel>
                         <Controller
                             name="app"
@@ -150,14 +150,14 @@ const AssignApps = () => {
                                 />
                             )}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 xs={12} sm={6} md={3}>
+                    <Grid xs={12} sm={6} md={3}>
                         <Button variant="contained" type="submit" color="primary" sx={{ mt: 3 }}>
                             Assign
                         </Button>
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </form>
 
             <Divider sx={{ my: 3 }} />

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import BandiShortTable from "../../Tables/BandiShortTable";
 import { useBaseURL } from "../../../../Context/BaseURLProvider";
-import { Button, Grid2, Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Button, Grid, Table, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 const KaamdariBhuktanDecision = () => {
   const BASE_URL = useBaseURL();
@@ -35,16 +35,16 @@ const KaamdariBhuktanDecision = () => {
 
   return (
     <>
-      <Grid2 container size={{ xs: 12 }}>
-        <Grid2 size={{xs:12}}>
+      <Grid container size={{ xs: 12 }}>
+        <Grid size={{xs:12}}>
           <BandiShortTable bandi_id={bandies?.bandi_id} />
-        </Grid2>
-        <Grid2 size={{xs:12, sm:6}}>
+        </Grid>
+        <Grid size={{xs:12, sm:6}}>
           <TableContainer>
             a;dslkf
           </TableContainer>
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
 
     </>
   );

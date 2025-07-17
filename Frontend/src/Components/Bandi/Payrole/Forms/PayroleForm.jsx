@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos';
 import { useForm } from 'react-hook-form';
-import { Box, Button, FormControlLabel, Grid2, useScrollTrigger } from '@mui/material';
+import { Box, Button, FormControlLabel, Grid, useScrollTrigger } from '@mui/material';
 import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
 import ReuseBandi from '../../../ReuseableComponents/ReuseBandi';
 import ViewBandi from '../../ViewBandi';
@@ -109,11 +109,11 @@ const PayroleForm = () => {
     <>
       <Box sx={{ flexGrow: 1 }}>
         <form onSubmit={handleSubmit( onFormSubmit )}>
-          <Grid2 container spacing={1}>
-            <Grid2 size={12}>
+          <Grid container spacing={1}>
+            <Grid size={12}>
               कारागार कार्यालयको नामः
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseSelect
                 name='bandi_id'
                 label='बन्दी'
@@ -122,8 +122,8 @@ const PayroleForm = () => {
                 options={payroleBandiOpt}
                 error={errors.bandi_id}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReusePayroleNos
                 name='payrole_no'
                 label='प्यारोल संख्या'
@@ -131,8 +131,8 @@ const PayroleForm = () => {
                 control={control}
                 error={errors._no}
               />
-            </Grid2>
-            {/* <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
                 name='payrole_count_date'
                 label='प्यारोल गणना मिति'
@@ -140,9 +140,9 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.payrole_count_date}
               />
-            </Grid2> */}
+            </Grid> */}
 
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
                 name='payrole_entry_date'
                 label='प्यारोल दाखिला मिति'
@@ -150,9 +150,9 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.payrole_entry_date}
               />
-            </Grid2>
+            </Grid>
 
-            {/* <Grid2 size={{ xs: 12, sm: 6, md: 3 }} >
+            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }} >
               <ReuseMudda
                 name='mudda_id'
                 label='मुददा'
@@ -160,27 +160,27 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.mudda_id}
               />
-            </Grid2> */}
+            </Grid> */}
 
-          </Grid2>
-          <Grid2 container spacing={2}>
+          </Grid>
+          <Grid container spacing={2}>
             {bandi?.payrole_id ?
               <>
-                <Grid2 sx={{ color: 'red' }}>
+                <Grid sx={{ color: 'red' }}>
                   यो कैदीको प्यारोल अगाडी नै आवेदन गरी सकेको
-                </Grid2>
+                </Grid>
               </> : <></>
             }
-          </Grid2>
-          <Grid2 container spacing={2}>
+          </Grid>
+          <Grid container spacing={2}>
             {bandi_id ?
               <>
                 <ViewBandi bandi={bandi_id} /> <br />
               </> : <></>
             }
-          </Grid2>
-          <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12 }}>              
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12 }}>              
               <ReuseCheckboxGroup
                 name="character_conditions"
                 label="चरित्र सर्तहरू"
@@ -189,8 +189,8 @@ const PayroleForm = () => {
                 required={true}
                 error={errors.character_conditions}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12 }}>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
               <ReuseInput
                 name='payrole_remarks'
                 label="कैफियत"
@@ -198,15 +198,15 @@ const PayroleForm = () => {
                 required={false}
                 control={control}
                 error={errors.payrole_remarks} />
-            </Grid2>
-          </Grid2>
-          <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Button variant="contained" type='save'
                 disabled={bandi?.payrole_id || ''} // Disable if payrole_id is falsy
               >Submit</Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
       </Box >
     </>

@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { Grid2, Box, Typography, Button } from '@mui/material';
-import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
-import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
-import TotalReleaseDetails from '../Tables/ForMaskebari/TotalReleaseDetails';
-import CountAcMuddaTable from '../Tables/Counts/CountAcMuddaTable';
+import { Grid, Box, Typography, Button } from '@mui/material';
+// import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
+// import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
+// import TotalReleaseDetails from '../Tables/ForMaskebari/TotalReleaseDetails';
+// import CountAcMuddaTable from '../Tables/Counts/CountAcMuddaTable';
 import TotalCountAc2Mudda from '../Tables/ForMaskebari/TotalCountAc2Mudda';
-import TotalofAllFields from '../Tables/ForMaskebari/TotalofAllFields';
+// import TotalofAllFields from '../Tables/ForMaskebari/TotalofAllFields';
 
 import fetchAllReleaseCounts from '../../ReuseableComponents/fetchAllReleaseCounts';
-import fetchMuddaWiseCount from '../../ReuseableComponents/fetchMuddaWiseCount';
+// import fetchMuddaWiseCount from '../../ReuseableComponents/fetchMuddaWiseCount';
+import fetchMuddaGroupWiseCount from '../Apis_to_fetch/fetchMuddaGroupWiseCount';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import { useForm } from 'react-hook-form';
@@ -44,7 +45,7 @@ const KaragarMaskebari = () => {
         records: muddawiseCount,
         muddawisetotal,
         loading: muddawiseCountLoading
-    } = fetchMuddaWiseCount( { filters } );
+    } = fetchMuddaGroupWiseCount( { filters } );
 
     const swadeshiFilters = useMemo( () => ( {
         startDate: startDate || current_date,
@@ -64,13 +65,13 @@ const KaragarMaskebari = () => {
         records: swadeshiCount,
         muddawisetotal: swadeshiTotal,
         loading: swadeshiLoading
-    } = fetchMuddaWiseCount( { filters: swadeshiFilters } );
+    } = fetchMuddaGroupWiseCount( { filters: swadeshiFilters } );
 
     const {
         records: bideshiCount,
         muddawisetotal: bideshiTotal,
         loading: bideshiLoading
-    } = fetchMuddaWiseCount( { filters: bideshiFilters } );
+    } = fetchMuddaGroupWiseCount( { filters: bideshiFilters } );
 
 
 
@@ -115,7 +116,7 @@ const KaragarMaskebari = () => {
 
     return (
         <div>
-            <Grid2 container >
+            <Grid container >
                 <Box sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                         {/* Welcome {authState.user} from {authState.office_np} */}
@@ -124,8 +125,9 @@ const KaragarMaskebari = () => {
                     <form
                     // onSubmit={handleSubmit( onSubmit )}
                     >
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={{ xs: 12, sm: 6 }}>
+                        <Grid container spacing={2}>
+                        {authState.office_id==1 || authState.office_id==2 && (
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <ReuseKaragarOffice
                                     name="searchOffice"
                                     label="Office"
@@ -133,9 +135,10 @@ const KaragarMaskebari = () => {
                                     name_type='short'
                                     disabled={authState.office_id >= 3}
                                 />
-                            </Grid2>
+                            </Grid>
+                        )}
 
-                            <Grid2 size={{ xs: 12, sm: 4 }}>
+                            {/* <Grid size={{ xs: 12, sm: 4 }}>
                                 <ReuseSelect
                                     name="nationality"
                                     label='राष्ट्रियता'
@@ -145,26 +148,26 @@ const KaragarMaskebari = () => {
                                     ]}
                                     control={control}
                                 />
-                            </Grid2>
+                            </Grid> */}
 
-                            {/* <Grid2 container size={{ xs: 12, sm: 4 }}>
-                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                            {/* <Grid container size={{ xs: 12, sm: 4 }}>
+                                <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseDatePickerBS
                                         name="startDate"
                                         control={control}
                                         label="देखी"
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseDatePickerBS
                                         name="endDate"
                                         control={control}
                                         label="सम्म"
                                     />
-                                </Grid2>
-                            </Grid2>
+                                </Grid>
+                            </Grid>
 
-                            <Grid2 xs={6} sm={3}>
+                            <Grid xs={6} sm={3}>
                                 <Controller
                                     name="ageFrom"
                                     control={control}
@@ -177,9 +180,9 @@ const KaragarMaskebari = () => {
                                         />
                                     )}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 xs={6} sm={3}>
+                            <Grid xs={6} sm={3}>
                                 <Controller
                                     name="ageTo"
                                     control={control}
@@ -192,12 +195,12 @@ const KaragarMaskebari = () => {
                                         />
                                     )}
                                 />
-                            </Grid2> */}
+                            </Grid> */}
 
-                            <Grid2 xs={12}>
-                                <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                            <Grid xs={12}>
+                                {/* <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
                                     रिपोर्ट लिई ल्याउनुहोस्
-                                </Button>
+                                </Button> */}
                                 <Button onClick={() => exportToExcel(
                                     releaseRecords,
                                     swadeshiCount,
@@ -211,32 +214,32 @@ const KaragarMaskebari = () => {
                                     color='success'
                                 >Download</Button>
 
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
                     </form>
                 </Box>
-            </Grid2>
-            {/* <Grid2 container sx={{ marginTop: 1 }}>
+            </Grid>
+            {/* <Grid container sx={{ marginTop: 1 }}>
                 <TotalofAllFields totals={totals} />
-            </Grid2>
+            </Grid>
 
-            <Grid2 container sx={{ marginTop: 1 }}>
+            <Grid container sx={{ marginTop: 1 }}>
                 <TotalReleaseDetails totals={totals} />
-            </Grid2> */}
-            <Grid2 container sx={{ marginTop: 1 }}>
+            </Grid> */}
+            <Grid container sx={{ marginTop: 1 }}>
                 स्वदेशी बन्दीहरुको संख्या
-            </Grid2>
-            <Grid2 container sx={{ marginTop: 1 }}>
+            </Grid>
+            <Grid container sx={{ marginTop: 1 }}>
                 {/* <CountAcMuddaTable /> */}
                 <TotalCountAc2Mudda muddawiseCount={swadeshiCount} muddawisetotal={swadeshiTotal} />
-            </Grid2>
-            <Grid2 container sx={{ marginTop: 1 }}>
+            </Grid>
+            <Grid container sx={{ marginTop: 1 }}>
                 विदेशी बन्दीहरुको संख्या
-            </Grid2>
-            <Grid2 container sx={{ marginTop: 1 }}>
+            </Grid>
+            <Grid container sx={{ marginTop: 1 }}>
                 {/* <CountAcMuddaTable /> */}
                 <TotalCountAc2Mudda muddawiseCount={bideshiCount} muddawisetotal={bideshiTotal} />
-            </Grid2>
+            </Grid>
         </div>
     );
 };

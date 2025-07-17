@@ -1,11 +1,8 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Grid2 } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from "@mui/material";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
-import ReuseMudda from "../../ReuseableComponents/ReuseMudda";
-import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReusePunarabedanOffice from "../../ReuseableComponents/ReusePunarabedanOffice";
-import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
@@ -39,8 +36,8 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
             <DialogTitle>पुनरावेदनमा नपरेको प्रमाण विवरण संपादित गर्नुहोस्</DialogTitle>
             <DialogContent>
-                <Grid2 container spacing={2}>
-                    <Grid2 size={{ xs: 12}}>
+                <Grid container spacing={2}>
+                    <Grid size={{ xs: 12}}>
                         <ReusePunarabedanOffice
                             name='punarabedan_office_id'
                             label="कार्यालय"
@@ -49,8 +46,8 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
                             error={errors.punarabedan_office_id}
                             // name_type='short'
                         />
-                    </Grid2>
-                    {/* <Grid2 size={{ xs: 12}}>
+                    </Grid>
+                    {/* <Grid size={{ xs: 12}}>
                         <ReuseDistrict
                             name='punarabedan_office_district'
                             label="फैसला भएको जिल्ला"
@@ -58,9 +55,9 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
                             control={control}
                             error={errors.punarabedan_office_district}
                         />
-                    </Grid2> */}
+                    </Grid> */}
 
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <ReuseInput
                             name='punarabedan_office_ch_no'
                             label="च.नं."
@@ -72,8 +69,8 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
                             ]}
                             error={errors.punarabedan_office_ch_no}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                         <ReuseDateField
                             name='punarabedan_office_date'
                             label="मिति"
@@ -82,8 +79,8 @@ const PunrabednDialog = ({ open, onClose, onSave, editingData }) => {
                             control={control}
                             error={errors.punarabedan_office_date}
                         />
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>रद्द गर्नुहोस्</Button>

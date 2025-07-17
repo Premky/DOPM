@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Autocomplete, Box, Button, Divider, Grid2, IconButton, InputLabel, TextField, Typography } from '@mui/material'
+import { Autocomplete,  Grid,  InputLabel, TextField } from '@mui/material'
 import { Controller } from 'react-hook-form';
 import { useBaseURL } from '../../Context/BaseURLProvider';
 
@@ -54,14 +54,14 @@ const ReuseMudda = ({ name, label, required, control, error, defaultValue, setVa
     return (
         <>
             <InputLabel id={name}>
-                <Grid2 container alignItems="center">
-                    <Grid2 xs={12} sm={6} md={6}>
+                <Grid container alignItems="center">
+                    <Grid xs={12} sm={6} md={6}>
                         {label}
-                    </Grid2>
-                    <Grid2 xs={12} sm={6} md={6}>
+                    </Grid>
+                    <Grid xs={12} sm={6} md={6}>
                         {required && <span style={{ color: 'red' }}>*</span>}
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </InputLabel>
 
             <Controller

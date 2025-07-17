@@ -130,7 +130,7 @@ const BandiMuddaTable = ({ bandi_id }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid container item xs={12}>
+            <Grid container size={{xs:12}}>
                 <Grid>
                     <h3>कैदीबन्दीको मुद्दाको विवरणः</h3>
                 </Grid>
@@ -139,7 +139,7 @@ const BandiMuddaTable = ({ bandi_id }) => {
                 </Grid>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{xs:12}}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
                         <TableHead>

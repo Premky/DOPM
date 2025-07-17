@@ -11,7 +11,7 @@ import BandiKaidTable from './Tables/For View/BandiKaidTable.jsx';
 import BandiContactPersonTable from './Tables/For View/ContactPersonTable.jsx';
 import BandiDiseasesTable from './Tables/For View/BandiDiseasesTable.jsx';
 import BandiDisabilityTable from './Tables/For View/BandiDisabilityTable.jsx';
-import { Grid2 } from '@mui/material';
+import { Grid } from '@mui/material';
 
 const ViewBandi = ( { bandi } ) => {
     const params = useParams();
@@ -21,41 +21,41 @@ const ViewBandi = ( { bandi } ) => {
 
     return (
         <>
-            <Grid2 container spacing={2} sx={{ marginBottom: '0px' }}>
-                <Grid2 size={{ xs: 12 }}>
+            <Grid container spacing={2} sx={{ marginBottom: '0px' }}>
+                <Grid size={{ xs: 12 }}>
                     <BandiTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiKaidTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiAddressTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <FamilyTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiContactPersonTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiIDTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiMuddaTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiFineTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 12 }}>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiPunrabednTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 6 }}>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
                     <BandiDiseasesTable bandi_id={bandi_id} />
-                </Grid2>
-                <Grid2 size={{ xs: 6 }}>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
                     <BandiDisabilityTable bandi_id={bandi_id} />
-                </Grid2>
-            </Grid2>
+                </Grid>
+            </Grid>
         </>
     );
 };

@@ -1,10 +1,10 @@
-import { Box, Grid2, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react';
 
 const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
     return (
         <div>
-            <Grid2 container>
+            <Grid container>
                 <Box sx={{ width: '100%', overflowX: 'auto' }}>
                     <TableContainer component={Paper}>
                         <Table size='small' border={1}>
@@ -67,7 +67,7 @@ const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
                         </Table>
                     </TableContainer>
                 </Box>
-            </Grid2>
+            </Grid>
         </div>
     );
 };

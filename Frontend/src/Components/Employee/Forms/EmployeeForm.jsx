@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
-import { Box, Button, Grid, Grid2 } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import debounce from 'lodash/debounce';
 import ReuseCountry from '../../ReuseableComponents/ReuseCountry';
 import ReuseState from '../../ReuseableComponents/ReuseState';
@@ -123,15 +123,15 @@ const EmployeeForm = () => {
     return (
         <>
             <Box>
-                <Grid2 container spacing={0}>
+                <Grid container spacing={0}>
                     <form onSubmit={handleSubmit( onFormSubmit )}>
-                        <Grid2 container spacing={2}>
-                            <Grid2 item size={{ xs: 12 }} sx={formHeadStyle}>
+                        <Grid container spacing={2}>
+                            <Grid item size={{ xs: 12 }} sx={formHeadStyle}>
                                 कार्मचारीको विवरणः
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 item container size={{ xs: 9, sm: 8, md: 10 }}>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid item container size={{ xs: 9, sm: 8, md: 10 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="emp_type"
                                         label="कर्मचारीको प्रकार"
@@ -142,8 +142,8 @@ const EmployeeForm = () => {
                                         ]}
                                         error={errors.bandi_type}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name='sanket_no'
                                         label="कर्मचारी संकेत नम्बर"
@@ -156,10 +156,10 @@ const EmployeeForm = () => {
                                     <span style={{ color: 'red' }}>
                                         {sanketLoading ? 'जाँच गर्दै...' : sanketExists ? 'यो संकेत नं. पहिले नै प्रयोगमा छ।' : ''}
                                     </span>
-                                </Grid2>
+                                </Grid>
 
 
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="name_in_nepali"
                                         label="नाम(नेपालीमा)"
@@ -167,8 +167,8 @@ const EmployeeForm = () => {
                                         control={control}
                                         error={errors.name_in_nepali}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="name_in_english"
                                         label="नाम(अंग्रेजीमा)"
@@ -176,9 +176,9 @@ const EmployeeForm = () => {
                                         control={control}
                                         error={errors.name_in_english}
                                     />
-                                </Grid2>
+                                </Grid>
 
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="gender"
                                         label="लिङ्ग"
@@ -191,9 +191,9 @@ const EmployeeForm = () => {
                                             { label: 'अन्य', value: 'अन्य' }
                                         ]}
                                     />
-                                </Grid2>
-                                <Grid2 container size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <Grid2 item size={{ xs: 10, sm: 9, md: 8 }}>
+                                </Grid>
+                                <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <Grid item size={{ xs: 10, sm: 9, md: 8 }}>
                                         {/* <ReuseDateField */}
                                         <ReuseDatePickerBS
                                             name="dob"
@@ -203,8 +203,8 @@ const EmployeeForm = () => {
                                             control={control}
                                             error={errors.dob}
                                         />
-                                    </Grid2>
-                                    <Grid2 item size={{ xs: 2, sm: 3, md: 4 }}>
+                                    </Grid>
+                                    <Grid item size={{ xs: 2, sm: 3, md: 4 }}>
                                         <ReuseInput
                                             name="age"
                                             label="उमेर"
@@ -213,9 +213,9 @@ const EmployeeForm = () => {
                                             error={errors.age}
                                             type="number"
                                         />
-                                    </Grid2>
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                    </Grid>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="married_status"
                                         label="वैवाहिक अवस्था"
@@ -228,8 +228,8 @@ const EmployeeForm = () => {
                                             { label: 'एकल', value: 'एकल' },
                                         ]}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="mobile_no"
                                         label="सम्पर्क नं."
@@ -240,40 +240,40 @@ const EmployeeForm = () => {
                                         required={true}
                                         error={errors.mobile_no}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="email"
                                         label="इमेल"
                                         control={control}
                                         error={errors.mobile_no}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="citizenship_no"
                                         label="नागरीकता प्रमाण पत्र नं."
                                         control={control}
                                         error={errors.citizenship_no}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDistrict
                                         name="issue_district"
                                         label="नागरीकता जारी जिल्ला"
                                         control={control}
                                         error={errors.issue_district}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDateField
                                         name="issue_date"
                                         label="नागरीकता जारी मिति"
                                         control={control}
                                         error={errors.issue_date}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseState
                                         name="province_id"
                                         label="प्रदेश"
@@ -281,8 +281,8 @@ const EmployeeForm = () => {
                                         error={errors.province_id}
                                         required={true}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDistrict
                                         name="district_id"
                                         label="जिल्ला"
@@ -291,8 +291,8 @@ const EmployeeForm = () => {
                                         required={true}
                                         selectedState={watchProvince}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseMunicipality
                                         name="city_id"
                                         label="गा.पा./न.पा."
@@ -301,8 +301,8 @@ const EmployeeForm = () => {
                                         required={true}
                                         selectedDistrict={watchDistrict}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="ward_no"
                                         label="वडा नं."
@@ -311,8 +311,8 @@ const EmployeeForm = () => {
                                         error={errors.ward}
                                         required={true}
                                     />
-                                </Grid2>
-                                <Grid2 item size={{ xs: 12 }} >
+                                </Grid>
+                                <Grid item size={{ xs: 12 }} >
                                     <ReuseInput
                                         name="remarks"
                                         label="कैफियत"
@@ -320,9 +320,9 @@ const EmployeeForm = () => {
                                         control={control}
                                         error={errors.remarks}
                                     />
-                                </Grid2>
-                            </Grid2>
-                            <Grid2 container size={{ xs: 3, sm: 4, md: 2 }}>
+                                </Grid>
+                            </Grid>
+                            <Grid container size={{ xs: 3, sm: 4, md: 2 }}>
                                 <ReusePhotoInput
                                     name="photo"
                                     label="फोटो"
@@ -330,15 +330,15 @@ const EmployeeForm = () => {
                                     control={control}
                                     error={errors.photo}
                                 />
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
                         <hr />
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={{ xs: 12 }} sx={formHeadStyle}>
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12 }} sx={formHeadStyle}>
                                 कर्मचारीको नियुक्ति विवरणः
-                            </Grid2>
-                            <Grid2 container size={{ xs: 12 }}>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            </Grid>
+                            <Grid container size={{ xs: 12 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDateField
                                         name="appointment_date_bs"
                                         label="मिति(वि.सं.)"
@@ -346,8 +346,8 @@ const EmployeeForm = () => {
                                         error={errors.date_bs}
                                         required={true}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDateField
                                         name="appointment_date_ad"
                                         label="मिति(ई.सं.)"
@@ -356,8 +356,8 @@ const EmployeeForm = () => {
                                         readonly={true}
                                         required={true}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="jd"
                                         label="नयाँ नियुक्ति/कार्यालयमा सरुवा/पदस्थापन"
@@ -372,8 +372,8 @@ const EmployeeForm = () => {
                                         ]}
                                         error={errors.appointment_type}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="appointment_type"
                                         label="नियुक्तीको प्रकार"
@@ -386,9 +386,9 @@ const EmployeeForm = () => {
                                         ]}
                                         error={errors.appointment_type}
                                     />
-                                </Grid2>
+                                </Grid>
 
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="emp_level"
                                         label="कर्मचारीको श्रेणी/तह"
@@ -397,8 +397,8 @@ const EmployeeForm = () => {
                                         options={optLevel}
                                         error={errors.emp_post}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="emp_group"
                                         label="सेवा समुह"
@@ -407,8 +407,8 @@ const EmployeeForm = () => {
                                         options={optServiceGroups}
                                         error={errors.emp_post}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="emp_post"
                                         label="कर्मचारीको पद"
@@ -417,16 +417,16 @@ const EmployeeForm = () => {
                                         options={optPosts}
                                         error={errors.emp_post}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseKaragarOffice
                                         name="karagar_office"
                                         label="कारागार कार्यालय"
                                         control={control}
                                         error={errors.karagar_office}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="is_chief"
                                         label="प्रमुख कर्मचारी हो?"
@@ -439,8 +439,8 @@ const EmployeeForm = () => {
                                         ]}
                                         error={errors.is_chief}
                                     />
-                                </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput
                                         name="remarks_post"
                                         label="कैफियत"
@@ -448,17 +448,17 @@ const EmployeeForm = () => {
                                         control={control}
                                         error={errors.remarks_post}
                                     />
-                                </Grid2>
+                                </Grid>
 
-                                <Grid2>
+                                <Grid>
                                     <Button variant='contained' type='submit'
                                         disabled={sanketLoading || sanketExists}
                                     >Save</Button>
-                                </Grid2>
-                            </Grid2>
-                        </Grid2>
+                                </Grid>
+                            </Grid>
+                        </Grid>
                     </form>
-                </Grid2>
+                </Grid>
             </Box>
         </>
     );

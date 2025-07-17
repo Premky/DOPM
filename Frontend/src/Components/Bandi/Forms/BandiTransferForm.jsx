@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Grid2, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import { Box, Grid,  Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
 import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
@@ -71,9 +71,9 @@ const BandiTransferForm = () => {
     return (
         <>
             <Box>
-                <Grid2 container spacing={2}>
+                <Grid container spacing={2}>
                     <form onSubmit={handleSubmit( onFormSubmit )}>
-                        <Grid2 size={{ xs: 12 }}>
+                        <Grid size={{ xs: 12 }}>
                             <ReuseBandi
                                 name='bandi_id'
                                 label='बन्दी'
@@ -83,25 +83,25 @@ const BandiTransferForm = () => {
                                 current_office={authState.office_np}
                                 type='allbandi'
                             />
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2 container spacing={2} size={{ xs: 12 }}>
+                        <Grid container spacing={2} size={{ xs: 12 }}>
                             <BandiAddressTable bandi_id={bandi_id} />
                             <BandiMuddaTable bandi_id={bandi_id} />
-                            <Grid2 size={{ sm: 4, xs: 12 }}>
+                            <Grid size={{ sm: 4, xs: 12 }}>
                                 <BandiDiseasesTable bandi_id={bandi_id} />
-                            </Grid2>
-                            <Grid2 size={{ sm: 4, xs: 12 }}>
+                            </Grid>
+                            <Grid size={{ sm: 4, xs: 12 }}>
                                 <BandiDisabilityTable bandi_id={bandi_id} />
-                            </Grid2>
+                            </Grid>
 
-                        </Grid2>
-                        <Grid2 size={{ xs: 12 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
                             <BandiTransferHistoryTable bandi_id={bandi_id} />
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2 container size={{ xs: 12 }} sx={{ marginTop: 2 }} spacing={2}>                            
-                            <Grid2 size={{ xs: 5 }}>
+                        <Grid container size={{ xs: 12 }} sx={{ marginTop: 2 }} spacing={2}>                            
+                            <Grid size={{ xs: 5 }}>
                                 <ReuseKaragarOffice
                                     name="recommended_to_office_id"
                                     label="चाहेको कार्यालय"
@@ -109,8 +109,8 @@ const BandiTransferForm = () => {
                                     required={true}
                                     error={!!errors.recommended_to_office_id}
                                 />
-                            </Grid2>
-                            <Grid2 size={{ xs: 5 }}>
+                            </Grid>
+                            <Grid size={{ xs: 5 }}>
                                 <ReuseSelect
                                     name="transfer_reason_id"
                                     label="सरुवाको कारण"
@@ -120,9 +120,9 @@ const BandiTransferForm = () => {
                                     error={!!errors.transfer_reason_id}
                                 />
                             {bandi[0]?.bandi_type}
-                            </Grid2>
+                            </Grid>
                             {bandi[0]?.bandi_type == 'थुनुवा' && (
-                                <Grid2 size={{ xs: 2 }}>
+                                <Grid size={{ xs: 2 }}>
                                     <ReuseSelect
                                         name="is_thunuwa_permission"
                                         label="थुनुवाको हकमा स्विकृति छ/छैन?"
@@ -131,11 +131,11 @@ const BandiTransferForm = () => {
                                         required={true}
                                         error={!!errors.transfer_reason_id}
                                     />
-                                </Grid2>
+                                </Grid>
                             )}
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2>
+                        <Grid>
                             <ReuseInput
                                 name="transfer_reason"
                                 label="सरुवा विवरण"
@@ -144,15 +144,15 @@ const BandiTransferForm = () => {
                                 error={!!errors.transfer_reason}
                                 helperText={errors.transfer_reason?.message}
                             />
-                        </Grid2>
-                        <Grid2>
+                        </Grid>
+                        <Grid>
                             <Button variant='contained' type='submit'>
                                 थप्नुहोस्
                             </Button>
-                        </Grid2>
+                        </Grid>
 
                         <hr />
-                        <Grid2 container>
+                        <Grid container>
                             <TableContainer>
                                 <Table>
                                     <TableHead>
@@ -213,17 +213,17 @@ const BandiTransferForm = () => {
                                     </TableBody>
                                 </Table>
                             </TableContainer>
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2 container>
-                            <Grid2 size={{ xs: 12, sm: 4 }}>
+                        <Grid container>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <Button variant='contained' type='submit'>
                                     Save
                                 </Button>
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
                     </form>
-                </Grid2>
+                </Grid>
             </Box>
         </>
     );

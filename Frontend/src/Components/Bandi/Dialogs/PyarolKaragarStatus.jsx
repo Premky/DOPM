@@ -9,7 +9,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ReusePayroleNos from "../../ReuseableComponents/ReusePayroleNos";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseOffice from "../../ReuseableComponents/ReuseOffice";
@@ -27,8 +27,7 @@ const PyarolKaragarStatusModal = ( { open, onClose, data, kaidimuddas, onSave } 
     handleSubmit,
     register,
     reset,
-    control,
-    getValues,
+    control,    
     formState: { errors, isSubmitting },
   } = useForm( {
     defaultValues: {

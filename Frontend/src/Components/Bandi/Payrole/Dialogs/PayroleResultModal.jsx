@@ -11,6 +11,7 @@ import {
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
+import Swal from "sweetalert2";
 
 const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole_status } ) => {
   const {
@@ -35,10 +36,33 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
     }
   }, [data, reset] );
 
-  const onSubmit = ( formValues ) => {
-    onSave( { ...data, ...formValues } );
-    onClose();
+  const onSubmit = async ( formValues ) => {
+    if ( !data || !data.payrole_id ) {
+      Swal.fire( 'त्रुटि!', 'डेटा अनुपलब्ध छ।', 'error' );
+      return;
+    }
+
+    const payload = {
+      ...formValues,
+      status: data.payrole_status,
+    };
+
+    try {
+      await axios.put(
+        `${ BASE_URL }/payrole/update_payrole_status/${ data.payrole_id }`,
+        payload,
+        { withCredentials: true }
+      );
+
+      onClose();
+      Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+    } catch ( err ) {
+      console.error( err );
+      onClose();
+      Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+    }
   };
+
 
   const fullAddress =
     data?.nationality === "स्वदेशी"
@@ -49,26 +73,23 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      {/* <DialogTitle>प्यारोल अवस्था </DialogTitle> */}
       <DialogContent>
-        <Grid container spacing={2} mt={1}>
-          <Grid item xs={12}>
-            <input type='text' value={`${ data?.id || "" }`} hidden />
-            <input type='text' name="payrole_id" value={`${ data?.payrole_id || "" }`} hidden />
-            <TextField
-              fullWidth
-              label="कैदी नाम र ठेगाना"
-              value={`${ data?.bandi_name || "" }, ${ fullAddress }`}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
-          <input type="text" value={`${ data?.mudda_id || '' }`} hidden />          
-              <Grid item xs={12}>
+        <form onSubmit={handleSubmit( onSubmit )}>
+          <Grid container spacing={2} mt={1}>
+            <input type="hidden" {...register( "payrole_id" )} value={data?.payrole_id || ""} />
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                label="कैदी नाम र ठेगाना"
+                value={`${ data?.bandi_name || "" }, ${ fullAddress }`}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 select
                 label="प्यारोल पास / फेल"
                 fullWidth
-                defaultValue={data?.pyarole_rakhan_upayukat}
                 {...register( "pyarole_rakhan_upayukat", { required: true } )}
                 error={!!errors.pyarole_rakhan_upayukat}
                 helperText={errors.pyarole_rakhan_upayukat ? "चयन गर्नुहोस्" : ""}
@@ -78,28 +99,28 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
                 <MenuItem value="छलफल">छलफल</MenuItem>
                 <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
               </TextField>
-            </Grid>          
-
-          <Grid item xs={12}>
-            <TextField
-              {...register( "dopmremark" )}
-              label="कैफियत"
-              defaultValue={data?.dopmremark}
-              fullWidth
-              multiline
-              rows={3}
-              error={!!errors.dopmremark}
-            />
-          </Grid>          
-        </Grid>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                {...register( "dopmremark" )}
+                label="कैफियत"
+                fullWidth
+                multiline
+                rows={3}
+                error={!!errors.dopmremark}
+              />
+            </Grid>
+          </Grid>
+          <DialogActions>
+            <Button onClick={onClose}>रद्द गर्नुहोस्</Button>
+            <Button type="submit" variant="contained" color="primary">
+              सेभ गर्नुहोस्
+            </Button>
+          </DialogActions>
+        </form>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>रद्द गर्नुहोस्</Button>
-        <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
-          सेभ गर्नुहोस्
-        </Button>
-      </DialogActions>
     </Dialog>
+
   );
 };
 

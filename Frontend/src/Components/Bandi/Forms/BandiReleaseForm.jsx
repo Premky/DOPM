@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Grid2, Button } from '@mui/material';
+import { Box, Grid, Button } from '@mui/material';
 import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
 import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
@@ -74,9 +74,9 @@ const BandiReleaseForm = () => {
     return (
         <>
             <Box>
-                <Grid2 container spacing={2}>
+                <Grid container spacing={2}>
                     <form onSubmit={handleSubmit( onFormSubmit )}>
-                        <Grid2 size={{ xs: 12 }}>
+                        <Grid size={{ xs: 12 }}>
                             <ReuseBandi
                                 name='bandi_id'
                                 label='बन्दी'
@@ -86,17 +86,17 @@ const BandiReleaseForm = () => {
                                 current_office={authState.office_np}
                                 type='allbandi'
                             />
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2 size={{ xs: 12 }}>
+                        <Grid size={{ xs: 12 }}>
                             <BandiAddressTable bandi_id={bandi_id} />
                             <BandiMuddaTable bandi_id={bandi_id} />
                             <FamilyTable bandi_id={bandi_id} />
-                        </Grid2>
+                        </Grid>
                         
                         <hr />
-                        <Grid2 container size={{ xs: 12 }}>
-                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                        <Grid container size={{ xs: 12 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseSelect
                                     name='reason_id'
                                     label='छुटेको/लगत कट्टाको कारणः'
@@ -105,18 +105,18 @@ const BandiReleaseForm = () => {
                                     control={control}
                                     errors={errors.reason_id}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseDateField
                                     name='decision_date'
                                     label='निर्णय मिति'
                                     control={control}
                                     errors={errors.decision_date}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseDateField
                                     name='apply_date'
                                     label='कार्यान्वयन मिति'
@@ -124,19 +124,19 @@ const BandiReleaseForm = () => {
                                     control={control}
                                     errors={errors.apply_date}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseInput
                                     name='nirnay_officer'
                                     label='निर्णय गर्ने अधिकारी'
                                     control={control}
                                     errors={errors.nirnay_officer}
                                 />
-                            </Grid2>
-                        </Grid2>
-                        <Grid2 container size={{ xs: 12 }}>
-                            <Grid2 size={{ xs: 12, sm: 6}}>
+                            </Grid>
+                        </Grid>
+                        <Grid container size={{ xs: 12 }}>
+                            <Grid size={{ xs: 12, sm: 6}}>
                                 <ReuseSelect
                                     name='aafanta_id'
                                     label='बुझ्ने मान्छे छान्नुहोस्'
@@ -144,26 +144,26 @@ const BandiReleaseForm = () => {
                                     control={control}
                                     errors={errors.aafanta_id}
                                 />
-                            </Grid2>
+                            </Grid>
 
-                            <Grid2 size={{ xs: 12, sm: 6}}>
+                            <Grid size={{ xs: 12, sm: 6}}>
                                 <ReuseInput
                                     name='remarks'
                                     label='कैफियत'
                                     control={control}
                                     errors={errors.remarks}
                                 />
-                            </Grid2>
-                        </Grid2>
-                        <Grid2 container>
-                            <Grid2 size={{ xs: 12, sm: 4 }}>
+                            </Grid>
+                        </Grid>
+                        <Grid container>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <Button variant='contained' type='submit'>
                                     Save
                                 </Button>
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
                     </form>
-                </Grid2>
+                </Grid>
             </Box>
         </>
     );

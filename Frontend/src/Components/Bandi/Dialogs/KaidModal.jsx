@@ -6,7 +6,7 @@ import {
     DialogActions,
     TextField,
     Button,
-    Grid2,
+    Grid,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
@@ -64,7 +64,7 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
             <DialogContent>
                 <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden />
 
-                <Grid2 size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }}>
 
                     <ReuseSelect
                         name="bandi_type"
@@ -76,10 +76,10 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
                         required={true}
                         error={errors.bandi_type}
                     />
-                </Grid2>
+                </Grid>
 
-                <Grid2 container spacing={2} size={{ xs: 12 }}>
-                    <Grid2 size={{ xs: 4 }}>
+                <Grid container spacing={2} size={{ xs: 12 }}>
+                    <Grid size={{ xs: 4 }}>
                         <ReuseInput
                             type="number"
                             name="hirasat_years"
@@ -90,8 +90,8 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
                             required={true}
                             error={errors.hirasat_years}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 4 }}>
+                    </Grid>
+                    <Grid size={{ xs: 4 }}>
                         <ReuseInput
                             name="hirasat_months"
                             label="हिरासत बसेको अवधी (महिना)"
@@ -102,8 +102,8 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
                             required={true}
                             error={errors.hirasat_months}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 4 }}>
+                    </Grid>
+                    <Grid size={{ xs: 4 }}>
                         <ReuseInput
                             name="hirasat_days"
                             label="हिरासत बसेको अवधी (दिन)"
@@ -114,8 +114,8 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
                             control={control}
                             error={errors.hirasat_days}
                         />
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
 
                 <ReuseDateField
                     name="thuna_date_bs"
