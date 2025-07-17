@@ -37,6 +37,18 @@ const TotalGenderWiseCount = () => {
                                 <TableCell>{totals.aashrit}</TableCell>
                             </TableRow>
                             <TableRow>
+                                <TableCell><b>कैदी अन्य</b></TableCell>
+                                <TableCell>{totals.kaidi_other}</TableCell>
+                                <TableCell><b>थुनुवा अन्य</b></TableCell>
+                                <TableCell>{totals.thunuwa_other}</TableCell>
+                                <TableCell><b>अन्य संख्या</b></TableCell>
+                                <TableCell>{totals.total_other}</TableCell>
+                                <TableCell><b></b></TableCell>
+                                <TableCell>{totals.aashrit}</TableCell>
+                                <TableCell><b></b></TableCell>
+                                <TableCell>{totals.aashrit}</TableCell>
+                            </TableRow>
+                            <TableRow>
                                 <TableCell><b>कुल कैदी</b></TableCell>
                                 <TableCell>{totals.total_kaidi}</TableCell>
                                 <TableCell><b>कुल थुनुवा</b></TableCell>

@@ -3121,6 +3121,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
 
             COUNT(IF(bp.gender = 'male', 1, NULL)) AS total_male,
             COUNT(IF(bp.gender = 'female', 1, NULL)) AS total_female,
+            COUNT(IF(bp.gender NOT IN ('male', 'female'), 1, NULL)) AS total_other,
             COUNT(bp.id) AS total_kaidibandi,
 
             COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male' AND bp.age >= ${ defaultAge }, 1, NULL)) AS kaidi_male_65plus,
@@ -3144,6 +3145,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
                 vbad.country_name_np
             FROM bandi_person bp
             LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
+            LEFT JOIN bandi_relative_info bri ON bp.id=bri.bandi_id
             WHERE bp.is_active = 1
             ${ filters.join( ' ' ) }
         ) AS bp ON bp.current_office_id = o.id
@@ -3508,6 +3510,134 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
             TotalArrestedInDateRange > 0 OR 
             TotalReleasedInDateRange > 0
         ORDER BY m.mudda_name ASC
+    `;
+
+    try {
+        const [result] = await pool.query( finalSql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+
+    const {
+        startDate,
+        endDate,
+        nationality,
+        ageFrom,
+        ageTo,
+        office_id // optional for super admin
+    } = req.query;
+
+    // Parameters for SQL binding
+    const params = [startDate, endDate, startDate, endDate];
+    const filters = [];
+
+    const baseSql = `
+        SELECT 
+            mg.mudda_group_name AS mudda_name,
+            COUNT(DISTINCT bp.id) AS Total,
+
+            -- कैदी
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+
+            -- थुनुवा
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+
+            -- 65+ उम्र
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65,
+            SUM(CASE WHEN bp.is_active = 1 AND bp.bandi_type = 'कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+
+            -- गिरफ्तारी / छुटे
+            SUM(CASE WHEN bkd.thuna_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalArrestedInDateRange,
+            SUM(CASE WHEN bkd.release_date_bs BETWEEN ? AND ? THEN 1 ELSE 0 END) AS TotalReleasedInDateRange
+
+        FROM bandi_person bp
+       -- LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+       LEFT JOIN (
+            SELECT *
+            FROM (
+                SELECT bmd.*,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY bmd.bandi_id 
+                        ORDER BY bmd.created_at DESC
+                    ) AS rn
+                FROM bandi_mudda_details bmd
+            ) AS ranked_mudda
+            WHERE ranked_mudda.rn = 1
+            AND (
+                (is_main_mudda = 1 AND is_last_mudda = 1) OR
+                (is_main_mudda = 1 AND is_last_mudda = 0) OR
+                (is_main_mudda = 0 AND is_last_mudda = 1) OR
+                (is_main_mudda = 0 AND is_last_mudda = 0)
+            )
+        ) AS bmd ON bp.id = bmd.bandi_id
+        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+        LEFT JOIN muddas_groups mg ON m.muddas_group_id=mg.id
+        LEFT JOIN offices o ON bp.current_office_id = o.id
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+    `;
+
+    // Only include main and last mudda to avoid duplicates
+    filters.push( "bp.is_active = 1" );
+    // filters.push(
+    //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
+    // );
+    // filters.push( "bmd.is_last_mudda = 1" );
+
+    // Age filter
+    if ( ageFrom && ageTo ) {
+        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+
+    // Nationality filter
+    if ( nationality ) {
+        filters.push( "bp.nationality = ?" );
+        params.push( nationality.trim() );
+    }
+
+    if ( active_office == 1 || active_office == 2 ) {
+        if ( office_id ) {
+            filters.push( "bp.current_office_id=?" );
+            params.push( office_id );
+        } else {
+            filters.push( 1 == 1 );
+        }
+    } else {
+        filters.push( "bp.current_office_id=?" );
+        params.push( active_office );
+    }
+
+    // if ( office_id ) {
+    //     filters.push( "bp.current_office_id = ?" );
+    //     params.push( office_id );
+    // } else {
+    //     if ( active_office == 1 || active_office == 2 ) {
+    //         filters.push( 1 == 1 );
+    //     }
+    // }
+
+    const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
+
+    const finalSql = `
+        ${ baseSql }
+        ${ whereClause }
+        GROUP BY mg.id, mg.mudda_group_name
+        HAVING 
+            KaidiTotal > 0 OR 
+            ThunuwaTotal > 0 OR 
+            TotalArrestedInDateRange > 0 OR 
+            TotalReleasedInDateRange > 0
+        ORDER BY mg.mudda_group_name ASC
     `;
 
     try {
