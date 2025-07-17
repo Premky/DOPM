@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useState, useTransition } from 'react'
 import axios from 'axios'
 import { useForm, Controller } from 'react-hook-form'
-import { Box, Button, Divider, Grid2 } from '@mui/material';
+import { Box, Button, Divider, Grid } from '@mui/material';
 
 
 import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
@@ -21,11 +21,11 @@ const OfficeBranchForm = () => {
         <>
             <Box sx={{ flexGrow: 1 }}>
                 <form onSubmit={handleSubmit(onFormSubmit)}>
-                    <Grid2 container spacing={1}>
-                        <Grid2 size={12}>
+                    <Grid container spacing={1}>
+                        <Grid size={12}>
                             कार्यालयको विवरणः
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}> {/* Use 'xs' instead of 'size' */}
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}> {/* Use 'xs' instead of 'size' */}
                             <ReuseOffice
                                 required
                                 name='office'
@@ -34,9 +34,9 @@ const OfficeBranchForm = () => {
                                 error={errors.office}
                                 options={''}
                             />
-                        </Grid2>
+                        </Grid>
                         
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseInput
                                 type='email'
                                 name='email'
@@ -44,8 +44,8 @@ const OfficeBranchForm = () => {
                                 control={control}
                                 error={errors.email}
                             />
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseInput
                                 type='number'
                                 name='contact'
@@ -54,12 +54,12 @@ const OfficeBranchForm = () => {
                                 error={errors.contact}
                             />
                             
-                        </Grid2>
-                            <Grid2 container size={{ xs: 12, sm: 6, md: 3 }}>
+                        </Grid>
+                            <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
                                 <Button variant='contained'>Submit</Button>
                                 
-                            </Grid2>
-                    </Grid2>
+                            </Grid>
+                    </Grid>
                 </form>
             </Box>
         </>

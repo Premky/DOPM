@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useState, useTransition } from 'react'
 import axios from 'axios'
 import { useForm, Controller } from 'react-hook-form'
-import { Box, Button, Divider, Grid2 } from '@mui/material';
+import { Box, Button, Divider, Grid } from '@mui/material';
 import Swal from 'sweetalert2'
 
 import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
@@ -121,11 +121,11 @@ const BranchForm = () => {
         <>
             <Box sx={{ flexGrow: 1 }}>
                 <form onSubmit={handleSubmit(onFormSubmit)}>
-                    <Grid2 container spacing={1}>
-                        <Grid2 size={12}>
+                    <Grid container spacing={1}>
+                        <Grid size={12}>
                             शाखाहरु थप्नुहोस्
-                        </Grid2>
-                        <Grid2 size={{ md: 5 }}>
+                        </Grid>
+                        <Grid size={{ md: 5 }}>
                             <ReuseInput
                                 name='name_np'
                                 label='शाखाको नाम नेपालीमा'
@@ -133,22 +133,22 @@ const BranchForm = () => {
                                 control={control}
                                 error={errors.name_np}
                             />
-                        </Grid2>
-                        <Grid2 size={{ md: 5 }}>
+                        </Grid>
+                        <Grid size={{ md: 5 }}>
                             <ReuseInput
                                 name='name_en'
                                 label='Branch Name (In English)'
                                 control={control}
                                 error={errors.name_en}
                             />
-                        </Grid2>
-                        <Grid2 container size={{ md: 2 }}>
+                        </Grid>
+                        <Grid container size={{ md: 2 }}>
                             <Button variant='contained' type='submit'>Save</Button>
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2 container size={12}>
-                        </Grid2>
-                    </Grid2>
+                        <Grid container size={12}>
+                        </Grid>
+                    </Grid>
                 </form>
             </Box>
             <Box>
