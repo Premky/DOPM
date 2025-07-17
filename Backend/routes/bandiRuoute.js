@@ -706,7 +706,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
     baseWhere += ` AND bp.is_active= ${ is_active } `;
     if ( forSelect ) {
-        baseWhere += ` AND bp.is_active= ${is_active}`;
+        baseWhere += ` AND bp.is_active= ${ is_active }`;
     }
 
     try {
@@ -721,7 +721,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         //     [idRows] = await pool.query( idQuery, [limit, offset] );
         // }
         [idRows] = await pool.query( idQuery );
-        
+
         const bandiIds = idRows.map( row => row.id );
         if ( bandiIds.length === 0 ) {
             return res.json( { Status: true, Result: [], TotalCount: 0 } );
@@ -3124,6 +3124,9 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             COUNT(IF(bp.gender NOT IN ('male', 'female'), 1, NULL)) AS total_other,
             COUNT(bp.id) AS total_kaidibandi,
 
+            COUNT(IF(bp.is_dependent='1' , 1, NULL)) AS total_aashrit,
+
+
             COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male' AND bp.age >= ${ defaultAge }, 1, NULL)) AS kaidi_male_65plus,
             COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female' AND bp.age >= ${ defaultAge }, 1, NULL)) AS kaidi_female_65plus,
             COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male' AND bp.age >= ${ defaultAge }, 1, NULL)) AS thunuwa_male_65plus,
@@ -3136,13 +3139,14 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
         LEFT JOIN (
             SELECT 
-                bp.id,
-                bp.gender,
-                bp.bandi_type,
-                bp.current_office_id,
-                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
-                bp.nationality,
-                vbad.country_name_np
+            bp.id,
+            bp.gender,
+            bp.bandi_type,
+            bp.current_office_id,
+            TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
+            bp.nationality,
+            vbad.country_name_np,
+            bri.is_dependent
             FROM bandi_person bp
             LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
             LEFT JOIN bandi_relative_info bri ON bp.id=bri.bandi_id
