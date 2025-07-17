@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, FormControl, Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material'
+import { Box, Button, Checkbox, FormControl, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
@@ -319,8 +319,8 @@ const PayroleTable = () => {
             />
             <Box>
                 <p>Welcome {authState.user} from {authState.office_np}</p>
-                <Grid2 container={2}>
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Grid container={2}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <ReuseKaragarOffice
                             name='searchOffice'
                             label='कार्यालय'
@@ -328,59 +328,59 @@ const PayroleTable = () => {
 
                             disabled={authState.office_id >= 3}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReusePayroleStatus
                             name='searchPayroleStatus'
                             label='अवस्था'
                             control={control}
                             defaultvalue={0}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1 }}>
                         <ReuseSelect
                             name='pyarole_rakhan_upayukat'
                             label='पास/फेल'
                             options={[{ label: 'सबै', value: '' }, { label: 'पास', value: 'छ' }, { label: 'फेल', value: 'छैन' }]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1 }}>
                         <ReuseSelect
                             name='is_checked'
                             label='चेक भए/नभएको'
                             options={[{ label: 'सबै', value: '' }, { label: 'छ', value: '1' }, { label: 'छैन', value: '0' }]}
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 1 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1 }}>
                         <ReusePayroleNos
                             name='payrole_no_id'
                             label='प्यारोल संख्या'
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseMudda
                             name='mudda_id'
                             label='मुद्दा'
                             control={control}
                         />
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseInput
                             name='bandi_name'
                             label='कैदी/बन्दीको नाम'
                             control={control}
                         />
-                    </Grid2>
+                    </Grid>
 
-                    <Grid2 size={{ xs: 12, sm: 4 }}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <Button onClick={() => exportToExcel(filteredKaidi, fetchedMuddas)} variant="outlined" color="primary" sx={{ m: 1 }}>
                             एक्सेल निर्यात
                         </Button>
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </Box>
             <TableContainer>
                 <Table size='small' stickyHeader border={1}>

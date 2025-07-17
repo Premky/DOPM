@@ -1,4 +1,4 @@
-import { Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react';
 
 const PayroleLogTable = ({ records }) => {
@@ -6,7 +6,7 @@ const PayroleLogTable = ({ records }) => {
 
   return (
     <div>
-      <Grid2 container sx={{ marginTop: 2 }}>
+      <Grid container sx={{ marginTop: 2 }}>
         <TableContainer>
           <Table>
             <TableHead>
@@ -45,7 +45,7 @@ const PayroleLogTable = ({ records }) => {
             </TableBody>
           </Table>
         </TableContainer>
-      </Grid2>
+      </Grid>
     </div>
   );
 };
