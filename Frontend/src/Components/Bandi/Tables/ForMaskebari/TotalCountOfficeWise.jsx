@@ -85,7 +85,7 @@ const TotalCountOfficeWise = () => {
                                         <TableCell>{data.total_female}</TableCell>
                                         <TableCell>{data.kaidi_male_65plus + data.kaidi_female_65plus}</TableCell>
                                         <TableCell>{data.thunuwa_male_65plus + data.thunuwa_female_65plus}</TableCell>
-                                        <TableCell>{data.aashrit}</TableCell>
+                                        <TableCell>{data.total_aashrit}</TableCell>
                                         <TableCell>{data.foreign_countries}</TableCell>
                                         <TableCell>{data.foreign_count}</TableCell>
                                     </>

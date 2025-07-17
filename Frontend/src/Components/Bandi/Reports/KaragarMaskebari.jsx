@@ -207,8 +207,8 @@ const KaragarMaskebari = () => {
                                     swadeshiTotal,
                                     bideshiCount,
                                     bideshiTotal,
-                                    '2081/2082',
-                                    'असार'
+                                    '2082/2083',
+                                    '<महिनाको>'
                                 )}
                                     variant='contained'
                                     color='success'

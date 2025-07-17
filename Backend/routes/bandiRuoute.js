@@ -3145,14 +3145,23 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             bp.current_office_id,
             TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
             bp.nationality,
-            vbad.country_name_np,
-            bri.is_dependent
+            MAX(bri.is_dependent) AS is_dependent,
+            vbad.country_name_np        
             FROM bandi_person bp
             LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
             LEFT JOIN bandi_relative_info bri ON bp.id=bri.bandi_id
             WHERE bp.is_active = 1
             ${ filters.join( ' ' ) }
+            GROUP BY 
+            bp.id,
+            bp.gender,
+            bp.bandi_type,
+            bp.current_office_id,
+            bp.dob_ad,
+            bp.nationality,
+            vbad.country_name_np
         ) AS bp ON bp.current_office_id = o.id
+         
         ${ officeWhereClause }
         GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
         ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
