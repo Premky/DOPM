@@ -1,23 +1,28 @@
 import React from 'react';
-import { Box, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
+import { Box,Button, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
 
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 import fetchUserStatus from '../../../ReuseableComponents/fetchUserStatus';
 import { useAuth } from '../../../../Context/AuthContext';
-
-const TotalCountOfficeWise = () => {
+import exportOfficeWiseMaskebariExcel from '../../Exports/ExportOfficeWiseMaskebariExcel';
+// import exportCombinedGenderAndOfficeCountExcel from '../../Exports/ExportCombinedGenderAndOfficeCountExcel';
+const TotalCountOfficeWise = ( { filters } ) => {
     const { state } = useAuth();
     const onlineStatus = state.is_online;
-    
-    const { count, countLoading } = UseBandiTotalCountACoffice();
+
+    const { count, countLoading } = UseBandiTotalCountACoffice( filters );
     const { records: loginStatus, loading: loginLoading } = fetchUserStatus();
-    
+
     const onlineOfficeIds = new Set(
         loginStatus
             ?.filter( ( user ) => user.is_online === 1 )
             .map( ( user ) => user.office_id )
     );
 
+    const hanldeExport = () => {
+        exportOfficeWiseMaskebariExcel( count, onlineOfficeIds );
+        // exportCombinedGenderAndOfficeCountExcel(count, onlineOfficeIds)
+    };
     // console.log(state)
     // console.log(onlineStatus)
 
@@ -27,6 +32,12 @@ const TotalCountOfficeWise = () => {
     // console.log(loginStatus)
     return (
         <Box>
+            <Button variant="contained" 
+                onClick={hanldeExport} 
+                sx={{ mb: 2 }}
+                disabled={countLoading || !count || count.length === 0}>
+                Export to Excel
+            </Button>
             <Box sx={{ width: '100%', overflowX: 'auto' }}>
                 <TableContainer>
                     <Table size='small' border='1'>

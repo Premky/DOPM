@@ -2,9 +2,9 @@ import React from 'react';
 import { Box, Grid, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 
-const TotalGenderWiseCount = () => {
-
-    const { totals, countLoading } = UseBandiTotalCountACoffice();
+const TotalGenderWiseCount = ({filters}) => {
+    // console.log(filters)
+    const { totals, countLoading } = UseBandiTotalCountACoffice(filters);
     // console.log( totals );
     return (
         <Box>

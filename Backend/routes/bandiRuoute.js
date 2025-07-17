@@ -2940,24 +2940,6 @@ router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const active_user = req.user.id;
-    try {
-        // Add active_user and active_office to the request body
-        req.body.created_by = active_user;
-        req.body.created_office = active_office;
-        const keys = Object.keys( req.body );
-        const values = Object.values( req.body );
-        const placeholders = keys.map( () => '?' ).join( ', ' );
-        const sql = `INSERT INTO payrole_maskebari (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
-        const result = await query( sql, values );
-        console.log( result );
-        res.status( 201 ).json( { id: result.insertId } );
-    } catch ( err ) {
-        res.status( 500 ).json( { error: err.message } );
-    }
-} );
 
 const getMaskebariQuery = `SELECT 
                         year_bs, 
@@ -3008,58 +2990,7 @@ const getMaskebariQuery = `SELECT
                     LEFT JOIN offices os ON pm.created_office = os.id
 `;
 
-router.get( '/payrole_maskebari_count', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    let sql = '';
-    let params = '';
-    try {
-        if ( active_office <= 2 ) {
-            sql = `${ getMaskebariQuery }                     
-                    GROUP BY year_bs, month_bs, office_id
-                    ORDER BY year_bs DESC, month_bs;`;
-            params = [];
-        } else {
-            console.log( 'clientRoute' );
-            sql = `${ getMaskebariQuery } WHERE created_office=? 
-                    GROUP BY year_bs, month_bs, office_id
-                    ORDER BY year_bs DESC, month_bs; `;
-            params = [active_office];
-        }
-        const result = await query( sql, params );
-        res.status( 200 ).json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( 'GET Error:', err );
-        res.status( 500 ).json( { Status: false, error: err.message } );
-    }
-} );
-
-router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res ) => {
-    const { id } = req.params;
-    const active_office = req.user.office_id;
-    const active_user = req.user.id;
-
-    try {
-        // Add updated_by and updated_office to the request body
-        req.body.updated_by = active_user;
-        // req.body.updated_office = active_office;
-
-        const keys = Object.keys( req.body );
-        const values = Object.values( req.body );
-
-        const setClause = keys.map( key => `${ key } = ?` ).join( ', ' );
-        const sql = `UPDATE payrole_maskebari SET ${ setClause } WHERE id = ?`;
-
-        values.push( id ); // Add ID at the end for WHERE clause
-
-        const result = await query( sql, values );
-        res.status( 200 ).json( { message: 'Updated successfully', affectedRows: result.affectedRows } );
-    } catch ( err ) {
-        console.error( 'Update Error:', err );
-        res.status( 500 ).json( { error: err.message } );
-    }
-} );
-
-router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
+router.get( '/get_office_wise_count1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const defaultAge = 65;
     const defaultOfficeCategory = 2;
@@ -3175,6 +3106,158 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
+
+router.get('/get_office_wise_count', verifyToken, async (req, res) => {
+  try {
+    const active_office = req.user.office_id;
+    const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
+    const defaultAge = 65;
+    const defaultOfficeCategory = 2;
+
+    // Extract query params
+    let {
+      nationality,
+      ageFrom,
+      ageTo,
+      office_id, // optional for super admin
+      startDate,
+      endDate
+    } = req.query;
+    // console.log(req.query)
+    // Default dates if missing
+    if (!startDate && !endDate) {
+      startDate = '0000-00-00';
+      endDate = today_date_bs;
+    } else if (!startDate) {
+      startDate = '0000-00-00';
+    } else if (!endDate) {
+      endDate = today_date_bs;
+    }
+
+    // Prepare params array
+    const params = [];
+
+    // The order of params must match the ? placeholders in SQL
+    // 1-4: defaultAge repeated 4 times (for 65+ counts)
+    params.push(defaultAge, defaultAge, defaultAge, defaultAge);
+
+    // 5: thuna_date_bs <= endDate (for subquery filter)
+    params.push(endDate);
+
+    // 6: karnayan_miti >= startDate (for main WHERE)
+    params.push(startDate);
+
+    // 7: office_categories_id
+    params.push(defaultOfficeCategory);
+
+    // Office filter - either active office or office_id (for superadmin)
+    let officeFilterSql = '';
+    if (active_office !== 1 && active_office !== 2) {
+      params.push(active_office);
+      officeFilterSql = 'AND o.id = ?';
+    } else if (office_id) {
+      params.push(office_id);
+      officeFilterSql = 'AND o.id = ?';
+    }
+
+    // Extra filters for nationality and age range in subquery WHERE
+    let extraSubqueryFilters = '';
+    if (nationality) {
+      extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape(nationality.trim());
+    }
+    if (ageFrom && ageTo) {
+      extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${Number(ageFrom)} AND ${Number(ageTo)}`;
+    }
+
+    const sql = `
+      SELECT
+          voad.state_name_np,
+          voad.district_order_id,
+          o.letter_address AS office_short_name,
+          o.id AS office_id,
+
+          COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male', 1, NULL)) AS kaidi_male,
+          COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female', 1, NULL)) AS kaidi_female,
+          COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender NOT IN ('male', 'female'), 1, NULL)) AS kaidi_other,
+          COUNT(IF(bp.bandi_type = 'कैदी', 1, NULL)) AS total_kaidi,
+
+          COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male', 1, NULL)) AS thunuwa_male,
+          COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female', 1, NULL)) AS thunuwa_female,
+          COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender NOT IN ('male', 'female'), 1, NULL)) AS thunuwa_other,
+          COUNT(IF(bp.bandi_type = 'थुनुवा', 1, NULL)) AS total_thunuwa,
+
+          COUNT(IF(bp.gender = 'male', 1, NULL)) AS total_male,
+          COUNT(IF(bp.gender = 'female', 1, NULL)) AS total_female,
+          COUNT(IF(bp.gender NOT IN ('male', 'female'), 1, NULL)) AS total_other,
+          COUNT(bp.id) AS total_kaidibandi,
+
+          COUNT(IF(bp.is_dependent='1' , 1, NULL)) AS total_aashrit,
+
+          COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male' AND bp.age >= ? , 1, NULL)) AS kaidi_male_65plus,
+          COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female' AND bp.age >= ? , 1, NULL)) AS kaidi_female_65plus,
+          COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male' AND bp.age >= ? , 1, NULL)) AS thunuwa_male_65plus,
+          COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female' AND bp.age >= ? , 1, NULL)) AS thunuwa_female_65plus,
+
+          COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
+          GROUP_CONCAT(DISTINCT IF(bp.country_name_np != 'नेपाल', bp.country_name_np, NULL)) AS foreign_countries
+
+      FROM offices o
+      LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
+
+      LEFT JOIN (
+          SELECT 
+              bp.id,
+              bp.gender,
+              bp.bandi_type,
+              bp.current_office_id,
+              TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
+              bp.nationality,
+              MAX(bri.is_dependent) AS is_dependent,
+              vbad.country_name_np        
+          FROM bandi_person bp
+          LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
+          LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+          LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+          WHERE bkd.thuna_date_bs <= ?
+            AND bp.is_active = 1
+            ${extraSubqueryFilters}
+          GROUP BY 
+              bp.id,
+              bp.gender,
+              bp.bandi_type,
+              bp.current_office_id,
+              bp.dob_ad,
+              bp.nationality,
+              vbad.country_name_np
+      ) AS bp ON bp.current_office_id = o.id
+
+      LEFT JOIN (
+          SELECT bandi_id, MAX(karnayan_miti) AS karnayan_miti
+          FROM bandi_release_details
+          GROUP BY bandi_id
+      ) brd ON brd.bandi_id = bp.id
+
+      WHERE (brd.karnayan_miti IS NULL OR brd.karnayan_miti >= ?)
+        AND o.office_categories_id = ?
+        ${officeFilterSql}
+
+      GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
+      ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
+    `;
+
+    // Add the extra params for placeholders in SQL query in order
+    // Note: defaultAge params are pushed at the start, so we don't push them again here
+    // The rest are pushed in correct order above.
+
+    const [rows] = await pool.query(sql, params);
+    return res.json({ Status: true, Result: rows });
+
+  } catch (error) {
+    console.error("Error in /get_office_wise_count:", error);
+    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
+
 
 function extractInternalAdminData( reqBody, is_active, user_id, active_office ) {
     const {
