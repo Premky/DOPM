@@ -27,6 +27,8 @@ import PayroleTableFilters from "./PayroleTableFilters";
 import { useBaseURL } from "../../../../Context/BaseURLProvider";
 import { useAuth } from "../../../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import BandiFullReportPDF from "../View/BandiFullReportPDF";
+import PayroleActionMenu from "./PayroleActionMenu";
 
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
@@ -136,11 +138,23 @@ const PayroleTable = () => {
         fetchMuddas();
     }, [] );
 
+    const [menuAnchorEl, setMenuAnchorEl] = useState( null );
+    const [menuRowData, setMenuRowData] = useState( null );
+
+    const handleMenuOpen = ( event, row ) => {
+        setMenuAnchorEl( event.currentTarget );
+        setMenuRowData( row );
+    };
+    const handleMenuClose = () => {
+        setMenuAnchorEl( null );
+        setMenuRowData( null );
+    };
 
     const handleElClick = ( event ) => setAnchorEl( event.currentTarget );
     const handleElClose = () => setAnchorEl( null );
     const handleEdit = ( row ) => navigate( `/bandi/view_saved_record/${ row.id }` );
-    const handleUpdatePayrole = ( row ) => navigate(`/bandi/view_saved_record/${ row.id }` );
+    // const handleViewPayrole = ( row ) => <BandiFullReportPDF bandi_id=row.id};
+    const handleUpdatePayrole = ( row ) => navigate( `/bandi/view_saved_record/${ row.id }` );
     const handleChangePayroleStatus = ( row, newStatus ) => console.log( "Change status", row, newStatus );
     const handleReturn = ( row, returnToStatus ) => console.log( "Return", row, returnToStatus );
     const handleForwardDialog = ( row, forwardToStatus ) => console.log( "Forward", row, forwardToStatus );
@@ -178,6 +192,21 @@ const PayroleTable = () => {
 
     return (
         <>
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean( menuAnchorEl )}
+                onClose={handleMenuClose}
+            >
+                {menuRowData && (
+                    <PayroleActionMenu
+                        data={menuRowData}
+                        onClose={handleMenuClose}
+                        onResultClick={() => {
+                            console.log( "Result click for:", menuRowData );
+                            handleMenuClose();
+                        }} />
+                )}
+            </Menu>
             <PayroleTableFilters onChange={( newFilters ) => setFilters( newFilters )} />
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
@@ -255,9 +284,15 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.fine_summary}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            <Button variant="contained" color="primary" onClick={() => handleUpdatePayrole( data )}>
+                                            {/* <Button variant="contained" color="primary" onClick={() => handleUpdatePayrole( data )}>
                                                 Edit
                                             </Button>
+                                            <Button variant="contained" color="primary" onClick={() => handleViewPayrole( data )}>
+                                                View
+                                            </Button> */}
+                                            <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
+                                                <MoreVertIcon />
+                                            </IconButton>
                                         </TableCell>
                                     </TableRow>
 

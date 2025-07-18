@@ -71,7 +71,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         // { name: "bandi_huliya", label: "हुलिया" },
                         // { name: "remarks", label: "कैफियत" },
                     ].map( ( field ) => (
-                        <Grid item xs={6} key={field.name}>
+                        <Grid size={{xs:6}} key={field.name}>
                             <Controller
                                 name={field.name}
                                 control={control}
@@ -88,7 +88,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         </Grid>
                     ) )}
 
-                    <Grid item xs={12} style={{ position: 'relative' }}>
+                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="bandi_name"
                             label="नामथर"
@@ -97,7 +97,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{xs:12}}>
                         <Controller
                             name="bandi_education"
                             control={control}
@@ -117,7 +117,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{xs:12}}>
                         <Controller
                             name="gender"
                             control={control}
@@ -137,7 +137,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={{xs:12}}>
                         <Controller
                             name="married_status"
                             control={control}
@@ -156,7 +156,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             )}
                         />
                     </Grid>
-                    <Grid item xs={12} style={{ position: 'relative' }}>
+                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="bandi_huliya"
                             label="हुलिया"
@@ -164,14 +164,14 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                         />
                     </Grid>
-                    <Grid item xs={12} style={{ position: 'relative' }}>
+                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
                         <ReuseDatePickerBS
                             name="dob"
                             control={control}
                             label="जन्म मिति"
                         />
                     </Grid>
-                    <Grid item xs={12} style={{ position: 'relative' }}>
+                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="remarks"
                             placeholder={'कैफियत'}
