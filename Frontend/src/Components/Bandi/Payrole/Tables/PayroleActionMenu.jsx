@@ -2,14 +2,18 @@ import React from "react";
 import { MenuItem } from "@mui/material";
 import { pdf } from "@react-pdf/renderer";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
+import { useBaseURL } from "../../../../Context/BaseURLProvider";
+
 
 const handleViewPayrole = async ( row ) => {
-  const doc = <BandiFullReportPDF bandi_id={row.bandi_id} />;
+  const doc = <BandiFullReportPDF bandiData={row} />;
   const blob = await pdf( doc ).toBlob();
   saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
 };
 
 const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
+  const BASE_URL=useBaseURL();
+  console.log(BASE_URL)
   const status = data?.payrole_status;
   const officeId = data?.current_office_id;
 
@@ -22,9 +26,9 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         // console.log("View clicked for", data.bandi_name);
         <PDFDownloadLink
           document={<BandiFullReportPDF
-            bandi_id={data.bandi_id}
+            bandiData={data}
           />}
-          fileName={`bandi_${ selectedBandi.id }_report.pdf`}
+          fileName={`bandi_${ selectedBandi?.id }_report.pdf`}
         />;
         break;
       case "forward":

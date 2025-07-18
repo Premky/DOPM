@@ -4,25 +4,23 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   Font
 } from '@react-pdf/renderer';
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import fetchBandiFamily from '../../Apis_to_fetch/fetchBandiFamily';
+import fetchContactPerson from '../../Apis_to_fetch/fetchContactPerson';
+import useFetchBandiMudda from '../../Apis_to_fetch/fetchBandiMudda';
+import useFetchBandiIdCards from '../../Apis_to_fetch/useFetchBandiIdcards';
 
-// Optional: Set default font
-// Font.register({
-//   family: 'Roboto',
-//   fonts: [
-//     { src: 'https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu4mxK.woff2' }
-//   ]
-// });
-
-Font.register({
+Font.register( {
   family: 'Kalimati',
   src: '/fonts/Kalimati_Regular.otf' // Use public or local font path
-});
+} );
 
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create( {
   page: {
     padding: 20,
     fontSize: 10,
@@ -48,10 +46,53 @@ const styles = StyleSheet.create({
   },
   value: {
     width: '70%',
+  },
+  table: {
+    display: "table",
+    width: "100%",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+  tableRow: {
+    flexDirection: "row",
+  },
+  tableColHeader: {
+    width: "25%",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    backgroundColor: "#e4e4e4",
+    padding: 5,
+  },
+  tableCol: {
+    width: "25%",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    padding: 5,
+  },
+  tableCell: {
+    fontSize: 10,
+  },
+  photoCol: {
+    width: '25%',
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 4,
   }
-});
 
-const LabelValue = ({ label, value }) => (
+
+} );
+
+const LabelValue = ( { label, value } ) => (
   <View style={styles.row}>
     <Text style={styles.label}>{label}:</Text>
     <Text style={styles.value}>{value || '-'}</Text>
@@ -59,56 +100,180 @@ const LabelValue = ({ label, value }) => (
 );
 // { bandi_id, bandiData, kaidData, addressData, idData, muddaData, punrabedanData }
 // {bandi_id}
-const BandiFullReportPDF = () => (
-  <Document>
-    
-    <Page size="A4" style={styles.page}>
-      {/* Bandi Section */}
-      <View style={styles.section}>
-        <Text style={styles.heading}>बन्दी विवरण </Text>
-        {/* <LabelValue label="बन्दी आईडी" value={bandiData.office_bandi_id} />
-        <LabelValue label="नामथर" value={bandiData.bandi_name} />
-        <LabelValue label="लिङ्ग" value={bandiData.gender} />
-        <LabelValue label="जन्म मिति" value={bandiData.dob} />
-        <LabelValue label="वैवाहिक स्थिति" value={bandiData.married_status} />
-        <LabelValue label="शैक्षिक योग्यता" value={bandiData.bandi_education} />
-        <LabelValue label="हुलिया" value={bandiData.bandi_huliya} /> */}
-      </View>
+const BandiFullReportPDF = ( { bandiData } ) => {
+  const BASE_URL = useBaseURL();
+  console.log(BASE_URL)
+  const { records: family, optrecords: optFamily, loading: familyLoading, refetch: fetchFamilyRecords } = fetchBandiFamily( bandiData.bandi_id );
+  const { records: contact, optrecords: optContact, loading: contactLoading, refetch: fetchContactRecords } = fetchContactPerson( bandiData.bandi_id );
+  const { records: bandiMudda, optrecords: optbandiMudda, loading: bandiMuddaLoading, refetch: fetchbandiMuddaRecords } = useFetchBandiMudda( bandiData.bandi_id );
+  const { records: bandiIdCard, optrecords: optbandiIdCard, loading: bandiIdCardLoading, refetch: fetchbandiIdCardRecords } = useFetchBandiMudda( bandiData.bandi_id );
+  console.log( bandiData );
+  return (
+    <Document>
 
-      
-    </Page>
-  </Document>
-);
+      <Page size="A4" style={styles.page}>
+        {/* Bandi Section */}
+        <View style={styles.row}>
+          <Text style={[styles.cell, styles.nameCell]}>बन्दीको विवरणः</Text>
+        </View>
+        <View style={styles.tableRow}>
+          {/* Left side info column */}
+          <View style={{ flex: 3 }}>
+            {/* Row 1 */}
+            <View style={styles.tableRow}>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>बन्दी आईडी</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.office_bandi_id}</Text></View>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>नाम</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.bandi_name}</Text></View>
+            </View>
+
+            {/* Row 2 */}
+            <View style={styles.tableRow}>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>लिङ्ग</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.gender}</Text></View>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>उमेर</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.age}</Text></View>
+            </View>
+
+            {/* Row 3 */}
+            <View style={styles.tableRow}>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>शैक्षिक योग्यता</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.bandi_education}</Text></View>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>हुलिया</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.bandi_huliya}</Text></View>
+            </View>
+
+            {/* Row 4 */}
+            <View style={styles.tableRow}>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>राष्ट्रियता</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.nationality}(${bandiData.country_name_np})</Text></View>
+              <View style={styles.tableColHeader}><Text style={styles.tableCell}>ठेगाना</Text></View>
+              <View style={styles.tableCol}><Text style={styles.tableCell}>
+                {bandiData.nationality === 'स्वदेशी'
+                  ? `${ bandiData.city_name_np }-${ bandiData.wardno }, ${ bandiData.district_name_np }`
+                  : `${ bandiData.bidesh_nagarik_address_details }`}
+              </Text></View>
+            </View>
+          </View>
+
+          {/* Photo Column */}
+          <View style={styles.photoCol}>
+            {bandiData.photo_path && (
+              <Image
+                src={`${ BASE_URL }${ bandiData.photo_path }`}
+                style={{ width: 80, height: 100 }}
+              />
+            )}
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={[styles.cell, styles.nameCell]}>बन्दीको कैद विवरणः</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>बन्दी प्रकार</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>हिरासत अवधी</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>थुना/कैद परेको मिति</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>छुट्ने मिति</Text></View>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.bandi_type}</Text></View>
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.hirasat_years}|{bandiData.hirasat_months}|{bandiData.hirasat_days}</Text></View>
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.thuna_date_bs}</Text></View>
+          <View style={styles.tableCol}><Text style={styles.tableCell}>{bandiData.release_date_bs}</Text></View>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={[styles.cell, styles.nameCell]}>बन्दीको मुद्दा विवरणः</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>सि.नं.</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>मुद्दा</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>मुद्दा नं.</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>मुद्दा अवस्था</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>मुद्दा फैसला गर्ने निकाय</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>मुद्दा फैसला मिति</Text></View>
+        </View>
+
+        {bandiMudda.map( ( item, index ) => (
+          <View style={styles.tableRow} key={index}>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{index + 1}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.mudda_name}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.mudda_no}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.mudda_condition == 1 ? 'चालु' : 'अन्तिम भएको' || ''}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.mudda_phesala_antim_office_date}</Text></View>
+          </View>
+        ) )}
+
+        <View style={styles.row}>
+          <Text style={[styles.cell, styles.nameCell]}>बन्दीको परिचय पत्र विवरणः</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>सि.नं.</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>परिचय पत्र</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>परिचय पत्र नं.</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>जारी जिल्ला</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>जारी मिति</Text></View>
+        </View>
+        {bandiIdCard.map( ( item, index ) => (
+          <View style={styles.tableRow} key={index}>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{index + 1}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.govt_id_name_np}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.card_no}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.card_issue_district_name}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.card_issue_date}</Text></View>
+          </View>
+        ) )}
+
+        <View style={styles.row}>
+          <Text style={[styles.cell, styles.nameCell]}>बन्दीको पारिवारीक विवरणः</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>सि.नं.</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>नाता</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>नामथर</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>ठेगाना</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>सम्पर्क नं.</Text></View>
+        </View>
+        {family.map( ( item, index ) => (
+          <View style={styles.tableRow} key={index}>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{index + 1}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.relation_np}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.relative_name}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.relative_address}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.contact_no}</Text></View>
+          </View>
+        ) )}
+        <View style={styles.row}>
+          <Text style={[styles.cell, styles.nameCell]}>बन्दीको सम्पर्क व्यक्तीको विवरणः</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>सि.नं.</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>नाता</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>नामथर</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>ठेगाना</Text></View>
+          <View style={styles.tableColHeader}><Text style={styles.tableCell}>सम्पर्क नं.</Text></View>
+        </View>
+        {contact.map( ( item, index ) => (
+          <View style={styles.tableRow} key={index}>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{index + 1}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.relation_np}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.contact_name}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.contact_address}</Text></View>
+            <View style={styles.tableCol}><Text style={styles.tableCell}>{item.contact_contact_details}</Text></View>
+          </View>
+        ) )}
+      </Page>
+    </Document>
+  );
+};
 
 export default BandiFullReportPDF;
 
-{/* Kaid Section */}
-      {/* <View style={styles.section}>
-        <Text style={styles.heading}>कैद विवरण</Text>
-        {kaidData?.map((item, index) => (
-          <View key={index}>
-            <LabelValue label="थुनाको मिति" value={item.thuna_miti} />
-            <LabelValue label="कैद अवधि" value={item.kaid_saja} />
-            <LabelValue label="कैद प्रकार" value={item.kaid_type} />
-          </View>
-        ))}
-      </View> */}
 
-      {/* Address Section */}
-      {/* <View style={styles.section}>
-        <Text style={styles.heading}>ठेगाना विवरण</Text>
-        {addressData?.map((item, index) => (
-          <View key={index}>
-            <LabelValue label="प्रदेश" value={item.province_name} />
-            <LabelValue label="जिल्ला" value={item.district_name} />
-            <LabelValue label="गा.पा/न.पा" value={item.municipality_name} />
-            <LabelValue label="वडा नं" value={item.ward_no} />
-          </View>
-        ))}
-      </View> */}
 
-      {/* ID Section */}
-      {/* <View style={styles.section}>
+{/* ID Section */ }
+{/* <View style={styles.section}>
         <Text style={styles.heading}>पहिचान विवरण</Text>
         {idData?.map((item, index) => (
           <View key={index}>
@@ -118,8 +283,8 @@ export default BandiFullReportPDF;
         ))}
       </View> */}
 
-      {/* Mudda Section */}
-      {/* <View style={styles.section}>
+{/* Mudda Section */ }
+{/* <View style={styles.section}>
         <Text style={styles.heading}>मुद्दा विवरण</Text>
         {muddaData?.map((item, index) => (
           <View key={index}>
@@ -131,8 +296,8 @@ export default BandiFullReportPDF;
         ))}
       </View> */}
 
-      {/* Punrabedan Section */}
-      {/* <View style={styles.section}>
+{/* Punrabedan Section */ }
+{/* <View style={styles.section}>
         <Text style={styles.heading}>पुनरावेदन विवरण</Text>
         {punrabedanData?.map((item, index) => (
           <View key={index}>

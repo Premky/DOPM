@@ -3,32 +3,30 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const fetchBandiFamily = ( bandi_id ) => {
+const useFetchBandiMudda = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
     const [loading, setLoading] = useState( true );
 
-    
     const fetchBandiRecords = async () => {
         try {
             setLoading(true);
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_family/${ bandi_id }`,
+            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_mudda/${ bandi_id }`,
                 { withCredentials: true } );
-                const { Status, Result, Error } = response.data;
-                console.log( Result );
+            console.log( BASE_URL, response );
+            const { Status, Result, Error } = response.data;
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
 
                     const formatted = resultArray.map( ( opt, index ) => ( {
-                        label: opt.disablility_name_np,
+                        label: opt.mudda_name,
                         value: opt.id || index  // fallback for value if id is missing
                     } ) );
 
                     setOptRecords( formatted );
                     setRecords( resultArray );
-                    console.log(records)
                 } else {
                     console.log( 'No records found' );
                 }
@@ -42,11 +40,11 @@ const fetchBandiFamily = ( bandi_id ) => {
         }
     };
 
-    useEffect( () => {        
+    useEffect( () => {
         fetchBandiRecords();
     }, [BASE_URL, bandi_id] );
 
     return { records, optrecords, loading, refetch:fetchBandiRecords };
 };
 
-export default fetchBandiFamily;
+export default useFetchBandiMudda;

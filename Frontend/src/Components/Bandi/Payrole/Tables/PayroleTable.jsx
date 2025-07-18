@@ -94,7 +94,7 @@ const PayroleTable = () => {
             console.log( res.data );
             setData( res.data.Result || [] );
             setFilteredKaidi( res.data.Result || [] );
-            setTotalKaidi( response.data.TotalCount );  //Total Count 
+            setTotalKaidi( res.data.TotalCount );  //Total Count 
 
             // If needed, fetch muddās here too:
             // const muddaRes = await axios.get(`${BASE_URL}/bandi/get_bandi_mudda`, { withCredentials: true });

@@ -73,11 +73,26 @@ const PayroleTableFilters = ( { onChange } ) => {
         searchis_checked,
     ] );
 
+    const roleBasedStatus = {
+        user: [
+            { label: 'पेश नगरेको', value: '1' },
+            { label: 'पेश गरेको', value: '2' },
+        ]
+        , office_approver: [
+            { label: 'पेश नगरेको', value: '1' },
+            { label: 'पेश गरेको', value: '2' },
+        ],
+        jr_officer: [
+            { label: 'पेश गरेको', value: '3' },
+            { label: 'स्विकृत गरेको', value: '4' },
+            { label: 'प्यारोल सिफारिस भएको', value: '5' },
+        ],
+    };
 
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
             <Grid container spacing={2} alignItems="flex-end">
-                {authState.office_id == 1 || authState.office_id == 2 &&(
+                {authState.office_id == 1 || authState.office_id == 2 && (
                     <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
@@ -91,11 +106,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                     <ReuseSelect
                         name="searchpayroleStatus"
                         label="प्यारोल स्थिति"
-                        options={[
-                            { value: "1", label: "प्रारम्भिक" },
-                            { value: "2", label: "सिफारिस गरियो" },
-                            { value: "3", label: "निर्णय गरियो" },
-                        ]}
+                        options={roleBasedStatus[authState.role] || roleBasedStatus[authState.role_name]}
                         control={control}
                         error={errors.searchpayroleStatus}
                     />

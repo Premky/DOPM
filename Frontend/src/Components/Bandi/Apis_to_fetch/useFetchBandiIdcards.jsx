@@ -3,17 +3,17 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const fetchBandiFamily = ( bandi_id ) => {
+const useFetchBandiIdCards = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
     const [loading, setLoading] = useState( true );
 
     
-    const fetchBandiRecords = async () => {
+    const fetchBandiIdCards = async () => {
         try {
             setLoading(true);
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_family/${ bandi_id }`,
+            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_id_card/${ bandi_id }`,
                 { withCredentials: true } );
                 const { Status, Result, Error } = response.data;
                 console.log( Result );
@@ -43,10 +43,10 @@ const fetchBandiFamily = ( bandi_id ) => {
     };
 
     useEffect( () => {        
-        fetchBandiRecords();
+        fetchBandiIdCards();
     }, [BASE_URL, bandi_id] );
 
     return { records, optrecords, loading, refetch:fetchBandiRecords };
 };
 
-export default fetchBandiFamily;
+export default useFetchBandiIdCards;
