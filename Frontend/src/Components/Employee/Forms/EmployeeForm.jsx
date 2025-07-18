@@ -339,6 +339,22 @@ const EmployeeForm = () => {
                             </Grid>
                             <Grid container size={{ xs: 12 }}>
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseSelect
+                                        name="jd"
+                                        label="नयाँ नियुक्ति/कार्यालयमा सरुवा/पदस्थापन"
+                                        required={true}
+                                        control={control}
+                                        options={[
+                                            { label: 'नयाँ नियुक्ती', value: 'नयाँ नियुक्ती' },
+                                            { label: 'सरुवा', value: 'सरुवा' },
+                                            { label: 'काज', value: 'काज' },
+                                            { label: 'बढुवा', value: 'बढुवा' },
+                                            { label: 'पदस्थापन', value: 'पदस्थापन' },
+                                        ]}
+                                        error={errors.appointment_type}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDateField
                                         name="appointment_date_bs"
                                         label="मिति(वि.सं.)"
@@ -357,22 +373,7 @@ const EmployeeForm = () => {
                                         required={true}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseSelect
-                                        name="jd"
-                                        label="नयाँ नियुक्ति/कार्यालयमा सरुवा/पदस्थापन"
-                                        required={true}
-                                        control={control}
-                                        options={[
-                                            { label: 'नयाँ नियुक्ती', value: 'नयाँ नियुक्ती' },
-                                            { label: 'सरुवा', value: 'सरुवा' },
-                                            { label: 'काज', value: 'काज' },
-                                            { label: 'बढुवा', value: 'बढुवा' },
-                                            { label: 'पदस्थापन', value: 'पदस्थापन' },
-                                        ]}
-                                        error={errors.appointment_type}
-                                    />
-                                </Grid>
+
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="appointment_type"
