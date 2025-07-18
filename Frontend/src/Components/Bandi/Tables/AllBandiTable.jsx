@@ -1,27 +1,19 @@
-import {
-    Box, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow,
-    Dialog, DialogContent, DialogTitle, Stack, Avatar
-} from '@mui/material';
+import {Box, Button, Grid} from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
-import ReusePayroleStatus from '../../ReuseableComponents/ReusePayroleStatus';
-import PayroleStatusModal from '../Dialogs/PayroleStatusModal';
 import Swal from 'sweetalert2';
 import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
-import exportToExcel from '../Exports/ExcelPayrole';
 import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-import ReusableTable from '../../ReuseableComponents/ReuseTable';
 import ReusableBandiTable from '../ReusableComponents/ReusableBandiTable';
-
 
 const AllBandiTable = () => {
     const BASE_URL = useBaseURL();
