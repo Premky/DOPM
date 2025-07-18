@@ -3107,7 +3107,7 @@ router.get( '/get_office_wise_count1', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get('/get_office_wise_count2', verifyToken, async (req, res) => {
+router.get('/get_office_wise_count', verifyToken, async (req, res) => {
   try {
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
@@ -3260,7 +3260,7 @@ router.get('/get_office_wise_count2', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/get_office_wise_count', verifyToken, async (req, res) => {
+router.get('/get_office_wise_count3', verifyToken, async (req, res) => {
   try {
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
