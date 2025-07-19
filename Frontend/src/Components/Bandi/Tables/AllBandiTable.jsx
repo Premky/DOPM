@@ -6,14 +6,14 @@ import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import Swal from 'sweetalert2';
-import { calculateBSDate } from '../../../../Utils/dateCalculator';
+// import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
-import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-import ReusableBandiTable from '../ReusableComponents/ReusableBandiTable';
+// import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
+const ReusableBandiTable = React.lazy(()=> import ('../ReusableComponents/ReusableBandiTable'));
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 
 const AllBandiTable = () => {

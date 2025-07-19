@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const fetchBandiDisabilities = ( bandi_id ) => {
+const useFetchBandiDisabilities = ( bandi_id ) => {
+    // console.log("Fetching disabilities for bandi_id:", bandi_id);
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -11,10 +12,15 @@ const fetchBandiDisabilities = ( bandi_id ) => {
 
     const fetchBandiRecords = async () => {
         try {
-            setLoading(true);
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_disability/${ bandi_id }`,
-                { withCredentials: true } );
-            console.log( response );
+            setLoading( true );
+            const joinURL = ( base, path ) => base.replace( /\/$/, '' ) + '/' + path.replace( /^\//, '' );
+            const url = joinURL( BASE_URL, `/bandi/get_bandi_disability/${ bandi_id }` );
+
+            // const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_disability/${ bandi_id }`,
+            //     { withCredentials: true } );
+            const response = await axios.get( url, { withCredentials: true } );
+
+            // console.log( response );
             const { Status, Result, Error } = response.data;
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
@@ -41,10 +47,12 @@ const fetchBandiDisabilities = ( bandi_id ) => {
     };
 
     useEffect( () => {
-        fetchBandiRecords();
+        if ( bandi_id ) {
+            fetchBandiRecords();
+        }
     }, [BASE_URL, bandi_id] );
 
-    return { records, optrecords, loading, refetch:fetchBandiRecords };
+    return { records, optrecords, loading, refetch: fetchBandiRecords };
 };
 
-export default fetchBandiDisabilities;
+export default useFetchBandiDisabilities;

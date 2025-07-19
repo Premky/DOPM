@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, useMemo } from "react";
 import { Grid, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import ReuseKaragarOffice from "../../../ReuseableComponents/ReuseKaragarOffice";
@@ -7,6 +7,9 @@ import ReuseSelect from "../../../ReuseableComponents/ReuseSelect";
 import ReuseInput from "../../../ReuseableComponents/ReuseInput";
 import ReusePayroleNos from "../../../ReuseableComponents/ReusePayroleNos";
 import { useAuth } from "../../../../Context/AuthContext";
+
+import useFetchPayroles from "../useApi/useFetchPayroles";
+import exportToExcel from "../../Exports/ExcelPayrole";
 
 const PayroleTableFilters = ( { onChange } ) => {
     const { state: authState } = useAuth();
@@ -44,7 +47,32 @@ const PayroleTableFilters = ( { onChange } ) => {
     const searchis_checked = watch( 'is_checked' );
 
     //Watch Variables
+    // Build filters object
+    const filters = {
+        searchOffice,
+        nationality,
+        searchpayroleStatus,
+        searchpyarole_rakhan_upayukat,
+        searchpayrole_no_id,
+        searchmudda_id,
+        searchbandi_name,
+        searchchecked,
+        searchis_checked,
+    };
+    
+    const memoFilters = useMemo( () => filters, [
+        filters?.searchOffice,
+        filters?.nationality,
+        filters?.searchpayroleStatus,
+        filters?.searchpyarole_rakhan_upayukat,
+        filters?.searchpayrole_no_id,
+        filters?.searchmudda_id,
+        filters?.searchbandi_name,
+        filters?.searchchecked,
+        filters?.searchis_checked,
+    ] );
 
+    const { data: filteredKaidi, totalKaidi, loading, error, fetchedMuddas, refetchMuddas, refetchData } = useFetchPayroles( memoFilters ); // page, rowsPerPage
     const onSubmit = ( data ) => {
         onChange( data );
     };
@@ -172,12 +200,17 @@ const PayroleTableFilters = ( { onChange } ) => {
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    <Button variant="contained" type="submit">Search</Button>
+                    <Button variant="contained" type="submit" sx={{ m: 1 }}>Search</Button>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    <Button variant="outlined" onClick={() => { reset(); onChange( {} ); }}>
+                    <Button variant="outlined" onClick={() => { reset(); onChange( {} ); }} sx={{ m: 1 }}>
                         Reset
                     </Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    {/* <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
+                        एक्सेल निर्यात
+                    </Button> */}
                 </Grid>
 
 

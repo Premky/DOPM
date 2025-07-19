@@ -69,7 +69,7 @@ const fetchDisabilities = ( bandi_id ) => {
 
     useEffect( () => {
         fetchRecords();
-        fetchBandiRecords();
+        // fetchBandiRecords();
     }, [BASE_URL, bandi_id] );
 
     return { records, optrecords, loading };

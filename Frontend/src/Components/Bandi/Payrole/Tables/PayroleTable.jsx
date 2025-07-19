@@ -1,6 +1,6 @@
 // PayroleTable.jsx – Final version with full cell merging and advanced features
 
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment, lazy } from "react";
 import {
     Table,
     TableBody,
@@ -18,6 +18,7 @@ import {
     Checkbox
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+
 import axios from "axios";
 import Swal from "sweetalert2";
 import { calculateBSDate } from "../../../../../Utils/dateCalculator";
@@ -29,7 +30,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import PayroleActionMenu from "./PayroleActionMenu";
-
+import exportToExcel from "../../Exports/ExcelPayrole";
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
@@ -91,7 +92,7 @@ const PayroleTable = () => {
                 },
                 withCredentials: true,
             } );
-            console.log( res.data );
+            // console.log( res.data );
             setData( res.data.Result || [] );
             setFilteredKaidi( res.data.Result || [] );
             setTotalKaidi( res.data.TotalCount );  //Total Count 
@@ -104,8 +105,6 @@ const PayroleTable = () => {
             console.error( "Fetch error", err );
         }
     };
-
-
     useEffect( () => {
         fetchData();
     }, [filters] );
@@ -137,6 +136,7 @@ const PayroleTable = () => {
     useEffect( () => {
         fetchMuddas();
     }, [] );
+    // return { offices: records, optOffices: optrecords, loadingOffices: loading };
 
     const [menuAnchorEl, setMenuAnchorEl] = useState( null );
     const [menuRowData, setMenuRowData] = useState( null );
@@ -192,6 +192,9 @@ const PayroleTable = () => {
 
     return (
         <>
+            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
+                एक्सेल निर्यात
+            </Button>
             <Menu
                 anchorEl={menuAnchorEl}
                 open={Boolean( menuAnchorEl )}
@@ -257,10 +260,10 @@ const PayroleTable = () => {
                                             {index + 1}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {data.letter_address}
+                                            {data.office_bandi_id}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {data.office_name}
+                                            {data.letter_address}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 50, zIndex: 3, backgroundColor: rowStyle }}>
                                             {data.bandi_name}

@@ -12,8 +12,8 @@ const handleViewPayrole = async ( row ) => {
 };
 
 const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
-  const BASE_URL=useBaseURL();
-  console.log(BASE_URL)
+  const BASE_URL = useBaseURL();
+  console.log( BASE_URL );
   const status = data?.payrole_status;
   const officeId = data?.current_office_id;
 
@@ -52,13 +52,12 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         onClick={() => {
           handleViewPayrole( data );
           onClose();
-        }}
-      >
-        विवरण हेर्नुहोस्
+        }}>
+      विवरण हेर्नुहोस्
       </MenuItem>
 
       {/* Example: Forwarding to DOPM */}
-      {status === 1 && officeId !== 1 && (
+      {status === 1 && officeId !== 1 && officeId!==2 && (
         <MenuItem onClick={() => handleAction( "forward" )}>DOPM मा पठाउनुहोस्</MenuItem>
       )}
     </>

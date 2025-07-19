@@ -105,7 +105,7 @@ const ReusableBandiTable = ( {
         const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
         saveAs( blob, 'bandi_records.xlsx' );
     };
-console.log(paginatedRows);
+// console.log(paginatedRows);
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>

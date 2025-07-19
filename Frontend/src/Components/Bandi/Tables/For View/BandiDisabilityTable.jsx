@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 
-import fetchBandiDisabilities from '../../Apis_to_fetch/fetchBandiDisabilities';
+import useFetchBandiDisabilities from '../../Apis_to_fetch/fetchBandiDisabilities';
 
 import DisabilityModal from '../../Dialogs/DisabilityModal';
 
@@ -28,7 +28,7 @@ const BandiDisabilityTable = ( { bandi_id } ) => {
 
     // ✅ Fetch data
     
-    const { records: bandiDisability, loading: bandiDisabilityLoading, refetch } = fetchBandiDisabilities(bandi_id);    
+    const { records: bandiDisability, loading: bandiDisabilityLoading, refetch } = useFetchBandiDisabilities(bandi_id);    
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
