@@ -651,13 +651,14 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const selectedOffice = req.query.selected_office || 0;
     // const forSelect = req.query.forSelect || 0;
     const forSelect = req.query.forSelect === 'true' || req.query.forSelect === '1';
-    console.log( 'forSelect', forSelect );
+    // console.log( 'forSelect', forSelect );
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
     const gender = req.query.gender || 0;
     const bandi_type = req.query.bandi_type || 0;
     const search_name = req.query.search_name || 0;
     const is_active = req.query.is_active || 1; // Default to 1 (active)
+    const mudda_group_id = req.query.mudda_group_id || '';
     // const page = parseInt( req.query.page ) || 0;
     // const limit = parseInt( req.query.limit ) || 25;
     // const offset = page * limit;
@@ -682,6 +683,23 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere += ` AND bp.nationality = '${ nationality }'`;  // Note quotes for string
         } else {
             baseWhere = `WHERE bp.nationality = '${ nationality }'`;
+        }
+    }
+    if ( mudda_group_id ) {
+        const escapedGroupId = con.escape( mudda_group_id );
+        if ( baseWhere ) {
+            baseWhere += ` AND bp.id IN (
+                SELECT bmd.bandi_id 
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                WHERE m.muddas_group_id = ${ escapedGroupId }
+            )`;
+        } else {
+            baseWhere += `WHERE bp.id IN (
+                SELECT bmd.bandi_id 
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                WHERE m.muddas_group_id =${ escapedGroupId }`;
         }
     }
     if ( gender ) {
@@ -752,6 +770,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.office_name_with_letter_address,
                 bmd_combined.vadi,
                 bmd_combined.mudda_phesala_antim_office_date,
+                bmd_combined.mudda_group_id,
+                bmd_combined.mudda_group_name,
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs
 
@@ -771,10 +791,13 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     m.mudda_name,
                     bmd.vadi,
                     bmd.mudda_phesala_antim_office_date,
-                    o.office_name_with_letter_address
+                    o.office_name_with_letter_address,
+                    mg.mudda_group_name,
+                    mg.id AS mudda_group_id
                 FROM bandi_mudda_details bmd
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
                 LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+                LEFT JOIN muddas_groups mg ON m.muddas_group_id=mg.id
             ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
@@ -793,6 +816,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 office_name_with_letter_address,
                 vadi,
                 mudda_phesala_antim_office_date,
+                mudda_group_name,
                 ...bandiData
             } = row;
 
@@ -812,7 +836,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     is_last_mudda,
                     office_name_with_letter_address,
                     vadi,
-                    mudda_phesala_antim_office_date
+                    mudda_phesala_antim_office_date,
+                    mudda_group_name
                 } );
             }
         } );
@@ -3402,53 +3427,53 @@ router.get( '/get_office_wise_count3', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get('/get_office_wise_count', verifyToken, async (req, res) => {
-  try {
-    const active_office = req.user.office_id;
-    const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
-    const defaultAge = 65;
-    const defaultOfficeCategory = 2;
+router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
+    try {
+        const active_office = req.user.office_id;
+        const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+        const defaultAge = 65;
+        const defaultOfficeCategory = 2;
 
-    let {
-      nationality,
-      ageFrom,
-      ageTo,
-      office_id,
-      startDate,
-      endDate
-    } = req.query;
+        let {
+            nationality,
+            ageFrom,
+            ageTo,
+            office_id,
+            startDate,
+            endDate
+        } = req.query;
 
-    if (!startDate && !endDate) {
-      startDate = '1000-01-01';
-      endDate = today_date_bs;
-    } else {
-      if (!startDate) startDate = '1000-01-01';
-      if (!endDate) endDate = today_date_bs;
-    }
+        if ( !startDate && !endDate ) {
+            startDate = '1000-01-01';
+            endDate = today_date_bs;
+        } else {
+            if ( !startDate ) startDate = '1000-01-01';
+            if ( !endDate ) endDate = today_date_bs;
+        }
 
-    const params = [defaultAge, defaultAge, defaultAge, defaultAge];
-    params.push(startDate, endDate); // thuna_date_bs BETWEEN
-    params.push(endDate); // release_date_bs cutoff
-    params.push(defaultOfficeCategory);
+        const params = [defaultAge, defaultAge, defaultAge, defaultAge];
+        params.push( startDate, endDate ); // thuna_date_bs BETWEEN
+        params.push( endDate ); // release_date_bs cutoff
+        params.push( defaultOfficeCategory );
 
-    let officeFilterSql = '';
-    if (active_office !== 1 && active_office !== 2) {
-      params.push(active_office);
-      officeFilterSql = 'AND o.id = ?';
-    } else if (office_id) {
-      params.push(office_id);
-      officeFilterSql = 'AND o.id = ?';
-    }
+        let officeFilterSql = '';
+        if ( active_office !== 1 && active_office !== 2 ) {
+            params.push( active_office );
+            officeFilterSql = 'AND o.id = ?';
+        } else if ( office_id ) {
+            params.push( office_id );
+            officeFilterSql = 'AND o.id = ?';
+        }
 
-    let extraSubqueryFilters = '';
-    if (nationality) {
-      extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape(nationality.trim());
-    }
-    if (ageFrom && ageTo) {
-      extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${Number(ageFrom)} AND ${Number(ageTo)}`;
-    }
+        let extraSubqueryFilters = '';
+        if ( nationality ) {
+            extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape( nationality.trim() );
+        }
+        if ( ageFrom && ageTo ) {
+            extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${ Number( ageFrom ) } AND ${ Number( ageTo ) }`;
+        }
 
-    const sql = `
+        const sql = `
       SELECT
         voad.state_name_np,
         voad.district_order_id,
@@ -3498,7 +3523,7 @@ router.get('/get_office_wise_count', verifyToken, async (req, res) => {
         LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
         WHERE (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
-        ${extraSubqueryFilters}
+        ${ extraSubqueryFilters }
         GROUP BY bp.id
       ) bp ON bp.current_office_id = o.id
 
@@ -3512,18 +3537,18 @@ router.get('/get_office_wise_count', verifyToken, async (req, res) => {
         brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d')
       )
       AND o.office_categories_id = ?
-      ${officeFilterSql}
+      ${ officeFilterSql }
       GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
       ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
     `;
 
-    const [rows] = await pool.query(sql, params);
-    return res.json({ Status: true, Result: rows });
-  } catch (error) {
-    console.error("Error in /get_office_wise_count:", error);
-    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
-  }
-});
+        const [rows] = await pool.query( sql, params );
+        return res.json( { Status: true, Result: rows } );
+    } catch ( error ) {
+        console.error( "Error in /get_office_wise_count:", error );
+        return res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
 
 function extractInternalAdminData( reqBody, is_active, user_id, active_office ) {
     const {

@@ -14,6 +14,7 @@ import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
 import ReusableBandiTable from '../ReusableComponents/ReusableBandiTable';
+import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 
 const AllBandiTable = () => {
     const BASE_URL = useBaseURL();
@@ -21,6 +22,7 @@ const AllBandiTable = () => {
     const navigate = useNavigate();
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
+    const { records:muddaGroups, optrecords:mudaGroupsOpt, loading:muddaGroupsLoading } = fetchMuddaGroups();
     useEffect( () => {
         setValue( 'searchOffice', authState.office_id | '' );
     }, [authState] );
@@ -62,6 +64,7 @@ const AllBandiTable = () => {
     const gender = watch( 'gender' );
     const bandi_type = watch( 'bandi_type' );
     const is_active = watch( 'is_active' );
+    const mudda_group_id = watch( 'mudda_group_id' );
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -75,7 +78,7 @@ const AllBandiTable = () => {
                 params: {
                     searchOffice, nationality,
                     gender, bandi_type, search_name,
-                    is_active
+                    is_active, mudda_group_id
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
@@ -85,7 +88,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                // console.log( Result );
+                console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -127,7 +130,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender, is_active] );
+    }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender, is_active, mudda_group_id] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -219,9 +222,6 @@ const AllBandiTable = () => {
         // },
     ];
 
-
-
-
     return (
         <>
 
@@ -299,13 +299,14 @@ const AllBandiTable = () => {
                             control={control}
                         />
                     </Grid>
-                    {/* <Grid size={{ xs: 12, sm: 2 }}>
-                        <ReuseMudda
-                            name="mudda_id"
-                            label='बन्दी प्रकार'                           
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="mudda_group_id"
+                            label='मुद्दा समूह'                           
                             control={control}
+                            options={mudaGroupsOpt}
                         />
-                    </Grid> */}
+                    </Grid>
 
 
                     <Grid xs={12}>
@@ -321,7 +322,7 @@ const AllBandiTable = () => {
                 </Grid>
                 {/* </form> */}
             </Box>
-            <Box sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
+            {/* <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}> */}
 
                 <ReusableBandiTable
                     columns={columns}
@@ -348,7 +349,7 @@ const AllBandiTable = () => {
                     pageSizeOptions={pageSizeOptions}
                     page={page}
                 /> */}
-            </Box>
+            {/* </Box> */}
         </>
     );
 };
