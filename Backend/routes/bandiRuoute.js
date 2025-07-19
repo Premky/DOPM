@@ -773,8 +773,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.mudda_group_id,
                 bmd_combined.mudda_group_name,
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
-                bkd.thuna_date_bs, bkd.release_date_bs
-
+                bkd.thuna_date_bs, bkd.release_date_bs,
+                oo.letter_address AS current_office_letter_address
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
@@ -782,6 +782,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN np_district nd ON ba.district_id = nd.did
             LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
             LEFT JOIN bandi_kaid_details bkd ON bp.id=bkd.bandi_id
+            LEFT JOIN offices oo ON bp.current_office_id = oo.id
             LEFT JOIN (
                 SELECT 
                     bmd.bandi_id,
@@ -797,7 +798,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 FROM bandi_mudda_details bmd
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
                 LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
-                LEFT JOIN muddas_groups mg ON m.muddas_group_id=mg.id
+                LEFT JOIN muddas_groups mg ON m.muddas_group_id=mg.id                
             ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC

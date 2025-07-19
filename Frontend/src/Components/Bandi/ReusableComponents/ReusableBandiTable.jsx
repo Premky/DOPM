@@ -31,7 +31,7 @@ const ReusableBandiTable = ( {
         if ( !filterText ) return rows;
         return rows.filter( bandi =>
             bandi.bandi_name?.toLowerCase().includes( filterText.toLowerCase() ) ||
-            bandi.office_bandi_id?.toString().includes(filterText.toLowerCase() )
+            bandi.office_bandi_id?.toString().includes( filterText.toLowerCase() )
         );
     }, [rows, filterText] );
 
@@ -105,7 +105,7 @@ const ReusableBandiTable = ( {
         const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
         saveAs( blob, 'bandi_records.xlsx' );
     };
-
+console.log(paginatedRows);
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -138,6 +138,7 @@ const ReusableBandiTable = ( {
                     <TableHead>
                         <TableRow>
                             <TableCell align="center">सि.नं.</TableCell>
+                            {/* <TableCell align="center">कारागार कार्यालय</TableCell> */}
                             {columns.map( col => (
                                 <TableCell key={col.field} align="center">{col.headerName}</TableCell>
                             ) )}
@@ -160,7 +161,7 @@ const ReusableBandiTable = ( {
                                             {page * rowsPerPage + bandiIndex + 1}
                                         </TableCell>
                                     )}
-
+                                    
                                     {muddaIndex === 0 && columns.map( col => {
                                         const value = bandi[col.field];
                                         return (

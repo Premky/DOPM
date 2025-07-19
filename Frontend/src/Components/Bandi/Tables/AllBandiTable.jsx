@@ -155,6 +155,7 @@ const AllBandiTable = () => {
     };
 
     const columns = [
+        { field: "current_office_letter_address", headerName: "कारागार कार्यालय", width: 100 },
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
         { field: "bandi_type", headerName: "बन्दी प्रकार", width: 100 },
         { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
