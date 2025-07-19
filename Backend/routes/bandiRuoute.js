@@ -1490,7 +1490,7 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const id = req.params.id;
-    const { relation_np, relative_name, relative_address, contact_no } = req.body;
+    const { relation_np, relative_name, relative_address, contact_no, is_dependent, dob } = req.body;
 
     let connection; // ✅ Declare outside
 
@@ -1500,10 +1500,12 @@ router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
 
         const sql = `
             UPDATE bandi_relative_info 
-            SET relative_name = ?, relation_id = ?, relative_address = ?, contact_no = ? 
+            SET relative_name = ?, relation_id = ?, relative_address = ?, contact_no = ?,
+             is_dependent=?, dob=?, updated_by = ?, current_office_id = ?
             WHERE id = ?
         `;
-        const values = [relative_name, relation_np, relative_address, contact_no, id];
+        const values = [relative_name, relation_np, relative_address, contact_no,
+            is_dependent, dob, user_id, active_office, id];
 
         await connection.query( sql, values ); // ✅ Use await here
 

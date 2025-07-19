@@ -9,53 +9,64 @@ import {
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import ReuseRelativeRelations from "../../ReuseableComponents/ReuseRelativeRelations";
+import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
+import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 
-const FamilyModal = ({ open, onClose, onSave, editingData }) => {
+const FamilyModal = ( { open, onClose, onSave, editingData } ) => {
     const {
         control,
         handleSubmit,
         reset,
+        watch,
         formState: { errors },
-    } = useForm({
+    } = useForm( {
         defaultValues: {
             bandi_id: "",
             relation_np: "",
             relative_name: "",
             relative_address: "",
             contact_no: "",
+            is_dependent: "",
+            dob: "",
         },
-    });
-// console.log(editingData)
-    useEffect(() => {
-        if (editingData) {
-            reset({
+    } );
+    // console.log(editingData)
+    useEffect( () => {
+        if ( editingData ) {
+            reset( {
                 bandi_id: editingData.bandi_id || "",
                 relation_np: editingData.relation_id || "",
                 relative_name: editingData.relative_name || "",
                 relative_address: editingData.relative_address || "",
                 contact_no: editingData.contact_no || "",
-            });
+                is_dependent: editingData.is_dependent || "",
+                dob: editingData.dob || "",
+            } );
         } else {
-            reset({
+            reset( {
                 bandi_id: "",
                 relation_np: "",
                 relative_name: "",
                 relative_address: "",
                 contact_no: "",
-            });
+                is_dependent: "",
+                dob: "",
+            } );
         }
-    }, [editingData, reset]);
+    }, [editingData, reset] );
 
-    const onSubmit = (data) => {
-        onSave(data, editingData?.id);
+    const onSubmit = ( data ) => {
+        onSave( data, editingData?.id );
         onClose();
     };
+
+    const isDependent = watch( "is_dependent" );
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
-            <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden/>
+                <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden />
 
                 <ReuseRelativeRelations
                     name="relation_np"
@@ -69,7 +80,7 @@ const FamilyModal = ({ open, onClose, onSave, editingData }) => {
                     name="relative_name"
                     control={control}
                     rules={{ required: "नामथर आवश्यक छ" }}
-                    render={({ field }) => (
+                    render={( { field } ) => (
                         <TextField
                             {...field}
                             label="नामथर"
@@ -85,7 +96,7 @@ const FamilyModal = ({ open, onClose, onSave, editingData }) => {
                     name="relative_address"
                     control={control}
                     rules={{ required: "ठेगाना आवश्यक छ" }}
-                    render={({ field }) => (
+                    render={( { field } ) => (
                         <TextField
                             {...field}
                             label="ठेगाना"
@@ -107,7 +118,7 @@ const FamilyModal = ({ open, onClose, onSave, editingData }) => {
                             message: "मान्य सम्पर्क नम्बर राख्नुहोस्",
                         },
                     }}
-                    render={({ field }) => (
+                    render={( { field } ) => (
                         <TextField
                             {...field}
                             label="सम्पर्क नं."
@@ -118,11 +129,33 @@ const FamilyModal = ({ open, onClose, onSave, editingData }) => {
                         />
                     )}
                 />
+                {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}> */}
+                <ReuseSelect
+                    name={`is_dependent`}
+                    label="आश्रीत हो/होइन?"
+                    options={[
+                        { value: 1, label: 'हो' },
+                        { value: 0, label: 'होइन' }
+                    ]}
+                    control={control}
+                    error={errors?.is_dependent}
+                />
+                {/* </Grid> */}
+                {isDependent === 1 && (
+
+                    <ReuseDatePickerBS
+                        name={`dob`}
+                        label="जन्म मिति"
+                        type="number"
+                        control={control}
+                        error={errors?.bandi_relative_dob}
+                    />
+                )}
             </DialogContent>
 
             <DialogActions>
                 <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
-                <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
+                <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
                     {editingData ? "अपडेट गर्नुहोस्" : "थप्नुहोस्"}
                 </Button>
             </DialogActions>

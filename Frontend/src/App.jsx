@@ -31,7 +31,6 @@ const AantarikPrashasanTable = lazy( () => import( './Components/Bandi/Kaamdari_
 const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm' ) );
 const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
-
 axios.interceptors.response.use(
   res => res,
   error => {
@@ -45,18 +44,6 @@ axios.interceptors.response.use(
     return Promise.reject( error );
   }
 );
-
-// import { createBrowserHistory } from 'history';
-// export const history = createBrowserHistory();
-
-// // then inside your interceptor
-// if (error.response?.status === 401) {
-//   sessionStorage.clear();
-//   if (history.location.pathname !== '/login') {
-//     history.push('/login');
-//   }
-// }
-
 
 import { Outlet } from 'react-router-dom';
 import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
