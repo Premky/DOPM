@@ -88,7 +88,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                console.log( Result );
+                // console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );

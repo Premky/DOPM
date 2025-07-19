@@ -93,8 +93,102 @@ router.post( '/create_employee', verifyToken, upload.single( 'photo' ), async ( 
     }
 } );
 
+router.get("/get_employees", verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
 
-router.get( "/get_employees", verifyToken, async ( req, res ) => {
+    const sql = `
+        SELECT 
+            e.id AS emp_id,
+            e.name_in_nepali,
+            e.dob,
+            e.sanket_no,
+            e.photo_path,
+            eph.jd,
+            eph.appointment_date_ad,
+            eph.current_office_id,
+            el.level_name_np,
+            el.emp_rank_np,
+            ep.post_name_np,
+            esg.service_name_np,
+            esg.group_name_np,
+            o.letter_address AS current_office_np
+        FROM employees e
+        LEFT JOIN employee_post_history eph ON e.id = eph.employee_id
+        LEFT JOIN emp_level el ON eph.level_id = el.id
+        LEFT JOIN emp_post ep ON eph.post_id = ep.id
+        LEFT JOIN emp_service_groups esg ON eph.service_group_id = esg.id
+        LEFT JOIN offices o ON eph.current_office_id = o.id
+        WHERE e.is_active >= 1
+        ORDER BY e.id DESC, eph.jd DESC
+    `;
+
+    try {
+        const [rows] = await pool.query(sql);
+
+        const grouped = {};
+        rows.forEach(row => {
+            const {
+                emp_id,
+                name,
+                dob,
+                sanket_no,
+                photo_path,
+                jd,
+                appointment_date_ad,
+                current_office_np,
+                level_name_np,
+                emp_rank_np,
+                post_name_np,
+                service_name_np,
+                group_name_np,
+            } = row;
+
+            if (!grouped[emp_id]) {
+                grouped[emp_id] = {
+                    id: emp_id,
+                    name,
+                    dob,
+                    sanket_no,
+                    photo_path,
+                    post_history: [],
+                };
+            }
+
+            // Only push if eph exists (in case no post history)
+            if (jd) {
+                grouped[emp_id].post_history.push({
+                    jd,
+                    appointment_date_ad,
+                    current_office_np,
+                    level_name_np,
+                    emp_rank_np,
+                    post_name_np,
+                    service_name_np,
+                    group_name_np,
+                });
+            }
+        });
+
+        const result = Object.values(grouped);
+
+        res.json({
+            Status: true,
+            Result: result,
+            message: "Grouped employees with post history fetched successfully.",
+        });
+    } catch (err) {
+        console.error("Query Error:", err);
+        res.status(500).json({
+            Status: false,
+            Error: "Internal Server Error",
+        });
+    }
+});
+
+
+
+
+router.get( "/get_employees1", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     let baseWhere = `WHERE e.is_active>=1 `;
     const sql = `SELECT e.*, eph.*, el.level_name_np, el.emp_rank_np,
