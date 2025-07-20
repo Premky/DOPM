@@ -1407,7 +1407,8 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         hirasat_months,
         hirasat_days,
         thuna_date_bs,
-        release_date_bs
+        release_date_bs,
+        is_life_time=0
     } = req.body;
 
     let connection;
@@ -1428,12 +1429,13 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         UPDATE bandi_kaid_details
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
             thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?,
+            is_life_time = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
             kaidValues = [
                 hirasat_years, hirasat_months, hirasat_days,
                 thuna_date_bs, thunaDateAd,
-                release_date_bs,
+                release_date_bs, is_life_time,
                 user_id, active_office,
                 id
             ];

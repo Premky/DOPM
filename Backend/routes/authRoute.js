@@ -334,7 +334,7 @@ router.post('/login_ping', verifyToken, async (req, res) => {
 router.get( '/session', verifyToken, ( req, res ) => {
     // console.log('session', req.user)
     if ( !req.user ) return res.status( 401 ).json( { loggedIn: false } );
-    console.log( 'session', req.user );
+    // console.log( 'session', req.user );
     const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date, 
         office_id, office_np, office_en, usertype_en, usertype_np, role_id, role_name } = req.user;
 
