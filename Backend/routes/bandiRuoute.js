@@ -1348,7 +1348,7 @@ router.post( '/create_bandi_address/', verifyToken, async ( req, res ) => {
         } else {
             sql = `
         INSERT INTO bandi_address(bandi_id, nationality_id, bidesh_nagarik_address_details, created_by, current_office_id)`;
-            values = [nationality_id, bidesh_nagarik_address_details || null, user_id, active_office];
+            values = [bandi_id, nationality_id, bidesh_nagarik_address_details || null, user_id, active_office];
         }
 
         const [result] = await connection.query( sql, values );
