@@ -503,6 +503,20 @@ router.post( '/create_bandi_fine', verifyToken, async ( req, res ) => {
 // bfd.fine_type, bfd.amount_fixed, bfd.amount_deposited, bfdo.office_name_with_letter_address AS deposited_office, bfdnd.district_name_np AS deposited_district,
 // bfd.deposit_ch_no, bfd.deposit_date, bfd.deposit_amount
 
+//  -- Payrole
+//     p.id AS payrole_id,
+//     p.payrole_reason,
+//     p.other_details,
+//     p.remark,
+//     p.status AS payrole_status,
+//     p.user_id,
+//     p.created_office,
+//     p.payrole_no_id,
+//     p.payrole_entery_date,
+//     pr.dopmremark,
+//     pr.pyarole_rakhan_upayukat,
+//     pr.is_checked,
+//     po.office_name_with_letter_address AS current_payrole_office,
 const getBandiQuery = `
     SELECT 
     b.id AS bandi_id,
@@ -549,20 +563,7 @@ const getBandiQuery = `
     bpd.punarabedan_office_ch_no,
     bpd.punarabedan_office_date,
 
-    -- Payrole
-    p.id AS payrole_id,
-    p.payrole_reason,
-    p.other_details,
-    p.remark,
-    p.status AS payrole_status,
-    p.user_id,
-    p.created_office,
-    p.payrole_no_id,
-    p.payrole_entery_date,
-    pr.dopmremark,
-    pr.pyarole_rakhan_upayukat,
-    pr.is_checked,
-    po.office_name_with_letter_address AS current_payrole_office,
+   
 
     -- Fine Summary
     fine_summary_table.fine_summary
@@ -583,10 +584,10 @@ LEFT JOIN bandi_kaid_details bkd ON b.id = bkd.bandi_id
 LEFT JOIN bandi_punarabedan_details bpd ON b.id = bpd.bandi_id
 LEFT JOIN offices bpdo ON bpd.punarabedan_office_id = bpdo.id
 
-LEFT JOIN payroles p ON b.id = p.bandi_id
-LEFT JOIN offices po ON p.created_office = po.id
-LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-LEFT JOIN payrole_decisions pd ON p.id=pd.payrole_id
+-- LEFT JOIN payroles p ON b.id = p.bandi_id
+-- LEFT JOIN offices po ON p.created_office = po.id
+-- LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
+-- LEFT JOIN payrole_decisions pd ON p.id=pd.payrole_id
 
 -- Fine Summary Subquery
 LEFT JOIN (

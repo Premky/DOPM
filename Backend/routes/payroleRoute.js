@@ -98,7 +98,7 @@ async function generateUniqueBandiId() {
 
 router.get( '/get_random_bandi_id', async ( req, res ) => {
     const rand_bandi_id = await generateUniqueBandiId();
-    console.log( rand_bandi_id );
+    // console.log( rand_bandi_id );
     return res.json( { Status: true, Result: rand_bandi_id } );
 } );
 
@@ -359,7 +359,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         searchmudda_id = 0,
         searchbandi_name = '',
         searchchecked = 0,
-        searchis_checked = ''
+        searchis_checked = '',
+        mudda_group_id='',
     } = req.query;
 
     // console.log( req.query );
@@ -392,6 +393,23 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         }
     }
 
+    if ( mudda_group_id ) {
+        const escapedGroupId = con.escape( mudda_group_id );
+        if ( baseWhere ) {
+            baseWhere += ` AND bp.id IN (
+                SELECT bmd.bandi_id 
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                WHERE m.muddas_group_id = ${ escapedGroupId }
+            )`;
+        } else {
+            baseWhere += `WHERE bp.id IN (
+                SELECT bmd.bandi_id 
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                WHERE m.muddas_group_id =${ escapedGroupId }`;
+        }
+    }
 
     // ✅ Office filter
     if ( active_office == 1 || active_office == 2 ) {
@@ -504,6 +522,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN bandi_release_details brd ON bp.id = brd.bandi_id       
             LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id
             LEFT JOIN offices o ON bp.current_office_id = o.id
+            
             LEFT JOIN (
                 SELECT 
                     bmd.bandi_id,
@@ -521,7 +540,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
-        console.log( bandiIds );
+        // console.log( bandiIds );
         const [fullRows] = await pool.query( fullQuery, bandiIds );
 
         // Step 4: Group bandis and muddas
@@ -720,7 +739,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         dopmremark
     } = req.body;
 
-    console.log( 'bandi_id', bandi_id );
+    // console.log( 'bandi_id', bandi_id );
     let payrole_no_bandi_id = '';
     if ( bandi_id && payrole_no ) {
         let payrole_no_bandi = String( payrole_no ) + String( bandi_id );
@@ -880,7 +899,7 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     const { pyarole_rakhan_upayukat, dopmremark } = req.body;
     const sql = `UPDATE payroles SET status=?, pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
     const values = [6, pyarole_rakhan_upayukat, dopmremark, payrole_id];
-    console.log( values );
+    // console.log( values );
     try {
         const [result] = await pool.query( sql, values );
         return res.json( { Status: true, Result: result } );
@@ -1118,7 +1137,7 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
 
 router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
-    console.log( 'payrole_id', id );
+    // console.log( 'payrole_id', id );
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
     const {
@@ -1192,7 +1211,7 @@ router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) 
         const placeholders = keys.map( () => '?' ).join( ', ' );
         const sql = `INSERT INTO payrole_maskebari (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
         const result = await query( sql, values );
-        console.log( result );
+        // console.log( result );
         res.status( 201 ).json( { id: result.insertId } );
     } catch ( err ) {
         res.status( 500 ).json( { error: err.message } );
@@ -1312,7 +1331,7 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
         // console.log(finalQuery)
 
         const [result] = await pool.query( finalQuery, queryParams );
-        console.log( 'acceptedpayrole', user_office_id );
+        // console.log( 'acceptedpayrole', user_office_id );
         if ( !result.length ) {
             return res.json( { Status: false, Error: 'No payrole records found' } );
         }
