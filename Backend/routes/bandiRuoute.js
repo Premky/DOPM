@@ -1316,6 +1316,64 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.put( '/create_bandi_address/', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.id;
+    // const id = req.params.id;
+
+    const {
+        bandi_id,
+        nationality_id,
+        province_id,
+        district_id,
+        gapa_napa_id,
+        wardno,
+        bidesh_nagarik_address_details
+    } = req.body;
+
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        let sql = '';
+        let values = [];
+
+        if ( Number( nationality_id ) === 1 ) {
+            sql = `
+        CREATE bandi_address(bandi_id, nationality_id, province_id, district_id, gapa_napa_id, wardno,created_by, current_office_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+            values = [bandi_id, nationality_id, province_id, district_id, gapa_napa_id, wardno, user_id, active_office];
+        } else {
+            sql = `
+        CREATE bandi_address(bandi_id, nationality_id, bidesh_nagarik_address_details, created_by, current_office_id)`;
+            values = [nationality_id, bidesh_nagarik_address_details || null, user_id, active_office];
+        }
+
+        const [result] = await connection.query( sql, values );
+
+        await connection.commit();
+        res.json( {
+            Status: true,
+            message: "बन्दी ठेगाना सफलतापूर्वक अद्यावधिक गरियो।"
+        } );
+
+    } catch ( error ) {
+        if ( connection ) await connection.rollback();
+        console.error( "❌ Address update failed:", error );
+        res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो।"
+        } );
+
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
+
+
 router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
