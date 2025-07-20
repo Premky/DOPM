@@ -1316,7 +1316,7 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put( '/create_bandi_address/', verifyToken, async ( req, res ) => {
+router.post( '/create_bandi_address/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     // const id = req.params.id;
