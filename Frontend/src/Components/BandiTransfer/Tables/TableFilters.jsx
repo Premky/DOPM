@@ -136,6 +136,16 @@ const TableFilters = ( { onChange } ) => {
                         />
                     </Grid>
                 )}
+                {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <ReuseSelect
+                        name="searchRole"
+                        label="प्रयोगकर्ता"
+                        // options={roleBasedStatus[authState.role] || roleBasedStatus[authState.role_name]}
+                        options={roleBasedStatus}
+                        control={control}
+                        error={errors.searchStatus}
+                    />
+                </Grid> */}
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseSelect
                         name="searchStatus"

@@ -454,16 +454,18 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
     const user_id = req.user.id;
     const id = req.params.id;
     const metadata = req.body;
-    console.log( "metadata:", metadata );
+    // console.log( "metadata:", metadata );
 
     let connection;
     try {
         connection = await pool.getConnection();
-        // const 
+        const [previous_status_id] = await pool.query(`SELECT status_id FROM bandi_transfer_history WHERE id=?`,id)
+        console.log(previous_status_id)
         const [status_id] = await pool.query(
             `SELECT id FROM bandi_transfer_statuses WHERE role_required = ?`,
             [metadata.to_role]
         );
+        const [to_role_id] = await pool.query(`SELECT id FROM user_roles WHERE role_name=?`, metadata.to_role)
 
         if ( !status_id[0]?.id ) {
             return res.status( 400 ).json( {
@@ -472,18 +474,15 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
             } );
         }
 
-        const [current_status_id] = await pool.query( `
-            SELECT status_id FROM bandi_transfer_history WHERE id=?`, id );
-
         let sql;
         let values;
 
-
         sql = `
                 UPDATE bandi_transfer_history 
-                SET status_id = ?, remarks = ?,final_to_office_id=?, updated_by = ?, updated_at = ?
+                SET role_id=?, status_id = ?, remarks = ?,final_to_office_id=?, updated_by = ?, updated_at = ?
                 WHERE id = ?`;
         values = [
+            to_role_id[0].id,
             status_id[0].id,
             metadata.remarks,
             metadata.final_to_office_id,
@@ -496,7 +495,7 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
 
         const logSql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at, remarks, previous_status_id)
         VALUES(?, ?, ?, ?, ?, ?)`;
-        const logValues = [id, status_id[0].id, user_id, new Date(), metadata.remarks, current_status_id[0].id];
+        const logValues = [id, status_id[0].id, user_id, new Date(), metadata.remarks, previous_status_id[0].status_id];
         const [logResult] = await connection.query( logSql, logValues );
         if ( result.affectedRows === 0 ) {
             return res.status( 404 ).json( {
@@ -522,21 +521,23 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
     }
 } );
 
-router.put( '/approve_bandi_transfer/:id', verifyToken, async ( req, res ) => {
+router.put( '/approve_bandi_transfer/:id', verifyToken, async ( req, res ) => {    
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const id = req.params.id;
     const metadata = req.body;
-    console.log( "metadata:", metadata );
+    // console.log( "metadata:", metadata );
 
     let connection;
     try {
         connection = await pool.getConnection();
-
+        const [previous_status_id] = await pool.query(`SELECT status_id FROM bandi_transfer_history WHERE id=?`,id)
+        console.log(previous_status_id)
         const [status_id] = await pool.query(
-            `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
+            `SELECT id, role_required FROM bandi_transfer_statuses WHERE status_key = ?`,
             [metadata.to_role]
         );
+        const [to_role_id] = await pool.query(`SELECT id FROM user_roles WHERE role_name=?`, status_id[0]?.role_required)
 
         if ( !status_id[0]?.id ) {
             return res.status( 400 ).json( {
@@ -545,18 +546,15 @@ router.put( '/approve_bandi_transfer/:id', verifyToken, async ( req, res ) => {
             } );
         }
 
-        const [current_status_id] = await pool.query( `
-            SELECT status_id FROM bandi_transfer_history WHERE id=?`, id );
-
         let sql;
         let values;
 
-
         sql = `
                 UPDATE bandi_transfer_history 
-                SET status_id = ?, remarks = ?,final_to_office_id=?, updated_by = ?, updated_at = ?
+                SET role_id=?, status_id = ?, remarks = ?,final_to_office_id=?, updated_by = ?, updated_at = ?
                 WHERE id = ?`;
         values = [
+            to_role_id[0].id,
             status_id[0].id,
             metadata.remarks,
             metadata.final_to_office_id,
@@ -569,7 +567,7 @@ router.put( '/approve_bandi_transfer/:id', verifyToken, async ( req, res ) => {
 
         const logSql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at, remarks, previous_status_id)
         VALUES(?, ?, ?, ?, ?, ?)`;
-        const logValues = [id, status_id[0].id, user_id, new Date(), metadata.remarks, current_status_id[0].id];
+        const logValues = [id, status_id[0].id, user_id, new Date(), metadata.remarks, previous_status_id[0].status_id];
         const [logResult] = await connection.query( logSql, logValues );
         if ( result.affectedRows === 0 ) {
             return res.status( 404 ).json( {
