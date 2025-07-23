@@ -82,7 +82,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     InputProps={{ readOnly: true }}
                 />
                 <ReuseSelect
-                    name="to_role"
+                    name="to_status"
                     label="प्राप्तकर्ताको भुमिका"
                     options={
                         optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
