@@ -77,23 +77,9 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             params.push( bandi_id );
         }
 
-        if ( roleKey ) {
-            const [roleRow] = await connection.query(
-                `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
-                [roleKey]
-            );
-            if ( roleRow.length > 0 ) {
-                queryFilter += ' AND bth.status_id = ?';
-                params.push( roleRow[0].id );
-            }
-        } else {
-            queryFilter += ' AND bth.status_id = ?';
-            params.push( role[0].id );
-        }
-
         if ( statusKey ) {
             const [statusRow] = await connection.query(
-                `SELECT id FROM bandi_transfer_statuses WHERE role_required = ?`,
+                `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
                 [statusKey]
             );
             if ( statusRow.length > 0 ) {
@@ -101,6 +87,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                 params.push( statusRow[0].id );
             }
         }
+        console.log(queryFilter, params)
 
         const sql = `
             SELECT 

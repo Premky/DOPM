@@ -171,6 +171,7 @@ router.get("/get_employees", verifyToken, async (req, res) => {
                     id: emp_id,
                     name,
                     dob,
+                    current_office_np,
                     sanket_no,
                     photo_path,
                     post_history: [],

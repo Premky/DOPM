@@ -24,7 +24,7 @@ const AllEmpTable = () => {
   ];
 
   const { records: empRecords, loading } = useAllEmployes();
-  console.log(empRecords)
+  // console.log(empRecords)
   const rows = empRecords.map((emp) => {
     const firstAppointment = emp.post_history?.find(
       (post) => post.jd_type === "नयाँ नियुक्ती"
@@ -33,9 +33,9 @@ const AllEmpTable = () => {
     // const lastPostEntry = emp.post_history?.[0]; // Assuming already sorted DESC by jd
     const lastPostEntry = emp.last_jd_entry; // Assuming already sorted DESC by jd
 
-    const appointment_date_bs = firstAppointment?.appointment_date_ad || 'N/A';
+    const appointment_date_bs = firstAppointment?.appointment_date_bs || 'N/A';
     
-    const current_post_appointment_date_bs = lastPostEntry?.appointment_date_ad || 'N/A';
+    const current_post_appointment_date_bs = lastPostEntry?.appointment_date_bs || 'N/A';
     const hajir_miti_bs = lastPostEntry?.hajir_miti_bs || 'N/A';
     const current_post = lastPostEntry?.post_name_np || '' 
     const jd = lastPostEntry?.jd||''
@@ -46,6 +46,7 @@ const AllEmpTable = () => {
     return {
       ...emp,
       id: emp.id,
+      
       appointment_date_bs,
       current_post_appointment_date_bs,
       hajir_miti_bs,
