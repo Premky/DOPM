@@ -288,14 +288,18 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
         const insertsql = `INSERT INTO bandi_transfer_history (
                 bandi_id, transfer_reason_id, transfer_reason, 
                 transfer_from_office_id, recommended_to_office_id,
-                is_thunuwa_permission, role_id, status_id,
+                is_thunuwa_permission, bandi_character,
+                role_id, status_id,
                 created_by, updated_by, created_at, updated_at, created_office_id)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
         const values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
             active_office, data.recommended_to_office_id,
-        data.is_thunuwa_permission, user_role_id, user_role_id,
+        data.is_thunuwa_permission, data.bandi_character,
+        user_role_id, user_role_id,
             user_id, user_id, new Date(), new Date(), active_office
         ];
+
         const [result] = await connection.query(insertsql, values);
         const [bp]=await connection.query(`UPDATE bandi_person SET is_under_transfer=? WHERE id=?`,[true,data.bandi_id])
         const insertId = result.insertId;
@@ -341,8 +345,8 @@ router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) =
         //     [metadata.to_role]
         // );
         const [status_id] = await pool.query(
-            `SELECT id, role_required FROM bandi_transfer_statuses WHERE status_key = ?`,
-            [metadata.to_status]
+            `SELECT id, role_required FROM bandi_transfer_statuses WHERE status_key = ? OR role_required=?`,
+            [metadata.to_status, metadata.to_status]
         );
 
         const [to_role_id] = await pool.query(`SELECT id FROM user_roles WHERE role_name=?`, status_id[0]?.role_required);
