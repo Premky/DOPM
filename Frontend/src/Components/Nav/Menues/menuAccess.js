@@ -30,10 +30,14 @@ export const menuAccess = {
       '/bandi/bandi_details',
       '/bandi/bandi_release',
     ],
+    clerk:'all',
+    office_admin: 'all',
     superadmin: 'all',
     null: 'all',
-    user: 'all',
-    office_approver: 'all',
+    office_superadmin: 'all',
+    headoffice_approver: 'all',
+    top_level: 'all',
+    supervisor: 'all'
   },
 
   kaamdari_subidha: {
@@ -44,17 +48,17 @@ export const menuAccess = {
   bandi_transfer: {
     clerk: ['bandi_transfer/new_bandi_transfer'],
     clerk: ['bandi_transfer/bandi_final_transfer'],
-    clerk:['bandi_transfer/approve_bandi_final_transfer'],
+    clerk: ['bandi_transfer/approve_bandi_final_transfer'],
     clerk: 'all',
-    office_admin:['bandi_transfer/approve_bandi_final_transfer'],
+    office_admin: ['bandi_transfer/approve_bandi_final_transfer'],
     office_admin: ['bandi_transfer/new_bandi_transfer'],
     office_admin: 'all',
     superadmin: 'all',
     null: 'all',
     office_superadmin: 'all',
-    headoffice_approver:'all',
-    top_level:'all',
-    supervisor:'all'
+    headoffice_approver: 'all',
+    top_level: 'all',
+    supervisor: 'all'
   },
 
   emp: {

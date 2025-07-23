@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { useAuth } from '../../../Context/AuthContext';
 
-import fetchReleaseReasons from '../../ReuseableComponents/fetchReleaseReasons';
+
+import useFetchBandiReleaseReasons from '../Apis_to_fetch/useFetchBandiReleaseReasons';
 import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
 
 import BandiMuddaTable from '../Tables/For View/BandiMuddaTable'
@@ -28,7 +29,7 @@ const BandiReleaseForm = () => {
 
     const bandi_id = watch( 'bandi_id' );
     const reason_id = watch( 'reason_id' );
-    const { records: releaseReasons, optrecords: releaseRecordsOptions, loading: realeseReasonsLoading } = fetchReleaseReasons( bandi_id );
+    const { records: releaseReasons, optrecords: releaseRecordsOptions, loading: realeseReasonsLoading } = useFetchBandiReleaseReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
 
     const onFormSubmit = async ( data ) => {
