@@ -23,7 +23,7 @@ import axios from "axios";
 import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
 
 
-const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
+const TransferDialog = ( { open, onClose, onSave, editingData } ) => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
 
@@ -73,7 +73,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     const role_id = watch( "role_id" );
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Approval Dialog</DialogTitle>
+            <DialogTitle>स्थानान्तरणः</DialogTitle>
             <DialogContent>
                 <input type='text' value={`${ editingData?.id || "" }`} hidden />
                 <input type='text' name="payrole_id" value={`${ editingData?.payrole_id || "" }`} hidden />
@@ -89,7 +89,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                     label="प्राप्तकर्ताको भुमिका"
                     options={
                         [
-                            {label:'कारागार प्रशासक', value:'to_send'}
+                            {label:'कारागार प्रशासक', value:'sent'}
                         ]
                         // optUserRoles.filter( ( opt ) => opt.id < authState.role_id )
                     }
@@ -103,7 +103,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                     defaultValue={1}
                     control={control}
                     required={true}
-                    // disabled={true}
+                    disabled={true}
                 />
 
                 <ReuseInput
@@ -124,4 +124,4 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     );
 };
 
-export default ApprovalDialog;
+export default TransferDialog;

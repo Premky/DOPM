@@ -47,7 +47,7 @@ export const menuAccess = {
 
   bandi_transfer: {
     clerk: ['bandi_transfer/new_bandi_transfer'],
-    clerk: ['bandi_transfer/bandi_final_transfer'],
+    // clerk: ['bandi_transfer/bandi_final_transfer'],
     clerk: ['bandi_transfer/approve_bandi_final_transfer'],
     clerk: 'all',
     office_admin: ['bandi_transfer/approve_bandi_final_transfer'],

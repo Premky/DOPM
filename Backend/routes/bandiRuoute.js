@@ -875,14 +875,14 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
     // console.log(search_name)
 
     if ( selectedOffice ) {
-        baseWhere += ` WHERE bp.current_office_id=${ selectedOffice }`;
+        baseWhere += ` WHERE bp.current_office_id= '${ selectedOffice }'`;
     } else {
         if ( searchOffice ) {
-            baseWhere = `WHERE bp.current_office_id = ${ searchOffice }`;
+            baseWhere = `WHERE bp.current_office_id = '${ searchOffice }'`;
         } else if ( active_office == 1 || active_office == 2 ) {
             baseWhere = `WHERE 1=1`;
         } else {
-            baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
+            baseWhere = `WHERE bp.current_office_id = '${ active_office }'`;
         }
     }
     if ( nationality ) {
@@ -905,7 +905,7 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
     }
 
     if ( id ) {
-        baseWhere += ` AND bp.id= ${ id }`;
+        baseWhere += ` AND bp.id= '${ id }'`;
     }
 
     try {

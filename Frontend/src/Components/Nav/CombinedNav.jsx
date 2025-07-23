@@ -74,9 +74,9 @@ const CombinedNav = ( { user } ) => {
       defaultPath: '/bandi_transfer',
       submenu: [
         // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
-        { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },
-        { name: 'स्थानान्तरण', path: '/bandi_transfer/bandi_final_transfer' },
-        { name: 'स्थानान्तरण(स्विकृत)', path: '/bandi_transfer/approve_bandi_final_transfer' },
+        { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },        
+        { name: 'स्थानान्तरण(स्विकृती)', path: '/bandi_transfer/approve_bandi_final_transfer' },
+        { name: 'स्थानान्तरण ', path: '/bandi_transfer/bandi_transfer_result' },
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
     }

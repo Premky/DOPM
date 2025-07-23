@@ -10,6 +10,8 @@ import Swal from "sweetalert2";
 import ApprovalDialog from "../Dialogs/ApprovalDialog";
 
 import axios from "axios";
+import TransferDialog from "../Dialogs/TransferDialog";
+import AcceptRejectTransferDialog from "../Dialogs/AcceptRejectTransferDialog";
 
 const TableActionMenu = ( { data, onResultClick, onClose } ) => {
   const BASE_URL = useBaseURL();
@@ -19,6 +21,8 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
 
   const [openForwardDialog, setOpenForwardDialog] = useState( false );
   const [openApprovalDialog, setOpenApprovalDialog] = useState( false );
+  const [openTransferDialog, setOpenTransferDialog] = useState( false );
+  const [acceptRejectDialog, setAcceptRejectDialog] = useState( false );
 
   const handleViewBandi = async () => {
     const doc = <BandiFullReportPDF bandiData={data} />;
@@ -58,7 +62,41 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
     // console.log( "Saving data:" );
     try {
       await axios.put(
-        `${ BASE_URL }/bandiTransfer/approve_bandi_transfer/${ data.transfer_id }`,
+        `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
+        data,
+        { withCredentials: true }
+      );
+
+      await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+      // ✅ Now close after user sees the alert
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+
+    } catch ( err ) {
+      console.error( err );
+
+      await Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+      // Close even on error after alert
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    } finally {
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    }
+  };
+
+  const handleAcceptReject = () => {
+    setAcceptRejectDialog( true );
+    // onClose();
+  };
+
+
+  const handleAcceptRejectSave1 = async ( data ) => {
+    console.log( "Saving data:", data );
+    // console.log( "Saving data:" );
+    try {
+      await axios.put(
+        `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
         data,
         { withCredentials: true }
       );
@@ -91,6 +129,39 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
     // onClose();
   };
 
+  const handleTransfer = async ( data ) => {
+    console.log( "Saving data:", data );
+    // console.log( "Saving data:" );
+    try {
+      await axios.put(
+        `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
+        data,
+        { withCredentials: true }
+      );
+
+      await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+      // ✅ Now close after user sees the alert
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+
+    } catch ( err ) {
+      console.error( err );
+
+      await Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+      // Close even on error after alert
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    } finally {
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    }
+  };
+
+  const handleTransferDialog = () => {
+    setOpenTransferDialog( true );
+    // onClose();
+  };
+
   const handleReject = () => {
     console.log( "Rejection logic goes here" );
     onClose();
@@ -110,6 +181,18 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
         open={openApprovalDialog}
         onClose={() => setOpenApprovalDialog( false )}
         editingData={data} // 👈 you probably want to pass editing data her
+        onSave={handleApprove}
+      />
+      <TransferDialog
+        open={openTransferDialog}
+        onClose={() => setOpenTransferDialog( false )}
+        editingData={data} // 👈 you probably want to pass editing data her
+        onSave={handleTransfer}
+      />
+      <AcceptRejectTransferDialog
+        open={acceptRejectDialog}
+        onClose={() => setAcceptRejectDialog( false )}
+        editingData={data}
         onSave={handleApprove}
       />
 
@@ -150,28 +233,37 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
 
       {
         authState.role_name === "office_admin" && ( <>
-          <MenuItem onClick={handleForward}>Forward</MenuItem>
-          <MenuItem onClick={handleReject}>Backward</MenuItem>
+          {( data.status_id == 10 ) ? ( <>
+            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
+          </> ) : ( data.status_id == 11 ) ? ( <>
+            <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
+          </> ) : ( data.status < 10 ) &&
+          ( <>
+            <MenuItem onClick={handleForward}>Forward</MenuItem>
+            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+          </> )}
         </> )
       }
 
       {
         forwardRoles.includes( authState.role_name ) && (
           <>
-            <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
-            <MenuItem onClick={handleForward}>Forward</MenuItem>
-            <MenuItem onClick={handleReject}>Backward</MenuItem>
-          </>
-        )
+            {( data.status_id <= 11 ) && ( <>
+                <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
+                <MenuItem onClick={handleForward}>Forward</MenuItem>
+            </>)}
+              {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+            </>
+            )
       }
 
-      {
-        status === 1 && officeId !== 1 && officeId !== 2 && (
-          <MenuItem onClick={handleForward}>DOPM मा पठाउनुहोस्</MenuItem>
-        )
-      }
-    </>
-  );
+            {
+              status === 1 && officeId !== 1 && officeId !== 2 && (
+                <MenuItem onClick={handleForward}>DOPM मा पठाउनुहोस्</MenuItem>
+              )
+            }
+          </>
+        );
 };
 
-export default TableActionMenu;
+      export default TableActionMenu;

@@ -32,9 +32,9 @@ const AantarikPrashasanTable = lazy( () => import( './Components/Bandi/Kaamdari_
 const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm' ) );
 const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
-const BandiFinalTransferForm = lazy( () => import( './Components/BandiTransfer/Forms/BandiFinalTransferForm' ) );
+// const BandiFinalTransferForm = lazy( () => import( './Components/BandiTransfer/Forms/BandiFinalTransferForm' ) );
 import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
-import BandiTransferForm from './Components/Bandi/Forms/BandiTransferForm';
+import BandiTransferForm from './Components/BandiTransfer/Forms/BandiTransferForm';
 import EmployeeForm from './Components/Employee/Forms/EmployeeForm';
 import AllEmpTable from './Components/Employee/Tables/AllEmpTable';
 import BandiTransferTable from './Components/BandiTransfer/Tables/BandiTransferTable';
@@ -115,9 +115,9 @@ function App() {
 
                 <Route path="bandi_transfer" element={<OutletLayout />}>
                   <Route path="approve_bandi_final_transfer" element={<BandiTransferTable status='sent_by_clerk'/>} />
-                  <Route path="bandi_final_transfer" element={<BandiFinalTransferForm />} />
+                  {/* <Route path="bandi_final_transfer" element={<BandiFinalTransferForm />} /> */}
                   <Route path="new_bandi_transfer" element={<BandiTransferForm />} />
-                  <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
+                  <Route path="bandi_transfer_result" element={<KaamdariSubidhaForm />} />
                   <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
                   <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
 

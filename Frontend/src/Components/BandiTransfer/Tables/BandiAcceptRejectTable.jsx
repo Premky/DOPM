@@ -34,11 +34,11 @@ import { useBaseURL } from "../../../Context/BaseURLProvider";
 import useFetchBandiForTransfer from "../Fetch_APIs/useFetchBandiForTransfer";
 import exportToExcel from "../Exports/ExportBandiTransferTable";
 
-const BandiTransferTable = () => {
+const BandiAcceptRejectTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
     const navigate = useNavigate();
-
+    
     const [filters, setFilters] = useState( {} );
     const [openEl, setOpenEl] = useState( null );
     const [anchorEl, setAnchorEl] = useState( null );
@@ -94,40 +94,10 @@ const BandiTransferTable = () => {
     const handleCheckboxChange = ( id, value ) => console.log( "Checkbox", id, value );
 
 
-    const bgColor = ( status_id ) => {
-        switch ( status_id ) {
-            case 3:
-            case 5:
-            case 7:
-            case 9:
-                return '#ff6f6f'; // अस्विकार (Reject)
-            case 10:
-            case 12:
-                return '#ffcc00'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
-            case 11:
-            case 13:
-                return '#66ff66'; // पठाएको र स्विकार गरेको
-            default:
-                return '#ffffff'; // Default white background
-        }
-    };
-
-    const tableHeadColor = 'red';
-    const stickyTableHeadStyle = {
-        background: '#1976d2',
-        textAlign: 'center',
-        position: "sticky",
-        left: 0,
-        zIndex: 3
-    };
-    const tableHeadStyle = {
-        background: '#1976d2',
-        textAlign: 'center',
-    };
 
     return (
         <>
-            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
+            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात
             </Button>
             <Menu
@@ -149,30 +119,30 @@ const BandiTransferTable = () => {
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
                     <TableHead>
-                        <TableRow sx={{ backgroundColor: '#1976d2' }}>
+                        <TableRow>
                             {/* <TableCell rowSpan={3} sx={{ position: "sticky", left: 0, zIndex: 3 }}>चेक</TableCell> */}
-                            <TableCell rowSpan={3} sx={stickyTableHeadStyle}>सि.नं.</TableCell>
-                            <TableCell rowSpan={3} sx={stickyTableHeadStyle}>बान्दी (id)</TableCell>
-                            <TableCell rowSpan={3} sx={stickyTableHeadStyle}>कारागार कार्यालय</TableCell>
-                            <TableCell rowSpan={3} sx={stickyTableHeadStyle}>बन्दीको नामथर र स्थायी ठेगाना</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle} >मुद्दा</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>जन्म मिति उमेर</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>थुनामा परेको मिति</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>छुट्ने मिति जरिवाना वापत समेत</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>बन्दीको किसिम (थुनुवा भएमा सम्बन्धित न्यायिक निकायको स्वीकृती)</TableCell>
-                            <TableCell colSpan={3} sx={tableHeadStyle}>जेलमा बसेको विवरण (शुरुदेखि हालसम्म)</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>सरुवा गर्न चाहेको कारागारको नाम र कारण</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>कैफियत</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>#</TableCell>
+                            <TableCell rowSpan={3} sx={{ position: "sticky", left: 0, zIndex: 3 }}>सि.नं.</TableCell>
+                            <TableCell rowSpan={3} sx={{ position: "sticky", left: 50, zIndex: 3 }}>बान्दी (id)</TableCell>
+                            <TableCell rowSpan={3} sx={{ position: "sticky", left: 50, zIndex: 3 }}>कारागार कार्यालय</TableCell>
+                            <TableCell rowSpan={3} sx={{ position: "sticky", left: 50, zIndex: 3 }}>बन्दीको नामथर र स्थायी ठेगाना</TableCell>
+                            <TableCell rowSpan={3} >मुद्दा</TableCell>
+                            <TableCell rowSpan={3} >जन्म मिति उमेर</TableCell>
+                            <TableCell rowSpan={3} >थुनामा परेको मिति</TableCell>
+                            <TableCell rowSpan={3} >छुट्ने मिति जरिवाना वापत समेत</TableCell>
+                            <TableCell rowSpan={3} >बन्दीको किसिम (थुनुवा भएमा सम्बन्धित न्यायिक निकायको स्वीकृती)</TableCell>
+                            <TableCell colSpan={3}>जेलमा बसेको विवरण (शुरुदेखि हालसम्म)</TableCell>
+                            <TableCell rowSpan={3} >सरुवा गर्न चाहेको कारागारको नाम र कारण</TableCell>
+                            <TableCell rowSpan={3} >पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण</TableCell>
+                            <TableCell rowSpan={3} >कैफियत</TableCell>
+                            <TableCell rowSpan={3} >#</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell rowSpan={2} sx={tableHeadStyle}>कारागारको नाम</TableCell>
-                            <TableCell colSpan={2} sx={tableHeadStyle}>मिति</TableCell>
+                            <TableCell rowSpan={2}>कारागारको नाम</TableCell>
+                            <TableCell colSpan={2}>मिति</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell sx={tableHeadStyle}>देखी</TableCell>
-                            <TableCell sx={tableHeadStyle}>सम्म</TableCell>
+                            <TableCell>देखी</TableCell>
+                            <TableCell>सम्म</TableCell>
                         </TableRow>
                     </TableHead>
 
@@ -185,7 +155,7 @@ const BandiTransferTable = () => {
                             return (
                                 <Fragment key={data.id}>
                                     {/* First row */}
-                                    <TableRow sx={{ background: bgColor( data.status_id ) }}>
+                                    <TableRow>
                                         <TableCell rowSpan={rowSpan}>{index + 1} {data.transfer_id}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.office_bandi_id}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.letter_address}</TableCell>
@@ -208,7 +178,7 @@ const BandiTransferTable = () => {
                                         <TableCell rowSpan={rowSpan}>
                                             {
                                                 data.final_to_office_name ? ( <>{data.final_to_office_name}</> ) : ( <>{data.recommended_to_office_name || ''}</> )
-                                            }<hr />
+                                            }<hr/>
                                             <br />
                                             {data.transfer_reason_np} <br />
                                             {data.transfer_reason || ''}
@@ -225,9 +195,8 @@ const BandiTransferTable = () => {
                                     </TableRow>
 
                                     {/* Remaining rows for transfer history (skip first) */}
-
                                     {kaidiTransferHistory.slice( 1 ).map( ( t, idx ) => (
-                                        <TableRow key={`${ data.id }-transfer-${ idx }`} sx={{ background: bgColor( data.status_id ) }}>
+                                        <TableRow key={`${ data.id }-transfer-${ idx }`}>
                                             {/* No repeat of merged cells here */}
                                             <TableCell>{t.from_office_name}</TableCell>
                                             <TableCell>{t.transfer_from_date}</TableCell>
@@ -255,4 +224,4 @@ const BandiTransferTable = () => {
     );
 };
 
-export default BandiTransferTable;
+export default BandiAcceptRejectTable;

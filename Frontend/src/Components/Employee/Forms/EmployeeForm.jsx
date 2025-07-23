@@ -455,7 +455,7 @@ const EmployeeForm = () => {
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="is_chief"
-                                        label="प्रमुख कर्मचारी हो?"
+                                        label="कार्यालय प्रमुख कर्मचारी हो?"
                                         required={true}
                                         control={control}
                                         options={[

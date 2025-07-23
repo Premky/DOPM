@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid,  Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import { Box, Grid, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 import ReuseBandi from '../../ReuseableComponents/ReuseBandi';
 import { useForm } from 'react-hook-form';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
@@ -7,20 +7,21 @@ import { useAuth } from '../../../Context/AuthContext';
 
 import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
 
-import BandiMuddaTable from '../Tables/For View/BandiMuddaTable';
-import BandiAddressTable from '../Tables/For View/BandiAddressTable';
+import BandiMuddaTable from '../../Bandi/Tables/For View/BandiMuddaTable';
+import BandiAddressTable from '../../Bandi/Tables/For View/BandiAddressTable';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
 // import 
-import fetchBandi from '../Apis_to_fetch/fetchBandi';
-import BandiDiseasesTable from '../Tables/For View/BandiDiseasesTable';
-import BandiDisabilityTable from '../Tables/For View/BandiDisabilityTable';
-import BandiTransferHistoryTable from '../Tables/For View/BandiTransferHistoryTable';
+import fetchBandi from '../../Bandi/Apis_to_fetch/fetchBandi';
+import BandiDiseasesTable from '../../Bandi/Tables/For View/BandiDiseasesTable';
+import BandiDisabilityTable from '../../Bandi/Tables/For View/BandiDisabilityTable';
+import BandiTransferHistoryTable from '../../Bandi/Tables/For View/BandiTransferHistoryTable';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import fetchBandiTransferReasons from '../../ReuseableComponents/fetchBandiTransferReasons';
+import useFetchBandi from '../Fetch_APIs/useFetchBandi';
 
 const BandiTransferForm = () => {
     const BASE_URL = useBaseURL();
@@ -32,25 +33,25 @@ const BandiTransferForm = () => {
 
     const bandi_id = watch( 'bandi_id' );
 
-    const { records: bandi, optrecords: bandiOpt, loading: bandiLoading } = fetchBandi( bandi_id );
+    // const { records: bandi, optrecords: bandiOpt, loading: bandiLoading } = fetchBandi( bandi_id );
 
     const { records: transferReasons, optrecords: transferReasonsOptions, loading: realeseReasonsLoading } = fetchBandiTransferReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
 
-    const onFormSubmit = async ( formData ) => {        
+    const onFormSubmit = async ( formData ) => {
         try {
-            
+
             let response;
-            if ( editing ) {                
+            if ( editing ) {
                 response = await axios.put(
                     `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ editing.Id }`,
                     formData,
                     { withCredentials: true }
                 );
             } else {
-                console.log(bandi_id)
+                console.log( bandi_id );
                 response = await axios.post(
-                    `${ BASE_URL }/bandiTransfer/create_bandi_transfer_history`,formData,
+                    `${ BASE_URL }/bandiTransfer/create_bandi_transfer_history`, formData,
                     // {
                     //     bandi_id,
                     //     formData,
@@ -70,39 +71,45 @@ const BandiTransferForm = () => {
             Swal.fire( 'त्रुटि!', error.message || 'सर्भर अनुरोध असफल भयो ।', 'error' );
         }
     };
+    const { records:bandi, optrecords:bandiOptions, loading:bandiLoading } = useFetchBandi(bandi_id);
     return (
         <>
             <Box>
-                <Grid container spacing={2}>
+                
                     <form onSubmit={handleSubmit( onFormSubmit )}>
                         <Grid size={{ xs: 12 }}>
-                            <ReuseBandi
+                            <ReuseSelect
                                 name='bandi_id'
                                 label='बन्दी'
                                 required={true}
                                 control={control}
                                 error={errors.bandi_id}
-                                current_office={authState.office_np}
-                                type='allbandi'
+                                options={bandiOptions}                                
                             />
                         </Grid>
+                        {bandi_id && ( <>
+                            <Grid container spacing={2} size={{ xs: 12 }}>
+                                <BandiAddressTable bandi_id={bandi_id} />
+                                <BandiMuddaTable bandi_id={bandi_id} />
+                                <Grid size={{ sm: 4, xs: 12 }}>
+                                    <BandiDiseasesTable bandi_id={bandi_id} />
+                                </Grid>
+                                <Grid size={{ sm: 4, xs: 12 }}>
+                                    <BandiDisabilityTable bandi_id={bandi_id} />
+                                </Grid>
+                                <Grid size={{ sm: 4, xs: 12 }}>
+                                    {/* <BandiDisabilityTable bandi_id={bandi_id} /> */}
+                                    बिमा सम्बन्धि विवरण
+                                </Grid>
 
-                        <Grid container spacing={2} size={{ xs: 12 }}>
-                            <BandiAddressTable bandi_id={bandi_id} />
-                            <BandiMuddaTable bandi_id={bandi_id} />
-                            <Grid size={{ sm: 4, xs: 12 }}>
-                                <BandiDiseasesTable bandi_id={bandi_id} />
                             </Grid>
-                            <Grid size={{ sm: 4, xs: 12 }}>
-                                <BandiDisabilityTable bandi_id={bandi_id} />
+                            <Grid size={{ xs: 12 }}>
+                                <BandiTransferHistoryTable bandi_id={bandi_id} />
                             </Grid>
+                        </> )}
 
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <BandiTransferHistoryTable bandi_id={bandi_id} />
-                        </Grid>
 
-                        <Grid container size={{ xs: 12 }} sx={{ marginTop: 2 }} spacing={2}>                            
+                        <Grid container size={{ xs: 12 }} sx={{ marginTop: 2 }} spacing={2}>
                             <Grid size={{ xs: 5 }}>
                                 <ReuseKaragarOffice
                                     name="recommended_to_office_id"
@@ -121,22 +128,36 @@ const BandiTransferForm = () => {
                                     required={true}
                                     error={!!errors.transfer_reason_id}
                                 />
-                            {bandi[0]?.bandi_type}
+                                {/* {bandi[0]?.bandi_type} */}
                             </Grid>
                             {bandi[0]?.bandi_type == 'थुनुवा' && (
                                 <Grid size={{ xs: 2 }}>
                                     <ReuseSelect
                                         name="is_thunuwa_permission"
                                         label="थुनुवाको हकमा स्विकृति छ/छैन?"
-                                        options={transferReasonsOptions}
+                                        options={[
+                                            {label:'छ', value:'छ'},
+                                            {label:'छैन', value:'छैन'}
+                                        ]}
                                         control={control}
                                         required={true}
-                                        error={!!errors.transfer_reason_id}
+                                        error={!!errors.is_thunuwa_permission}
                                     />
                                 </Grid>
                             )}
                         </Grid>
 
+                        <Grid>
+                            <ReuseInput
+                                name="bandi_character"
+                                label="निजको आचरण"
+                                control={control}
+                                margin="dense"
+                                required={true}
+                                error={!!errors.bandi_character}
+                                helperText={errors.bandi_character?.message}
+                            />
+                        </Grid>
                         <Grid>
                             <ReuseInput
                                 name="transfer_reason"
@@ -217,9 +238,9 @@ const BandiTransferForm = () => {
                             </TableContainer>
                         </Grid> */}
 
-                        
+
                     </form>
-                </Grid>
+                
             </Box>
         </>
     );

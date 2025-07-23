@@ -23,7 +23,7 @@ import axios from "axios";
 import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
 
 
-const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
+const AcceptRejectTransferDialog = ( { open, onClose, onSave, editingData } ) => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
 
@@ -32,7 +32,6 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
         handleSubmit,
         reset,
         register,
-        setValue,
         watch,
         formState: { errors },
     } = useForm( {
@@ -41,22 +40,23 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     // console.log( editingData );
     useEffect( () => {
         if ( editingData ) {
-            console.log( editingData );
-            setValue('final_to_office_id', editingData.final_to_office_id)
+            // console.log( editingData );
             reset( {
                 id: editingData.transfer_id || "", // ✅ Include this
+                bandi_id:editingData.office_bandi_id||"",
                 transfer_id: editingData.transfer_id || "",
                 to_user: editingData.to_user || "",
                 to_role: editingData.to_role || "",
-                final_to_office_id: editingData.final_to_office_id||"",
+                to_status: editingData.to_status || "",
             } );
         } else {
             reset( {
                 id: "",
+                bandi_id:"",
                 transfer_id: "",
                 to_user: "",
                 to_role: "",
-                final_to_office_id:""
+                to_status: "",
             } );
         }
     }, [editingData, reset] );
@@ -70,12 +70,12 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
 
     //   const muddaName = kaidimuddas?.[0]?.mudda_name || "";
     const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRolesUsedInProcess();
-    const role_id = watch( "role_id" );
+    const to_status = watch( "to_status" );
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Approval Dialog</DialogTitle>
+            <DialogTitle>स्विकार/अस्विकार गर्नुहोस्ः</DialogTitle>
             <DialogContent>
-                <input type='text' value={`${ editingData?.id || "" }`} hidden />
+                <input type='text' value={`${ editingData?.office_bandi_id || "" }`}  name="office_bandi_id" hidden/>
                 <input type='text' name="payrole_id" value={`${ editingData?.payrole_id || "" }`} hidden />
                 <TextField
                     sx={{ mt: 1 }}
@@ -84,33 +84,41 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                     value={`${ editingData?.office_bandi_id || "" } | ${ editingData?.bandi_type || "" } ${ editingData?.bandi_name || "" }, `}
                     InputProps={{ readOnly: true }}
                 />
-                <ReuseSelect
+                {/* <ReuseSelect
                     name="to_status"
-                    label="प्राप्तकर्ताको भुमिका"
+                    label="पद"
                     options={
                         [
-                            {label:'कारागार प्रशासक', value:'to_send'}
+                            { label: 'कारागार प्रशासक', value: 'office_admin' }                            
                         ]
                         // optUserRoles.filter( ( opt ) => opt.id < authState.role_id )
                     }
                     control={control}
                     required={true}
-                />
-                
-                <ReuseKaragarOffice
-                    name="final_to_office_id"
-                    label="सरुवा भएको कारागार"
-                    defaultValue={1}
+                    error={errors?.to_role}
+                /> */}
+
+                <ReuseSelect
+                    name="to_status"
+                    label="अवस्था"
+                    options={
+                        [
+                            { label: 'स्विकार', value: 'received' },
+                            { label: 'अस्विकार', value: 'not_received' }
+                        ]
+                        // optUserRoles.filter( ( opt ) => opt.id < authState.role_id )
+                    }
                     control={control}
                     required={true}
-                    // disabled={true}
+                    error={errors?.to_status}
                 />
 
                 <ReuseInput
                     name="remarks"
                     label="संक्षिप्त व्यहोरा"
                     control={control}
-                    required={false}
+                    required={to_status == 'not_received'}
+                    error={errors?.remarks}
                 />
             </DialogContent>
 
@@ -124,4 +132,4 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     );
 };
 
-export default ApprovalDialog;
+export default AcceptRejectTransferDialog;

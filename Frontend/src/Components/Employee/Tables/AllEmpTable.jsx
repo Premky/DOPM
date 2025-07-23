@@ -45,8 +45,7 @@ const AllEmpTable = () => {
     if(jd=='काज'){ kaaj_office=kaaj_office_np}
     return {
       ...emp,
-      id: emp.id,
-      
+      id: emp.id,      
       appointment_date_bs,
       current_post_appointment_date_bs,
       hajir_miti_bs,
