@@ -52,6 +52,8 @@ async function insertJd( emp_id, data, user_id, active_office, connection ) {
     emp_id,
     data.appointment_date_bs,
     data.appointment_date_ad,
+    data.hajir_miti_bs,
+    data.hajir_miti_ad,
     data.jd,
     data.appointment_type,
     data.emp_level, data.emp_group, data.emp_post,     
@@ -66,7 +68,7 @@ async function insertJd( emp_id, data, user_id, active_office, connection ) {
   try {
     values = [...baseValues, ...auditFields];
     sql = `INSERT INTO employee_post_history(
-      employee_id, appointment_date_bs, appointment_date_ad, jd, appointment_type,
+      employee_id, appointment_date_bs, appointment_date_ad, jd,hajir_miti_bs,hajir_miti_ad, appointment_type,
       level_id, service_group_id, post_id, 
       office_id, is_office_chief, remarks, updated_by, updated_at,current_office_id ) VALUES (?)`;
     const [result] = await connection.query( sql, [values] );

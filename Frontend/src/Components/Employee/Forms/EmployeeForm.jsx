@@ -374,6 +374,25 @@ const EmployeeForm = () => {
                                         required={true}
                                     />
                                 </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseDateField
+                                        name="hajir_miti_bs"
+                                        label="हाजिर मिति(वि.सं.)"
+                                        control={control}
+                                        error={errors.date_bs}
+                                        required={true}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseDateField
+                                        name="hajir_miti_ad"
+                                        label="हाजिर (ई.सं.)"
+                                        control={control}
+                                        error={errors.date_ad}
+                                        readonly={true}
+                                        required={true}
+                                    />
+                                </Grid>
 
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
@@ -435,9 +454,9 @@ const EmployeeForm = () => {
                                         required={true}
                                         control={control}
                                         options={[
-                                            { label: 'कारागार प्रशासक', value: 'कारागार प्रशासक' },
-                                            { label: 'नि. कारागार प्रशासक', value: 'नि. कारागार प्रशासक' },
-                                            { label: 'होइन', value: 0 }
+                                            { label: 'हो', value: 'हो' },
+                                            { label: 'निमित्त', value: 'निमित्त कार्यालय प्रमुख' },
+                                            { label: 'होइन', value: 'होइन' }
                                         ]}
                                         error={errors.is_chief}
                                     />
