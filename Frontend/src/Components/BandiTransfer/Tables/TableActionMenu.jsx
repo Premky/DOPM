@@ -233,11 +233,12 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
 
       {
         authState.role_name === "office_admin" && ( <>
+            {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
           {( data.status_id == 10 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 11 ) ? ( <>
             <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
-          </> ) : ( data.status < 10 ) &&
+          </> ) : ( data.status_id < 10 ) &&
           ( <>
             <MenuItem onClick={handleForward}>Forward</MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
@@ -249,21 +250,21 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
         forwardRoles.includes( authState.role_name ) && (
           <>
             {( data.status_id <= 11 ) && ( <>
-                <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
-                <MenuItem onClick={handleForward}>Forward</MenuItem>
-            </>)}
-              {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-            </>
-            )
+              <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
+              <MenuItem onClick={handleForward}>Forward</MenuItem>
+            </> )}
+            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+          </>
+        )
       }
 
-            {
-              status === 1 && officeId !== 1 && officeId !== 2 && (
-                <MenuItem onClick={handleForward}>DOPM मा पठाउनुहोस्</MenuItem>
-              )
-            }
-          </>
-        );
+      {
+        status === 1 && officeId !== 1 && officeId !== 2 && (
+          <MenuItem onClick={handleForward}>DOPM मा पठाउनुहोस्</MenuItem>
+        )
+      }
+    </>
+  );
 };
 
-      export default TableActionMenu;
+export default TableActionMenu;

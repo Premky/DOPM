@@ -70,7 +70,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
     const role_id = watch( "role_id" );
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
+            <DialogTitle>पेश गर्नुहोस्:</DialogTitle>
             <DialogContent>
                 <input type='text' value={`${ editingData?.id || "" }`} hidden />
                 <input type='text' name="payrole_id" value={`${ editingData?.payrole_id || "" }`} hidden />
@@ -81,15 +81,21 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     value={`${ editingData?.office_bandi_id || "" } | ${ editingData?.bandi_type || "" } ${ editingData?.bandi_name || "" }, `}
                     InputProps={{ readOnly: true }}
                 />
+                           
                 <ReuseSelect
                     name="to_status"
-                    label="प्राप्तकर्ताको भुमिका"
+                    label='प्राप्तकर्ताको भुमिका'
                     options={
-                        optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
+                        authState.role_id <= 2 ? (
+                            optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
+                        ) : (
+                            optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
+                        )
                     }
-                    control={control}
+                    control={control}                    
                     required={true}
                 />
+
                 {( role_id === 4 || role_id === 5 ) && (
                     <ReuseInput
                         name="user_id"
