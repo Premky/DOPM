@@ -521,6 +521,7 @@ const getBandiQuery = `
     SELECT 
     b.id AS bandi_id,
     b.office_bandi_id,
+    b.lagat_no,
     b.bandi_name,
     b.bandi_type,
     b.gender,

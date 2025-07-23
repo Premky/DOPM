@@ -404,6 +404,9 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
         return res.status(400).json({Status:false, message:"Invalid input"});
     }
     try {
+        if(!allowedRoles.includes(user_role_id)){
+            return res.status(403).json({Status:false, message:"अनुमति छैन।"})
+        }
         connection = await pool.getConnection();
         connection.beginTransaction();
 
@@ -456,7 +459,7 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
     let connection;
     try {
         connection = await pool.getConnection();
-
+        // const 
         const [status_id] = await pool.query(
             `SELECT id FROM bandi_transfer_statuses WHERE role_required = ?`,
             [metadata.to_role]

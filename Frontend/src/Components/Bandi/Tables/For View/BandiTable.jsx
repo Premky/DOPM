@@ -146,8 +146,8 @@ const BandiTable = ( { bandi_id } ) => {
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell>नामथर</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_name}</TableCell>
+                                    <TableCell>नामथर / लगत नं.</TableCell>
+                                    <TableCell>{fetchedBandi.bandi_name} /{fetchedBandi.lagat_no} </TableCell>
                                     <TableCell>लिङ्ग</TableCell>
                                     <TableCell>{fetchedBandi.gender == 'Male' ? 'पुरुष' : fetchedBandi.gender == 'Female' ? 'महिला' : 'अन्य'}</TableCell>
                                 </TableRow>
