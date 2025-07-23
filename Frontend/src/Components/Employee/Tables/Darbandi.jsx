@@ -49,27 +49,11 @@ const Darbandi = () => {
         // console.log(result.Result)
     };
 
-    const [ranks, setRanks] = useState([]);
-    const fetchRanks = async () => {
-        const url = `${BASE_URL}/emp/get_ranks`;
-        const result = await fetchData(url);
-        setRanks(result.Result || []);
-        // console.log(result.Result)
-    };
-
-    const [office, setOffice] = useState([]);
-    const fetchOffice = async () => {
-        const url = `${BASE_URL}/public/get_office`;
-        const result = await fetchData(url);
-        // console.log("Fetched office data:", result.Result); // ✅ This will show the actual data
-        setOffice(result.Result || []);
-    };
-
-
+     
     useEffect(() => {
         fetchDarbandi();
-        fetchRanks();
-        fetchOffice();
+        // fetchRanks();
+        // fetchOffice();
     }, []);
 
     const filteredRecords = useMemo(() => {

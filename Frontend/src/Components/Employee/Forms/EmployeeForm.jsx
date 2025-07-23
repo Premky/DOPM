@@ -21,6 +21,7 @@ import usePosts from '../APIs/usePosts';
 import useChkEmpSanket from '../APIs/useChkEmpSanket';
 import useSanketNoGeneratorForKarar from '../APIs/useSanketNoGeneratorForKarar';
 import { bs2ad } from '../../../../Utils/bs2ad';
+import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
 
 const EmployeeForm = () => {
     const BASE_URL = useBaseURL();
@@ -59,7 +60,7 @@ const EmployeeForm = () => {
             if ( Status ) {
                 Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
                 const emp_id = Result;
-                navigate( `/emp/view_saved_record/${ emp_id }` );
+                // navigate( `/emp/view_saved_record/${ emp_id }` );
                 reset();
                 setEditing( false );
             } else {
@@ -195,7 +196,7 @@ const EmployeeForm = () => {
                                 <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
                                     <Grid item size={{ xs: 10, sm: 9, md: 8 }}>
                                         {/* <ReuseDateField */}
-                                        <ReuseDatePickerBS
+                                        <ReuseDateField
                                             name="dob"
                                             label="जन्म मिति (वि.सं.)"
                                             readonly={true}
@@ -341,7 +342,7 @@ const EmployeeForm = () => {
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         name="jd"
-                                        label="नयाँ नियुक्ति/कार्यालयमा सरुवा/पदस्थापन"
+                                        label="नयाँ नियुक्ति/कार्यालयमा सरुवा/पदस्थापन/काज"
                                         required={true}
                                         control={control}
                                         options={[
@@ -420,7 +421,7 @@ const EmployeeForm = () => {
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseKaragarOffice
+                                    <ReuseOffice
                                         name="karagar_office"
                                         label="कारागार कार्यालय"
                                         control={control}

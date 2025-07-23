@@ -86,8 +86,8 @@ router.get( '/get_character_conditions', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_user_roles', async ( req, res ) => {
-    const sql = `SELECT * FROM user_roles WHERE role_name_np IS NOT NULL `;
+router.get( '/get_all_user_roles', async ( req, res ) => {
+    const sql = `SELECT * FROM user_roles WHERE role_name_np IS NOT NULL AND is_process=1 `;
 
     try {
         const [result] = await pool.query( sql );
@@ -112,6 +112,31 @@ router.get( '/get_user_roles', async ( req, res ) => {
     }
 } );
 
+router.get( '/get_in_process_user_roles', async ( req, res ) => {
+    const sql = `SELECT * FROM user_roles WHERE role_name_np IS NOT NULL AND is_process=1 `;
+
+    try {
+        const [result] = await pool.query( sql );
+
+        if ( result.length === 0 ) {
+            return res.json( {
+                Status: false,
+                Error: "No character conditions found",
+            } );
+        }
+
+        return res.json( {
+            Status: true,
+            Result: result,
+        } );
+    } catch ( err ) {
+        console.error( "Query Error:", err );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: "Query Error",
+        } );
+    }
+} );
 
 router.get( '/get_parole_status/', async ( req, res ) => {
     const { id } = req.params;

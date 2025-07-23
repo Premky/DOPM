@@ -75,7 +75,8 @@ const CombinedNav = ( { user } ) => {
       submenu: [
         // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
         { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },
-        { name: 'स्थानान्तरण', path: '/bandi_transfer/aantarik_prashasan_table' },
+        { name: 'स्थानान्तरण', path: '/bandi_transfer/bandi_final_transfer' },
+        { name: 'स्थानान्तरण(स्विकृत)', path: '/bandi_transfer/approve_bandi_final_transfer' },
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
     }
@@ -164,6 +165,7 @@ const CombinedNav = ( { user } ) => {
           </div>
           <div className="office-info">{authState.office_np}</div>
           <div className="user-info">({authState.user})</div>
+          <div className="user-info">{authState.role_name}</div>
           {/* <div className="user-info">({authState})</div> */}
           <hr />
         </div>

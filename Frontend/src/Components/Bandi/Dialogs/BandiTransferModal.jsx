@@ -90,7 +90,7 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
                     <Grid size={{ xs: 6 }}>
                         <ReuseKaragarOffice
                             name="transfer_to_office_id"
-                            label="जान चाहेको कार्यालय"
+                            label="सरुवा भएको कार्यालय"
                             control={control}
                             required={true}
                             error={!!errors.transfer_to_office_id}

@@ -113,7 +113,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 </Grid>
 
                 <Grid container>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid size={{ xs: 12 }}>
                         <ReuseOffice
                             name="mudda_phesala_antim_office_id"
                             label="मुद्दा फैसला गर्ने कार्यालय"
@@ -139,7 +139,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                             name="mudda_phesala_antim_office_date"
                             label="फैसला मिति"
                             placeholder='YYYY-MM-DD'
-                            required={true}
+                            required={false}
                             control={control}
                             error={errors.mudda_phesala_antim_office_district}
                         />

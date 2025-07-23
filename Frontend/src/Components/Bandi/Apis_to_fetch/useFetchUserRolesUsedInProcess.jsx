@@ -1,9 +1,9 @@
 // hooks/useInternalAdmins.js
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const useFetchUserRoles = ( bandi_id ) => {
+const useFetchUserRolesUsedInProcess = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -13,7 +13,7 @@ const useFetchUserRoles = ( bandi_id ) => {
         const fetchRecords = async () => {
             try {
 
-                const response = await axios.get( `${ BASE_URL }/public/get_user_roles`,
+                const response = await axios.get( `${ BASE_URL }/public/get_in_process_user_roles`,
                     {
                         withCredentials: true
                     } );
@@ -25,7 +25,8 @@ const useFetchUserRoles = ( bandi_id ) => {
 
                         const formatted = resultArray.map( ( opt, index ) => ( {
                             label: `${ opt.id }-${ opt.role_name_np }`,
-                            value: opt.id || index  // fallback for value if id is missing
+                            value: opt.role_name || index,  // fallback for value if id is missing
+                            id: opt.id || index  // fallback for value if id is missing
                         } ) );
 
                         setOptRecords( formatted );
@@ -49,4 +50,4 @@ const useFetchUserRoles = ( bandi_id ) => {
     return { records, optrecords, loading };
 };
 
-export default useFetchUserRoles;
+export default useFetchUserRolesUsedInProcess;

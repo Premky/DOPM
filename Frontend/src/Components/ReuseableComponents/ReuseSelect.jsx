@@ -3,7 +3,7 @@ import { InputLabel, TextField, Autocomplete } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 
-const ReuseSelect = ({ name, label, required, control, error, options = [], defaultValue }) => {
+const ReuseSelect = ({ name, label, required, control, error, options = [], defaultValue, readOnly }) => {
     const defaultOptions = [
         { code: '', label: 'No Options Available', phone: '', value: '' }
     ];
@@ -19,6 +19,7 @@ const ReuseSelect = ({ name, label, required, control, error, options = [], defa
                 name={name}
                 control={control}
                 defaultValue={defaultValue}
+                
                 rules={{
                     ...(required && {
                         required: {
@@ -48,7 +49,8 @@ const ReuseSelect = ({ name, label, required, control, error, options = [], defa
                                 margin="normal"
                                 error={!!error}
                                 helperText={error?.message || ""}
-                                required={required}
+                                required={required}      
+                                disabled={readOnly}  // Disable if readOnly is true                          
                             />
                         )}
                     />

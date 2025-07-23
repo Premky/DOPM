@@ -37,22 +37,24 @@ const BandiTransferForm = () => {
     const { records: transferReasons, optrecords: transferReasonsOptions, loading: realeseReasonsLoading } = fetchBandiTransferReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
 
-    const onFormSubmit = async ( formData ) => {
+    const onFormSubmit = async ( formData ) => {        
         try {
+            
             let response;
-            if ( editing ) {
+            if ( editing ) {                
                 response = await axios.put(
-                    `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ editingId }`,
+                    `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ editing.Id }`,
                     formData,
                     { withCredentials: true }
                 );
             } else {
+                console.log(bandi_id)
                 response = await axios.post(
-                    `${ BASE_URL }/bandiTransfer/create_initial_bandi_transfer`,
-                    {
-                        bandi_id,
-                        bandi_transfer_details: [formData],
-                    },
+                    `${ BASE_URL }/bandiTransfer/create_bandi_transfer_history`,formData,
+                    // {
+                    //     bandi_id,
+                    //     formData,
+                    // },
                     { withCredentials: true }
                 );
             }
@@ -147,12 +149,12 @@ const BandiTransferForm = () => {
                         </Grid>
                         <Grid>
                             <Button variant='contained' type='submit'>
-                                थप्नुहोस्
+                                Save
                             </Button>
                         </Grid>
 
                         <hr />
-                        <Grid container>
+                        {/* <Grid container>
                             <TableContainer>
                                 <Table>
                                     <TableHead>
@@ -213,15 +215,9 @@ const BandiTransferForm = () => {
                                     </TableBody>
                                 </Table>
                             </TableContainer>
-                        </Grid>
+                        </Grid> */}
 
-                        <Grid container>
-                            <Grid size={{ xs: 12, sm: 4 }}>
-                                <Button variant='contained' type='submit'>
-                                    Save
-                                </Button>
-                            </Grid>
-                        </Grid>
+                        
                     </form>
                 </Grid>
             </Box>

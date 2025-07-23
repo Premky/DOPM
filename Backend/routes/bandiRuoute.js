@@ -2341,6 +2341,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
 router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
+    const status_id=12;
     let connection;
     try {
         connection = await pool.getConnection();
@@ -2348,6 +2349,7 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
         const insertCount = await insertTransferDetails(
             req.body.bandi_id,
             req.body.bandi_transfer_details,
+            status_id,
             user_id,
             active_office,
             connection

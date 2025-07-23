@@ -5,7 +5,7 @@ export const menuAccess = {
       '/payrole/payrole_user_check',
     ],
     office_approver: [
-      '/payrole/payrole_client_check',      
+      '/payrole/payrole_client_check',
     ],
     jr_officer: [
       '/payrole/payrole_jr_check',
@@ -31,9 +31,9 @@ export const menuAccess = {
       '/bandi/bandi_release',
     ],
     superadmin: 'all',
-    null:'all',
-    user:'all',
-    office_approver:'all',
+    null: 'all',
+    user: 'all',
+    office_approver: 'all',
   },
 
   kaamdari_subidha: {
@@ -42,8 +42,19 @@ export const menuAccess = {
   },
 
   bandi_transfer: {
-    office_superadmin: ['bandi_transfer/new_bandi_transfer'],
+    clerk: ['bandi_transfer/new_bandi_transfer'],
+    clerk: ['bandi_transfer/bandi_final_transfer'],
+    clerk:['bandi_transfer/approve_bandi_final_transfer'],
+    clerk: 'all',
+    office_admin:['bandi_transfer/approve_bandi_final_transfer'],
+    office_admin: ['bandi_transfer/new_bandi_transfer'],
+    office_admin: 'all',
     superadmin: 'all',
+    null: 'all',
+    office_superadmin: 'all',
+    headoffice_approver:'all',
+    top_level:'all',
+    supervisor:'all'
   },
 
   emp: {

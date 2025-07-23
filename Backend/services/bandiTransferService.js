@@ -1,6 +1,6 @@
 import pool from '../utils/db3.js';
 
-async function insertTransferDetails( bandi_id, transfer_details = [], InitialStatus, user_id, active_office, connection ) {
+async function insertTransferDetails( bandi_id, transfer_details = [], role_id,InitialStatus, user_id, active_office, connection ) {
     // console.log(transfer_details)
     const values = transfer_details.map( item => [
         bandi_id,
@@ -8,6 +8,7 @@ async function insertTransferDetails( bandi_id, transfer_details = [], InitialSt
         item.transfer_reason,
         item.recommended_to_office_id,
         item.is_thunuwa_permission,
+        role_id,
         InitialStatus,
         user_id,
         user_id,
@@ -33,7 +34,7 @@ async function insertTransferDetails( bandi_id, transfer_details = [], InitialSt
 
         const sql = `INSERT INTO bandi_transfer_history (
                 bandi_id, transfer_reason_id, transfer_reason, recommended_to_office_id,
-                is_thunuwa_permission, status_id,
+                is_thunuwa_permission,role_id, status_id,
                 created_by, updated_by, created_at, updated_at, created_office_id
                 ) VALUES ?`;
 
@@ -88,7 +89,12 @@ async function insertFinalTransferDetails( data, InitialStatus, user_id, active_
     }
 }
 
+async function getAllowedStatusesForRole(role_id) {
+    
+}
 export {
     insertTransferDetails,
-    insertFinalTransferDetails
+    insertFinalTransferDetails,
+
+    getAllowedStatusesForRole
 };

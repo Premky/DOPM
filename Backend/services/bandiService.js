@@ -688,7 +688,7 @@ async function insertHealthInsurance( bandi_id, health_insurance = [], user_id, 
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertTransferDetails( bandi_id, data = [], user_id, active_office, connection ) {
+async function insertTransferDetails( bandi_id, data = [],status_id, user_id, active_office, connection ) {
   if ( !data.length ) return 0;
 
   const values = data.map( item => [
@@ -699,7 +699,7 @@ async function insertTransferDetails( bandi_id, data = [], user_id, active_offic
     item.transfer_to_date,
     item.transfer_reason_id,
     item.transfer_reason,
-    status=7,
+    status_id,
     item.remarks,
     user_id,
     user_id,
@@ -710,9 +710,9 @@ async function insertTransferDetails( bandi_id, data = [], user_id, active_offic
 
   const sql = `
     INSERT INTO bandi_transfer_history (
-      bandi_id, transfer_from_office_id, transfer_to_office_id,
+      bandi_id, transfer_from_office_id, final_to_office_id,
       transfer_from_date, transfer_to_date,
-      transfer_reason_id, transfer_reason, remarks,
+      transfer_reason_id, transfer_reason, status_id, remarks,
       created_by, updated_by, created_at, updated_at, created_office_id
     ) VALUES ?
   `;

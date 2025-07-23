@@ -12,6 +12,7 @@ import BandiContactPersonTable from './Tables/For View/ContactPersonTable.jsx';
 import BandiDiseasesTable from './Tables/For View/BandiDiseasesTable.jsx';
 import BandiDisabilityTable from './Tables/For View/BandiDisabilityTable.jsx';
 import { Grid } from '@mui/material';
+import BandiTransferHistoryTable from './Tables/For View/BandiTransferHistoryTable.jsx';
 
 const ViewBandi = ( { bandi } ) => {
     const params = useParams();
@@ -54,6 +55,9 @@ const ViewBandi = ( { bandi } ) => {
                 </Grid>
                 <Grid size={{ xs: 6 }}>
                     <BandiDisabilityTable bandi_id={bandi_id} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <BandiTransferHistoryTable bandi_id={bandi_id}/>
                 </Grid>
             </Grid>
         </>

@@ -43,6 +43,7 @@ const hardOrigins = [
     'https://10.5.60.151:5174',
     'http://localhost:5173',
     'http://192.168.18.211:5173',
+    'http://192.168.18.26:5173',
     'https://kptpo.onrender.com'
 ];
 

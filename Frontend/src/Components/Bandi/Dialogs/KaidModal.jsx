@@ -14,21 +14,21 @@ import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
-const KaidModal = ({ open, onClose, onSave, editingData }) => {
+const KaidModal = ( { open, onClose, onSave, editingData } ) => {
     const {
         control,
         handleSubmit,
         reset,
         watch,
         formState: { errors },
-    } = useForm({
+    } = useForm( {
         defaultValues: { editingData },
-    });
+    } );
     // console.log(editingData)
-    useEffect(() => {
-        if (editingData) {
-            console.log(editingData)
-            reset({
+    useEffect( () => {
+        if ( editingData ) {
+            console.log( editingData );
+            reset( {
                 bandi_id: editingData.bandi_id || "",
                 bandi_type: editingData.bandi_type || "",
                 hirasat_years: editingData.hirasat_years || "",
@@ -36,27 +36,29 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
                 hirasat_days: editingData.hirasat_days || "",
                 thuna_date_bs: editingData.thuna_date_bs || "",
                 release_date_bs: editingData.release_date_bs || "",
-            });
+                is_life_time: editingData.is_life_time || false,
+            } );
         } else {
-            reset({
+            reset( {
                 bandi_id: "",
                 bandi_type: 1,
                 hirasat_years: "",
                 hirasat_months: "",
                 hirasat_days: "",
                 thuna_date_bs: "",
-                release_date_bs: ""
-            });
+                release_date_bs: "",
+                is_life_time: false,
+            } );
         }
-    }, [editingData, reset]);
+    }, [editingData, reset] );
 
-    const onSubmit = (data) => {
-        onSave(data, editingData?.id);
+    const onSubmit = ( data ) => {
+        onSave( data, editingData?.id );
         onClose();
     };
 
-    const bandi_type = watch("bandi_type");
-
+    const bandi_type = watch( "bandi_type" );
+    const is_life_time = watch( "is_life_time" );
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -124,24 +126,36 @@ const KaidModal = ({ open, onClose, onSave, editingData }) => {
                     required={true}
                     error={errors.thuna_date_bs}
                 />
+                <ReuseSelect
+                    name="is_life_time"
+                    label="आजिवन कैद हो/होइन?"
+                    required={false}
+                    options={[
+                        { value: '1', label: 'हो' },
+                        { value: '0', label: 'होइन' }
+                    ]}
+                    control={control}
+                    error={errors.is_life_time}
+                />
 
-                {bandi_type == 'कैदी' ? (<>
-                    <ReuseDateField
+                {bandi_type == 'कैदी' ? (
+                     is_life_time==0 && ( <ReuseDateField
                         name="release_date_bs"
                         label="छुटी जाने मिति"
                         control={control}
                         required={true}
                         error={errors.release_date_bs}
-                    /></>
-                    ):(<></>)}
-                </DialogContent>
+                    /> )
 
-                <DialogActions>
-                    <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
-                    <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
-                        {editingData ? "अपडेट गर्नुहोस्" : "थप्नुहोस्"}
-                    </Button>
-                </DialogActions>
+                ) : ( <></> )}
+            </DialogContent>
+
+            <DialogActions>
+                <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
+                <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
+                    {editingData ? "अपडेट गर्नुहोस्" : "थप्नुहोस्"}
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 };

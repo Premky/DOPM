@@ -143,7 +143,7 @@ const BandiKaidTable = ({ bandi_id }) => {
                                     <TableCell align="center">{opt.thuna_date_bs || ''}</TableCell>
                                     <TableCell align="center">
                                         
-                                        {opt.release_date_bs || ''}
+                                        {opt.is_life_time == 1 ? 'आजिवन' : opt.bandi_type=="कैदी" ? opt.release_date_bs : ''}
                                         </TableCell>
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
