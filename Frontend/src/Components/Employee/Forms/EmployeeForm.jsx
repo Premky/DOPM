@@ -80,6 +80,7 @@ const EmployeeForm = () => {
     const watchDob = watch( 'dob' );
     // const watchDobAd = watch( 'dob_ad' );
     const watchAppointmentDateBs = watch( 'appointment_date_bs' );
+    const watchhajir_miti_bs = watch( 'hajir_miti_bs' );
     const watchAppointmentDateAd = watch( 'appointment_date_ad' );
 
     const formHeadStyle = { color: 'blue', fontWeight: 'bold' };
@@ -115,9 +116,13 @@ const EmployeeForm = () => {
                 const ad = await bs2ad( watchAppointmentDateBs );
                 if ( ad ) setValue( "appointment_date_ad", ad );
             }
+            if(watchhajir_miti_bs && typeof watchhajir_miti_bs==='string'){
+                const ad = await bs2ad(watchhajir_miti_bs);
+                if(ad) setValue("hajir_miti_ad",ad);
+            }
         };
         convertDate();
-    }, [watchAppointmentDateBs] );
+    }, [watchAppointmentDateBs, watchhajir_miti_bs] );
 
 
 
@@ -379,7 +384,7 @@ const EmployeeForm = () => {
                                         name="hajir_miti_bs"
                                         label="हाजिर मिति(वि.सं.)"
                                         control={control}
-                                        error={errors.date_bs}
+                                        error={errors.hajir_miti_bs}
                                         required={true}
                                     />
                                 </Grid>
@@ -388,7 +393,7 @@ const EmployeeForm = () => {
                                         name="hajir_miti_ad"
                                         label="हाजिर (ई.सं.)"
                                         control={control}
-                                        error={errors.date_ad}
+                                        error={errors.hajir_miti_ad}
                                         readonly={true}
                                         required={true}
                                     />
