@@ -324,7 +324,7 @@ const CreateUser = () => {
                                 required
                             />
                         </Grid>
-                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+                        {/* <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='usertype'
                                 label='प्रयोगकर्ताको प्रकार'
@@ -338,7 +338,7 @@ const CreateUser = () => {
                                 required
                                 options={usertypes}
                             />
-                        </Grid>
+                        </Grid> */}
                         <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='userrole'

@@ -52,11 +52,11 @@ router.post( "/create_user",verifyToken, async ( req, res ) => {
 
         const hashedPassword = await hashPassword( password );
         const sql = `
-            INSERT INTO users (user_name, user_login_id, usertype, role_id,  password, office_id, branch_id, is_active,
+            INSERT INTO users (user_name, user_login_id, role_id,  password, office_id, branch_id, is_active,
             created_by, updated_by, created_at, updated_at,created_office_id) 
             VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?)`;
         try {
-            const result = await query( sql, [name_np, username, usertype,userrole, hashedPassword, office, branch, is_active,
+            const result = await query( sql, [name_np, username, userrole, hashedPassword, office, branch, is_active,
                     active_user, active_user, new Date(), new Date(), active_office
             ] );
             return res.json( { Status: true, Result: result } );
@@ -116,7 +116,7 @@ router.get('/get_users', verifyToken, async (req, res) => {
 router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {
     const { userid } = req.params;
     // console.log(req.body);
-    const { name_np, username, usertype, password, repassword, office, branch, is_active } = req.body;
+    const { name_np, username, userrole, password, repassword, office, branch, is_active } = req.body;
 
     if ( !username || !name_np || !password || !repassword || !office ) {
         return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
@@ -133,10 +133,10 @@ router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {
 
     const hashedPassword = await hashPassword( password );
     const sql = `
-        UPDATE users SET user_name=?, user_login_id=?, usertype=?, password=?, office_id=?, branch_id=?, is_active=? WHERE user_login_id=?`;
+        UPDATE users SET user_name=?, user_login_id=?, role_id=?, password=?, office_id=?, branch_id=?, is_active=? WHERE user_login_id=?`;
 
     try {
-        const result = await query( sql, [name_np, username, usertype, hashedPassword, office, branch, is_active, userid] );
+        const result = await query( sql, [name_np, username, userrole, hashedPassword, office, branch, is_active, userid] );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
