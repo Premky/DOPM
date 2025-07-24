@@ -199,7 +199,16 @@ const BandiPersonForm = () => {
       const { Status, Result, Error } = response.data;
 
       if ( Status ) {
-        Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
+        // Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
+        Swal.fire( {
+          title: 'थपियो!',
+          text: 'रेकर्ड सफलतापूर्वक थपियो',
+          imageUrl: `10.5.60.151/gif/funnySuccesslogo.gif`, // Use your custom GIF here
+          imageWidth: 100, // optional
+          imageHeight: 100, // optional
+          imageAlt: 'Custom success image',
+        } );
+
         // console.log( response );
         const bandi_id = Result;
         // console.log( bandi_id );
@@ -400,7 +409,7 @@ const BandiPersonForm = () => {
           />
         </Grid>
 
-        {[...Array( muddaCount )].map( ( _, index ) => {          
+        {[...Array( muddaCount )].map( ( _, index ) => {
           const muddaCondition = watch( `mudda_condition_${ index + 1 }` );
 
           return (
@@ -454,23 +463,23 @@ const BandiPersonForm = () => {
                   options={[
                     { label: 'चालु', value: 1 },
                     { label: 'अन्तिम भएको', value: 0 },
-                  ]}                  
+                  ]}
                   error={errors[`mudda_condition_${ index + 1 }`]}
                 />
               </Grid>
 
               {/* ✅ Conditionally show 'मुद्दा फैसला मिति' */}
-              {selectedbandi_type === 'कैदी' && muddaCondition === 0 && (                
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <ReuseDateField
-                      name={`mudda_phesala_date_${ index + 1 }`}
-                      label="मुद्दा फैसला मिति"
-                      placeholder="YYYY-MM-DD"
-                      required={true}
-                      control={control}
-                      error={errors[`mudda_phesala_date_${ index + 1 }`]}
-                    />
-                  </Grid>                
+              {selectedbandi_type === 'कैदी' && muddaCondition === 0 && (
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ReuseDateField
+                    name={`mudda_phesala_date_${ index + 1 }`}
+                    label="मुद्दा फैसला मिति"
+                    placeholder="YYYY-MM-DD"
+                    required={true}
+                    control={control}
+                    error={errors[`mudda_phesala_date_${ index + 1 }`]}
+                  />
+                </Grid>
               )}
 
               <Grid size={{ xs: 11, sm: 5, md: 2 }}>
@@ -618,7 +627,7 @@ const BandiPersonForm = () => {
             </Grid>
 
 
-            <Grid container size={{xs:12}} >
+            <Grid container size={{ xs: 12 }} >
               <Grid size={{ xs: 2 }}>
                 <ReuseInput
                   name="total_kaid_duration"
@@ -723,10 +732,10 @@ const BandiPersonForm = () => {
       </Grid>
       <hr />
       <Grid container spacing={2}>
-        <Grid size={{xs:2}} sx={formHeadStyle}>
+        <Grid size={{ xs: 2 }} sx={formHeadStyle}>
           बन्दीको ठेगानाः
         </Grid>
-        <Grid size={{xs:10}}>
+        <Grid size={{ xs: 10 }}>
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <select name='nationality' {...register( 'nationality' )}>
               <option value='स्वदेशी'>स्वदेशी</option>
@@ -790,7 +799,7 @@ const BandiPersonForm = () => {
             </Grid>
           </>
         ) : <>
-          <Grid size={{ xs: 12, sm:6, md:10 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 10 }}>
             <ReuseInput
               name="bidesh_nagrik_address_details"
               label="विदेशी नागरिक भए (ठेगाना)"
@@ -811,7 +820,7 @@ const BandiPersonForm = () => {
           const isDependent = watch( `family[${ index }].is_dependent` );
           // console.log( isDependent );
           return (
-            <Grid container size={{xs:12}} key={index}>
+            <Grid container size={{ xs: 12 }} key={index}>
               <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                 <ReuseRelativeRelations
                   name={`family[${ index }].bandi_relative_relation`}
@@ -917,7 +926,7 @@ const BandiPersonForm = () => {
           // const currentRelation = watch( `contact[${ index }].bandi_relative_relation` );
 
           return (
-            <Grid container size={{xs:12}} key={index}>
+            <Grid container size={{ xs: 12 }} key={index}>
               <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                 <ReuseRelativeRelations
                   name={`conatact_person[${ index }].relation_id`}
@@ -1002,7 +1011,7 @@ const BandiPersonForm = () => {
             const is_fine_paid = watch( `fine[${ index }].is_fine_paid` );
             const is_jariwana = watch( `fine[${ index }].is_jariwana` );
             return (
-              <Grid container size={{xs:12}} key={index}>
+              <Grid container size={{ xs: 12 }} key={index}>
                 <>
 
                   <Grid size={{ xs: 12, sm: 6, md: 2 }}>
@@ -1587,7 +1596,7 @@ const BandiPersonForm = () => {
 
       <hr />
       <Grid container spacing={2}>
-        <Grid size={{xs:12}} sx={formHeadStyle}>
+        <Grid size={{ xs: 12 }} sx={formHeadStyle}>
           बन्दीको स्वास्थय बिमा विवरणः
         </Grid>
 
