@@ -119,9 +119,9 @@ const UserTable = () => {
         rows={formattedOptions}
         height="800"
         showEdit={true}
-        showDelete={true}
+        // showDelete={true}
         onEdit={handleEdit}
-        onDelete={deleteDialog}
+        // onDelete={deleteDialog}
       />
     </>
   );
