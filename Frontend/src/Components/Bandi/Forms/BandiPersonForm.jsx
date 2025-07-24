@@ -201,7 +201,7 @@ const BandiPersonForm = () => {
       if ( Status ) {
         // Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
         Swal.fire( {
-          title: 'थपियो!',
+          title: 'आहा!',
           text: 'रेकर्ड सफलतापूर्वक थपियो',
           imageUrl: `10.5.60.151/gif/funnySuccesslogo.gif`, // Use your custom GIF here
           imageWidth: 100, // optional
