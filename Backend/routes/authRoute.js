@@ -1,6 +1,6 @@
 import express from 'express';
 import con, { promiseCon } from '../utils/db.js';
-import pool from '../utils/db3.js'
+import pool from '../utils/db3.js';
 
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
@@ -31,12 +31,17 @@ const validateLoginInput = ( username, password ) => {
 };
 
 // Create User Route
-router.post( "/create_user",verifyToken, async ( req, res ) => {
-    const active_office=req.user.office_id;
+router.post( "/create_user", verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
     const active_user = req.user.id;
+    let current_office;
     try {
-        const { name_np, username, usertype,userrole, password, repassword, office, branch, is_active } = req.body;
-
+        const { name_np, username, usertype, userrole, password, repassword, office, branch, is_active } = req.body;
+        if ( office == '' || office == null || office == undefined ) {
+            current_office = active_office;
+        } else {
+            current_office = office;
+        }
         if ( !name_np || !username || !password || !repassword || !office ) {
             return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
         }
@@ -56,8 +61,8 @@ router.post( "/create_user",verifyToken, async ( req, res ) => {
             created_by, updated_by, created_at, updated_at,created_office_id) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         try {
-            const result = await query( sql, [name_np, username, userrole, hashedPassword, office, branch, is_active,
-                    active_user, active_user, new Date(), new Date(), active_office
+            const result = await query( sql, [name_np, username, userrole, hashedPassword, current_office, branch, is_active,
+                active_user, active_user, new Date(), new Date(), active_office
             ] );
             return res.json( { Status: true, Result: result } );
         } catch ( err ) {
@@ -71,21 +76,21 @@ router.post( "/create_user",verifyToken, async ( req, res ) => {
 } );
 
 // Get Users Route
-router.get('/get_users', verifyToken, async (req, res) => {
+router.get( '/get_users', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const active_user = req.user.id;
     const active_role = req.user.role_name;
 
-    if (active_role !== 'superadmin' && active_role !== 'office_superadmin') {
-        return res.json({ Status: false, message: 'Access Denied!!!' });
+    if ( active_role !== 'superadmin' && active_role !== 'office_superadmin' ) {
+        return res.json( { Status: false, message: 'Access Denied!!!' } );
     }
 
     let filters = '';
     let params = [];
 
-    if (active_role === 'office_superadmin') {
+    if ( active_role === 'office_superadmin' ) {
         filters = 'WHERE u.office_id = ?';
-        params.push(active_office);
+        params.push( active_office );
     }
 
     const sql = `
@@ -98,25 +103,34 @@ router.get('/get_users', verifyToken, async (req, res) => {
         LEFT JOIN usertypes ut ON u.usertype = ut.id
         LEFT JOIN offices o ON u.office_id = o.id
         LEFT JOIN branch b ON u.branch_id = b.id
-        ${filters}
+        ${ filters }
         ORDER BY u.id
     `;
 
     try {
-        const result = await query(sql, params);
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error("Database Query Error:", err);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" });
+        const result = await query( sql, params );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
-});
+} );
 
 
 // Update User Route
 router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
+    let current_office;
+
     const { userid } = req.params;
     // console.log(req.body);
     const { name_np, username, userrole, password, repassword, office, branch, is_active } = req.body;
+    if ( office == '' || office == null || office == undefined ) {
+        current_office = active_office;
+    } else {
+        current_office = office;
+    }
 
     if ( !username || !name_np || !password || !repassword || !office ) {
         return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
@@ -136,7 +150,7 @@ router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {
         UPDATE users SET user_name=?, user_login_id=?, role_id=?, password=?, office_id=?, branch_id=?, is_active=? WHERE user_login_id=?`;
 
     try {
-        const result = await query( sql, [name_np, username, userrole, hashedPassword, office, branch, is_active, userid] );
+        const result = await query( sql, [name_np, username, userrole, hashedPassword, current_office, branch, is_active, userid] );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
@@ -322,7 +336,7 @@ router.get( '/get_online_status', verifyToken, async ( req, res ) => {
       WHERE o.office_categories_id= 2 OR office_categories_id=3
       GROUP BY o.id
     `;
-        const [result] = await pool.query(sql)
+        const [result] = await pool.query( sql );
 
         res.json( { success: true, data: result } );
     } catch ( err ) {
@@ -331,7 +345,7 @@ router.get( '/get_online_status', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.post('/login_ping', verifyToken, async (req, res) => {
+router.post( '/login_ping', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
 
@@ -342,19 +356,19 @@ router.post('/login_ping', verifyToken, async (req, res) => {
             "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?",
             [user_id]
         );
-        res.json({ success: true });
-    } catch (error) {
-        console.error("Ping error:", error);
-        res.status(500).json({ success: false });
+        res.json( { success: true } );
+    } catch ( error ) {
+        console.error( "Ping error:", error );
+        res.status( 500 ).json( { success: false } );
     }
-});
+} );
 
 // Session Validation Route
 router.get( '/session', verifyToken, ( req, res ) => {
     // console.log('session', req.user)
     if ( !req.user ) return res.status( 401 ).json( { loggedIn: false } );
     // console.log( 'session', req.user );
-    const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date, 
+    const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date,
         office_id, office_np, office_en, usertype_en, usertype_np, role_id, role_name } = req.user;
 
     return res.json( {

@@ -24,7 +24,7 @@ const CreateUser = () => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
-    const {state:authState}=useAuth();
+    const { state: authState } = useAuth();
 
     const token = localStorage.getItem( 'token' );
     const npToday = new NepaliDate();
@@ -262,20 +262,20 @@ const CreateUser = () => {
     }, [] );
 
     const username = watch( 'username' );
-    const optUserRolesforJailor=[
-        {label:'कारागार प्रशासक(office_admin)', value:'2'},
-        {label:'Clerk(Operator)', value:'1'},
-    ]
+    const optUserRolesforJailor = [
+        { label: 'कारागार प्रशासक(office_admin)', value: '2' },
+        { label: 'Clerk(Operator)', value: '1' },
+    ];
     const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading, refetch: fetchRecords } = useRoles();
     const { records: branches, optrecords: optBranches, loading: branchesLoading, refetch: fetchBranches } = useBranches();
     const { records: employees, optrecords: optEmployees, loading: employeesLoading } = useAllEmployes();
 
     let userRoleOptions;
     // console.log(authState.role_name)
-    if(authState.role_name==='office_superadmin'){
-        userRoleOptions=optUserRolesforJailor
-    }else if(authState.role_name==='superadmin'){
-        userRoleOptions=optUserRoles
+    if ( authState.role_name === 'office_superadmin' ) {
+        userRoleOptions = optUserRolesforJailor;
+    } else if ( authState.role_name === 'superadmin' ) {
+        userRoleOptions = optUserRoles;
     }
 
 
@@ -349,15 +349,17 @@ const CreateUser = () => {
                                 options={userRoleOptions}
                             />
                         </Grid>
-                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-                            <ReuseKaragarOffice
-                                name='office'
-                                label='कार्यालय'
-                                control={control}
-                                error={errors.office}
-                                required
-                            />
-                        </Grid>
+                        {authState.role_name === 'superadmin' && (
+                            <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+                                <ReuseKaragarOffice
+                                    name='office'
+                                    label='कार्यालय'
+                                    control={control}
+                                    error={errors.office}
+                                    required
+                                />
+                            </Grid>
+                        )}
                         <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='branch'
