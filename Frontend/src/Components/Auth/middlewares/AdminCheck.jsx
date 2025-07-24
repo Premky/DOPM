@@ -15,7 +15,7 @@ const SuperAdmin = () => {
     // console.log("User Role:", userRole);
 
     // Check for Superadmin role
-    if (userRole === "Superadmin" || userRole === "सुपरएडमिन") {
+    if (userRole === "superadmin" || userRole === "office_superadmin" || userRole==="branch_superadmin") {
         return <Outlet />;
     }
 
