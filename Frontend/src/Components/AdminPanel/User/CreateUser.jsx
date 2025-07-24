@@ -90,11 +90,30 @@ const CreateUser = () => {
             } );
             const { Status, Result, Error } = response.data;
             if ( Status ) {
+                // Swal.fire( {
+                //     title: `User ${ editing ? 'updated' : 'created' } successfully!`,
+                //     icon: "success",
+                //     draggable: true
+                // } );
+
                 Swal.fire( {
-                    title: `User ${ editing ? 'updated' : 'created' } successfully!`,
-                    icon: "success",
-                    draggable: true
+                    title: 'आहा!',
+                    text: 'रेकर्ड सफलतापूर्वक थपियो',
+                    // imageUrl: `/gif/funnySuccesslogo.gif`,
+                    imageUrl: `/gif/clap.gif`,
+                    // imageUrl: `${ BASE_URL }/gif/funnySuccesslogo.gif`, // Use your custom GIF here
+                    imageWidth: 200, // optional
+                    imageHeight: 200, // optional
+                    imageAlt: 'Custom success image',
                 } );
+
+                // Swal.fire( {
+                //     // imageUrl: `http://localhost:5173/gif/funnySuccesslogo.gif`,
+                //     imageUrl: `/gif/funnySuccesslogo.gif`,
+                //     imageHeight: 800,
+                //     imageAlt: "A tall image"
+                // } );
+
                 reset();
                 setEditing( false );
                 fetchUsers();
@@ -419,7 +438,7 @@ const CreateUser = () => {
                     showEdit={true}
                     // showDelete={true}
                     onEdit={handleEdit}
-                    // onDelete={deleteDialog}
+                // onDelete={deleteDialog}
                 />
             </Box>
         </>
