@@ -9,7 +9,7 @@ const SuperAdmin = () => {
 
     if (!state.valid) return <Navigate to="/login" replace />;
 
-    const userRole = state.role || state.usertype_en || state.usertype_np;
+    const userRole = state.role_name;
 
     // console.log("Auth State:", state);
     // console.log("User Role:", userRole);
