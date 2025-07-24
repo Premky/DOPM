@@ -31,9 +31,11 @@ const validateLoginInput = ( username, password ) => {
 };
 
 // Create User Route
-router.post( "/create_user", async ( req, res ) => {
+router.post( "/create_user",verifyToken, async ( req, res ) => {
+    const active_office=req.user.office_id;
+    const active_user = req.user.id;
     try {
-        const { name_np, username, usertype, password, repassword, office, branch, is_active } = req.body;
+        const { name_np, username, usertype,userrole, password, repassword, office, branch, is_active } = req.body;
 
         if ( !name_np || !username || !password || !repassword || !office ) {
             return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
@@ -50,11 +52,13 @@ router.post( "/create_user", async ( req, res ) => {
 
         const hashedPassword = await hashPassword( password );
         const sql = `
-            INSERT INTO users (user_name, user_login_id, usertype, password, office_id, branch_id, is_active) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
+            INSERT INTO users (user_name, user_login_id, usertype, role_id,  password, office_id, branch_id, is_active,
+            created_by, updated_by, created_at, updated_at,created_office_id) 
+            VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?)`;
         try {
-            const result = await query( sql, [name_np, username, usertype, hashedPassword, office, branch, is_active] );
+            const result = await query( sql, [name_np, username, usertype,userrole, hashedPassword, office, branch, is_active,
+                    active_user, active_user, new Date(), new Date(), active_office
+            ] );
             return res.json( { Status: true, Result: result } );
         } catch ( err ) {
             console.error( "Database Query Error:", err );
@@ -67,31 +71,46 @@ router.post( "/create_user", async ( req, res ) => {
 } );
 
 // Get Users Route
-router.get( '/get_users', async ( req, res ) => {
-    const sql = `SELECT 
+router.get('/get_users', verifyToken, async (req, res) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.id;
+    const active_role = req.user.role_name;
+
+    if (active_role !== 'superadmin' && active_role !== 'office_superadmin') {
+        return res.json({ Status: false, message: 'Access Denied!!!' });
+    }
+
+    let filters = '';
+    let params = [];
+
+    if (active_role === 'office_superadmin') {
+        filters = 'WHERE u.office_id = ?';
+        params.push(active_office);
+    }
+
+    const sql = `
+        SELECT 
             u.*, 
             ut.usertype_en, 
             o.office_name_with_letter_address, 
             b.branch_np
-        FROM 
-            users u
-        LEFT JOIN 
-            usertypes ut ON u.usertype = ut.id
-        LEFT JOIN 
-            offices o ON u.office_id = o.id
-        LEFT JOIN 
-            branch b ON u.branch_id = b.id
-        ORDER BY 
-            u.id`;
+        FROM users u
+        LEFT JOIN usertypes ut ON u.usertype = ut.id
+        LEFT JOIN offices o ON u.office_id = o.id
+        LEFT JOIN branch b ON u.branch_id = b.id
+        ${filters}
+        ORDER BY u.id
+    `;
 
     try {
-        const result = await query( sql );
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+        const result = await query(sql, params);
+        return res.json({ Status: true, Result: result });
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        res.status(500).json({ Status: false, Error: "Internal Server Error" });
     }
-} );
+});
+
 
 // Update User Route
 router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {

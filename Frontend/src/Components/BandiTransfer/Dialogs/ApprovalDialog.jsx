@@ -21,6 +21,7 @@ import Swal from "sweetalert2";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import axios from "axios";
 import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
+import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
 const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
@@ -42,21 +43,23 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     useEffect( () => {
         if ( editingData ) {
             console.log( editingData );
-            setValue('final_to_office_id', editingData.final_to_office_id)
+            setValue( 'final_to_office_id', editingData.final_to_office_id );
             reset( {
                 id: editingData.transfer_id || "", // ✅ Include this
                 transfer_id: editingData.transfer_id || "",
+                decision_date: editingData.decision_date || "",
                 to_user: editingData.to_user || "",
                 to_role: editingData.to_role || "",
-                final_to_office_id: editingData.final_to_office_id||"",
+                final_to_office_id: editingData.final_to_office_id || "",
             } );
         } else {
             reset( {
                 id: "",
                 transfer_id: "",
+                decision_date: "",
                 to_user: "",
                 to_role: "",
-                final_to_office_id:""
+                final_to_office_id: ""
             } );
         }
     }, [editingData, reset] );
@@ -84,26 +87,33 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                     value={`${ editingData?.office_bandi_id || "" } | ${ editingData?.bandi_type || "" } ${ editingData?.bandi_name || "" }, `}
                     InputProps={{ readOnly: true }}
                 />
+                <ReuseDateField
+                    name="decision_date"
+                    label="निर्णय मिति"
+                    placeholder={"YYYY-MM-DD"}
+                    control={control}
+                    required={true}
+                />
                 <ReuseSelect
                     name="to_status"
                     label="प्राप्तकर्ताको भुमिका"
                     options={
                         [
-                            {label:'कारागार प्रशासक', value:'to_send'}
+                            { label: 'कारागार प्रशासक', value: 'to_send' }
                         ]
                         // optUserRoles.filter( ( opt ) => opt.id < authState.role_id )
                     }
                     control={control}
                     required={true}
                 />
-                
+
                 <ReuseKaragarOffice
                     name="final_to_office_id"
                     label="सरुवा भएको कारागार"
                     defaultValue={1}
                     control={control}
                     required={true}
-                    // disabled={true}
+                // disabled={true}
                 />
 
                 <ReuseInput

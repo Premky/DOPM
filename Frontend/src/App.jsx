@@ -109,19 +109,13 @@ function App() {
                   <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
                   <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
                   <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
-
-
                 </Route>
 
                 <Route path="bandi_transfer" element={<OutletLayout />}>
                   <Route path="approve_bandi_final_transfer" element={<BandiTransferTable status='sent_by_clerk'/>} />
                   {/* <Route path="bandi_final_transfer" element={<BandiFinalTransferForm />} /> */}
                   <Route path="new_bandi_transfer" element={<BandiTransferForm />} />
-                  <Route path="bandi_transfer_result" element={<KaamdariSubidhaForm />} />
-                  <Route path="aantarik_prashasan_table" element={<AantarikPrashasanTable />} />
                   <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
-
-
                 </Route>
 
                 {/* Payrole Routes */}

@@ -20,8 +20,8 @@ const useAllEmployes = ( ) => {
                         const resultArray = Object.values( Result );
 
                         const formatted = resultArray.map( ( opt, index ) => ( {
-                            label: opt.post_name_np,
-                            value: opt.id  // fallback for value if id is missing
+                            label: `${opt.sanket_no} ${opt.name}`,
+                            value: opt.sanket_no  // fallback for value if id is missing
                         } ) );
 
                         setOptRecords( formatted );

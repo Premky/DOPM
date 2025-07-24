@@ -11,8 +11,8 @@ const SuperAdmin = () => {
 
     const userRole = state.role || state.usertype_en || state.usertype_np;
 
-    console.log("Auth State:", state);
-    console.log("User Role:", userRole);
+    // console.log("Auth State:", state);
+    // console.log("User Role:", userRole);
 
     // Check for Superadmin role
     if (userRole === "Superadmin" || userRole === "सुपरएडमिन") {

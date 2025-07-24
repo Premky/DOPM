@@ -296,12 +296,12 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
         const values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
             active_office, data.recommended_to_office_id,
         data.is_thunuwa_permission, data.bandi_character,
-        user_role_id, user_role_id,
+            user_role_id, user_role_id,
             user_id, user_id, new Date(), new Date(), active_office
         ];
 
         const [result] = await connection.query(insertsql, values);
-        const [bp]=await connection.query(`UPDATE bandi_person SET is_under_transfer=? WHERE id=?`,[true,data.bandi_id])
+        const [bp] = await connection.query(`UPDATE bandi_person SET is_under_transfer=? WHERE id=?`, [true, data.bandi_id])
         const insertId = result.insertId;
         const logsql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at)
                         VALUES(?,?,?,?)`;
@@ -333,13 +333,13 @@ router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) =
     const user_id = req.user.id;
     const id = req.params.id;
     const metadata = req.body;
-    console.log( "metadata:", metadata );
+    console.log("metadata:", metadata);
 
     let connection;
     try {
         connection = await pool.getConnection();
         const [previous_status_id] = await pool.query(`SELECT status_id FROM bandi_transfer_history WHERE id=?`, id);
-        console.log('previous_Status_ID:',previous_status_id);
+        console.log('previous_Status_ID:', previous_status_id);
         // const [status_id] = await pool.query(
         //     `SELECT id FROM bandi_transfer_statuses WHERE role_required = ?`,
         //     [metadata.to_role]
@@ -360,33 +360,49 @@ router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) =
 
         let sql;
         let values;
-        if(metadata.final_to_office_id){
+        if (metadata.final_to_office_id) {
             sql = `
                 UPDATE bandi_transfer_history 
-                SET role_id=?, status_id = ?, remarks = ?, final_to_office_id=?, updated_by = ?, updated_at = ?
+                SET role_id=?, status_id = ?,decision_date=?, remarks = ?, final_to_office_id=?, updated_by = ?, updated_at = ?
                 WHERE id = ?`;
-        values = [
-            to_role_id[0].id,
-            status_id[0].id,
-            metadata.remarks,
-            metadata.final_to_office_id,
-            user_id,
-            new Date(),
-            id
-        ];
-        }else{
-        sql = `
+            values = [
+                to_role_id[0].id,
+                status_id[0].id,
+                metadata.decision_date,
+                metadata.remarks,
+                metadata.final_to_office_id,
+                user_id,
+                new Date(),
+                id
+            ];
+        } else if (metadata.transfer_date) {
+            sql = `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id = ?, remarks = ?,transfer_from_date=?, updated_by = ?, updated_at = ?
+                WHERE id = ?`;
+            values = [
+                to_role_id[0].id,
+                status_id[0].id,
+                metadata.remarks,
+                metadata.transfer_date,
+                user_id,
+                new Date(),
+                id
+            ];
+        } else {
+            sql = `
                 UPDATE bandi_transfer_history 
                 SET role_id=?, status_id = ?, remarks = ?, updated_by = ?, updated_at = ?
                 WHERE id = ?`;
-        values = [
-            to_role_id[0].id,
-            status_id[0].id,
-            metadata.remarks,
-            user_id,
-            new Date(),
-            id
-        ];}
+            values = [
+                to_role_id[0].id,
+                status_id[0].id,
+                metadata.remarks,
+                user_id,
+                new Date(),
+                id
+            ];
+        }
 
         const [result] = await connection.query(sql, values);
         console.log('mm', metadata)
@@ -396,7 +412,7 @@ router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) =
                 const [receivedSql] = await connection.query(
                     `UPDATE bandi_person SET current_office_id = ?,is_under_transfer=? WHERE office_bandi_id = ?`,
                     [active_office, false, String(metadata.bandi_id)]
-                );               
+                );
 
                 console.log("✅ UPDATE SUCCESS, result:", receivedSql);
 
