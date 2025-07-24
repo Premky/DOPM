@@ -54,7 +54,7 @@ router.post( "/create_user",verifyToken, async ( req, res ) => {
         const sql = `
             INSERT INTO users (user_name, user_login_id, role_id,  password, office_id, branch_id, is_active,
             created_by, updated_by, created_at, updated_at,created_office_id) 
-            VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?)`;
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         try {
             const result = await query( sql, [name_np, username, userrole, hashedPassword, office, branch, is_active,
                     active_user, active_user, new Date(), new Date(), active_office
