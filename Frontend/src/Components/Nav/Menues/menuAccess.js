@@ -1,6 +1,6 @@
 export const menuAccess = {
   payrole: {
-    user: [
+    clerk: [
       '/payrole/create_payrole',
       '/payrole/payrole_user_check',
     ],

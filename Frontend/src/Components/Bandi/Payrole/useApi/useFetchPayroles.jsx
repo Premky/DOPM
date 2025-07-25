@@ -89,7 +89,7 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
     fetchMuddas();
   }, [fetchMuddas]);
 
-  return { data, totalKaidi, loading, error, fetchedMuddas, refetchData: fetchData, refetchMuddas: fetchMuddas };
+  return { data, totalKaidi, loading, error, fetchedMuddas, refetchPayrole: fetchData, refetchMuddas: fetchMuddas };
 };
 
 export default useFetchPayroles;

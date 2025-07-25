@@ -90,13 +90,17 @@ const PayroleForm = () => {
           icon: 'error',
           draggable: true
         } );
+
       }
 
     } catch ( err ) {
       console.error( err );
+
       Swal.fire( {
-        title: err?.response?.data?.nerr || err.message || "सर्भरमा समस्या आयो।",
+        title: err?.response?.data.message || "सर्भरमा समस्या आयो ।",
+        // text: err?.response?.data.message || "सर्भरमा समस्या आयो ।",
         icon: 'error',
+        // confirmButtonText: 'Cool'
         draggable: true
       } );
     } finally {
@@ -180,7 +184,7 @@ const PayroleForm = () => {
             }
           </Grid>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12 }}>              
+            <Grid size={{ xs: 12 }}>
               <ReuseCheckboxGroup
                 name="character_conditions"
                 label="चरित्र सर्तहरू"

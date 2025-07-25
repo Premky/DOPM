@@ -223,9 +223,17 @@ const BandiPersonForm = () => {
       }
     } catch ( error ) {
       console.error( 'Error submitting form:', error );
+      const errMessage = err?.response?.data.message;
       const errMsg = error.message ? error.message : 'डेटा बुझाउँदा समस्या आयो।';
-      Swal.fire( 'त्रुटि!', errMsg, 'error' );
-      // Swal.fire( 'त्रुटि!', 'डेटा बुझाउँदा समस्या आयो।', 'error' );
+      // Swal.fire( 'त्रुटि!', errMsg, 'error' );
+      Swal.fire( {
+        // title: err?.response?.data?.nerr || err.message || "सर्भरमा समस्या आयो।",
+        title: errMsg,
+        text: errMessage,
+        icon: 'error',
+        draggable: true
+      } );
+      
     }
   };
 

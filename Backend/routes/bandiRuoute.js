@@ -300,6 +300,17 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await connection.beginTransaction();
         console.log( `🟢 Transaction started by ${ req.user.office_np }` );
 
+        const [chk_bandi_id_duplicate] = await pool.query(
+            `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
+            [office_bandi_id]
+        );
+        if ( chk_bandi_id_duplicate.length > 0 ) {
+            return res.status( 409 ).json( {
+                Status: false,
+                message: `Bandi ID ${ office_bandi_id } already exists !!!`
+            } );
+        }
+
         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path }, connection );
         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id }, connection );
         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id }, connection );
@@ -1409,7 +1420,7 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         hirasat_days,
         thuna_date_bs,
         release_date_bs,
-        is_life_time=0
+        is_life_time = 0
     } = req.body;
 
     let connection;
@@ -2342,7 +2353,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
 router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
-    const status_id=12;
+    const status_id = 12;
     let connection;
     try {
         connection = await pool.getConnection();

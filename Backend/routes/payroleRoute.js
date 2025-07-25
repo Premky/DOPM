@@ -15,11 +15,10 @@ import { calculateBSDate } from '../utils/dateCalculator.js';
 import verifyToken from '../middlewares/verifyToken.js';
 
 const userBasedStatusMap = {
-    user: [1, 2],
-    office_approver: [1, 2],
-    jr_officer: [3, 4],
-    sr_officer: [4, 5],
-    headoffice_approver: [5, 6],
+    clerk: [1, 2],
+    office_admin: [1, 2],
+    supervisor: [4, 5],
+    headoffice_approver: [6, 7],
     branch_superadmin: [1, 2, 3, 4, 5, 6],
     office_superadmin: [1, 2, 3, 4],
     superadmin: 'all',
@@ -360,7 +359,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         searchbandi_name = '',
         searchchecked = 0,
         searchis_checked = '',
-        mudda_group_id='',
+        mudda_group_id = '',
     } = req.query;
 
     // console.log( req.query );
@@ -733,83 +732,101 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
     const {
-        bandi_id, payrole_no, mudda_id, payrole_count_date, payrole_entry_date, other_details,
-        payrole_reason, payrole_remarks, payrole_niranay_no, payrole_decision_date,
-        payrole_granted_letter_no, payrole_granted_letter_date, pyarole_rakhan_upayukat,
+        bandi_id,
+        payrole_no,
+        mudda_id,
+        payrole_count_date,
+        payrole_entry_date,
+        other_details,
+        payrole_reason,
+        payrole_remarks,
+        payrole_niranay_no,
+        payrole_decision_date,
+        payrole_granted_letter_no,
+        payrole_granted_letter_date,
+        pyarole_rakhan_upayukat,
         dopmremark
     } = req.body;
 
-    // console.log( 'bandi_id', bandi_id );
     let payrole_no_bandi_id = '';
     if ( bandi_id && payrole_no ) {
-        let payrole_no_bandi = String( payrole_no ) + String( bandi_id );
-        payrole_no_bandi_id = payrole_no_bandi;
+        payrole_no_bandi_id = `${ payrole_no }${ bandi_id }`;
     }
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        // await beginTransactionAsync();
-        await connection.beginTransaction();
-        let sql = '';
-        let values = [];
 
-        if ( payrole_niranay_no ) {
-            // FIX or remove this block if irrelevant
-            // Assuming you want to insert into another table
-            // values = [bandi_id, relation_id, no_of_children]; // define those variables properly
-            // sql = `INSERT INTO bandi_relative_info(bandi_id, relation_id, no_of_children) VALUES(?, ?, ?)`;
-            // await queryAsync(sql, values);
-        } else {
-            values = [
-                payrole_no_bandi_id,
-                // mudda_id,
-                // payrole_count_date,
+    try {
+        const [office_bandi_id_res] = await pool.query(
+            `SELECT office_bandi_id FROM bandi_person WHERE id = ?`,
+            [bandi_id]
+        );
+        const office_bandi_id = office_bandi_id_res[0]?.office_bandi_id;
+
+        const [chk_payrole_duplicate] = await pool.query(
+            `SELECT office_bandi_id FROM payroles WHERE office_bandi_id = ?`,
+            [office_bandi_id]
+        );
+
+        if ( chk_payrole_duplicate.length > 0 ) {
+            return res.status( 409 ).json( {
+                Status: false,
+                message: `बन्दी ID ${ office_bandi_id } को प्यारोल सिफारिस अगाडि नै भइसकेको छ।`
+            } );
+        }
+
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const values = [
+                bandi_id,
+                office_bandi_id,
                 payrole_entry_date,
                 payrole_reason,
                 other_details,
                 payrole_remarks,
                 1, // status
                 payrole_no,
-                bandi_id,
                 user_id,
                 user_id,
                 active_office,
                 active_office
             ];
-            // payrole_mudda_id ganana_date,
-            sql = `
-                INSERT INTO payroles(
-                payrole_no_bandi_id,  payrole_entery_date, payrole_reason,
-                other_details, remark, status, payrole_no_id, bandi_id, user_id, created_by, created_office, updated_office
-            ) VALUES(?, ?,  ?, ?, ?, ?, ?, ?, ?, ?,?,?)
-                `;
 
-            const [result] = await pool.query( sql, values );
-            const inserted_id = result.insertId;
-            console.log( inserted_id );
-            // await commitAsync();
+            const sql = `
+                INSERT INTO payroles (
+                    bandi_id, office_bandi_id, payrole_entry_date, payrole_reason,
+                    other_details, remark, status, payrole_no_id, 
+                    user_id, created_by, created_office, updated_office
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+
+            const [result] = await connection.query( sql, values );
             await connection.commit();
 
             return res.json( {
-                // Result: inserted_id,
                 Status: true,
-                message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+                message: "प्यारोल सफलतापूर्वक सुरक्षित गरियो।"
             } );
+        } catch ( error ) {
+            await connection.rollback();
+            console.error( "Transaction failed:", error );
+            return res.status( 500 ).json( {
+                Status: false,
+                Error: error.message,
+                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            } );
+        } finally {
+            connection.release();
         }
-
     } catch ( error ) {
-        // await rollbackAsync();
-        await connection.rollback();
-        console.error( "Transaction failed:", error );
+        console.error( "Server error:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
-            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            message: "सर्भर त्रुटि भयो।"
         } );
-    } finally {
-        if ( connection ) connection.release();
     }
 } );
+
 
 
 

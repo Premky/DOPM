@@ -31,14 +31,15 @@ import { useNavigate } from "react-router-dom";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import PayroleActionMenu from "./PayroleActionMenu";
 import exportToExcel from "../../Exports/ExcelPayrole";
+import useFetchPayroles from "../useApi/useFetchPayroles";
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
     const navigate = useNavigate();
 
-    const [data, setData] = useState( [] );
+    // const [data, setData] = useState( [] );
     const [filteredKaidi, setFilteredKaidi] = useState( [] );
-    const [fetchedMuddas, setFetchedMuddas] = useState( {} );
+    // const [fetchedMuddas, setFetchedMuddas] = useState( {} );
     // const [authState, setAuthState] = useState( { office_id: 1, role_name: "admin" } );
     const [filters, setFilters] = useState( {} );
     const [openEl, setOpenEl] = useState( null );
@@ -46,7 +47,7 @@ const PayroleTable = () => {
     const [formattedDateNp, setFormattedDateNp] = useState( "2081-03-01" );
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
-    const [totalKaidi, setTotalKaidi] = useState( 0 );
+    // const [totalKaidi, setTotalKaidi] = useState( 0 );
 
     const handleChangePage = ( event, newPage ) => {
         setPage( newPage );
@@ -56,87 +57,8 @@ const PayroleTable = () => {
         setPage( 0 );
     };
 
-    const fetchData = async () => {
-        try {
-            const {
-                searchOffice,
-                nationality,
-                searchpayroleStatus,
-                searchpyarole_rakhan_upayukat,
-                searchpayrole_no_id,
-                searchmudda_id,
-                searchbandi_name,
-                searchchecked,
-                searchis_checked
-            } = filters || {};
-
-            // Assuming page and rowsPerPage are defined in state somewhere
-            const res = await axios.get( `${ BASE_URL }/payrole/get_payroles`, {
-                params: {
-                    page,
-                    limit: rowsPerPage,
-                    searchOffice,
-                    nationality,
-                    searchpayroleStatus,
-                    searchpyarole_rakhan_upayukat,
-                    searchpayrole_no_id,
-                    searchmudda_id,
-                    searchbandi_name,
-                    searchchecked,
-                    searchis_checked,
-                },
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                    'Expires': '0',
-                },
-                withCredentials: true,
-            } );
-            // console.log( res.data );
-            setData( res.data.Result || [] );
-            setFilteredKaidi( res.data.Result || [] );
-            setTotalKaidi( res.data.TotalCount );  //Total Count 
-
-            // If needed, fetch muddās here too:
-            // const muddaRes = await axios.get(`${BASE_URL}/bandi/get_bandi_mudda`, { withCredentials: true });
-            // setFetchedMuddas(muddaRes.data || {});
-
-        } catch ( err ) {
-            console.error( "Fetch error", err );
-        }
-    };
-    useEffect( () => {
-        fetchData();
-    }, [filters] );
-
-    const fetchMuddas = async () => {
-        try {
-            const url = `${ BASE_URL }/bandi/get_bandi_mudda`;
-            const response = await axios.get( url, { withCredentials: true } );
-            const { Status, Result, Error } = response.data;
-
-            if ( Status ) {
-                // Group muddas by bandi_id
-                const grouped = {};
-                Result.forEach( ( mudda ) => {
-                    const bandiId = mudda.bandi_id;
-                    if ( !grouped[bandiId] ) grouped[bandiId] = [];
-                    grouped[bandiId].push( mudda );
-                } );
-                setFetchedMuddas( grouped ); // grouped is now an object like { 1: [mudda1, mudda2], 2: [mudda1] }
-                // console.log(fetchedMuddas)
-            } else {
-                console.warn( Error || 'Failed to fetch mudda.' );
-                setFetchedMuddas( {} );
-            }
-        } catch ( error ) {
-            console.error( 'Error fetching muddas:', error );
-        }
-    };
-    useEffect( () => {
-        fetchMuddas();
-    }, [] );
-    // return { offices: records, optOffices: optrecords, loadingOffices: loading };
+    
+    const { data, totalKaidi, loading, error, fetchedMuddas, refetchPayrole, refetchMuddas }=useFetchPayroles(filters, rowsPerPage, page);
 
     const [menuAnchorEl, setMenuAnchorEl] = useState( null );
     const [menuRowData, setMenuRowData] = useState( null );
