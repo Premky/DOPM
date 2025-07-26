@@ -8,6 +8,7 @@ import { Box, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
+import ResetPasswordDialog from './ResetPasswordDialog';
 
 
 const Login = () => {
@@ -17,57 +18,88 @@ const Login = () => {
     const navigate = useNavigate();
     const { dispatch, fetchSession, state, loading } = useAuth();
 
+    const [resetPasswordOpen, setResetPasswordOpen] = useState( false );
     const [showPassword, setShowPassword] = useState( false );
     const [values, setValues] = useState( { username: '', password: '' } );
     const [error, setError] = useState( '' );
 
     if ( loading ) return <>Loading...</>;
-    if ( state?.valid && !state.justLoggedIn) {
+    if ( state?.valid && !state.justLoggedIn && !resetPasswordOpen ) {
         return <Navigate to='/bandi' replace />;
     }
-
 
     const handleClickShowPassword = () => setShowPassword( ( prev ) => !prev );
 
     const handleLogin = async ( event ) => {
         event.preventDefault();
-
         try {
             const response = await axios.post( `${ BASE_URL }/auth/login`, values, { withCredentials: true } );
-
-            Swal.fire( {
-                title: "Logging in...",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-            } );
-
+            // console.log( response );
             if ( response.data.loginStatus ) {
                 await fetchSession();
-                // dispatch( { type: "LOGIN", payload:{ ...response.data, justLoggedIn:true }} );
-                Swal.fire( { title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false } );
-                navigate( '/bandi' );
+                // dispatch( { type: "LOGIN", payload:{ ...response.data, justLoggedIn:true }} )                
+
+                if ( response.data.must_change_password === 1 ) {
+                    console.log( "Opening reset dialog" );
+                    setResetPasswordOpen( true );
+                } else {
+                    Swal.fire( {
+                        title: "Logging in...",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                    } );
+                    Swal.fire( { title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false } );
+                }
             } else {
                 Swal.fire( { title: "Login Failed", text: response.data.error, icon: "error" } );
             }
         } catch ( error ) {
-            const message = error.response?.data?.Error || 'Unexpected error occurred' ;
+            const message = error.response?.data?.Error || 'Unexpected error occurred';
             setError( error.response?.data?.Error || 'Unexpected error occurred' );
             Swal.fire( { title: "Login Error", text: message, icon: "error" } );
             // Swal.fire( { title: "Login Error", text: error.message, icon: "error" } );
         }
     };
 
+    const handlePasswordChange = async ( formData ) => {
+        try {
+            const res = await axios.put( `${ BASE_URL }/auth/reset_password`, formData,{withCredentials:true} );
+            Swal.fire( { title: "Password Changed", icon: "success" } );
+            setResetPasswordOpen( false );
+            navigate( '/bandi' );
+        } catch ( err ) {
+            Swal.fire( {
+                title: "Password Change Failed",
+                text: err.response?.data?.message || "Something went wrong",
+                icon: "error",
+            } );
+        }
+    };
+
     return (
         <>
+            <ResetPasswordDialog
+                editingData={{
+                    user_id: state?.id || '',
+                }}
+                open={resetPasswordOpen}
+                onClose={() => {
+                    setResetPasswordOpen( false );
+                    navigate( '/bandi' );
+                }}
+                onSave={handlePasswordChange}
+            />
+
+
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '3%' }}>
                 <img src='/nepal_gov_logo.png' alt='Nepal Police Logo' height='120px' />
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1%', color:'#fc3d03' }}>
-                <h1> कारागार व्यवस्थापन विभाग:PMIS </h1>                
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1%', color: '#fc3d03' }}>
+                <h1> कारागार व्यवस्थापन विभाग:PMIS </h1>
             </Box>
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="loginPage">
 
                 <div className='p-3 rounded w-40 border loginForm'>

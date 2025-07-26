@@ -158,6 +158,60 @@ router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.put( '/reset_password', verifyToken, async ( req, res ) => {
+    const active_user = req.user.id;
+    const { old_password, password, repassword } = req.body;
+
+    const fetchUserQuery = `
+    SELECT DISTINCT u.*,
+      o.office_name_with_letter_address AS office_np, o.letter_address AS office_en,
+      o.id AS office_id, ut.usertype_en, ut.usertype_np, ur.id AS role_id, ur.role_name, b.branch_np
+    FROM users u
+    LEFT JOIN offices o ON u.office_id = o.id
+    LEFT JOIN branch b ON u.branch_id = b.id
+    LEFT JOIN usertypes ut ON u.usertype = ut.id
+    LEFT JOIN user_roles ur ON u.role_id = ur.id
+    WHERE u.id = ?`;
+
+    try {
+        // Fetch user data
+        const [userdb] = await pool.query( fetchUserQuery, [active_user] );
+        if ( userdb.length === 0 ) {
+            return res.status( 401 ).json( { loginStatus: false, message: "Invalid user" } );
+        }
+
+        const user = userdb[0];
+
+        // Verify old password matches
+        const isMatch = await bcrypt.compare( old_password, user.password );
+        if ( !isMatch ) {
+            return res.status( 401 ).json( { loginStatus: false, message: "पुरानो पासवर्ड मिलेन" } ); // Old password does not match
+        }
+
+        if ( old_password === password ) {
+            return res.status( 400 ).json( { message: "पुरानो र नयाँ पासवर्ड उस्तै छन्। कृपया नयाँ पासवर्ड दिनुहोस्।" } );
+        }
+
+        // Check new password confirmation
+        if ( password !== repassword ) {
+            return res.status( 400 ).json( { message: "पासवर्डहरू मिलेन।" } ); // Passwords do not match
+        }
+
+        // Hash new password and update
+        const hashedPassword = await hashPassword( password );
+        const [result] = await pool.query(
+            `UPDATE users SET password = ?, must_change_password = ? WHERE id = ?`,
+            [hashedPassword, 0, active_user]
+        );
+
+        return res.json( { Status: true, Result: result } );
+    } catch ( error ) {
+        console.error( "Database Query Error:", error );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+
 // Delete User Route
 router.delete( '/delete_user/:id', async ( req, res ) => {
     const { id } = req.params;
@@ -213,7 +267,7 @@ router.post( '/login', async ( req, res ) => {
         }
 
         const user = result[0];
-        console.log( user );
+        // console.log( user );
         const isMatch = await bcrypt.compare( password, user.password );
         if ( !isMatch ) {
             return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
@@ -259,6 +313,7 @@ router.post( '/login', async ( req, res ) => {
         return res.json( {
             loginStatus: true,
             userdetails,
+            must_change_password: user.must_change_password
         } );
 
     } catch ( err ) {
