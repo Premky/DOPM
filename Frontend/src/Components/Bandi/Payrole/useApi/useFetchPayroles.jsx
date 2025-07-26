@@ -46,7 +46,7 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
         },
         withCredentials: true,
       });
-      console.log('Fetch response:', res.data);
+      // console.log('Fetch response:', res.data);
       setData(res.data.Result || []);
       setTotalKaidi(res.data.TotalCount || 0);
       setError(null);

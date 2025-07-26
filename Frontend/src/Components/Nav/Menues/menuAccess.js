@@ -4,7 +4,7 @@ export const menuAccess = {
       '/payrole/create_payrole',
       '/payrole/payrole_user_check',
     ],
-    office_approver: [
+    office_admin: [
       '/payrole/payrole_client_check',
     ],
     jr_officer: [

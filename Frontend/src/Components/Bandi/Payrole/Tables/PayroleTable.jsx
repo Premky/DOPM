@@ -57,8 +57,13 @@ const PayroleTable = () => {
         setPage( 0 );
     };
 
-    
-    const { data, totalKaidi, loading, error, fetchedMuddas, refetchPayrole, refetchMuddas }=useFetchPayroles(filters, rowsPerPage, page);
+
+    const { data, totalKaidi, loading, error, fetchedMuddas, refetchPayrole, refetchMuddas } =
+        useFetchPayroles( filters, page, rowsPerPage );
+    // console.log(data)
+    useEffect( () => {
+        if ( data ) setFilteredKaidi( data );
+    }, [data] );
 
     const [menuAnchorEl, setMenuAnchorEl] = useState( null );
     const [menuRowData, setMenuRowData] = useState( null );
@@ -71,47 +76,20 @@ const PayroleTable = () => {
         setMenuAnchorEl( null );
         setMenuRowData( null );
     };
-
-    const handleElClick = ( event ) => setAnchorEl( event.currentTarget );
-    const handleElClose = () => setAnchorEl( null );
-    const handleEdit = ( row ) => navigate( `/bandi/view_saved_record/${ row.id }` );
-    // const handleViewPayrole = ( row ) => <BandiFullReportPDF bandi_id=row.id};
-    const handleUpdatePayrole = ( row ) => navigate( `/bandi/view_saved_record/${ row.id }` );
-    const handleChangePayroleStatus = ( row, newStatus ) => console.log( "Change status", row, newStatus );
-    const handleReturn = ( row, returnToStatus ) => console.log( "Return", row, returnToStatus );
-    const handleForwardDialog = ( row, forwardToStatus ) => console.log( "Forward", row, forwardToStatus );
-    const handleResult = ( row, status ) => console.log( "Result", row, status );
-    const handleCheckboxChange = ( id, value ) => console.log( "Checkbox", id, value );
-
-    // useEffect( () => {
-    //     let filtered = [...data];
-    //     console.log( filtered );
-    //     if ( filters?.searchOffice ) {
-    //         filtered = filtered.filter( item => item.current_office_id == filters.searchOffice );
-    //     }
-
-    //     if ( filters?.searchpayroleStatus ) {
-    //         filtered = filtered.filter( item => item.payrole_status == filters.searchpayroleStatus );
-    //     }
-
-    //     if ( filters?.nationality ) {
-    //         filtered = filtered.filter( item => item.nationality === filters.nationality );
-    //     }
-
-    //     if ( filters?.searchbandi_name ) {
-    //         const name = filters.searchbandi_name.toLowerCase();
-    //         filtered = filtered.filter( item => item.bandi_name.toLowerCase().includes( name ) );
-    //     }
-
-    //     if ( filters?.searchmudda_id ) {
-    //         filtered = filtered.filter( item =>
-    //             ( fetchedMuddas[item.bandi_id] || [] ).some( mudda => mudda.mudda_id == filters.searchmudda_id )
-    //         );
-    //     }
-
-    //     setFilteredKaidi( filtered );
-    // }, [filters, data, fetchedMuddas] );
-
+    
+    const handleCheckboxChange = async ( id, newValue ) => {
+        // console.log( newValue );
+        try {
+            await axios.put( `${ BASE_URL }/payrole/update_is_payrole_checked/${ id }`, {
+                is_checked: newValue
+            }, { withCredentials: true } );
+            refetchPayrole();
+            // Optionally update local state or re-fetch
+        } catch ( err ) {
+            console.error( 'Update failed:', err );
+        }
+    };
+    
     return (
         <>
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
@@ -127,7 +105,7 @@ const PayroleTable = () => {
                         data={menuRowData}
                         onClose={handleMenuClose}
                         onResultClick={() => {
-                            console.log( "Result click for:", menuRowData );
+                            // console.log( "Result click for:", menuRowData );
                             handleMenuClose();
                         }} />
                 )}
@@ -176,7 +154,7 @@ const PayroleTable = () => {
                                 <Fragment key={data.id}>
                                     <TableRow sx={rowStyle}>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            <Checkbox checked={data.is_checked} onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )} />
+                                            <Checkbox checked={data.is_checked} onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )} />                                            
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
                                             {index + 1}

@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { MenuItem } from "@mui/material";
 import { pdf } from "@react-pdf/renderer";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import { useBaseURL } from "../../../../Context/BaseURLProvider";
-
+import { useAuth } from "../../../../Context/AuthContext";
+import ForwardDialog from "../Dialogs/ForwardDialog";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 const handleViewPayrole = async ( row ) => {
+
   const doc = <BandiFullReportPDF bandiData={row} />;
   const blob = await pdf( doc ).toBlob();
   saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
@@ -13,7 +17,8 @@ const handleViewPayrole = async ( row ) => {
 
 const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
   const BASE_URL = useBaseURL();
-  console.log( BASE_URL );
+  const { state: authState } = useAuth();
+
   const status = data?.payrole_status;
   const officeId = data?.current_office_id;
 
@@ -40,28 +45,110 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
     onClose();
   };
 
+  const [forwardModalOpen, setforwardModalOpen] = useState( false );
+  const handleForward = () => {
+    setforwardModalOpen( true );
+  };
+
+  const handleForwardSave = async ( updatedData ) => {
+        // console.log(updatedData)
+        try {
+            await axios.put(
+                `${ BASE_URL }/payrole/update_payrole/${ updatedData.payrole_id }`,
+                updatedData,
+                { withCredentials: true } // ✅ Fix: put this inside an object
+            );
+            refetchPayrole();
+            Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+        } catch ( err ) {
+            console.error( err );
+            Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+        }
+    };
+
   return (
     <>
-      {/* Example: Head office gets decision access */}
-      {status === 2 && ( officeId === 1 || officeId === 2 ) && (
-        <MenuItem onClick={() => handleAction( "result" )}>निर्णय राख्ने</MenuItem>
-      )}
+      <ForwardDialog
+        open={forwardModalOpen}
+        onClose={() => setforwardModalOpen( false )}
+        onSave={handleForwardSave}
+        editingData={data}
+      />
 
-      {/* View Details always available */}
-      <MenuItem
-        onClick={() => {
-          handleViewPayrole( data );
-          onClose();
-        }}>
-      विवरण हेर्नुहोस्
-      </MenuItem>
 
-      {/* Example: Forwarding to DOPM */}
-      {status === 1 && officeId !== 1 && officeId!==2 && (
-        <MenuItem onClick={() => handleAction( "forward" )}>DOPM मा पठाउनुहोस्</MenuItem>
-      )}
+      <a
+        href={`/bandi/view_saved_record/${ data?.bandi_id }`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ textDecoration: "none", color: "inherit" }}
+      >
+        <MenuItem>विवरण हेर्नुहोस्</MenuItem>
+      </a>
+
+      {
+        status === 2 && ( officeId === 1 || officeId === 2 ) && (
+          <MenuItem onClick={onResultClick}>निर्णय राख्ने</MenuItem>
+        )
+      }
+
+      {
+        authState.role_name === "clerk" && (
+          <>
+            {data.status_id >= 10 ? (
+              <>
+                {/* <MenuItem onClick={handleSend}>पठाउनुहोस्</MenuItem> */}
+              </>
+            ) : (
+              <>
+                <MenuItem onClick={handleForward}>
+                  कार्यालय प्रमुखमा पेश गर्नुहोस्
+                </MenuItem>
+              </>
+            )
+            }
+          </>
+        )
+      }
+
+      {
+        authState.role_name === "office_admin" && ( <>
+          {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
+          {( data.status_id == 10 ) ? ( <>
+            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
+          </> ) : ( data.status_id == 11 ) ? ( <>
+            <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
+          </> ) : ( data.status_id < 10 ) &&
+          ( <>
+            <MenuItem onClick={handleForward}>Forward</MenuItem>
+            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+          </> )}
+        </> )
+      }
+
+
+
+
+
+      {
+        status === 1 && officeId !== 1 && officeId !== 2 && (
+          <MenuItem onClick={handleForward}>DOPM मा पठाउनुहोस्</MenuItem>
+        )
+      }
     </>
   );
 };
 
 export default PayroleActionMenu;
+
+
+// {
+//   forwardRoles.includes( authState.role_name ) && (
+//     <>
+//       {( data.status_id <= 11 ) && ( <>
+//         <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
+//         <MenuItem onClick={handleForward}>Forward</MenuItem>
+//       </> )}
+//       {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+//     </>
+//   )
+// }

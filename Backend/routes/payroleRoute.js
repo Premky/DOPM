@@ -14,7 +14,7 @@ import dateConverter from 'nepali-datetime/dateConverter';
 import { calculateBSDate } from '../utils/dateCalculator.js';
 import verifyToken from '../middlewares/verifyToken.js';
 
-const userBasedStatusMap = {
+const userBasedStatusMap1 = {
     clerk: [1, 2],
     office_admin: [1, 2],
     supervisor: [4, 5],
@@ -23,6 +23,32 @@ const userBasedStatusMap = {
     office_superadmin: [1, 2, 3, 4],
     superadmin: 'all',
 };
+
+async function getUserBasedStatusMap() {
+    const [rows] = await pool.query( `
+    SELECT ur.id, ur.role_name, rsr.payrole_status_id, ps.payrole_status_name
+            FROM payrole_status_roles rsr 
+            LEFT JOIN user_roles ur ON rsr.role_id=ur.id
+            LEFT JOIN payrole_status ps ON rsr.payrole_status_id=ps.id
+  `);
+
+    const map = {};
+
+    for ( const row of rows ) {
+        const role = row.role_name;
+        const statusId = row.payrole_status_id;
+
+        if ( !map[role] ) {
+            map[role] = [];
+        }
+        map[role].push( statusId );
+    }
+
+    // Optionally, handle special cases
+    map.superadmin = 'all';
+
+    return map;
+}
 
 
 const router = express.Router();
@@ -43,10 +69,10 @@ import { bs2ad } from '../utils/bs2ad.js';
 
 //गाडीका विवरणहरुः नाम सुची
 // Promisify specific methods
-const queryAsync = promisify( con.query ).bind( con );
-const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
-const commitAsync = promisify( con.commit ).bind( con );
-const rollbackAsync = promisify( con.rollback ).bind( con );
+// const queryAsync = promisify( con.query ).bind( con );
+// const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
+// const commitAsync = promisify( con.commit ).bind( con );
+// const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
 
 // Convert BS to AD
@@ -348,11 +374,11 @@ router.get( '/get_payroles1', verifyToken, async ( req, res ) => {
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const userRole = req.user.role_name;
-    // console.log(userRole)
+    console.log(req.query)
     const {
         searchOffice = 0,
         nationality = 0,
-        searchpayroleStatus = 0,
+        searchpayroleStatus = 1,
         searchpyarole_rakhan_upayukat = 0,
         searchpayrole_no_id = 0,
         searchmudda_id = 0,
@@ -362,19 +388,29 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         mudda_group_id = '',
     } = req.query;
 
+    const [searchedStatusKeyRow]= await pool.query(`SELECT id FROM payrole_status WHERE status_key=?`,[searchpayroleStatus])    
+    const searchedStatusKey=searchedStatusKeyRow[0]
+    // console.log(searchedStatusKey.id)
     // console.log( req.query );
     const page = parseInt( req.query.page ) || 0;
     const limit = parseInt( req.query.limit ) || 25;
     const offset = page * limit;
 
     let baseWhere = ` WHERE 1=1 `;
-    const allowedStatuses = userBasedStatusMap[userRole] ?? [];
+    const roleMap = await getUserBasedStatusMap();
+    let allowedStatuses = roleMap[userRole] ?? [];
 
+    if(allowedStatuses === 'all'){
+        const [allStatuses ] = await pool.query('SELECT id FROM payrole_status');
+        allowedStatuses=allStatuses.map(status=>status.id)
+    }    
+
+console.log(allowedStatuses)
     const params = [];
 
     // ✅ Payrole status filter
-    if ( searchpayroleStatus ) {
-        const status = Number( searchpayroleStatus );
+    if ( searchedStatusKey ) {
+        const status = Number( searchedStatusKey.id );
         if ( allowedStatuses === 'all' || allowedStatuses.includes( status ) ) {
             baseWhere += ` AND p.status = ? `;
             params.push( status );
@@ -731,6 +767,8 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.id;
+    const user_role_id = req.user.role_id;
+
     const {
         bandi_id,
         payrole_no,
@@ -775,7 +813,6 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
-
             const values = [
                 bandi_id,
                 office_bandi_id,
@@ -785,7 +822,9 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                 payrole_remarks,
                 1, // status
                 payrole_no,
-                user_id,
+                0,
+                user_role_id, 
+                'Pending',
                 user_id,
                 active_office,
                 active_office
@@ -794,8 +833,8 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
             const sql = `
                 INSERT INTO payroles (
                     bandi_id, office_bandi_id, payrole_entry_date, payrole_reason,
-                    other_details, remark, status, payrole_no_id, 
-                    user_id, created_by, created_office, updated_office
+                    other_details, remark, status, payrole_no_id, is_checked,
+                    user_role_id, is_completed, created_by, created_office, updated_office
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
@@ -826,9 +865,6 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         } );
     }
 } );
-
-
-
 
 router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
@@ -926,7 +962,7 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
+router.put( '/update_payrole1/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
     const {
@@ -1059,7 +1095,7 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
         let values = [];
 
         // Check if the payrole exists
-        const [existingPayrole] = await query( `SELECT * FROM payroles WHERE id = ?`, [payrole_id] );
+        const [existingPayrole] = await pool.query( `SELECT * FROM payroles WHERE id = ?`, [payrole_id] );
         if ( !existingPayrole ) {
             return res.status( 404 ).json( { Status: false, Error: "Payrole not found" } );
         }
@@ -1460,4 +1496,23 @@ router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res
     }
 } );
 
+
+
+
+router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_role_id = req.user.role_id;
+    try {
+        const [result] = await pool.query( `
+            SELECT ur.id, ur.role_name_np, rsr.payrole_status_id, ps.payrole_status_name, ps.status_key
+            FROM payrole_status_roles rsr 
+            LEFT JOIN user_roles ur ON rsr.role_id=ur.id
+            LEFT JOIN payrole_status ps ON rsr.payrole_status_id=ps.id
+            WHERE rsr.role_id=?`, [user_role_id] );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'GET Error:', err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
 export { router as payroleRouter };

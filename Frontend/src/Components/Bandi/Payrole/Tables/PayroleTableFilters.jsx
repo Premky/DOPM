@@ -10,6 +10,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import exportToExcel from "../../Exports/ExcelPayrole";
+import useFetchRoleBasedParoleStatus from "../useApi/useFetchRoleBasedParoleStatus";
 
 const PayroleTableFilters = ( { onChange } ) => {
     const { state: authState } = useAuth();
@@ -101,21 +102,9 @@ const PayroleTableFilters = ( { onChange } ) => {
         searchis_checked,
     ] );
 
-    const roleBasedStatus = {
-        user: [
-            { label: 'पेश नगरेको', value: '1' },
-            { label: 'पेश गरेको', value: '2' },
-        ]
-        , office_approver: [
-            { label: 'पेश नगरेको', value: '1' },
-            { label: 'पेश गरेको', value: '2' },
-        ],
-        jr_officer: [
-            { label: 'पेश गरेको', value: '3' },
-            { label: 'स्विकृत गरेको', value: '4' },
-            { label: 'प्यारोल सिफारिस भएको', value: '5' },
-        ],
-    };
+    const { optrecords: roleBasedStatus, 
+            refetchRoleBasedParoleStatus
+    }  = useFetchRoleBasedParoleStatus();
 
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
@@ -134,7 +123,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                     <ReuseSelect
                         name="searchpayroleStatus"
                         label="प्यारोल स्थिति"
-                        options={roleBasedStatus[authState.role] || roleBasedStatus[authState.role_name]}
+                        options={roleBasedStatus}
                         control={control}
                         error={errors.searchpayroleStatus}
                     />

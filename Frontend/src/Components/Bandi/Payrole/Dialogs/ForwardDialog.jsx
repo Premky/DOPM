@@ -13,10 +13,11 @@ import { useForm, Controller } from "react-hook-form";
 
 import ReuseInput from "../../../ReuseableComponents/ReuseInput";
 import ReuseSelect from "../../../ReuseableComponents/ReuseSelect";
-import useFetchUserRoles from "../useApi/useFetchUserRoles";
-
+import useFetchUserRolesUsedInProcess from "../../Apis_to_fetch/useFetchUserRolesUsedInProcess";
+import { useAuth } from "../../../../Context/AuthContext";
 
 const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
+    const { state: authState } = useAuth();
     const {
         control,
         handleSubmit,
@@ -62,7 +63,11 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
             : `${ editingData?.bidesh_nagarik_address_details }, ${ editingData?.country_name_np }`;
 
     //   const muddaName = kaidimuddas?.[0]?.mudda_name || "";
-    const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRoles();
+    const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRolesUsedInProcess();
+    let customUserRoles;
+    if ( authState.role_name == 'clerk' ) {
+        customUserRoles = [{ value: 'office_admin', lable: 'कारागार प्रशासक' }];
+    }
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
@@ -73,13 +78,19 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     sx={{ mt: 1 }}
                     fullWidth
                     label="कैदी नाम र ठेगाना"
-                    value={`${ editingData?.bandi_name || "" }, ${ fullAddress }`}
+                    value={`${ editingData?.office_bandi_id || "" }, ${ editingData?.bandi_name || "" }, ${ fullAddress }`}
                     InputProps={{ readOnly: true }}
                 />
                 <ReuseSelect
                     name="role_id"
                     label="प्राप्तकर्ताको भुमिका"
-                    options={optUserRoles}
+                    options={
+                        authState.role_id <= 2 ? (
+                            optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
+                        ) : (
+                            optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
+                        )
+                    }
                     control={control}
                     required={true}
                 />
@@ -90,8 +101,8 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     control={control}
                     required={true}
                 />
-    
-                <Grid size={{xs:12}}>
+
+                <Grid size={{ xs: 12 }}>
                     <TextField
                         select
                         label="प्यारोल पास / फेल"

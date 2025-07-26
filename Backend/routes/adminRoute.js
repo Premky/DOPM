@@ -97,7 +97,7 @@ router.put("/update_branch_name/:id", async (req, res) => {
 router.get('/get_branch_name', async (req, res) => {
     const sql = `SELECT * FROM branch`;
     try {
-        const result = await query(sql);
+        const result = await pool.query(sql);
         return res.json({ Status: true, Result: result })
     } catch (err) {
         console.error("Database Query Error:", err);
@@ -105,7 +105,7 @@ router.get('/get_branch_name', async (req, res) => {
     }
 });
 
-router.delete('/delete_user/:id', async (req, res) => {
+router.delete('/delete_user1/:id', async (req, res) => {
     const { id } = req.params;
     console.log(id)
     // Validate the ID to ensure it's a valid format (e.g., an integer)

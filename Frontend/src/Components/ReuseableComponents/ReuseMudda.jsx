@@ -55,10 +55,10 @@ const ReuseMudda = ({ name, label, required, control, error, defaultValue, setVa
         <>
             <InputLabel id={name}>
                 <Grid container alignItems="center">
-                    <Grid xs={12} sm={6} md={6}>
+                    <Grid size={{xs:12, sm:6, md:6}}>
                         {label}
                     </Grid>
-                    <Grid xs={12} sm={6} md={6}>
+                    <Grid size={{xs:12, sm:6, md:6}}>
                         {required && <span style={{ color: 'red' }}>*</span>}
                     </Grid>
                 </Grid>
