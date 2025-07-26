@@ -6,6 +6,7 @@ import Darbandi from './Darbandi';
 const AllEmpTable = () => {
   const columns = [
     { field: "current_office_np", headerName: "कार्यालय" },
+    { field: "emp_type", headerName: "कर्मचारी प्रकार" },
     { field: "sanket_no", headerName: "क.स.नं." },
     { field: "level_name", headerName: "तह" },
     { field: "service_group", headerName: "सेवा समुह" },
@@ -24,7 +25,7 @@ const AllEmpTable = () => {
   ];
 
   const { records: empRecords, loading } = useAllEmployes();
-  // console.log(empRecords)
+  console.log(empRecords)
   const rows = empRecords.map((emp) => {
     const firstAppointment = emp.post_history?.find(
       (post) => post.jd_type === "नयाँ नियुक्ती"
@@ -41,6 +42,7 @@ const AllEmpTable = () => {
     const jd = lastPostEntry?.jd||''
     const kaaj_office_np = lastPostEntry?.kaaj_office_np||''
     const is_office_chief=lastPostEntry?.is_office_chief||''
+    // const emp_type=lastPostEntry?.emp_type||''
     let kaaj_office
     if(jd=='काज'){ kaaj_office=kaaj_office_np}
     return {
@@ -53,6 +55,8 @@ const AllEmpTable = () => {
       current_post,
       kaaj_office,
       is_office_chief,
+      emp_type:emp.emp_type,
+      
       
       service_group: emp.service_name_np && emp.group_name_np
         ? `${emp.service_name_np}/${emp.group_name_np}`
