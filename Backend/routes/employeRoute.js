@@ -420,20 +420,20 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
 
     try {
         const [[officeRow]] = await pool.query(
-            `SELECT district_id FROM offices WHERE id = ?`,
+            `SELECT id FROM offices WHERE id = ?`,
             [active_office]
         );
 
         if (!officeRow) return res.status(400).json({ Status: false, message: "Invalid office" });
 
-        const district_id = officeRow.district_id;
+        const office_id = officeRow.id;
 
         const [[countRow]] = await pool.query(
             `SELECT COUNT(*) AS count 
              FROM employees e 
              JOIN offices o ON o.id = e.current_office_id 
              WHERE e.emp_type = 'करार' AND o.district_id = ?`,
-            [district_id]
+            [office_id]
         );
 
         const nextCount = countRow.count + 1;
