@@ -71,11 +71,11 @@ const BandiTransferForm = () => {
             Swal.fire( 'त्रुटि!', error.message || 'सर्भर अनुरोध असफल भयो ।', 'error' );
         }
     };
-    const { records:bandi, optrecords:bandiOptions, loading:bandiLoading } = useFetchBandi(bandi_id);
+    const { records:bandi, optrecords:bandiOptions, loading:bandiLoading } = useFetchBandi();
+    // console.log(bandi)
     return (
         <>
             <Box>
-                
                     <form onSubmit={handleSubmit( onFormSubmit )}>
                         <Grid size={{ xs: 12 }}>
                             <ReuseSelect
@@ -130,7 +130,8 @@ const BandiTransferForm = () => {
                                 />
                                 {/* {bandi[0]?.bandi_type} */}
                             </Grid>
-                            {bandi[0]?.bandi_type == 'थुनुवा' && (
+                            
+                            {/* {bandi[0]?.bandi_type == 'थुनुवा' && ( */}
                                 <Grid size={{ xs: 2 }}>
                                     <ReuseSelect
                                         name="is_thunuwa_permission"
@@ -140,11 +141,12 @@ const BandiTransferForm = () => {
                                             {label:'छैन', value:'छैन'}
                                         ]}
                                         control={control}
-                                        required={true}
+                                        required={false}
                                         error={!!errors.is_thunuwa_permission}
                                     />
                                 </Grid>
-                            )}
+                            
+                            {/* )} {bandi[0]?.bandi_type} */}
                         </Grid>
 
                         <Grid>

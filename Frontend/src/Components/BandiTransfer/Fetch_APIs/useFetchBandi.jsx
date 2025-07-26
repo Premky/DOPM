@@ -16,6 +16,7 @@ const useFetchBandi = ( bandi_id ) => {
 
                 const response = await axios.get( `${ BASE_URL }/bandiTransfer/get_bandi_for_transfer`,
                     {
+                        params:{bandi_id},
                         withCredentials: true
                     } );
                 // console.log( response );

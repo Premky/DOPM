@@ -9,7 +9,7 @@ const query = promisify(con.query).bind(con);
 
 // PUT /assign_role
 router.get('/get_roles', async (req, res) => {
-  const sql = 'SELECT id, role_name  FROM user_roles';
+  const sql = 'SELECT id, role_name FROM user_roles';
   try{
     const [result] = await pool.query(sql);
     return res.json({ Status: true, Result: result, message: 'Roles fetched successfully.' });    

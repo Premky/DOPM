@@ -54,6 +54,8 @@ router.get('/get_bandi_for_transfer', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
     const active_user = req.user.id;
     const office_id = req.query.office_id;
+    const bandi_id=req.query.bandi_id;
+    // console.log("bandi_id:",bandi_id)
 
     // console.log(active_office,'active_office')
     let filters = 'bp.is_active = 1';
@@ -62,6 +64,10 @@ router.get('/get_bandi_for_transfer', verifyToken, async (req, res) => {
     if (active_office !== 1 && active_office !== 2) {
         filters += ' AND bp.current_office_id = ?';
         params.push(active_office);
+    }
+    if(bandi_id){
+        filters += ' AND bp.office_bandi_id =?';
+        params.push(bandi_id)
     }
 
     const sql = `
