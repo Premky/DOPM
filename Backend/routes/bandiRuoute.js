@@ -1897,7 +1897,7 @@ router.get( '/get_bandi_fine/:id', async ( req, res ) => {
     const sql = `
         SELECT bfd.*,
         ft.fine_name_np,
-    o.office_name_nep,
+    o.office_name_with_letter_address AS office_name_nep,
     nd.district_name_np
         FROM bandi_fine_details bfd
         LEFT JOIN fine_types ft ON bfd.fine_type_id=ft.id
