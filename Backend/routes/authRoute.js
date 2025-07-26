@@ -196,7 +196,7 @@ router.post( '/login', async ( req, res ) => {
 
     const fetchUserQuery = `
     SELECT DISTINCT u.*,
-      o.office_name_with_letter_address AS office_np, o.office_name_eng AS office_en,
+      o.office_name_with_letter_address AS office_np, o.letter_address AS office_en,
       o.id AS office_id, ut.usertype_en, ut.usertype_np, ur.id AS role_id, ur.role_name, b.branch_np
     FROM users u
     LEFT JOIN offices o ON u.office_id = o.id
