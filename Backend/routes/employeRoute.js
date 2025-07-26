@@ -437,7 +437,7 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
         );
 
         const nextCount = countRow.count + 1;
-        const sanket_no = `${id}-${nextCount}`;
+        const sanket_no = `${office_id}-${nextCount}`;
 
         res.json({ Status: true, sanket_no });
     } catch (error) {
