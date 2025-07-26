@@ -27,7 +27,7 @@ const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3);
+                    const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3 || a.office_categories_id == 1);
                     let formatted;
                     if(name_type='short'){
                         formatted = filtered.map((opt, index) => ({
