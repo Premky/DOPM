@@ -304,8 +304,8 @@ const BandiPersonForm = () => {
           </Grid>
           <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
             <Grid size={{ xs: 10, sm: 9, md: 8 }}>
-              {/* <ReuseDateField */}
-              <ReuseDatePickerBS
+              {/* <ReuseDatePickerBS */}
+              <ReuseDateField
                 name="dob"
                 label="जन्म मिति (वि.सं.)"
                 readonly={true}
@@ -597,7 +597,8 @@ const BandiPersonForm = () => {
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-          <ReuseDatePickerBs
+          {/* <ReuseDatePickerBs */}
+          <ReuseDateField
             name='hirasat_date_bs'
             label='थुना/कैद परेको मिती'
             placeholder={'YYYY-MM-DD'}
