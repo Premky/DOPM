@@ -24,7 +24,7 @@ const BandiTable = ( { bandi_id } ) => {
             if ( Status ) {
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
                     setFetchedBandies( Result[0] );
-                    // console.log( Result );
+                    // console.log( Result[0] );
                 } else {
                     console.log( 'No records found.' );
                     setFetchedBandies( [] );
@@ -108,7 +108,7 @@ const BandiTable = ( { bandi_id } ) => {
                 }}
             />
             <Grid item container spacing={2}>
-                <Grid container size={{xs:12}}>
+                <Grid container size={{ xs: 12 }}>
                     <Grid>
                         <h3>बन्दी विवरणः</h3>
                     </Grid>
@@ -118,7 +118,7 @@ const BandiTable = ( { bandi_id } ) => {
                     </Grid>
                 </Grid>
 
-                <Grid size={{xs:12}}>
+                <Grid size={{ xs: 12 }}>
                     <TableContainer>
                         <Table size='small' border={1}>
                             <TableBody>
@@ -156,9 +156,9 @@ const BandiTable = ( { bandi_id } ) => {
                                     <TableCell>{fetchedBandi.dob} ({fetchedBandi.current_age} वर्ष)</TableCell>
                                     <TableCell>वैवाहिक अवस्था</TableCell>
                                     <TableCell>
-                                        {fetchedBandi.married_status=='Unmarried' ? 'अविवाहित' :
-                                            fetchedBandi.married_status=='Married' ? 'विवाहित' :
-                                            fetchedBandi.married_status
+                                        {fetchedBandi.married_status == 'Unmarried' ? 'अविवाहित' :
+                                            fetchedBandi.married_status == 'Married' ? 'विवाहित' :
+                                                fetchedBandi.married_status
                                         }
                                     </TableCell>
                                 </TableRow>
@@ -167,6 +167,11 @@ const BandiTable = ( { bandi_id } ) => {
                                     <TableCell>{fetchedBandi.bandi_education}</TableCell>
                                     <TableCell>हुलिया</TableCell>
                                     <TableCell>{fetchedBandi.bandi_huliya}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell colSpan={4}>
+                                        {fetchedBandi.remarks}
+                                    </TableCell>
                                 </TableRow>
                                 {/* <TableRow>
                                 <TableCell>उचाई</TableCell>

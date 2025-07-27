@@ -16,7 +16,7 @@ import ReuseSelect from "../../../ReuseableComponents/ReuseSelect";
 import useFetchUserRolesUsedInProcess from "../../Apis_to_fetch/useFetchUserRolesUsedInProcess";
 import { useAuth } from "../../../../Context/AuthContext";
 
-const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
+const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     const { state: authState } = useAuth();
     const {
         control,
@@ -82,7 +82,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     InputProps={{ readOnly: true }}
                 />
                 <ReuseSelect
-                    name="role_id"
+                    name="to_role"
                     label="प्राप्तकर्ताको भुमिका"
                     options={
                         authState.role_id <= 2 ? (
@@ -95,14 +95,14 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     required={true}
                 />
 
-                <ReuseInput
+                {/* <ReuseInput
                     name="user_id"
                     label="नाम"
                     control={control}
                     required={true}
-                />
+                /> */}
 
-                <Grid size={{ xs: 12 }}>
+                {/* <Grid size={{ xs: 12 }}>
                     <TextField
                         select
                         label="प्यारोल पास / फेल"
@@ -117,7 +117,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                         <MenuItem value="छलफल">छलफल</MenuItem>
                         <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
                     </TextField>
-                </Grid>
+                </Grid> */}
 
                 <ReuseInput
                     name="remarks"
@@ -137,4 +137,4 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
     );
 };
 
-export default ForwardDialog;
+export default ForwardToKapraDialog;

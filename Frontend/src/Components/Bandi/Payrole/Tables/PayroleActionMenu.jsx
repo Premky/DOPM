@@ -4,7 +4,7 @@ import { pdf } from "@react-pdf/renderer";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import { useBaseURL } from "../../../../Context/BaseURLProvider";
 import { useAuth } from "../../../../Context/AuthContext";
-import ForwardDialog from "../Dialogs/ForwardDialog";
+import ForwardToKapraDialog from "../Dialogs/ForwardToKapraDialog";
 import Swal from "sweetalert2";
 import axios from "axios";
 
@@ -68,7 +68,7 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
 
   return (
     <>
-      <ForwardDialog
+      <ForwardToKapraDialog
         open={forwardModalOpen}
         onClose={() => setforwardModalOpen( false )}
         onSave={handleForwardSave}

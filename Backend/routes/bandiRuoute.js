@@ -546,6 +546,7 @@ const getBandiQuery = `
     b.married_status,
     b.photo_path,
     b.is_active,
+    b.remarks,
 
     -- Address
     ba.wardno,

@@ -13,7 +13,8 @@ const useFetchUserRolesUsedInProcess = ( bandi_id ) => {
         const fetchRecords = async () => {
             try {
 
-                const response = await axios.get( `${ BASE_URL }/public/get_in_process_user_roles`,
+                // const response = await axios.get( `${ BASE_URL }/public/get_in_process_user_roles`,
+                const response = await axios.get( `${ BASE_URL }/payrole/get_allowed_statuses`,
                     {
                         withCredentials: true
                     } );
@@ -24,11 +25,11 @@ const useFetchUserRolesUsedInProcess = ( bandi_id ) => {
                         const resultArray = Object.values( Result );
 
                         const formatted = resultArray.map( ( opt, index ) => ( {
-                            label: `${ opt.id }-${ opt.role_name_np }`,
-                            value: opt.role_name || index,  // fallback for value if id is missing
-                            id: opt.id || index  // fallback for value if id is missing
+                            label: `${ opt.id }-${ opt.payrole_status_name }`,
+                            value: opt.status_key || index,  // fallback for value if id is missing
+                            id: opt.ps_id  // fallback for value if id is missing
                         } ) );
-
+                        // console.log(formatted)
                         setOptRecords( formatted );
                         setRecords( resultArray );
                     } else {

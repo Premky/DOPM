@@ -116,15 +116,13 @@ const EmployeeForm = () => {
                 const ad = await bs2ad( watchAppointmentDateBs );
                 if ( ad ) setValue( "appointment_date_ad", ad );
             }
-            if(watchhajir_miti_bs && typeof watchhajir_miti_bs==='string'){
-                const ad = await bs2ad(watchhajir_miti_bs);
-                if(ad) setValue("hajir_miti_ad",ad);
+            if ( watchhajir_miti_bs && typeof watchhajir_miti_bs === 'string' ) {
+                const ad = await bs2ad( watchhajir_miti_bs );
+                if ( ad ) setValue( "hajir_miti_ad", ad );
             }
         };
         convertDate();
     }, [watchAppointmentDateBs, watchhajir_miti_bs] );
-
-
 
     return (
         <>
@@ -163,7 +161,6 @@ const EmployeeForm = () => {
                                         {sanketLoading ? 'जाँच गर्दै...' : sanketExists ? 'यो संकेत नं. पहिले नै प्रयोगमा छ।' : ''}
                                     </span>
                                 </Grid>
-
 
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseInput

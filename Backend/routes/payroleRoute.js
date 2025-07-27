@@ -374,7 +374,7 @@ router.get( '/get_payroles1', verifyToken, async ( req, res ) => {
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const userRole = req.user.role_name;
-    console.log(req.query)
+    console.log( req.query );
     const {
         searchOffice = 0,
         nationality = 0,
@@ -388,8 +388,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         mudda_group_id = '',
     } = req.query;
 
-    const [searchedStatusKeyRow]= await pool.query(`SELECT id FROM payrole_status WHERE status_key=?`,[searchpayroleStatus])    
-    const searchedStatusKey=searchedStatusKeyRow[0]
+    const [searchedStatusKeyRow] = await pool.query( `SELECT id FROM payrole_status WHERE status_key=?`, [searchpayroleStatus] );
+    const searchedStatusKey = searchedStatusKeyRow[0];
     // console.log(searchedStatusKey.id)
     // console.log( req.query );
     const page = parseInt( req.query.page ) || 0;
@@ -400,12 +400,12 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const roleMap = await getUserBasedStatusMap();
     let allowedStatuses = roleMap[userRole] ?? [];
 
-    if(allowedStatuses === 'all'){
-        const [allStatuses ] = await pool.query('SELECT id FROM payrole_status');
-        allowedStatuses=allStatuses.map(status=>status.id)
-    }    
+    if ( allowedStatuses === 'all' ) {
+        const [allStatuses] = await pool.query( 'SELECT id FROM payrole_status' );
+        allowedStatuses = allStatuses.map( status => status.id );
+    }
 
-console.log(allowedStatuses)
+    console.log( allowedStatuses );
     const params = [];
 
     // ✅ Payrole status filter
@@ -823,7 +823,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                 1, // status
                 payrole_no,
                 0,
-                user_role_id, 
+                user_role_id,
                 'Pending',
                 user_id,
                 active_office,
@@ -1062,7 +1062,7 @@ router.put( '/update_payrole1/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
+router.put( '/update_payrole2/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.id;
     const payrole_id = req.params.id;
@@ -1186,6 +1186,32 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user_id = req.user.id;
+    const reqData = req.body;
+    console.log( reqData );
+    const [to_status_role_id] = await pool.query( `
+        SELECT psr.role_id, psr.payrole_status_id
+        FROM payrole_status_roles psr
+        LEFT JOIN payrole_status ps ON psr.payrole_status_id=ps.id        
+        WHERE ps.status_key=?
+        `,[reqData.to_role]);
+    const status_id=to_status_role_id[0].payrole_status_id;
+    const role_id=to_status_role_id[0].role_id;
+    
+    let sql
+    let values
+    
+    sql=`UPDATE payroles SET user_role_id=?, status=?, updated_by=?, updated_at=? WHERE id=?`
+    values=[role_id, status_id, active_user_id, new Date(), req.payrole_id]
+    
+    try{
+        const [result] = await pool.query(sql,values)
+    }catch(error){
+        console.log(error)
+    }
+} );
 
 
 router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) => {
@@ -1504,11 +1530,12 @@ router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
     const user_role_id = req.user.role_id;
     try {
         const [result] = await pool.query( `
-            SELECT ur.id, ur.role_name_np, rsr.payrole_status_id, ps.payrole_status_name, ps.status_key
-            FROM payrole_status_roles rsr 
-            LEFT JOIN user_roles ur ON rsr.role_id=ur.id
-            LEFT JOIN payrole_status ps ON rsr.payrole_status_id=ps.id
-            WHERE rsr.role_id=?`, [user_role_id] );
+            SELECT ur.id, ur.role_name_np, psr.payrole_status_id, 
+            ps.payrole_status_name, ps.status_key, ps.id AS ps_id
+            FROM payrole_status_roles psr 
+            LEFT JOIN user_roles ur ON psr.role_id=ur.id
+            LEFT JOIN payrole_status ps ON psr.payrole_status_id=ps.id
+            WHERE psr.role_id=?`, [user_role_id] );
         res.status( 200 ).json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( 'GET Error:', err );
