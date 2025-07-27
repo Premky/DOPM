@@ -63,11 +63,28 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
         onClose();
     };
 
-
-
     //   const muddaName = kaidimuddas?.[0]?.mudda_name || "";
     const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRolesUsedInProcess();
-    const role_id = watch( "role_id" );
+    let customRoles;
+    if(authState.role_name=='clerk'){
+         customRoles = [
+            {value:"office_admin", label:"कारागार प्रशासक"}
+         ];
+    }
+    else if(authState.role_name=='office_admin'){
+         customRoles=[{value:"pending_supervisor", label:"विभागामा पेश"}]
+    } 
+    else if(authState.role_name=='pending_supervisor'){
+         customRoles = [
+            {value:"pending_admin", label:"पेश गर्नुहोस्"}
+         ];
+    }
+    // else if(authState.role_name=='pending_admin'){
+    //      customRoles = [
+    //         {value:"to_board", label:"प्यारोल शाखा"}
+    //      ];
+    // }
+    const role_id = watch("role_id");
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>पेश गर्नुहोस्:</DialogTitle>
@@ -81,18 +98,22 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     value={`${ editingData?.office_bandi_id || "" } | ${ editingData?.bandi_type || "" } ${ editingData?.bandi_name || "" }, `}
                     InputProps={{ readOnly: true }}
                 />
-                           
+
                 <ReuseSelect
                     name="to_status"
                     label='प्राप्तकर्ताको भुमिका'
                     options={
-                        authState.role_id <= 2 ? (
-                            optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
-                        ) : (
-                            optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
-                        )
+                        customRoles
+                        // authState.role_id <= 2 ? (
+                        //     optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
+                        // ) : (
+                        //     optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
+                        // )
+
                     }
-                    control={control}                    
+
+
+                    control={control}
                     required={true}
                 />
 

@@ -168,11 +168,13 @@ const BandiTable = ( { bandi_id } ) => {
                                     <TableCell>हुलिया</TableCell>
                                     <TableCell>{fetchedBandi.bandi_huliya}</TableCell>
                                 </TableRow>
-                                <TableRow>
-                                    <TableCell colSpan={4}>
-                                        {fetchedBandi.remarks}
-                                    </TableCell>
-                                </TableRow>
+                                {fetchedBandi.remarks && (
+                                    <TableRow>
+                                        <TableCell colSpan={4}>
+                                            {fetchedBandi.remarks}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                                 {/* <TableRow>
                                 <TableCell>उचाई</TableCell>
                                 <TableCell>{fetchedBandi.height}</TableCell>

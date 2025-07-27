@@ -435,8 +435,8 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
             `SELECT COUNT(*) AS count 
              FROM employees e 
              JOIN offices o ON o.id = e.current_office_id 
-             WHERE e.emp_type = 'करार' AND o.district_id = ?`,
-            [office_id]
+             WHERE e.emp_type = 'करार' AND o.id = ?`,
+            [active_office]
         );
 
         const nextCount = countRow.count + 1;

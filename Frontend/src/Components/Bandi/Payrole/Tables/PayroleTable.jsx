@@ -76,7 +76,7 @@ const PayroleTable = () => {
         setMenuAnchorEl( null );
         setMenuRowData( null );
     };
-    
+
     const handleCheckboxChange = async ( id, newValue ) => {
         // console.log( newValue );
         try {
@@ -89,7 +89,7 @@ const PayroleTable = () => {
             console.error( 'Update failed:', err );
         }
     };
-    
+
     return (
         <>
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
@@ -154,7 +154,7 @@ const PayroleTable = () => {
                                 <Fragment key={data.id}>
                                     <TableRow sx={rowStyle}>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            <Checkbox checked={data.is_checked} onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )} />                                            
+                                            <Checkbox checked={data.is_checked} onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )} />
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
                                             {index + 1}
