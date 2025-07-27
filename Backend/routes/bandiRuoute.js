@@ -3615,7 +3615,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
       ) brd ON brd.bandi_id = bp.id
 
       WHERE (
-        brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d')
+        brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') < STR_TO_DATE(?, '%Y-%m-%d')
       )
       AND o.office_categories_id = ?
       ${ officeFilterSql }
