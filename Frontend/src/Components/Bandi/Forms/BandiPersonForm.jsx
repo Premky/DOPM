@@ -308,6 +308,7 @@ const BandiPersonForm = () => {
               <ReuseDateField
                 name="dob"
                 label="जन्म मिति (वि.सं.)"
+                placeholder={"YYYY-MM-DD"}
                 readonly={true}
                 required={true}
                 control={control}
