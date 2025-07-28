@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useState, useTransition } from 'react';
 import axios from 'axios';
 import { useForm, Controller } from 'react-hook-form';
-import { Box, Button, Divider, Grid } from '@mui/material';
+import { Box, Button, Divider, Grid, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
 import Swal from 'sweetalert2';
 import NepaliDate from 'nepali-datetime';
 import sha256 from "crypto-js/sha256";
@@ -147,11 +147,36 @@ const CreateUser = () => {
             const { Status, Result, Error } = response.data;
 
             if ( Status ) {
+                console.log( "Result typeof:", typeof Result );
+                console.log( "Result is array:", Array.isArray( Result ) );
+                console.log( "Result content:", Result );
+
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
-                    console.log( Result );
-                    const formatted = Result.map( ( opt, index ) => ( {
-                        sn: `${ opt.id ?? `branch-${ index }` }`, // Unique key generation
-                        id: index + 1,
+                    // console.log( Result );
+                    // const formatted = Result.map( ( opt, index ) => {
+                    //     console.log( 'Mapping user:', opt );
+                    //     return {
+                    //         sn: `${ opt.id ?? `branch-${ index }` }`,
+                    //         id: index + 1,
+                    //         user_name: opt.user_name,
+                    //         user_login_id: opt.user_login_id,
+                    //         usertype: opt.usertype,
+                    //         usertype_en: opt.usertype_en,
+                    //         office_id: opt.office_id,
+                    //         office_np: opt.office_name_with_letter_address,
+                    //         branch_id: opt.branch_id,
+                    //         branch_np: opt.branch_np,
+                    //         is_active: opt.is_active ? 'छ' : 'छैन',
+                    //         lastpwchanged: opt.last_password_changed
+                    //             ? ( 90 - Math.ceil( Math.abs( new Date() - new Date( opt.last_password_changed ) ) / ( 1000 * 60 * 60 * 24 ) ) ) + ' days'
+                    //             : 'N/A',
+                    //     };
+                    // } );
+                    // // console.log(formatted)
+
+                    const formatted = Result[0].map( ( opt, index ) => ( {
+                        id: opt.id?? opt.user_id ?? opt.branch_id ?? opt.id ?? `user-${ index }`,
+                        sn: index + 1,
                         user_name: opt.user_name,
                         user_login_id: opt.user_login_id,
                         usertype: opt.usertype,
@@ -160,16 +185,14 @@ const CreateUser = () => {
                         office_np: opt.office_name_with_letter_address,
                         branch_id: opt.branch_id,
                         branch_np: opt.branch_np,
-                        is_active: opt.is_active ? 'छ' : 'छैन',
-                        lastpwchanged:
-                            ( 90 -
-                                Math.ceil(
-                                    Math.abs( new Date() - new Date( opt.last_password_changed ) ) /
-                                    ( 1000 * 60 * 60 * 24 )
-                                ) ) + ' days',
+                        is_active: opt.is_active ? "छ" : "छैन",
+                        lastpwchanged: opt.last_password_changed
+                            ? ( 90 - Math.ceil( Math.abs( new Date() - new Date( opt.last_password_changed ) ) / ( 1000 * 60 * 60 * 24 ) ) ) + " days"
+                            : "N/A",
                     } ) );
 
-
+                    console.log( "Formatted:", formatted );
+                    // console.log(Result[0])
                     setFormattedOptions( formatted );
                 } else {
                     console.log( 'No records found.' );
@@ -441,6 +464,31 @@ const CreateUser = () => {
                     onEdit={handleEdit}
                 // onDelete={deleteDialog}
                 />
+
+                {/* <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>सि.नं.</TableCell>
+                                <TableCell>कार्यालय</TableCell>
+                                <TableCell>नाम</TableCell>
+                                <TableCell>प्रकार</TableCell>
+                                <TableCell>शाखा</TableCell>
+                                <TableCell>सक्रय</TableCell>
+                                <TableCell>पासवर्ड परिवर्तन गर्न(बाँकी दिन)</TableCell>
+                                <TableCell>#</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+
+                            {formattedOptions.map( ( cb, index ) => (
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            ) )}
+                        </TableBody>
+                    </Table>
+                </TableContainer> */}
             </Box>
         </>
     );

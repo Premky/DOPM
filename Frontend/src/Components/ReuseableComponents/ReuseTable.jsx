@@ -27,6 +27,7 @@ const ReusableTable = ( {
   pageSizeOptions,
   page
 } ) => {
+  console.log(rows)
   // const [pageSize, setPageSize] = useState(10);
   const defaultPageSize = parseInt( localStorage.getItem( "pageSize" ) ) || 25;;
   const [paginationModel, setPaginationModel] = useState( {
