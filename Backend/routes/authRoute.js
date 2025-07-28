@@ -95,7 +95,7 @@ router.get( '/get_users', verifyToken, async ( req, res ) => {
     const sql = `
         SELECT 
             u.*, 
-            ur.role_name, 
+            ur.role_name AS usertype_en, 
             o.office_name_with_letter_address, 
             b.branch_np
         FROM users u
