@@ -92,7 +92,6 @@ router.get( '/get_users', verifyToken, async ( req, res ) => {
         filters = 'WHERE u.office_id = ?';
         params.push( active_office );
     }
-
     const sql = `
         SELECT 
             u.*, 
@@ -108,7 +107,7 @@ router.get( '/get_users', verifyToken, async ( req, res ) => {
     `;
 
     try {
-        const result = await query( sql, params );
+        const result = await pool.query( sql, params );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );

@@ -183,8 +183,9 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, current_date ).formattedDuration}
-                                            <br /> {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, current_date ).totalDays ).percentage}
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate(data.thuna_date_bs, current_date).formattedDuration}
+                                            <br /> {calculateBSDate( data.release_date_bs, current_date, 
+                                                    calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( current_date, data.release_date_bs ).formattedDuration}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.punarabedan_office_ch_no}</TableCell>
