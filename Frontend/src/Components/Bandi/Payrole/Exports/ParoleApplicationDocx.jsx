@@ -1,5 +1,4 @@
 // MyDocGenerator.js
-import React from "react";
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle  } from "docx";
 import { Button } from "@mui/material";
 import { calculateBSDate } from "../../../../../Utils/dateCalculator";
@@ -7,7 +6,7 @@ import NepaliDate from 'nepali-datetime';
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 export default function ParoleApplicationDocx( props ) {
     const { data } = props;
-    console.log( data );
+    // console.log( data );
     let address;
     if ( data?.nationality == 'विदेशी' ) {
         address = `${ data?.bidesh_nagarik_address_details },${ data?.country_name_np }`;
@@ -349,14 +348,14 @@ export default function ParoleApplicationDocx( props ) {
         const url = URL.createObjectURL( blob );
         const a = document.createElement( "a" );
         a.href = url;
-        a.download = "My_Document.docx";
+        a.download = `${data.bandi_name}.docx`;
         a.click();
         URL.revokeObjectURL( url );
     };
 
     return (
         <div>
-            <Button onClick={generateDocument}>निवेदन(अनुसूची-२)</Button>
+            <Button onClick={generateDocument} variant="outlined">निवेदन(अनुसूची-१)</Button>
         </div>
     );
 }

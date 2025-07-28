@@ -95,11 +95,11 @@ router.get( '/get_users', verifyToken, async ( req, res ) => {
     const sql = `
         SELECT 
             u.*, 
-            ut.usertype_en, 
+            ur.role_name, 
             o.office_name_with_letter_address, 
             b.branch_np
         FROM users u
-        LEFT JOIN usertypes ut ON u.usertype = ut.id
+        LEFT JOIN user_roles ur ON u.id = ur.id
         LEFT JOIN offices o ON u.office_id = o.id
         LEFT JOIN branch b ON u.branch_id = b.id
         ${ filters }

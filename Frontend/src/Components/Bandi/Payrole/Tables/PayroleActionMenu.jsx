@@ -9,6 +9,8 @@ import Swal from "sweetalert2";
 import axios from "axios";
 
 import PayroleApplicationDocx from "../Exports/ParoleApplicationDocx"
+import PayroleFileCoverDocx from "../Exports/PayroleFileCoverDocx";
+import PayroleNoPunrabedanDocx from "../Exports/PayroleNoPunrabedanDocx";
 
 const handleViewPayrole = async ( row ) => {
 
@@ -91,6 +93,8 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
       </a>
       
         <MenuItem><PayroleApplicationDocx data={data}/> </MenuItem>
+        <MenuItem><PayroleFileCoverDocx data={data}/> </MenuItem>
+        <MenuItem><PayroleNoPunrabedanDocx data={data}/> </MenuItem>
 
       {
         status === 2 && ( officeId === 1 || officeId === 2 ) && (
