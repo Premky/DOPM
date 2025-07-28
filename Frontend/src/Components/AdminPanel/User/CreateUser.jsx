@@ -100,8 +100,8 @@ const CreateUser = () => {
                 Swal.fire( {
                     title: 'आहा!',
                     text: 'रेकर्ड सफलतापूर्वक थपियो',
-                    // imageUrl: `/gif/funnySuccesslogo.gif`,
-                    imageUrl: `/gif/clap.gif`,
+                    imageUrl: `/gif/funnySuccesslogo.gif`,
+                    // imageUrl: `/gif/clap.gif`,
                     // imageUrl: `${ BASE_URL }/gif/funnySuccesslogo.gif`, // Use your custom GIF here
                     imageWidth: 200, // optional
                     imageHeight: 200, // optional
