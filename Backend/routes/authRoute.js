@@ -99,7 +99,7 @@ router.get( '/get_users', verifyToken, async ( req, res ) => {
             o.office_name_with_letter_address, 
             b.branch_np
         FROM users u
-        LEFT JOIN user_roles ur ON u.id = ur.id
+        LEFT JOIN user_roles ur ON u.role_id = ur.id
         LEFT JOIN offices o ON u.office_id = o.id
         LEFT JOIN branch b ON u.branch_id = b.id
         ${ filters }
