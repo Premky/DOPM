@@ -12,6 +12,8 @@ import useFetchPayroles from "../useApi/useFetchPayroles";
 import exportToExcel from "../../Exports/ExcelPayrole";
 import useFetchRoleBasedParoleStatus from "../useApi/useFetchRoleBasedParoleStatus";
 
+
+
 const PayroleTableFilters = ( { onChange } ) => {
     const { state: authState } = useAuth();
 
@@ -60,7 +62,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         searchchecked,
         searchis_checked,
     };
-    
+
     const memoFilters = useMemo( () => filters, [
         filters?.searchOffice,
         filters?.nationality,
@@ -102,9 +104,9 @@ const PayroleTableFilters = ( { onChange } ) => {
         searchis_checked,
     ] );
 
-    const { optrecords: roleBasedStatus, 
-            refetchRoleBasedParoleStatus
-    }  = useFetchRoleBasedParoleStatus();
+    const { optrecords: roleBasedStatus,
+        refetchRoleBasedParoleStatus
+    } = useFetchRoleBasedParoleStatus();
 
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
@@ -196,13 +198,6 @@ const PayroleTableFilters = ( { onChange } ) => {
                         Reset
                     </Button>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    {/* <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
-                        एक्सेल निर्यात
-                    </Button> */}
-                </Grid>
-
-
             </Grid>
         </form>
     );

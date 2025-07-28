@@ -32,9 +32,11 @@ import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import PayroleActionMenu from "./PayroleActionMenu";
 import exportToExcel from "../../Exports/ExcelPayrole";
 import useFetchPayroles from "../useApi/useFetchPayroles";
+import NepaliDate from 'nepali-datetime';
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
+    const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
     const navigate = useNavigate();
 
     // const [data, setData] = useState( [] );
@@ -181,8 +183,10 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( "2081-03-01", data.thuna_date_bs ).formattedDuration}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.release_date_bs, "2081-03-01" ).formattedDuration}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, current_date ).formattedDuration}
+                                            <br /> {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, current_date ).totalDays ).percentage}
+                                        </TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( current_date, data.release_date_bs ).formattedDuration}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.punarabedan_office_ch_no}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.fine_summary}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>

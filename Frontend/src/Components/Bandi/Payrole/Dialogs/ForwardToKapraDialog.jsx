@@ -15,6 +15,7 @@ import ReuseInput from "../../../ReuseableComponents/ReuseInput";
 import ReuseSelect from "../../../ReuseableComponents/ReuseSelect";
 import useFetchUserRolesUsedInProcess from "../../Apis_to_fetch/useFetchUserRolesUsedInProcess";
 import { useAuth } from "../../../../Context/AuthContext";
+import useFetchAllowedActions from "../../Apis_to_fetch/useFetchAllowedActions";
 
 const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     const { state: authState } = useAuth();
@@ -54,9 +55,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
         onClose();
     };
 
-    const nationality_id = watch( "nationality_id" );
-    const province_id = watch( "province_id" );
-    const district_id = watch( "district_id" );
+
     const fullAddress =
         editingData?.nationality === "स्वदेशी"
             ? `${ editingData?.city_name_np }-${ editingData?.wardno }, ${ editingData?.district_name_np }, ${ editingData?.state_name_np }, ${ editingData?.country_name_np }`
@@ -64,9 +63,14 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
 
     //   const muddaName = kaidimuddas?.[0]?.mudda_name || "";
     const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRolesUsedInProcess();
+    const { records: userActions, optrecords: optUserActions, loading: userActionsLoading } = useFetchAllowedActions(editingData?.payrole_status);
+
+    // console.log( optUserRoles );
     let customUserRoles;
     if ( authState.role_name == 'clerk' ) {
         customUserRoles = [{ value: 'office_admin', lable: 'कारागार प्रशासक' }];
+    } else if ( authState.role_name == 'office_admin' ) {
+        customUserRoles = [{ value: 'supervisor', lable: 'विभागमा पेश गर्नुहोस्' }];
     }
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -84,12 +88,12 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
                 <ReuseSelect
                     name="to_role"
                     label="प्राप्तकर्ताको भुमिका"
-                    options={
-                        authState.role_id <= 2 ? (
-                            optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
-                        ) : (
-                            optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
-                        )
+                    options={optUserActions
+                        // authState.role_id <= 2 ? (
+                        //     optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
+                        // ) : (
+                        //     optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
+                        // )
                     }
                     control={control}
                     required={true}

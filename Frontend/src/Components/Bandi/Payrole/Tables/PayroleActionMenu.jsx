@@ -8,6 +8,8 @@ import ForwardToKapraDialog from "../Dialogs/ForwardToKapraDialog";
 import Swal from "sweetalert2";
 import axios from "axios";
 
+import PayroleApplicationDocx from "../Exports/ParoleApplicationDocx"
+
 const handleViewPayrole = async ( row ) => {
 
   const doc = <BandiFullReportPDF bandiData={row} />;
@@ -51,20 +53,22 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
   };
 
   const handleForwardSave = async ( updatedData ) => {
-        // console.log(updatedData)
-        try {
-            await axios.put(
-                `${ BASE_URL }/payrole/update_payrole/${ updatedData.payrole_id }`,
-                updatedData,
-                { withCredentials: true } // ✅ Fix: put this inside an object
-            );
-            refetchPayrole();
-            Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
-        } catch ( err ) {
-            console.error( err );
-            Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
-        }
-    };
+    // console.log(updatedData)
+    try {
+      await axios.put(
+        `${ BASE_URL }/payrole/update_payrole/${ updatedData.payrole_id }`,
+        updatedData,
+        { withCredentials: true } // ✅ Fix: put this inside an object
+      );
+      // refetchPayrole();
+      Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+    } catch ( err ) {
+      console.error( err );
+      Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+    }
+  };
+
+  
 
   return (
     <>
@@ -82,8 +86,11 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         rel="noopener noreferrer"
         style={{ textDecoration: "none", color: "inherit" }}
       >
-        <MenuItem>विवरण हेर्नुहोस्</MenuItem>
+        <MenuItem>विवरण हेर्नुहोस् </MenuItem>
+        {/* <MenuItem>{data.payrole_status}</MenuItem> */}
       </a>
+      
+        <MenuItem><PayroleApplicationDocx data={data}/> </MenuItem>
 
       {
         status === 2 && ( officeId === 1 || officeId === 2 ) && (
@@ -111,29 +118,27 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
       }
 
       {
-        authState.role_name === "office_admin" && ( <>
-          {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
+        authState.role_name === "office_admin" ? ( <>
+          {/* <MenuItem >{authState.payrole_status}</MenuItem> */}
           {( data.status_id == 10 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 11 ) ? ( <>
             <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
-          </> ) : ( data.status_id < 10 ) &&
+          </> ) : ( data.payrole_status == 10 ) &&
           ( <>
             <MenuItem onClick={handleForward}>Forward</MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
           </> )}
-        </> )
-      }
-
-
-
-
-
-      {
-        status === 1 && officeId !== 1 && officeId !== 2 && (
-          <MenuItem onClick={handleForward}>DOPM मा पठाउनुहोस्</MenuItem>
+        </> ) : (
+          authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? ( <>
+            <MenuItem onClick={handleForward}>Forward</MenuItem>
+            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+          </> ) : ( <>
+          </> )
         )
       }
+
+
     </>
   );
 };

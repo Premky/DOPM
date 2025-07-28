@@ -169,208 +169,6 @@ const upload = multer( {
     limits: { fileSize: 1 * 1024 * 1024 },
 } );
 
-router.get( '/get_payroles1', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const searchOffice = req.query.searchOffice || 0;
-    const nationality = req.query.nationality || 0;
-    const searchpayroleStatus = req.query.searchpayroleStatus || 0;
-    const searchpyarole_rakhan_upayukat = req.query.searchpyarole_rakhan_upayukat || 0;
-    const searchpayrole_no_id = req.query.searchpayrole_no_id || 0;
-    const searchmudda_id = req.query.searchmudda_id || 0;
-    const searchbandi_name = req.query.searchbandi_name || 0;
-    const searchchecked = req.query.searchchecked || 0;
-    const searchis_checked = req.query.searchis_checked || 0;
-
-
-    const page = parseInt( req.query.page ) || 0;
-    const limit = parseInt( req.query.limit ) || 25;
-    const offset = page * limit;
-
-    let baseWhere = ` WHERE 1=1 `;
-    const userRole = req.user.role_name;
-    const allowedStatuses = userBasedStatusMap[userRole] ?? [];
-
-    if ( searchpayroleStatus ) {
-        const status = Number( searchpayroleStatus );
-        if ( allowedStatuses === 'all' || allowedStatuses.includes( status ) ) {
-            baseWhere += ` AND p.status = ? `;
-            params.push( status );
-        } else {
-            // Block access to unauthorized status
-            return res.status( 403 ).json( {
-                Status: false,
-                Error: `You are not authorized to view payroles with status ${ status }`,
-            } );
-        }
-    } else {
-        if ( allowedStatuses !== 'all' ) {
-            const statusList = allowedStatuses.join( ',' );
-            baseWhere += ` AND p.status IN (${ statusList }) `;
-        }
-    }
-
-    if ( searchOffice && searchOffice !== '0' ) {
-        baseWhere += ` AND bp.current_office_id = ? `;
-        params.push( searchOffice );
-    } else if ( active_office !== 1 && active_office !== 2 ) {
-        baseWhere += ` AND bp.current_office_id = ? `;
-        params.push( active_office );
-    }
-
-    if ( searchbandi_name && searchbandi_name !== '0' ) {
-        baseWhere += ` AND bp.bandi_name LIKE ? `;
-        params.push( `%${ searchbandi_name }%` );
-    }
-
-
-    if ( searchpyarole_rakhan_upayukat ) {
-        baseWhere += `AND pr.pyarole_rakhan_upayukat= '${ searchpyarole_rakhan_upayukat }' `;
-    }
-
-    if ( nationality ) {
-        // console.log(nationality)
-        if ( baseWhere ) {
-            baseWhere += ` AND bp.nationality = '${ nationality }'`;  // Note quotes for string
-        } else {
-            baseWhere += `AND bp.nationality = '${ nationality }'`;
-        }
-    }
-
-    try {
-        // STEP 1: Get paginated bandi IDs
-        const idQuery = `SELECT bp.id FROM bandi_person bp 
-        LEFT JOIN payroles p ON bp.id=p.bandi_id 
-        LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-        ${ baseWhere } ORDER BY bp.id DESC LIMIT ? OFFSET ?`;
-
-        const [idRows] = await pool.query( idQuery, [limit, offset] );
-
-        const bandiIds = idRows.map( row => row.id );
-        // console.log('bandi_id:', bandiIds)
-        if ( bandiIds.length === 0 ) {
-            return res.json( { Status: true, Result: [], TotalCount: 0 } );
-        }
-
-        // STEP 2: Get total count
-        const countSQL = `SELECT COUNT(*) AS total FROM bandi_person bp 
-            LEFT JOIN payroles p ON bp.id=p.bandi_id 
-            LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-            ${ baseWhere }`;
-        const [countResult] = await pool.query( countSQL );
-        const totalCount = countResult[0].total;
-
-        // STEP 3: Get full records for selected bandis
-        const placeholders = bandiIds.map( () => '?' ).join( ',' );
-        const fullQuery = `
-            SELECT 
-                bp.id AS bandi_id,
-                bp.*,
-                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
-                ba.wardno,
-                ba.bidesh_nagarik_address_details,
-                nc.country_name_np,
-                ns.state_name_np,
-                nd.district_name_np,
-                nci.city_name_np,
-                bmd_combined.mudda_id,
-                bmd_combined.mudda_name,
-                bmd_combined.is_main_mudda,
-                bmd_combined.is_last_mudda,
-                bmd_combined.office_name_with_letter_address,
-                bmd_combined.vadi,
-                bmd_combined.mudda_phesala_antim_office_date,
-                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
-                bkd.thuna_date_bs, bkd.release_date_bs,
-                p.id AS payrole_id,
-                p.status,
-                p.status AS payrole_status,
-                pr.id AS pr_id,
-                pr.is_checked,
-                pr.pyarole_rakhan_upayukat,
-                pr.dopmremark,
-                pm.mudda_name
-
-            FROM bandi_person bp
-            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
-            LEFT JOIN np_district nd ON ba.district_id = nd.did
-            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
-            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-            LEFT JOIN payroles p ON bp.id = p.bandi_id
-            LEFT JOIN payrole_reviews pr ON p.id=pr.payrole_id
-            LEFT JOIN muddas pm ON p.payrole_mudda_id=pm.id
-            LEFT JOIN (
-                SELECT 
-                    bmd.bandi_id,
-                    bmd.mudda_id,
-                    bmd.is_main_mudda,
-                    bmd.is_last_mudda,
-                    m.mudda_name,
-                    bmd.vadi,
-                    bmd.mudda_phesala_antim_office_date,
-                    o.office_name_with_letter_address
-                FROM bandi_mudda_details bmd
-                LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
-            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
-            WHERE bp.id IN (${ placeholders })
-            ORDER BY bp.id DESC
-        `;
-
-        // console.log( fullQuery );
-
-        const [fullRows] = await pool.query( fullQuery, bandiIds );
-        // console.log( fullRows );
-        // STEP 4: Group muddas under each bandi
-        const grouped = {};
-        fullRows.forEach( row => {
-            const {
-                bandi_id,
-                mudda_id,
-                mudda_name,
-                is_main_mudda,
-                is_last_mudda,
-                office_name_with_letter_address,
-                vadi,
-                mudda_phesala_antim_office_date,
-                ...bandiData
-            } = row;
-
-            if ( !grouped[bandi_id] ) {
-                grouped[bandi_id] = {
-                    ...bandiData,
-                    bandi_id,
-                    muddas: []
-                };
-            }
-
-            if ( mudda_id ) {
-                grouped[bandi_id].muddas.push( {
-                    mudda_id,
-                    mudda_name,
-                    is_main_mudda,
-                    is_last_mudda,
-                    office_name_with_letter_address,
-                    vadi,
-                    mudda_phesala_antim_office_date
-                } );
-            }
-        } );
-
-        // console.log(Object.values(grouped))
-
-        return res.json( {
-            Status: true,
-            Result: Object.values( grouped ),
-            TotalCount: totalCount
-        } );
-    } catch ( err ) {
-        console.error( 'Query Error:', err );
-        return res.json( { Status: false, Error: 'Query Error' } );
-    }
-} );
-
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const userRole = req.user.role_name;
@@ -544,7 +342,12 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 p.pyarole_rakhan_upayukat,
                 p.dopm_remarks,
                 pm.mudda_name AS payrole_mudda_name,
-                o.letter_address
+                o.letter_address,
+                
+                bpdo.office_name_with_letter_address AS punarabedan_office,
+                bpd.punarabedan_office_ch_no,
+                bpd.punarabedan_office_date
+
 
             FROM payroles p
             LEFT JOIN bandi_person bp ON p.bandi_id=bp.id
@@ -557,6 +360,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN bandi_release_details brd ON bp.id = brd.bandi_id       
             LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id
             LEFT JOIN offices o ON bp.current_office_id = o.id
+            LEFT JOIN bandi_punarabedan_details bpd ON bp.id=bpd.bandi_id
+            LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
             
             LEFT JOIN (
                 SELECT 
@@ -571,7 +376,35 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 FROM bandi_mudda_details bmd
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
                 LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
-            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+            ) AS bmd_xcombined ON bp.id = bmd_xcombined.bandi_id
+
+            LEFT JOIN (
+                    SELECT *
+                    FROM (
+                        SELECT 
+                            bmd.bandi_id,
+                            bmd.mudda_id,
+                            bmd.is_main_mudda,
+                            bmd.is_last_mudda,
+                            m.mudda_name,
+                            bmd.vadi,
+                            bmd.mudda_phesala_antim_office_date,
+                            o.office_name_with_letter_address,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY bmd.bandi_id 
+                                ORDER BY 
+                                    (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) DESC,
+                                    bmd.is_main_mudda DESC,
+                                    bmd.is_last_mudda DESC,
+                                    bmd.id DESC
+                            ) AS rn
+                        FROM bandi_mudda_details bmd
+                        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                        LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+                    ) ranked
+                    WHERE ranked.rn = 1
+                ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
@@ -716,7 +549,7 @@ router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
+router.get( '/get_bandi_name_for_select1/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `SELECT bp.*,bp.id AS bandi_id, bp.id AS bandi_office_id, m.mudda_name from bandi_person bp
                 LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
@@ -835,7 +668,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                     bandi_id, office_bandi_id, payrole_entry_date, payrole_reason,
                     other_details, remark, status, payrole_no_id, is_checked,
                     user_role_id, is_completed, created_by, created_office, updated_office
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
             const [result] = await connection.query( sql, values );
@@ -1196,20 +1029,23 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
         FROM payrole_status_roles psr
         LEFT JOIN payrole_status ps ON psr.payrole_status_id=ps.id        
         WHERE ps.status_key=?
-        `,[reqData.to_role]);
-    const status_id=to_status_role_id[0].payrole_status_id;
-    const role_id=to_status_role_id[0].role_id;
-    
-    let sql
-    let values
-    
-    sql=`UPDATE payroles SET user_role_id=?, status=?, updated_by=?, updated_at=? WHERE id=?`
-    values=[role_id, status_id, active_user_id, new Date(), req.payrole_id]
-    
-    try{
-        const [result] = await pool.query(sql,values)
-    }catch(error){
-        console.log(error)
+        `, [reqData.to_role] );
+    const status_id = to_status_role_id[0].payrole_status_id;
+    const role_id = to_status_role_id[0].role_id;
+
+    let sql;
+    let values;
+
+    sql = `UPDATE payroles SET user_role_id=?, status=?, updated_by=?, updated_at=? WHERE id=?`;
+    values = [role_id, status_id, active_user_id, new Date(), reqData.payrole_id];
+
+    try {
+        const [result] = await pool.query( sql, values );
+
+        res.json( { status: true, message: "Payrole updated successfully", result } );
+    } catch ( error ) {
+        console.log( error );
+        res.status( 500 ).json( { status: false, message: "Server error", error } );
     }
 } );
 
@@ -1535,7 +1371,29 @@ router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
             FROM payrole_status_roles psr 
             LEFT JOIN user_roles ur ON psr.role_id=ur.id
             LEFT JOIN payrole_status ps ON psr.payrole_status_id=ps.id
-            WHERE psr.role_id=?`, [user_role_id] );
+            WHERE psr.role_id=?`
+            , [user_role_id] );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'GET Error:', err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
+router.get( '/get_allowed_actions', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_role_id = req.user.role_id;
+    const payrole_status_id = req.query.payrole_status_id;
+
+    try {
+        const [result] = await pool.query( `
+            SELECT ur.id, ur.role_name_np, psa.payrole_status_id, 
+            ps.payrole_status_name, ps.status_key, ps.id AS ps_id
+            FROM payrole_status_actions psa 
+            LEFT JOIN user_roles ur ON psa.role_id=ur.id
+            LEFT JOIN payrole_status ps ON psa.payrole_status_id=ps.id
+            WHERE psa.role_id=? AND psa.current_payrole_status_id IS NULL OR psa.current_payrole_status_id=?
+            `
+            , [user_role_id, payrole_status_id] );
         res.status( 200 ).json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( 'GET Error:', err );

@@ -105,7 +105,7 @@ const ReusableBandiTable = ( {
         const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
         saveAs( blob, 'bandi_records.xlsx' );
     };
-// console.log(paginatedRows);
+    // console.log(paginatedRows);
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -161,7 +161,7 @@ const ReusableBandiTable = ( {
                                             {page * rowsPerPage + bandiIndex + 1}
                                         </TableCell>
                                     )}
-                                    
+
                                     {muddaIndex === 0 && columns.map( col => {
                                         const value = bandi[col.field];
                                         return (
@@ -191,7 +191,16 @@ const ReusableBandiTable = ( {
 
                                     {muddaIndex === 0 && (
                                         <TableCell rowSpan={rowSpan} align="center">
-                                            {showView && <Button variant="outlined" size="small" color="primary" onClick={() => onView?.( bandi )} style={{ marginRight: '5px' }}>View</Button>}
+                                            <a
+                                                href={`/bandi/view_saved_record/${   bandi.id }`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{ textDecoration: "none", color: "inherit" }}
+                                            >      
+                                            <Button variant="outlined" size="small" color="primary">VIEW</Button>
+                                            </a>
+                                                {/* {showView && <Button variant="outlined" size="small" color="primary" onClick={() => onView?.( bandi )} style={{ marginRight: '5px' }}>View</Button>} */}
+                                            {/* {showView && <Button variant="outlined" size="small" color="primary" onClick={() => onView?.( bandi )} style={{ marginRight: '5px' }}>View</Button>} */}
                                             {showEdit && <Button variant="outlined" size="small" color="secondary" onClick={() => onEdit?.( bandi )} style={{ marginRight: '5px' }}>Edit</Button>}
                                             {showDelete && <Button variant="outlined" size="small" color="error" onClick={() => onDelete?.( bandi )}>Delete</Button>}
                                         </TableCell>

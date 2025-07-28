@@ -7,7 +7,7 @@ export const menuAccess = {
     office_admin: [
       '/payrole/payrole_client_check',
     ],
-    jr_officer: [
+    supervisor: [
       '/payrole/payrole_jr_check',
     ],
     sr_officer: [
