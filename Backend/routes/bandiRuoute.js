@@ -286,7 +286,7 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
 
 
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
     const data = req.body;
@@ -323,6 +323,13 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             mudda_no: req.body[`mudda_no_${ i }`],
             is_last: req.body[`is_last_mudda_${ i }`],
             is_main: req.body[`is_main_mudda_${ i }`],
+            hirasat_years: req.body[`hirasat_years_${ i }`],
+            hirasat_months: req.body[`hirasat_months_${ i }`],
+            hirasat_days: req.body[`hirasat_days_${ i }`],
+            total_kaid_duration: req.body[`total_kaid_duration_${ i }`],
+            thuna_date_bs: req.body[`thuna_date_bs_${ i }`],
+            release_date_bs: req.body[`release_date_bs_${ i }`],
+            is_life_time: req.body[`is_life_time_${ i }`],
             condition: req.body[`mudda_condition_${ i }`],
             district: req.body[`mudda_district_${ i }`],
             office: req.body[`mudda_office_${ i }`],
@@ -402,7 +409,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
 
 router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     let connection;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const current_office_id = req.user.office_id;
 
     const {
@@ -478,7 +485,7 @@ router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
 
 router.post( '/create_bandi_fine', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const data = req.body;
 
     let connection;
@@ -1053,8 +1060,7 @@ router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
 
 router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    // console.log(active_office)
-    // const user_id = req.user.id;
+    // console.log(active_office)    
     let sql = '';
     if ( active_office <= 2 ) {
         sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id,
@@ -1258,7 +1264,7 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
         `, [
             data.bandi_name, data.gender, data.dob, dob_ad, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
-            req.user.id, id
+            req.user.username, id
         ] );
         console.log( result );
         res.json( { Status: true, message: "Updated successfully" } );
@@ -1270,7 +1276,7 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
 
 router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
 
     const {
@@ -1332,7 +1338,7 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
 
 router.post( '/create_bandi_address/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     // const id = req.params.id;
 
     const {
@@ -1411,7 +1417,7 @@ router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
 
 router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
 
     const {
@@ -1523,7 +1529,7 @@ router.get( '/get_bandi_family/:id', async ( req, res ) => {
 
 router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const { bandi_id, relation_np, relative_name, relative_address, contact_no } = req.body;
 
     let connection;
@@ -1565,7 +1571,7 @@ router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
 
 router.put( '/update_bandi_family/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
     const { relation_np, relative_name, relative_address, contact_no, is_dependent, dob } = req.body;
 
@@ -1633,7 +1639,7 @@ router.get( '/get_bandi_id_card/:id', async ( req, res ) => {
 
 router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
 
     const { bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date } = req.body;
 
@@ -1674,7 +1680,7 @@ router.post( '/create_bandi_IdCard', verifyToken, async ( req, res ) => {
 
 router.put( '/update_bandi_IdCard/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
     // console.log(id)
     const { card_type_id, card_no, card_name, card_issue_district, card_issue_date } = req.body;
@@ -1725,6 +1731,8 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
 
     const { bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
         mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+        hirasat_years, hirasat_months, hirasat_days,
+        thuna_date_bs, release_date_bs, is_life_time,
         is_main_mudda, is_last_mudda
     } = req.body;
 
@@ -1737,6 +1745,8 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
         const values = [
             bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
             mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+            hirasat_years, hirasat_months, hirasat_days,
+            thuna_date_bs, release_date_bs, is_life_time,
             is_main_mudda, is_last_mudda,
             user_id, user_id, active_office
         ];
@@ -1745,19 +1755,22 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
             INSERT INTO bandi_mudda_details (
                 bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
                 mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+                hirasat_years, hirasat_months, hirasat_days,
+                thuna_date_bs, release_date_bs, is_life_time,
                 is_main_mudda, is_last_mudda, 
                 created_by, updated_by, current_office_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
         // const [result] = await pool.query( sql, [values] );
         // await commitAsync(); // Commit the transaction
         const [result] = await connection.query( sql, values );
+
+        await connection.commit();
         return res.json( {
             // Result: bandi_id,
             Status: true,
             message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
         } );
-
     } catch ( error ) {
         // await rollbackAsync(); // Rollback the transaction if error occurs
         await connection.rollback();
@@ -1775,7 +1788,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
 
 router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
 
     const {
@@ -1787,6 +1800,8 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
         mudda_phesala_antim_office_id,
         mudda_phesala_antim_office_district,
         mudda_phesala_antim_office_date,
+        hirasat_years, hirasat_months, hirasat_days,
+        thuna_date_bs, release_date_bs, is_life_time,
         is_main_mudda,
         is_last_mudda
     } = req.body;
@@ -1800,6 +1815,8 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             UPDATE bandi_mudda_details 
             SET mudda_id=?, mudda_no=?, mudda_condition=?, vadi=?, mudda_phesala_antim_office_id=?,
                 mudda_phesala_antim_office_district=?, mudda_phesala_antim_office_date=?,
+                hirasat_years=?, hirasat_months=?, hirasat_days=?, 
+                thuna_date_bs=?, release_date_bs=?, is_life_time=?,
                 is_main_mudda=?, is_last_mudda=? 
             WHERE id = ?
         `;
@@ -1812,12 +1829,25 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             mudda_phesala_antim_office_id,
             mudda_phesala_antim_office_district,
             mudda_phesala_antim_office_date,
+            hirasat_years, hirasat_months, hirasat_days,
+            thuna_date_bs, release_date_bs, is_life_time,
             is_main_mudda,
             is_last_mudda,
             id
         ];
 
         await connection.query( sql, values );
+
+        const kaidDetailsSql = `
+            UPDATE bandi_kaid_details
+            SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
+            thuna_date_bs = ?, release_date_bs = ?, is_life_time = ?,
+            updated_by = ?, updated_at=?, current_office_id = ? WHERE bandi_id=?`;
+        const kaidDetailValue = [hirasat_years, hirasat_months, hirasat_days,
+            thuna_date_bs, release_date_bs, is_life_time, 1, new Date(), active_office, bandi_id];
+        if ( is_main_mudda ) {
+            await connection.query( kaidDetailsSql, kaidDetailValue );
+        }
         await connection.commit();
 
         return res.json( {
@@ -1923,7 +1953,7 @@ router.get( '/get_bandi_fine/:id', async ( req, res ) => {
 router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
         deposit_amount, district_name_np, fine_type
@@ -2000,7 +2030,7 @@ router.get( '/get_bandi_punrabedn/:id', async ( req, res ) => {
 router.put( '/update_bandi_punrabedn/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         punarabedan_office_id, punarabedan_office_district, punarabedan_office_ch_no, punarabedan_office_date
     } = req.body;
@@ -2024,7 +2054,7 @@ router.put( '/update_bandi_punrabedn/:id', verifyToken, async ( req, res ) => {
 
 router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     let connection;
     try {
         connection = await pool.getConnection();
@@ -2092,7 +2122,7 @@ router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
 
 router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const disabilityId = req.params.id;
     let connection;
     try {
@@ -2133,7 +2163,7 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
 
 router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     let connection;
     try {
         // console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
@@ -2200,7 +2230,7 @@ router.get( '/get_bandi_disability/:id', async ( req, res ) => {
 
 router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const disabilityId = req.params.id;
 
     let connection;
@@ -2241,7 +2271,7 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
 
 router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
 
     let connection;
     try {
@@ -2311,7 +2341,7 @@ router.get( '/get_bandi_contact_person/:id', async ( req, res ) => {
 
 router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const contactId = req.params.id;
 
     let connection;
@@ -2354,7 +2384,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
 //
 router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const status_id = 12;
     let connection;
     try {
@@ -2402,7 +2432,7 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
 
 router.post( '/create_bandi_transfer_request', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const data = req.body.bandi_transfer_details?.[0];
     let connection;
     try {
@@ -2485,7 +2515,7 @@ router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
 //
 router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const transfer_id = req.params.id;
 
     let connection;
@@ -2534,7 +2564,7 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
 
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         bandi_id, payrole_no, mudda_id, payrole_count_date, payrole_entry_date, other_details,
         payrole_reason, payrole_remarks, payrole_niranay_no, payrole_decision_date,
@@ -2610,7 +2640,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
 
 router.get( '/get_payroles/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
 
     let sql;
 
@@ -2648,7 +2678,7 @@ SELECT * FROM(
 
 router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
 
     try {
         const baseQuery = `
@@ -2688,7 +2718,7 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
 
 router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         dopmremark,
         pyarole_rakhan_upayukat,
@@ -2791,7 +2821,7 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
 
 router.put( "/update_payrole_decision/:id", verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
 
     const {
         bandi_id,
@@ -2965,7 +2995,7 @@ router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) =>
     const id = req.params.id;
     console.log( 'payrole_id', id );
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         is_checked
     } = req.body;
@@ -2989,7 +3019,7 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
     console.log( 'payrole_id', id );
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const { value } = req.body;
     console.log( 'dopmremark', value );
     console.log( req.body );
@@ -3008,7 +3038,7 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
 
 router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         payrol_id,
         hajir_current_date,
@@ -3665,7 +3695,7 @@ function extractInternalAdminData( reqBody, is_active, user_id, active_office ) 
 
 
 router.post( "/add_internal_admin", verifyToken, async ( req, res ) => {
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const office_id = req.user.office_id;
     const { is_active } = req.body;
     const isActive = is_active ? is_active : 1;
@@ -3703,7 +3733,7 @@ router.post( "/add_internal_admin", verifyToken, async ( req, res ) => {
 
 router.get( "/get_all_internal_admin", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const subidha_id = req.query.subidha_id;
     console.log( 'subidhaid', subidha_id );
     let baseSql = `WITH prioritized_mudda AS (
@@ -3794,7 +3824,7 @@ LEFT JOIN prioritized_mudda pm ON pm.bandi_id = bp.id AND pm.rn = 1
 
 router.put( "/update_internal_admin1/:id", verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
     try {
         await beginTransactionAsync();
@@ -3818,7 +3848,7 @@ router.put( "/update_internal_admin1/:id", verifyToken, async ( req, res ) => {
 } );
 
 router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const active_office = req.user.office_id;
     const created_at = new Date();
     // console.log(req.body)
@@ -4381,7 +4411,7 @@ ORDER BY rgp.reason_id, rgp.gender, rgp.period;
 } );
 
 router.post( '/create_mudda', verifyToken, async ( req, res ) => {
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const office_id = req.user.office_id;
     const data = req.body;
 
