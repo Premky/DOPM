@@ -52,7 +52,7 @@ import {
 
 router.get('/get_bandi_for_transfer', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const active_user = req.user.id;
+    const user_id = req.user.username;
     const office_id = req.query.office_id;
     const bandi_id=req.query.bandi_id;
     // console.log("bandi_id:",bandi_id)
@@ -98,7 +98,7 @@ router.get('/get_bandi_for_transfer', verifyToken, async (req, res) => {
 
 router.get('/get_transfer_bandi_ac_status', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const user_role = req.user.role_name;
     // const [status] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE role_required=?`, user_role );
     // const [role] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE role_required=?`, user_role );
@@ -275,7 +275,7 @@ router.get('/get_transfer_bandi_ac_status', verifyToken, async (req, res) => {
 
 router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const user_role_id = req.user.role_id;
     const data = req.body;
     // console.log( data );
@@ -290,6 +290,13 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
         // }
         connection = await pool.getConnection();
         connection.beginTransaction();
+        if(data.is_thunuwa_permission==="छ"){
+            is_thunuwa_permission=1
+        }else if(data.is_thunuwa_permission==="छैन"){
+            is_thunuwa_permission=0
+        }else{
+            is_thunuwa_permission=data.is_thunuwa_permission
+        }
 
         const insertsql = `INSERT INTO bandi_transfer_history (
                 bandi_id, transfer_reason_id, transfer_reason, 
@@ -301,7 +308,7 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
 
         const values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
             active_office, data.recommended_to_office_id,
-        data.is_thunuwa_permission, data.bandi_character,
+            is_thunuwa_permission, data.bandi_character,
             user_role_id, user_role_id,
             user_id, user_id, new Date(), new Date(), active_office
         ];
@@ -336,7 +343,7 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
 
 router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
     const metadata = req.body;
     console.log("metadata:", metadata);
@@ -462,7 +469,7 @@ router.put('/update_bandi_transfer_history/:id', verifyToken, async (req, res) =
 
 router.put('/approve_bandi_transfer1/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
     const metadata = req.body;
     // console.log( "metadata:", metadata );
@@ -560,7 +567,7 @@ router.get('/get_bandi_transfer_history/', async (req, res) => {
 
 router.put('/update_bandi_final_transfer1/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const metadata = req.body;
     const id = req.params.id;
     const status = req.query.status || null;
@@ -603,7 +610,7 @@ router.put('/update_bandi_final_transfer1/:id', verifyToken, async (req, res) =>
 
 router.post('/create_bandi_final_transfer1', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const metadata = req.body;
     // console.log("📥 Full Request Body:", JSON.stringify(req.body, null, 2));
     let connection;
@@ -654,7 +661,7 @@ router.post('/create_bandi_final_transfer1', verifyToken, async (req, res) => {
 //
 router.post('/create_bandi_karagar_history1', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     let connection;
     try {
         connection = await pool.getConnection();
@@ -728,7 +735,7 @@ router.get('/get_bandi_transfer_history/:id', async (req, res) => {
 //
 router.put('/update_bandi_transfer_history1/:id', verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const contactId = req.params.id;
 
     let connection;
