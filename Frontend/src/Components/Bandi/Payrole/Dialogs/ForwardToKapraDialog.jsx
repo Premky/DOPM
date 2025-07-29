@@ -32,7 +32,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     // console.log(editingData)
     useEffect( () => {
         if ( editingData ) {
-            console.log( editingData );
+            // console.log( editingData );
             reset( {
                 id: editingData.id || "", // ✅ Include this
                 payrole_id: editingData.payrole_id || "",

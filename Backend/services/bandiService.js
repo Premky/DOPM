@@ -12,10 +12,10 @@ const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
 
 import { bs2ad } from '../utils/bs2ad.js';
-let connection;
-connection = await pool.getConnection();
+// let connection;
+// connection = await pool.getConnection();
 
-async function insertBandiPerson( data ) {
+async function insertBandiPerson( data, connection ) {
   const dob_ad = await bs2ad( data.dob );
   const values = [
     data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name,
@@ -34,7 +34,7 @@ async function insertBandiPerson( data ) {
   return result.insertId;
 }
 
-async function insertKaidDetails( bandi_id, data ) {
+async function insertKaidDetails( bandi_id, data, connection ) {
 
   // const defaultDate = '1950-01-01';
 
@@ -82,7 +82,7 @@ async function insertKaidDetails( bandi_id, data ) {
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertCardDetails( bandi_id, data ) {
+async function insertCardDetails( bandi_id, data, connection ) {
   const values = [
     bandi_id, data.id_card_type, data.card_name, data.card_no,
     data.card_issue_district_id, data.card_issue_date, data.user_id, data.office_id
@@ -94,7 +94,7 @@ async function insertCardDetails( bandi_id, data ) {
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertAddress( bandi_id, data ) {
+async function insertAddress( bandi_id, data,connection ) {
   let sql, values;
   const isNepali = Number( data.nationality_id ) === 1;
 
@@ -134,7 +134,7 @@ async function insertAddress( bandi_id, data ) {
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id ) {
+async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id,connection ) {
   const sql = `INSERT INTO bandi_mudda_details (
     bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
     mudda_condition, mudda_phesala_antim_office_district,
@@ -171,7 +171,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id ) {
   }
 }
 
-async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
+async function insertFineDetails( bandi_id, fines, user_id, office_id, connection ) {
   for ( const fine of fines ) {
     let sql, values;
 
@@ -247,7 +247,7 @@ async function insertFineDetails( bandi_id, fines, user_id, office_id ) {
   }
 }
 
-async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
+async function insertSingleFineDetails( bandi_id, data, user_id, office_id, connection ) {
   console.log( data );
   let sql, values;
 
@@ -322,7 +322,7 @@ async function insertSingleFineDetails( bandi_id, data, user_id, office_id ) {
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertPunarabedan( bandi_id, data ) {
+async function insertPunarabedan( bandi_id, data, connection ) {
   if ( !data.punarabedan_office_id && !data.punarabedan_office_district ) return;
   const values = [
     bandi_id, data.punarabedan_office_id, data.punarabedan_office_district,
@@ -334,7 +334,7 @@ async function insertPunarabedan( bandi_id, data ) {
 }
 
 
-async function insertFamily( bandi_id, family = [], user_id, office_id ) {
+async function insertFamily( bandi_id, family = [], user_id, office_id, connection ) {
   if ( !family.length ) return;
 
   // Filter out family members where relation_id is undefined or blank
@@ -410,38 +410,7 @@ async function insertContacts( bandi_id, contacts = [], user_id, office_id, conn
   }
 }
 
-
-
-// async function insertContacts1( bandi_id, contacts = [], user_id, office_id ) {
-//   if ( !contacts.length ) return;
-
-//   // Filter out contacts with missing or blank relation_id
-//   const filteredContacts = contacts.filter( c =>
-//     typeof c.relation_id === 'string' && c.relation_id.trim() !== ''
-//   );
-
-//   if ( !filteredContacts.length ) return;
-
-//   const values = filteredContacts.map( c => [
-//     bandi_id,
-//     c.relation_id,
-//     c.contact_name,
-//     c.contact_address,
-//     c.contact_contact_details,
-//     user_id,
-//     user_id,
-//     office_id
-//   ] );
-
-//   const sql = `INSERT INTO bandi_contact_person (
-//     bandi_id, relation_id, contact_name, contact_address,
-//     contact_contact_details, created_by, updated_by, current_office_id
-//   ) VALUES ?`;
-
-//   await queryAsync( sql, [values] );
-// }
-
-async function updateContactPerson( contactId, contact, user_id, office_id ) {
+async function updateContactPerson( contactId, contact, user_id, office_id, connection ) {
   if (
     !contact.contact_name ||
     !contact.contact_address ||
@@ -485,22 +454,7 @@ async function updateContactPerson( contactId, contact, user_id, office_id ) {
   }
 }
 
-// async function insertDiseasesDetails1( bandi_id, diseases = [], user_id, office_id ) {
-//   for ( const disease of diseases ) {
-//     if ( Number( disease.is_ill ) === 1 ) {
-//       const sql = `INSERT INTO bandi_diseases_details(bandi_id, disease_id, disease_name, created_by, updated_by, created_office_id)
-//         VALUES(?)`;
-//       const values = [bandi_id,
-//         disease.disease_id || 0,
-//         disease.disease_name?.trim() || null,
-//         user_id, user_id, office_id
-//       ];
-//       await queryAsync( sql, [values] );
-//     }
-//   }
-// }
-
-async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_id ) {
+async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_id, connection ) {
   try {
     if ( !diseases.length ) {
       console.warn( "⚠️ No diseases provided to insert." );
@@ -541,7 +495,7 @@ async function insertDiseasesDetails( bandi_id, diseases = [], user_id, office_i
   }
 }
 
-async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id ) {
+async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id, connection ) {
 
   if (
     !diseasesId ||
@@ -597,7 +551,7 @@ async function insertDisablilityDetails1( bandi_id, disabilities = [], user_id, 
   }
 }
 
-async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, office_id ) {
+async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, office_id, connection ) {
   try {
     if ( !disabilities.length ) {
       console.warn( "⚠️ No disabilities provided to insert." );
@@ -644,7 +598,7 @@ async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, o
 }
 
 
-async function updateDisabilities( disabilityId, disability, user_id, office_id ) {
+async function updateDisabilities( disabilityId, disability, user_id, office_id, connection ) {
   console.log( disability );
   if (
     !disabilityId ||
@@ -683,7 +637,7 @@ async function updateDisabilities( disabilityId, disability, user_id, office_id 
   }
 }
 
-async function insertHealthInsurance( bandi_id, health_insurance = [], user_id, office_id ) {
+async function insertHealthInsurance( bandi_id, health_insurance = [], user_id, office_id, connection ) {
   if ( !health_insurance.length ) return;
   const values = health_insurance.map( c => [
     bandi_id, c.is_active, c.insurance_from, c.insurance_to, user_id, office_id

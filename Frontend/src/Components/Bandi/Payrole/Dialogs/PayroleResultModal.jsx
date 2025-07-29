@@ -21,6 +21,7 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
     formState: { errors },
   } = useForm( {
     defaultValues: {
+      payrole_id:"",
       pyarole_rakhan_upayukat: "",
       dopmremark: "",
     },
@@ -30,6 +31,7 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
   useEffect( () => {
     if ( data ) {
       reset( {
+        payrole_id: data?.payrole_id || "",
         dopmremark: data?.dopmremark || "",
         pyarole_rakhan_upayukat: data?.pyarole_rakhan_upayukat || "",
       } );
@@ -37,31 +39,10 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
   }, [data, reset] );
 
   const onSubmit = async ( formValues ) => {
-    if ( !data || !data.payrole_id ) {
-      Swal.fire( 'त्रुटि!', 'डेटा अनुपलब्ध छ।', 'error' );
-      return;
-    }
-
-    const payload = {
-      ...formValues,
-      status: data.payrole_status,
-    };
-
-    try {
-      await axios.put(
-        `${ BASE_URL }/payrole/update_payrole_status/${ data.payrole_id }`,
-        payload,
-        { withCredentials: true }
-      );
-
-      onClose();
-      Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
-    } catch ( err ) {
-      console.error( err );
-      onClose();
-      Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
-    }
+    onSave( formValues);
+        onClose();
   };
+
 
 
   const fullAddress =
@@ -112,8 +93,8 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
             </Grid>
           </Grid>
           <DialogActions>
-            <Button onClick={onClose}>रद्द गर्नुहोस्</Button>
-            <Button type="submit" variant="contained" color="primary">
+            <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
+            <Button type="submit" variant="contained" color="success">
               सेभ गर्नुहोस्
             </Button>
           </DialogActions>

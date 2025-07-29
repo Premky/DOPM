@@ -9,6 +9,7 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fetchedMuddas, setFetchedMuddas] = useState({});
+  const [fetchedFines, setFetchedFines] = useState({});
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -81,6 +82,29 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
     }
   }, [BASE_URL]);
 
+  const fetchFines = useCallback(async () => {
+    try {
+      const url = `${BASE_URL}/bandi/get_bandi_fines`;
+      const response = await axios.get(url, { withCredentials: true });
+      const { Status, Result, Error } = response.data;
+
+      if (Status) {
+        const grouped = {};
+        Result.forEach((fine) => {
+          const bandiId = fine.bandi_id;
+          if (!grouped[bandiId]) grouped[bandiId] = [];
+          grouped[bandiId].push(fine);
+        });
+        setFetchedFines(grouped);
+      } else {
+        console.warn(Error || 'Failed to fetch mudda.');
+        setFetchedFines({});
+      }
+    } catch (error) {
+      console.error('Error fetching muddas:', error);
+    }
+  }, [BASE_URL]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -88,8 +112,11 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
   useEffect(() => {
     fetchMuddas();
   }, [fetchMuddas]);
+  useEffect(() => {
+    fetchFines();
+  }, [fetchFines]);
 
-  return { data, totalKaidi, loading, error, fetchedMuddas, refetchPayrole: fetchData, refetchMuddas: fetchMuddas };
+  return { data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, refetchPayrole: fetchData, refetchMuddas: fetchMuddas, refetchFines: fetchFines };
 };
 
 export default useFetchPayroles;

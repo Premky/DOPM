@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MenuItem } from "@mui/material";
+import { MenuItem, Button } from "@mui/material";
 import { pdf } from "@react-pdf/renderer";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import { useBaseURL } from "../../../../Context/BaseURLProvider";
@@ -11,6 +11,7 @@ import axios from "axios";
 import PayroleApplicationDocx from "../Exports/ParoleApplicationDocx";
 import PayroleFileCoverDocx from "../Exports/PayroleFileCoverDocx";
 import PayroleNoPunrabedanDocx from "../Exports/PayroleNoPunrabedanDocx";
+import PayroleResultModal from "../Dialogs/PayroleResultModal";
 
 const handleViewPayrole = async ( row ) => {
 
@@ -49,9 +50,14 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
     onClose();
   };
 
-  const [forwardModalOpen, setforwardModalOpen] = useState( false );
+  const [forwardModalOpen, setForwardModalOpen] = useState( false );
   const handleForward = () => {
-    setforwardModalOpen( true );
+    setForwardModalOpen( true );
+  };
+
+  const [approvalModalOpen, setApprovalModalOpen] = useState( false );
+  const handleApproval = () => {
+    setApprovalModalOpen( true );
   };
 
   const handleForwardSave = async ( updatedData ) => {
@@ -70,16 +76,37 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
     }
   };
 
+  const handleApprovalSave = async ( updatedData ) => {
+    console.log( updatedData );
+    try {
+      await axios.put(
+        `${ BASE_URL }/payrole/update_payrole_status/${ updatedData.payrole_id }`,
+        updatedData,
+        { withCredentials: true } // ✅ Fix: put this inside an object
+      );
+      // refetchPayrole();
+      Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+    } catch ( err ) {
+      console.error( err );
+      Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+    }
+  };
+
 
   return (
     <>
       <ForwardToKapraDialog
         open={forwardModalOpen}
-        onClose={() => setforwardModalOpen( false )}
+        onClose={() => setForwardModalOpen( false )}
         onSave={handleForwardSave}
         editingData={data}
       />
-
+      <PayroleResultModal
+        open={approvalModalOpen}
+        onClose={() => setApprovalModalOpen( false )}
+        onSave={handleApprovalSave}
+        data={data}
+      />
       <a
         href={`/bandi/view_saved_record/${ data?.bandi_id }`}
         target="_blank"
@@ -110,7 +137,7 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
             ) : (
               <>
                 <MenuItem onClick={handleForward}>
-                  कार्यालय प्रमुखमा पेश गर्नुहोस्
+                  <Button variant='outline'>कार्यालय प्रमुखमा पेश गर्नुहोस्</Button>
                 </MenuItem>
               </>
             )
@@ -132,14 +159,32 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
             <MenuItem onClick={handleForward}>Forward</MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
           </> )}
-        </> ) : (
-          authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? ( <>
-            <MenuItem onClick={handleForward}>Forward</MenuItem>
-            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-          </> ) : ( <>
+        </> ) :
+          ( <></>
+            // authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (
+            //    <>
+            //   <MenuItem onClick={handleForward}>Forward</MenuItem>
+            //   {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
+            // </> ) : ( <>
 
+            // </> )
+          )
+      }
+
+      {
+        authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (
+          <>
+            <MenuItem onClick={handleForward} >
+              <Button variant="outlined" color="warning">
+                Forward/Backward
+              </Button>
+            </MenuItem>
+            <MenuItem onClick={handleApproval}>
+              <Button variant="outlined" color="success">
+                Approve
+              </Button></MenuItem>
+          </> ) : ( <>
           </> )
-        )
       }
 
 

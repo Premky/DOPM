@@ -33,6 +33,11 @@ const EmployeeForm = () => {
 
     const [editing, setEditing] = useState( false );
     const onFormSubmit = async ( data ) => {
+        if ( !data.photo ) {
+            alert( 'कृपया फोटो अपलोड गर्नुहोस्।' );
+            return;
+        }
+
         try {
             const url = editing
                 ? `${ BASE_URL }/emp/update_employee/${ currentData.id }`
@@ -48,7 +53,7 @@ const EmployeeForm = () => {
                     formData.append( key, data[key] );
                 }
             }
-            console.log( 'Form Data:', data );
+            // console.log( 'Form Data:', data );
             const response = await axios( {
                 method,
                 url,
@@ -259,6 +264,7 @@ const EmployeeForm = () => {
                                         label="नागरीकता प्रमाण पत्र नं."
                                         control={control}
                                         error={errors.citizenship_no}
+                                        required={true}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -267,6 +273,7 @@ const EmployeeForm = () => {
                                         label="नागरीकता जारी जिल्ला"
                                         control={control}
                                         error={errors.issue_district}
+                                        required={true}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -275,6 +282,7 @@ const EmployeeForm = () => {
                                         label="नागरीकता जारी मिति"
                                         control={control}
                                         error={errors.issue_date}
+                                        required={true}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>

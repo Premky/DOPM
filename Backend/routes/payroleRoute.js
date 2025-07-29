@@ -348,6 +348,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 bpd.punarabedan_office_ch_no,
                 bpd.punarabedan_office_date
 
+                bfd
 
             FROM payroles p
             LEFT JOIN bandi_person bp ON p.bandi_id=bp.id
@@ -362,6 +363,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN offices o ON bp.current_office_id = o.id
             LEFT JOIN bandi_punarabedan_details bpd ON bp.id=bpd.bandi_id
             LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
+            LEFT JOIN bandi_fine_details bfd ON bp.id=bfd.bandi_id
             
             LEFT JOIN (
                 SELECT 
@@ -420,7 +422,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 mudda_name,
                 is_main_mudda,
                 is_last_mudda,
-                office_name_with_letter_address,
+                punarabedan_office,
                 vadi,
                 mudda_phesala_antim_office_date,
                 ...bandiData
@@ -439,8 +441,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                     mudda_id,
                     mudda_name,
                     is_main_mudda,
-                    is_last_mudda,
-                    office_name_with_letter_address,
+                    is_last_mudda,                    
                     vadi,
                     mudda_phesala_antim_office_date
                 } );
@@ -459,10 +460,29 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     }
 } );
 
+// Node/Express route (example using MySQL)
+router.post('/get_all_bandi_fines', async (req, res) => {
+    const { bandiIds } = req.body;
+    if (!Array.isArray(bandiIds) || bandiIds.length === 0) {
+        return res.json({ Status: false, Error: "Invalid bandiIds" });
+    }
+
+    try {
+        const [results] = await pool.query(
+            `SELECT * FROM bandi_fines WHERE bandi_id IN (?)`,
+            [bandiIds]
+        );
+        res.json({ Status: true, Result: results });
+    } catch (error) {
+        console.error(error);
+        res.json({ Status: false, Error: "Failed to fetch fines" });
+    }
+});
+
 
 router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const active_user = req.user.id;
+    const active_user = req.user.username;
     const office_id = req.query.office_id; // extract if passed manually
     const filters = [];
     const params = [];
@@ -599,7 +619,7 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
 
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const user_role_id = req.user.role_id;
 
     const {
@@ -701,7 +721,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
 
 router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
 
     try {
         const baseQuery = `
@@ -742,7 +762,7 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
 
 router.put( '/return_payrole/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const payrole_id = req.params.id;
     const { dopmremark, status } = req.body;
     const new_status = Number( status ) - 1;
@@ -778,26 +798,11 @@ router.put( '/return_payrole/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.id;
-    const payrole_id = req.params.id;
-    const { pyarole_rakhan_upayukat, dopmremark } = req.body;
-    const sql = `UPDATE payroles SET status=?, pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
-    const values = [6, pyarole_rakhan_upayukat, dopmremark, payrole_id];
-    // console.log( values );
-    try {
-        const [result] = await pool.query( sql, values );
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( 'Database error', err );
-        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
-    }
-} );
+
 
 router.put( '/update_payrole1/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         dopmremark,
         pyarole_rakhan_upayukat,
@@ -897,7 +902,7 @@ router.put( '/update_payrole1/:id', verifyToken, async ( req, res ) => {
 
 router.put( '/update_payrole2/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const payrole_id = req.params.id;
 
     const {
@@ -1021,8 +1026,11 @@ router.put( '/update_payrole2/:id', verifyToken, async ( req, res ) => {
 
 router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const active_user_id = req.user.id;
+    const active_user_id = req.user.username;
+    const active_role = req.user.role_name;
+
     const reqData = req.body;
+
     console.log( reqData );
     const [to_status_role_id] = await pool.query( `
         SELECT psr.role_id, psr.payrole_status_id
@@ -1049,12 +1057,30 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const payrole_id = req.params.id;
+    const { pyarole_rakhan_upayukat, dopmremark } = req.body;
+    console.log( req.body );
+    const sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
+    const values = [pyarole_rakhan_upayukat, dopmremark, payrole_id];
+    // console.log( values );
+    try {
+        const [result] = await pool.query( sql, values );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
+    }
+} );
+
 
 router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) => {
     const id = req.params.id;
     // console.log( 'payrole_id', id );
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         is_checked
     } = req.body;
@@ -1076,7 +1102,7 @@ router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) =>
 
 router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const {
         payrol_id,
         hajir_current_date,
@@ -1116,7 +1142,7 @@ router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
 
 router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const active_user = req.user.id;
+    const active_user = req.user.username;
     try {
         // Add active_user and active_office to the request body
         req.body.created_by = active_user;
@@ -1135,7 +1161,7 @@ router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) 
 
 router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const active_user = req.user.id;
+    const active_user = req.user.username;
 
     try {
         req.body.created_by = active_user;
@@ -1176,7 +1202,7 @@ router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
 router.put( '/update_payrole1/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const active_office = req.user.office_id;
-    const active_user = req.user.id;
+    const active_user = req.user.username;
 
     try {
         req.body.updated_by = active_user;
@@ -1200,7 +1226,7 @@ router.put( '/update_payrole1/:id', verifyToken, async ( req, res ) => {
 
 router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.id;
+    const user_id = req.user.username;
     const id = req.params.id;
 
     try {
@@ -1335,7 +1361,7 @@ router.get( '/payrole_maskebari_count', verifyToken, async ( req, res ) => {
 router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const active_office = req.user.office_id;
-    const active_user = req.user.id;
+    const active_user = req.user.username;
 
     try {
         // Add updated_by and updated_office to the request body
@@ -1359,7 +1385,27 @@ router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res
 } );
 
 
+router.get( '/get_selected_office/:id', verifyToken, async ( req, res ) => {
+    const id = req.params.id;
+    try {
+        const [result] = await pool.query( `SELECT letter_address FROM offices WHERE id=?`, [id] );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.log( err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
 
+router.get( '/get_selected_mudda_group/:id', verifyToken, async ( req, res ) => {
+    const id = req.params.id;
+    try {
+        const [result] = await pool.query( `SELECT mudda_group_name FROM muddas_groups WHERE id=?`, [id] );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.log( err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
 
 router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

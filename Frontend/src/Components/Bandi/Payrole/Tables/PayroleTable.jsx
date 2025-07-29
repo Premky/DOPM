@@ -30,9 +30,11 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import PayroleActionMenu from "./PayroleActionMenu";
-import exportToExcel from "../../Exports/ExcelPayrole";
+// import exportToExcel from "../../Exports/ExcelPayrole";
+import exportToExcel from "../Exports/ExcelPayrole";
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
+import useFetchAllBandiFines from "../../Apis_to_fetch/useFetchAllBandiFines";
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
@@ -60,8 +62,10 @@ const PayroleTable = () => {
     };
 
 
-    const { data, totalKaidi, loading, error, fetchedMuddas, refetchPayrole, refetchMuddas } =
+    const { data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, refetchFines, refetchPayrole, refetchMuddas } =
         useFetchPayroles( filters, page, rowsPerPage );
+
+    const { bandiFinesMap, loading: bandiFineLoading, refetchBandiFine: fetchBandiFineRecords } = useFetchAllBandiFines();
     // console.log(data)
     useEffect( () => {
         if ( data ) setFilteredKaidi( data );
@@ -94,7 +98,7 @@ const PayroleTable = () => {
 
     return (
         <>
-            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
+            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedFines, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात
             </Button>
             <Menu
@@ -143,6 +147,7 @@ const PayroleTable = () => {
                     <TableBody>
                         {filteredKaidi.map( ( data, index ) => {
                             const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
+                            const bandiFines = fetchedFines[data.bandi_id] || [];
                             const rowStyle = {
                                 backgroundColor:
                                     authState.office_id <= 2 || data.payrole_status >= 3
@@ -156,7 +161,11 @@ const PayroleTable = () => {
                                 <Fragment key={data.id}>
                                     <TableRow sx={rowStyle}>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            <Checkbox checked={data.is_checked} onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )} />
+                                            <Checkbox
+                                                checked={Boolean( data.is_checked )}
+                                                onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )}
+                                            />
+
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
                                             {index + 1}  {data.payrole_status}
@@ -179,25 +188,30 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np} ({data.nationality})</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.mudda_name}</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.vadi}</TableCell>
-                                        <TableCell>{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
+                                        <TableCell>{kaidiMuddas[0]?.punarabedan_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate(data.thuna_date_bs, current_date).formattedDuration}
-                                            <br /> {calculateBSDate( data.release_date_bs, current_date, 
-                                                    calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, current_date ).formattedDuration}
+                                            <br /> {calculateBSDate( data.release_date_bs, current_date,
+                                                calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( current_date, data.release_date_bs ).formattedDuration}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.punarabedan_office_ch_no}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.fine_summary}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {bandiFines.map( ( fine, i ) => (
+                                                <>
+                                                    <Fragment key={`fine-${ data.id }-${ i }`}>
+                                                       {i+1}. {fine.deposit_office}को मिति {fine.deposit_date} गतेको च.नं. {fine.deposit_ch_no} बाट रु.{fine.deposit_amount}  {fine.fine_name_np} बुझाएको ।
+                                                        <hr />
+                                                    </Fragment>
+                                                </>
+
+                                            ) )}
+
+                                        </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {/* <Button variant="contained" color="primary" onClick={() => handleUpdatePayrole( data )}>
-                                                Edit
-                                            </Button>
-                                            <Button variant="contained" color="primary" onClick={() => handleViewPayrole( data )}>
-                                                View
-                                            </Button> */}
                                             <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
                                                 <MoreVertIcon />
                                             </IconButton>
@@ -208,7 +222,7 @@ const PayroleTable = () => {
                                         <TableRow key={`mudda-${ data.id }-${ i }`} sx={rowStyle}>
                                             <TableCell>{mudda.mudda_name}</TableCell>
                                             <TableCell>{mudda.vadi}</TableCell>
-                                            <TableCell>{mudda.mudda_phesala_antim_office_date}</TableCell>
+                                            <TableCell>{mudda.punarabedan_office}<br />{mudda.mudda_phesala_antim_office_date}</TableCell>
                                         </TableRow>
                                     ) )}
                                 </Fragment>

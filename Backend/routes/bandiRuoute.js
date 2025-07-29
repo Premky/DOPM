@@ -89,9 +89,11 @@ async function generateUniqueBandiId() {
     throw new Error( "Unable to generate a unique bandi ID after multiple attempts." );
 }
 
-router.get( '/get_random_bandi_id', async ( req, res ) => {
+router.get( '/get_random_bandi_id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
     const rand_bandi_id = await generateUniqueBandiId();
-    console.log( rand_bandi_id );
+    const rand_office_bandi_id = active_office + rand_bandi_id;
+    console.log( rand_office_bandi_id );
     return res.json( { Status: true, Result: rand_bandi_id } );
 } );
 
@@ -301,7 +303,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await connection.beginTransaction();
         console.log( `🟢 Transaction started by ${ req.user.office_np }` );
 
-        const [chk_bandi_id_duplicate] = await pool.query(
+        const [chk_bandi_id_duplicate] = await connection.query(
             `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
             [office_bandi_id]
         );
@@ -1872,18 +1874,42 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 } );
 
 
+router.get( '/get_bandi_fines/', async ( req, res ) => {
+    // const active_office = req.user.office_id;
+    const { id } = req.params;
+    const sql = `
+        SELECT bfd.*, 
+            f.fine_name_np,
+            o.office_name_with_letter_address AS deposit_office                       
+        FROM bandi_fine_details bfd
+        LEFT JOIN fine_types f ON bfd.fine_type_id = f.id
+        LEFT JOIN offices o ON bfd.deposit_office = o.id
+    `;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
     // const active_office = req.user.office_id;
     const { id } = req.params;
     const sql = `
         SELECT bmd.*, m.mudda_name,
     o.office_name_with_letter_address,
+    o.office_name_with_letter_address AS mudda_office,
     nd.district_name_np
         FROM bandi_mudda_details bmd
         LEFT JOIN muddas m ON bmd.mudda_id = m.id
         LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_id = o.id
         LEFT JOIN np_district nd ON bmd.mudda_phesala_antim_office_district = nd.did
-
     `;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query

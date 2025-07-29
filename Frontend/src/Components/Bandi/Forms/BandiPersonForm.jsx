@@ -104,7 +104,7 @@ const BandiPersonForm = () => {
   useEffect( () => {
     const fetchRandomBandiId = async () => {
       try {
-        const response = await axios.get( `${ BASE_URL }/bandi/get_random_bandi_id` );
+        const response = await axios.get( `${ BASE_URL }/bandi/get_random_bandi_id`,{withCredentials:true} );
         const { Status, Result } = response.data;
         if ( Status ) {
           setValue( 'office_bandi_id', Result || '' );
@@ -192,6 +192,7 @@ const BandiPersonForm = () => {
 
   const onSubmit = async ( data ) => {
     // console.log( data );
+    if(!data.photo){alert('फोटो अनिवार्य छ ।')}
     try {
       const url = editing
         ? `${ BASE_URL }/bandi/update_bandi/${ currentData.id }`
@@ -308,6 +309,7 @@ const BandiPersonForm = () => {
               name='office_bandi_id'
               label="बन्दीको आई.डि."
               // defaultValue={band_rand_id}
+              readonly={true}
               required={true}
               control={control}
               error={errors.office_bandi_id} />
