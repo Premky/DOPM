@@ -336,7 +336,8 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             date: req.body[`mudda_phesala_date_${ i }`],
             vadi: req.body[`vadi_${ i }`],
         } ) );
-        await insertMuddaDetails( bandi_id, muddas, office_id, connection );
+        console.log(muddas)
+        await insertMuddaDetails( bandi_id, muddas, user_id, office_id, connection );
 
         const fineArray = JSON.parse( req.body.fine || '[]' );
         await insertFineDetails( bandi_id, fineArray, user_id, office_id, connection );
