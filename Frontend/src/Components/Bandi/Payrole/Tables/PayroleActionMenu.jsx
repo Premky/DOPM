@@ -8,7 +8,7 @@ import ForwardToKapraDialog from "../Dialogs/ForwardToKapraDialog";
 import Swal from "sweetalert2";
 import axios from "axios";
 
-import PayroleApplicationDocx from "../Exports/ParoleApplicationDocx"
+import PayroleApplicationDocx from "../Exports/ParoleApplicationDocx";
 import PayroleFileCoverDocx from "../Exports/PayroleFileCoverDocx";
 import PayroleNoPunrabedanDocx from "../Exports/PayroleNoPunrabedanDocx";
 
@@ -70,7 +70,6 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
     }
   };
 
-  
 
   return (
     <>
@@ -81,7 +80,6 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         editingData={data}
       />
 
-
       <a
         href={`/bandi/view_saved_record/${ data?.bandi_id }`}
         target="_blank"
@@ -91,10 +89,10 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         <MenuItem>विवरण हेर्नुहोस् </MenuItem>
         {/* <MenuItem>{data.payrole_status}</MenuItem> */}
       </a>
-      
-        <MenuItem><PayroleApplicationDocx data={data}/> </MenuItem>
-        <MenuItem><PayroleFileCoverDocx data={data}/> </MenuItem>
-        <MenuItem><PayroleNoPunrabedanDocx data={data}/> </MenuItem>
+
+      <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
+      <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
+      <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
 
       {
         status === 2 && ( officeId === 1 || officeId === 2 ) && (
@@ -123,6 +121,7 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
 
       {
         authState.role_name === "office_admin" ? ( <>
+          <MenuItem onClick={handleForward}>Forward</MenuItem>
           {/* <MenuItem >{authState.payrole_status}</MenuItem> */}
           {( data.status_id == 10 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
@@ -138,6 +137,7 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
             <MenuItem onClick={handleForward}>Forward</MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
           </> ) : ( <>
+
           </> )
         )
       }

@@ -32,6 +32,9 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
             mudda_phesala_antim_office_name: "",
             mudda_phesala_antim_office_district: "",
             mudda_phesala_antim_office_date: "",
+            is_life_time: "",
+            thuna_date_bs: "",
+            release_date_bs: "",
             is_last_mudda: "",
             is_main_mudda: ""
         },
@@ -54,6 +57,9 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 mudda_phesala_antim_office_name: "",
                 mudda_phesala_antim_office_district: "",
                 mudda_phesala_antim_office_date: "",
+                is_life_time: "",
+                thuna_date_bs: "",
+                release_date_bs: "",
                 is_last_mudda: "",
                 is_main_mudda: "",
             } );;
@@ -133,6 +139,76 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                     </Grid> */}
                 </Grid>
 
+                <Grid container>
+                    <Grid size={{ xs: 12 }}>
+                        हिरासत बसेको अवधी
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                        <ReuseInput
+                            name="hirasat_years"
+                            label="वर्ष"
+                            type="number"
+                            control={control}
+                            required={true}
+                            defaultValue={0}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                        <ReuseInput
+                            name="hirasat_months"
+                            label="महिना"
+                            type="number"
+                            control={control}
+                            required={true}
+                            defaultValue={0}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                        <ReuseInput
+                            name="hirasat_days"
+                            label="दिन"
+                            type="number"
+                            control={control}
+                            required={true}
+                            defaultValue={0}
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                        <ReuseDateField
+                            name="thuna_date_bs"
+                            label="थुना परेको मिति"
+                            placeholder='YYYY-MM-DD'
+                            required={false}
+                            control={control}
+                            error={errors.thuna_date_bs}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                        <ReuseSelect
+                            name="is_life_time"
+                            label="आजिवन सजाय हो/होइन?"
+                            options={[
+                                { value: 0, label: 'होइन' },
+                                { value: 1, label: 'हो' }
+                            ]}
+                            required={false}
+                            control={control}
+                            error={errors.is_life_time}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                        <ReuseDateField
+                            name="release_date_bs"
+                            label="छुट्ने मिति"
+                            placeholder='YYYY-MM-DD'
+                            required={false}
+                            control={control}
+                            error={errors.release_date_bs}
+                        />
+                    </Grid>
+                </Grid>
                 <Grid container>
                     <Grid size={{ xs: 12, sm: 4 }}>
                         <ReuseDateField

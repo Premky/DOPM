@@ -30,7 +30,7 @@ const ReusableEmpTable = ( {
     const filteredRows = useMemo( () => {
         if ( !filterText ) return rows;
         return rows.filter( bandi =>
-            bandi.bandi_name?.toLowerCase().includes( filterText.toLowerCase() )
+            emp.current_office_np?.toLowerCase().includes( filterText.toLowerCase() )
         );
     }, [rows, filterText] );
 

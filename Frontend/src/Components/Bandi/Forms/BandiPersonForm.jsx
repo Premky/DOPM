@@ -31,6 +31,7 @@ import fetchDiseases from '../../ReuseableComponents/fetchDiseases';
 import fetchDisabilities from '../../ReuseableComponents/fetchDisabilities';
 import AddSubMuddaModal from '../Dialogs/AddSubMuddaModal';
 import { useAuth } from '../../../Context/AuthContext';
+import { CheckBox } from '@mui/icons-material';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -162,6 +163,32 @@ const BandiPersonForm = () => {
     setValue,
   ] );
 
+  const handleSameAsAbove = () => {
+    console.log("handleSameAsAbove button is Working")
+    for ( let index = 1; index <= muddaCount; index++ ) {
+      const isMain = watch( `is_main_mudda_${ index }` );
+      if ( isMain === 1 || isMain === '1' ) {
+        const hirasat_years_arr = watch( `hirasat_years_${ index }` );
+        const hirasat_months_arr = watch( `hirasat_months_${ index }` );
+        const hirasat_days_arr = watch( `hirasat_days_${ index }` );
+        const hirasat_date_bs_arr = watch( `thuna_date_bs_${ index }` );
+        const is_life_time_arrr = watch(`is_life_time_${ index }` );
+        const release_date_bs_arr = watch(`release_date_bs_${ index}`);
+
+        // Copy these values to the "main" fields
+        setValue( 'hirasat_years', hirasat_years_arr || '' );
+        setValue( 'hirasat_months', hirasat_months_arr || '' );
+        setValue( 'hirasat_days', hirasat_days_arr || '' );
+        setValue( 'hirasat_date_bs', hirasat_date_bs_arr || '' );
+        setValue( 'is_life_time', is_life_time_arrr || '' );
+        setValue( 'release_date_bs', release_date_bs_arr || '' );
+        break;
+      }else{
+        alert("मुख्य मुद्दा छैन।")
+      }
+    }
+  };
+
 
   const onSubmit = async ( data ) => {
     // console.log( data );
@@ -223,7 +250,7 @@ const BandiPersonForm = () => {
       }
     } catch ( error ) {
       console.error( 'Error submitting form:', error );
-      const errMessage = err?.response?.data.message;
+      const errMessage = error?.response?.data.message;
       const errMsg = error.message ? error.message : 'डेटा बुझाउँदा समस्या आयो।';
       // Swal.fire( 'त्रुटि!', errMsg, 'error' );
       Swal.fire( {
@@ -233,9 +260,35 @@ const BandiPersonForm = () => {
         icon: 'error',
         draggable: true
       } );
-      
+
     }
   };
+
+  useEffect( () => {
+    [...Array( muddaCount )].forEach( ( _, index ) => {
+      const thuna_date = watch( `thuna_date_bs_${ index + 1 }` );
+      const release_date = watch( `release_date_bs_${ index + 1 }` );
+
+      if ( thuna_date && release_date ) {
+        const duration = calculateBSDate( thuna_date, release_date );
+        setValue( `total_kaid_duration_${ index + 1 }`, `${ duration.years }|${ duration.months }|${ duration.days }` );
+      }
+
+      const is_main_mudda = watch( `is_main_mudda_${ index + 1 }` );
+      if ( is_main_mudda === 1 ) {
+        const hirasat_years_arr = watch( `hirasat_years_${ index + 1 }` );
+        const hirasat_months_arr = watch( `hirasat_months_${ index + 1 }` );
+        const hirasat_days_arr = watch( `hirasat_days_${ index + 1 }` );
+        const hirasat_date_bs_arr = watch( `thuna_date_bs_${ index + 1 }` );
+
+        setValue( 'hirasat_years', hirasat_years_arr );
+        setValue( 'hirasat_months', hirasat_months_arr );
+        setValue( 'hirasat_days', hirasat_days_arr );
+        setValue( 'hirasat_date_bs', hirasat_date_bs_arr );
+      }
+    } );
+  }, [muddaCount, watch] );
+
 
   const { optrecords: fineTypesOpt, loading: fineTypesLoading } = fetchFineTypes();
   const { optrecords: diseasesOpt, loading: diseasesLoading } = fetchDiseases();
@@ -422,9 +475,16 @@ const BandiPersonForm = () => {
 
         {[...Array( muddaCount )].map( ( _, index ) => {
           const muddaCondition = watch( `mudda_condition_${ index + 1 }` );
-
+          const is_life_time_arr = watch( `is_life_time_${ index + 1 }` );
+          const release_date_bs_arr = watch( `release_date_bs_${ index + 1 }` );
+          const thuna_date_bs_arr = watch( `thuna_date_bs_${ index + 1 }` );
+          const kaidDuration = calculateBSDate( thuna_date_bs_arr, release_date_bs_arr );
+          setValue( `total_kaid_duration_${ index + 1 }`, `${ kaidDuration.formattedDuration }` );
+       
           return (
             <Grid container spacing={2} key={index} sx={{ mt: 2 }}>
+
+
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <ReuseMudda
                   name={`mudda_id_${ index + 1 }`}
@@ -466,6 +526,19 @@ const BandiPersonForm = () => {
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                {/* <ReuseDatePickerBs */}
+                <ReuseDateField
+                  name={`thuna_date_bs_${ index + 1 }`}
+                  label='थुना/कैद परेको मिती'
+                  placeholder={'YYYY-MM-DD'}
+                  // defaultValue={selectedBandi.hirasat_date_bs}
+                  required={true}
+                  control={control}
+                  error={errors.hirasat_date_bs}
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <ReuseSelect
                   name={`mudda_condition_${ index + 1 }`}
                   label="मुद्दाको अवस्था?"
@@ -478,48 +551,128 @@ const BandiPersonForm = () => {
                   error={errors[`mudda_condition_${ index + 1 }`]}
                 />
               </Grid>
+              {muddaCondition === 0 && ( <>
 
-              {/* ✅ Conditionally show 'मुद्दा फैसला मिति' */}
-              {selectedbandi_type === 'कैदी' && muddaCondition === 0 && (
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <ReuseDateField
-                    name={`mudda_phesala_date_${ index + 1 }`}
-                    label="मुद्दा फैसला मिति"
-                    placeholder="YYYY-MM-DD"
+
+                {selectedbandi_type === 'कैदी' && ( <>
+                  <Grid size={{ xs: 3 }}>
+                    <ReuseSelect
+                      name={`is_life_time_${ index + 1 }`}
+                      label="आजिवन कैद हो/होइन?"
+                      required={selectedbandi_type === 'कैदी'}
+                      options={[
+                        { value: '1', label: 'हो' },
+                        { value: '0', label: 'होइन' }
+                      ]}
+                      control={control}
+                      error={errors.is_life_time}
+                    />
+                  </Grid>
+                  {is_life_time_arr == 0 && ( <>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <ReuseDateField
+                        name={`release_date_bs_${ index + 1 }`}
+                        label="छुट्ने मिती"
+                        placeholder='YYYY-MM-DD'
+                        required={true}
+                        control={control}
+                        error={errors[`release_date_bs_${ index + 1 }`]}
+                      />
+                    </Grid>
+                  </>
+                  )}
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <ReuseDateField
+                      name={`mudda_phesala_date_${ index + 1 }`}
+                      label="मुद्दा फैसला मिति"
+                      placeholder="YYYY-MM-DD"
+                      required={true}
+                      control={control}
+                      error={errors[`mudda_phesala_date_${ index + 1 }`]}
+                    />
+                  </Grid>
+                </> )}
+              </> )}
+
+              {/* <Grid container size={{ xs: 12}}> */}
+              <Grid container size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }}>यस मुद्दामा हिरासत/थुनामा बसेको अवधी(कारागार आउनुभन्दा अगाडीको अवधि)</Grid>
+                <Grid size={{ xs: 2 }}>
+                  <ReuseInput
+                    name={`hirasat_years_${ index + 1 }`}
+                    label="वर्ष"
+                    placeholder='वर्ष'
+                    type='number'
+                    // defaultValue={0}
                     required={true}
                     control={control}
-                    error={errors[`mudda_phesala_date_${ index + 1 }`]}
+                    error={errors[`hirasat_years_${ index + 1 }`]}
                   />
                 </Grid>
-              )}
+                <Grid size={{ xs: 2 }}>
+                  <ReuseInput
+                    name={`hirasat_months_${ index + 1 }`}
+                    label="महिना "
+                    placeholder='महिना'
+                    type='number'
+                    // defaultValue={0}
+                    required={true}
+                    control={control}
+                    error={errors[`hirasat_months_${ index + 1 }`]}
+                  />
+                </Grid>
+                <Grid size={{ xs: 2 }}>
+                  <ReuseInput
+                    name={`hirasat_days_${ index + 1 }`}
+                    label="दिन"
+                    placeholder='दिन'
+                    // defaultValue={0}
+                    type='number'
+                    required={true}
+                    control={control}
+                    error={errors[`hirasat_days_${ index + 1 }`]}
+                  />
+                </Grid>
+                <Grid size={{ xs: 2 }}>
+                  <ReuseInput
+                    name={`total_kaid_duration_${ index + 1 }`}
+                    label="जम्मा कैद अवधी"
+                    required={false}
+                    control={control}
+                    error={errors[`total_kaid_duration_${ index + 1 }`]}
+                  />
+                </Grid>
+                <Grid size={{ xs: 11, sm: 5, md: 2 }}>
+                  <ReuseSelect
+                    name={`is_main_mudda_${ index + 1 }`}
+                    label="मुख्य मुददा हो/होइन?"
+                    required={true}
+                    control={control}
+                    options={[
+                      { label: 'होइन', value: 0 },
+                      { label: 'हो', value: 1 },
+                    ]}
+                    error={errors[`is_main_mudda_${ index + 1 }`]}
+                  />
+                </Grid>
+                <Grid size={{ xs: 11, sm: 5, md: 2 }}>
+                  <ReuseSelect
+                    name={`is_last_mudda_${ index + 1 }`}
+                    label="अन्तिम मुददा हो/होइन?"
+                    required={true}
+                    control={control}
+                    options={[
+                      { label: 'होइन', value: 0 },
+                      { label: 'हो', value: 1 },
+                    ]}
+                    error={errors[`is_last_mudda_${ index + 1 }`]}
+                  />
+                </Grid>
 
-              <Grid size={{ xs: 11, sm: 5, md: 2 }}>
-                <ReuseSelect
-                  name={`is_main_mudda_${ index + 1 }`}
-                  label="मुख्य मुददा हो/होइन?"
-                  required={true}
-                  control={control}
-                  options={[
-                    { label: 'होइन', value: 0 },
-                    { label: 'हो', value: 1 },
-                  ]}
-                  error={errors[`is_main_mudda_${ index + 1 }`]}
-                />
               </Grid>
+              {/* </Grid> */}
 
-              <Grid size={{ xs: 11, sm: 5, md: 2 }}>
-                <ReuseSelect
-                  name={`is_last_mudda_${ index + 1 }`}
-                  label="अन्तिम मुददा हो/होइन?"
-                  required={true}
-                  control={control}
-                  options={[
-                    { label: 'होइन', value: 0 },
-                    { label: 'हो', value: 1 },
-                  ]}
-                  error={errors[`is_last_mudda_${ index + 1 }`]}
-                />
-              </Grid>
+
 
               <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 3 }}>
                 <Button
@@ -555,6 +708,14 @@ const BandiPersonForm = () => {
       <Grid container spacing={2}>
         <Grid size={{ xs: 12 }} sx={formHeadStyle}>
           पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरणः
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleSameAsAbove}
+          >
+            copy मुख्य मुद्दा
+          </Button>
+
         </Grid>
 
         <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
@@ -613,19 +774,7 @@ const BandiPersonForm = () => {
 
         {selectedbandi_type === 'कैदी' && ( <>
 
-          <Grid size={{ xs: 2 }}>
-            <ReuseSelect
-              name="is_life_time"
-              label="आजिवन कैद हो/होइन?"
-              required={false}
-              options={[
-                { value: '1', label: 'हो' },
-                { value: '0', label: 'होइन' }
-              ]}
-              control={control}
-              error={errors.is_life_time}
-            />
-          </Grid>
+         
           {is_life_time == 0 && ( <>
             <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <ReuseDateField

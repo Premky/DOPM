@@ -137,8 +137,8 @@ const BandiTransferForm = () => {
                                         name="is_thunuwa_permission"
                                         label="थुनुवाको हकमा स्विकृति छ/छैन?"
                                         options={[
-                                            {label:'छ', value:'छ'},
-                                            {label:'छैन', value:'छैन'}
+                                            {label:'छ', value:1},
+                                            {label:'छैन', value:0}
                                         ]}
                                         control={control}
                                         required={false}

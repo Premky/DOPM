@@ -152,6 +152,7 @@ const EmployeeForm = () => {
                                         name='sanket_no'
                                         label="कर्मचारी संकेत नम्बर"
                                         // defaultValue={band_rand_id}
+                                        placeholder={"अंग्रेजीमा लेख्नुहोला"}
                                         required={true}
                                         control={control}
                                         error={errors.office_bandi_id}

@@ -159,7 +159,7 @@ const PayroleTable = () => {
                                             <Checkbox checked={data.is_checked} onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )} />
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {index + 1}
+                                            {index + 1}  {data.payrole_status}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
                                             {data.office_bandi_id}

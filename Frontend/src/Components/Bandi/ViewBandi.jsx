@@ -27,6 +27,9 @@ const ViewBandi = ( { bandi } ) => {
                     <BandiTable bandi_id={bandi_id} />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
+                    <BandiMuddaTable bandi_id={bandi_id} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
                     <BandiKaidTable bandi_id={bandi_id} />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
@@ -40,9 +43,6 @@ const ViewBandi = ( { bandi } ) => {
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <BandiIDTable bandi_id={bandi_id} />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                    <BandiMuddaTable bandi_id={bandi_id} />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <BandiFineTable bandi_id={bandi_id} />
