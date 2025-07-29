@@ -458,7 +458,7 @@ const EmployeeForm = () => {
                                         control={control}
                                         options={[
                                             { label: 'हो', value: 'हो' },
-                                            { label: 'निमित्त', value: 'निमित्त कार्यालय प्रमुख' },
+                                            { label: 'निमित्त', value: 'निमित्त' },
                                             { label: 'होइन', value: 'होइन' }
                                         ]}
                                         error={errors.is_chief}
