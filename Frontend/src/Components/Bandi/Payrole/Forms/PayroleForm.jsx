@@ -15,6 +15,8 @@ import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 import { CheckBox } from '@mui/icons-material';
 import ReuseCheckboxGroup from '../../ReusableComponents/ReuseCharactersCheckbox';
 import useFetchPayroleConditions from '../useApi/useFetchPayroleConditions';
+import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
+import ReuseMunicipality from '../../../ReuseableComponents/ReuseMunicipality';
 
 const PayroleForm = () => {
   const BASE_URL = useBaseURL();
@@ -107,6 +109,7 @@ const PayroleForm = () => {
       setLoading( false );
     }
   };
+  const selectedDistrictId=watch('recommended_district');
   const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
   const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
@@ -153,6 +156,26 @@ const PayroleForm = () => {
                 required={true}
                 control={control}
                 error={errors.payrole_entry_date}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDistrict
+                name='recommended_district'
+                label='प्यारोल बस्ने इच्छुक जिल्ला'
+                required={true}
+                control={control}
+                error={errors.recommended_district}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseMunicipality
+                name='recommended_city'
+                label='प्यारोल बस्ने इच्छुक स्थानिय तह'
+                required={true}
+                control={control}
+                error={errors.recommended_city}
+                selectedDistrict={selectedDistrictId}
               />
             </Grid>
 

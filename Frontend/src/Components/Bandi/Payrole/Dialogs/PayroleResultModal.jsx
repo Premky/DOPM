@@ -79,6 +79,8 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, payrole
                 <MenuItem value="अयोग्य">अयोग्य</MenuItem>
                 <MenuItem value="छलफल">छलफल</MenuItem>
                 <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
+                <MenuItem value="पास">पास</MenuItem>
+                <MenuItem value="फेल">फेल</MenuItem>
               </TextField>
             </Grid>
             <Grid size={{ xs: 12 }}>

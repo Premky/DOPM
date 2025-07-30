@@ -15,7 +15,8 @@ import {
     Menu,
     MenuItem,
     Button,
-    Checkbox
+    Checkbox,
+    Box
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
@@ -96,6 +97,27 @@ const PayroleTable = () => {
         }
     };
 
+    const getRowBackgroundColor = ( status ) => {
+        switch ( status ) {
+            case "योग्य":
+                return "#bbeba4";
+            case "फेल":
+                return "#f57272ff";
+            // Add more specific colors if needed
+            case "अयोग्य":
+                return "#eaf883ff";
+            case "छलफल":
+                return "#b9d5eeff";
+            case "कागजात अपुग":
+                return "#77e2e2ff";
+            case "पास":
+                return "#3bed35ff";
+            default:
+                return "white";
+        }
+    };
+
+
     return (
         <>
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedFines, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
@@ -116,12 +138,13 @@ const PayroleTable = () => {
                         }} />
                 )}
             </Menu>
+            <Box>जम्मा: {totalKaidi}</Box>
             <PayroleTableFilters onChange={( newFilters ) => setFilters( newFilters )} />
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }}>चेक</TableCell>
+                    <TableHead >
+                        <TableRow sx={{background:"blue"}}>
+                            <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }} >चेक</TableCell>
                             <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }}>सि.नं.</TableCell>
                             <TableCell sx={{ position: "sticky", left: 50, zIndex: 3 }}>बान्दी (id)</TableCell>
                             <TableCell sx={{ position: "sticky", left: 50, zIndex: 3 }}>कारागार कार्यालय</TableCell>
@@ -150,12 +173,8 @@ const PayroleTable = () => {
                             const bandiFines = fetchedFines[data.bandi_id] || [];
                             const rowStyle = {
                                 backgroundColor:
-                                    authState.office_id <= 2 || data.payrole_status >= 3
-                                        ? data.pyarole_rakhan_upayukat === "छ"
-                                            ? "#bbeba4"
-                                            : "#f9d1d5"
-                                        : "white"
-                            };
+                                    getRowBackgroundColor( data.pyarole_rakhan_upayukat )
+                                };
 
                             return (
                                 <Fragment key={data.id}>
@@ -202,7 +221,7 @@ const PayroleTable = () => {
                                             {bandiFines.map( ( fine, i ) => (
                                                 <>
                                                     <Fragment key={`fine-${ data.id }-${ i }`}>
-                                                       {i+1}. {fine.deposit_office}को मिति {fine.deposit_date} गतेको च.नं. {fine.deposit_ch_no} बाट रु.{fine.deposit_amount}  {fine.fine_name_np} बुझाएको ।
+                                                        {i + 1}. {fine.deposit_office}को मिति {fine.deposit_date} गतेको च.नं. {fine.deposit_ch_no} बाट रु.{fine.deposit_amount}  {fine.fine_name_np} बुझाएको ।
                                                         <hr />
                                                     </Fragment>
                                                 </>

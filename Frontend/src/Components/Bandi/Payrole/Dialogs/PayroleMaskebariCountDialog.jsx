@@ -82,7 +82,7 @@ const PayroleMaskebariCountDialog = ({ open, onClose, data, onSave }) => {
 
   const onSubmit = async (formValues) => {
     try {
-      const url = `${BASE_URL}/bandi/create_payrole_maskebari_count${isEdit ? `/${data.id}` : ''}`;
+      const url = `${BASE_URL}/payrole/create_payrole_maskebari_count${isEdit ? `/${data.id}` : ''}`;
       const method = isEdit ? 'put' : 'post';
 
       await axios[method](url, formValues, { withCredentials: true });
@@ -117,7 +117,7 @@ const PayroleMaskebariCountDialog = ({ open, onClose, data, onSave }) => {
     if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`${BASE_URL}/bandi/payrole_maskebari_count/${data.id}`, { withCredentials: true });
+      await axios.delete(`${BASE_URL}/payrole/payrole_maskebari_count/${data.id}`, { withCredentials: true });
       Swal.fire('डिलिट भयो', 'रेकर्ड सफलतापूर्वक डिलिट भयो', 'success');
       onSave();
       onClose();

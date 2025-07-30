@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import Swal from 'sweetalert2';
 import { useForm } from 'react-hook-form';
-import nepaliYearsMonths from "../../../../../Utils/nepaliYearsMonths.js"
+import nepaliYearsMonths from "../../../../../Utils/nepaliYearsMonths.js";
 
 
 // import ReuseOffice from '../../ReuseableComponents/ReuseKaragarOffice';
@@ -19,27 +19,27 @@ const PayroleMakebari = () => {
     const { state: authState } = useAuth();
 
     const { control, watch } = useForm();
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedData, setSelectedData] = useState(null);
-    const [records, setRecords] = useState([]);
+    const [editDialogOpen, setEditDialogOpen] = useState( false );
+    const [selectedData, setSelectedData] = useState( null );
+    const [records, setRecords] = useState( [] );
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${BASE_URL}/bandi/payrole_maskebari_count`, {
+            const response = await axios.get( `${ BASE_URL }/payrole/payrole_maskebari_count`, {
                 withCredentials: true,
-            });
+            } );
             const { Status, Result } = response.data;
-            if (Status) {
-                setRecords(Result);
-                calculateTotals(Result);
+            if ( Status ) {
+                setRecords( Result );
+                calculateTotals( Result );
             }
-        } catch (err) {
-            console.error(err);
+        } catch ( err ) {
+            console.error( err );
         }
     };
 
-    const [totals, setTotals] = useState({});
-    const calculateTotals = (data) => {
+    const [totals, setTotals] = useState( {} );
+    const calculateTotals = ( data ) => {
         const sumFields = [
             'total_decision_count_female', 'total_decision_count_male', 'total_decision_count_other', 'total_decision_count',
             'total_payrole_count_female', 'total_payrole_count_male', 'total_payrole_count_other', 'total_payrole_count',
@@ -53,69 +53,69 @@ const PayroleMakebari = () => {
         ];
 
         const totals = {};
-        sumFields.forEach(field => {
-            totals[field] = data.reduce((acc, curr) => acc + (parseInt(curr[field]) || 0), 0);
-        });
-        setTotals(totals);
+        sumFields.forEach( field => {
+            totals[field] = data.reduce( ( acc, curr ) => acc + ( parseInt( curr[field] ) || 0 ), 0 );
+        } );
+        setTotals( totals );
     };
 
-    useEffect(() => {
+    useEffect( () => {
         fetchData();
-    }, []);
+    }, [] );
 
-    const handleSave = async (formData) => {
+    const handleSave = async ( formData ) => {
         fetchData();
     };
 
-    const handleDelete = async (id) => {
-        const confirm = await Swal.fire({
+    const handleDelete = async ( id ) => {
+        const confirm = await Swal.fire( {
             title: 'डेटा मेटाउन चाहनुहुन्छ?',
             showCancelButton: true,
             confirmButtonText: 'हो',
             cancelButtonText: 'रद्द',
-        });
-        if (!confirm.isConfirmed) return;
+        } );
+        if ( !confirm.isConfirmed ) return;
 
         try {
-            await axios.delete(`${BASE_URL}/bandi/create_payrole_maskebari_count/${id}`, {
+            await axios.delete( `${ BASE_URL }/payrole/create_payrole_maskebari_count/${ id }`, {
                 withCredentials: true,
-            });
-            Swal.fire('मेटाइयो!', 'रेकर्ड सफलतापूर्वक मेटाइयो।', 'success');
+            } );
+            Swal.fire( 'मेटाइयो!', 'रेकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
             fetchData();
-        } catch (err) {
-            console.error(err);
-            Swal.fire('त्रुटि!', 'रेकर्ड मेटाउन सकिएन।', 'error');
+        } catch ( err ) {
+            console.error( err );
+            Swal.fire( 'त्रुटि!', 'रेकर्ड मेटाउन सकिएन।', 'error' );
         }
     };
 
-    const officeid = watch('selected_office');
-    const yearbs = watch('selected_year');
-    const monthbs = watch('selected_month');
+    const officeid = watch( 'selected_office' );
+    const yearbs = watch( 'selected_year' );
+    const monthbs = watch( 'selected_month' );
 
-    const [filteredRecords, setFilteredRecords] = useState([]);
-    const [filteredSum, setFilteredSum] = useState([]);
-    useEffect(() => {
-        if (officeid || yearbs || monthbs) {
+    const [filteredRecords, setFilteredRecords] = useState( [] );
+    const [filteredSum, setFilteredSum] = useState( [] );
+    useEffect( () => {
+        if ( officeid || yearbs || monthbs ) {
             // Apply filters normally
             let filtered = records;
-            if (officeid) {
-                filtered = filtered.filter(a => a.office_id == officeid);
+            if ( officeid ) {
+                filtered = filtered.filter( a => a.office_id == officeid );
             }
-            if (yearbs) {
-                filtered = filtered.filter(a => a.year_bs == yearbs);
+            if ( yearbs ) {
+                filtered = filtered.filter( a => a.year_bs == yearbs );
             }
-            if (monthbs) {
-                filtered = filtered.filter(a => a.month_bs == monthbs);
+            if ( monthbs ) {
+                filtered = filtered.filter( a => a.month_bs == monthbs );
             }
-            setFilteredRecords(filtered);
+            setFilteredRecords( filtered );
         } else {
             // Group and sum by office_id
             const grouped = {};
 
-            records.forEach(record => {
+            records.forEach( record => {
                 const officeKey = record.office_id;
 
-                if (!grouped[officeKey]) {
+                if ( !grouped[officeKey] ) {
                     // Initialize with non-numeric fields
                     grouped[officeKey] = {
                         office_id: record.office_id,
@@ -127,41 +127,41 @@ const PayroleMakebari = () => {
                     };
 
                     // Initialize numeric fields with parsed numbers
-                    Object.keys(record).forEach(key => {
+                    Object.keys( record ).forEach( key => {
                         const value = record[key];
-                        if (!isNaN(value) && value !== null && value !== '') {
-                            grouped[officeKey][key] = parseFloat(value);
+                        if ( !isNaN( value ) && value !== null && value !== '' ) {
+                            grouped[officeKey][key] = parseFloat( value );
                         }
-                    });
+                    } );
                 } else {
                     // Sum all numeric fields
-                    Object.keys(record).forEach(key => {
+                    Object.keys( record ).forEach( key => {
                         const value = record[key];
-                        if (!isNaN(value) && value !== null && value !== '') {
-                            const num = parseFloat(value);
-                            if (!grouped[officeKey][key]) grouped[officeKey][key] = 0;
+                        if ( !isNaN( value ) && value !== null && value !== '' ) {
+                            const num = parseFloat( value );
+                            if ( !grouped[officeKey][key] ) grouped[officeKey][key] = 0;
                             grouped[officeKey][key] += num;
                         }
-                    });
+                    } );
 
                     // Concatenate remarks
-                    if (record.remarks) {
+                    if ( record.remarks ) {
                         grouped[officeKey].remarks += '; ' + record.remarks;
                     }
                 }
-            });
+            } );
 
-            setFilteredRecords(Object.values(grouped));
+            setFilteredRecords( Object.values( grouped ) );
         }
-    }, [officeid, yearbs, monthbs, records]);
+    }, [officeid, yearbs, monthbs, records] );
 
 
     return (
         <>
             <Box>
                 <Button onClick={() => {
-                    setSelectedData(null);
-                    setEditDialogOpen(true);
+                    setSelectedData( null );
+                    setEditDialogOpen( true );
                 }} variant="contained" sx={{ mb: 2 }}>नयाँ थप्नुहोस्</Button>
 
 
@@ -169,7 +169,7 @@ const PayroleMakebari = () => {
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <PayroleMaskebariCountDialog
                             open={editDialogOpen}
-                            onClose={() => setEditDialogOpen(false)}
+                            onClose={() => setEditDialogOpen( false )}
                             data={selectedData}
                             onSave={handleSave}
                         />
@@ -201,7 +201,7 @@ const PayroleMakebari = () => {
                         /></Grid>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}><br /><br />
                             <Button variant='contained' color='success' size='large'
-                                onClick={() => exportMaskebariCountToExcel(filteredRecords, totals)}>
+                                onClick={() => exportMaskebariCountToExcel( filteredRecords, totals )}>
                                 {/* <FontAwesomeIcon icon="fa-duotone fa-solid fa-file-spreadsheet" style={{ "--fa-primary-color": "#000000", "--fa-secondary-color": "#00ff59", }} /> */}
                                 Export to Excel
                             </Button>
@@ -302,7 +302,7 @@ const PayroleMakebari = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {filteredRecords.map((row, i) => (
+                                {filteredRecords.map( ( row, i ) => (
                                     <TableRow key={row.id}>
                                         <TableCell>{i + 1}</TableCell>
                                         <TableCell>{row.office_name}</TableCell>
@@ -345,13 +345,13 @@ const PayroleMakebari = () => {
                                         <TableCell>{row.remarks}</TableCell>
                                         <TableCell>
                                             <Button onClick={() => {
-                                                setSelectedData(row);
-                                                setEditDialogOpen(true);
+                                                setSelectedData( row );
+                                                setEditDialogOpen( true );
                                             }} size="small" variant="outlined">Edit</Button>
-                                            <Button onClick={() => handleDelete(row.id)} size="small" variant="outlined" color="error" sx={{ ml: 1 }}>Delete</Button>
+                                            <Button onClick={() => handleDelete( row.id )} size="small" variant="outlined" color="error" sx={{ ml: 1 }}>Delete</Button>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ) )}
                             </TableBody>
                         </Table>
                     </TableContainer>
@@ -362,7 +362,7 @@ const PayroleMakebari = () => {
                 </Box>
             </Box>
         </>
-    )
-}
+    );
+};
 
-export default PayroleMakebari
+export default PayroleMakebari;
