@@ -350,6 +350,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 p.is_checked,
                 p.pyarole_rakhan_upayukat,
                 p.dopm_remarks,
+                ncr.city_name_np AS recommended_city, ndr.district_name_np AS recommended_district,
                 pm.mudda_name AS payrole_mudda_name,
                 o.letter_address,
                 
@@ -366,6 +367,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN np_state ns ON ba.province_id = ns.state_id
             LEFT JOIN np_district nd ON ba.district_id = nd.did
             LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+            LEFT JOIN np_district ndr ON p.recommended_district = ndr.did
+            LEFT JOIN np_city ncr ON p.recommended_city = ncr.cid
             LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id 
             LEFT JOIN bandi_release_details brd ON bp.id = brd.bandi_id       
             LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id

@@ -72,8 +72,7 @@ export default function ParoleApplicationDocx( props ) {
                             alignment: AlignmentType.JUSTIFY,
                             children: [
                                 new TextRun( {
-                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा कन्काई नगरपालिका  ४,
-                                    झापा बस्न पाउँनका लागि श्री ………… जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
+                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${data.recommended_district} ${data.recommended_city}मा बस्न पाउँनका लागि श्री .............. जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
                                     size: 20
                                 } ),
                             ],
