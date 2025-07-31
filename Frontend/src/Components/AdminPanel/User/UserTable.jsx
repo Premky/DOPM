@@ -16,6 +16,7 @@ const UserTable = () => {
     { field: "username", headerName: "प्रयोगकर्ता नाम" },
     { field: "usertype", headerName: "प्रकार" },
     { field: "office_id", headerName: "कार्यालय" },
+    { field: "mobile_no", headerName: "सम्पर्क नं." },
     { field: "branch_id", headerName: "शाखा" },
     { field: "is_active", headerName: "सक्रय" },
   ];
@@ -40,6 +41,7 @@ const UserTable = () => {
             username: opt.username,
             usertype: opt.en_usertype,
             office_id: opt.office,
+            mobile_no: opt.mobile_no,
             branch_id: opt.branch,
             is_active: opt.is_active ? 'छ' : 'छैन',
           }));

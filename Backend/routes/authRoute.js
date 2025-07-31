@@ -97,11 +97,13 @@ router.get( '/get_users', verifyToken, async ( req, res ) => {
             u.*, 
             ur.role_name AS usertype_en, 
             o.office_name_with_letter_address, 
-            b.branch_np
+            b.branch_np,
+            e.mobile_no
         FROM users u
         LEFT JOIN user_roles ur ON u.role_id = ur.id
         LEFT JOIN offices o ON u.office_id = o.id
         LEFT JOIN branch b ON u.branch_id = b.id
+        LEFT JOIN employees e ON u.user_login_id = e.sanket_no
         ${ filters }
         ORDER BY u.id
     `;
