@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue, disabled, office_categories_id }) => {
+const ReuseCourt = ({ name, label, required, control, error,defaultValue, disabled, office_categories_id }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -27,18 +27,12 @@ const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3 );
+                    const filtered = Result.filter(a => a.office_categories_id == 4);
                     let formatted;
                     if(name_type='short'){
                         formatted = filtered.map((opt, index) => ({
                             sn: index + 1,
-                            label:opt.letter_address,
-                            value: opt.id,
-                        }));
-                    }else{
-                        formatted = filtered.map((opt, index) => ({
-                            sn: index + 1,
-                            label: opt.office_name_with_letter_address,
+                            label:opt.office_name_with_letter_address,
                             value: opt.id,
                         }));
                     }
@@ -122,4 +116,4 @@ const ReuseKaragarOffice = ({ name, label, required, control, error,defaultValue
     );
 };
 
-export default ReuseKaragarOffice;
+export default ReuseCourt;

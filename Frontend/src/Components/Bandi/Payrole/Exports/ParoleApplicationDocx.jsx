@@ -1,5 +1,5 @@
 // MyDocGenerator.js
-import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle  } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle } from "docx";
 import { Button } from "@mui/material";
 import { calculateBSDate } from "../../../../../Utils/dateCalculator";
 import NepaliDate from 'nepali-datetime';
@@ -11,7 +11,7 @@ export default function ParoleApplicationDocx( props ) {
     if ( data?.nationality == 'विदेशी' ) {
         address = `${ data?.bidesh_nagarik_address_details },${ data?.country_name_np }`;
     } else if ( data?.nationality == 'स्वदेशी' ) {
-        address = `data.city_name_np, data.district_name_np, data.district_name_np, data.state_name_np, data.country_name_np;`;
+        address = `${data.city_name_np, data.district_name_np, data.district_name_np, data.state_name_np, data.country_name_np}`;
     }
     let mudda_name;
     if ( data?.muddas ) {
@@ -33,17 +33,21 @@ export default function ParoleApplicationDocx( props ) {
                             font: "Kalimati",
                             size: 22
                         }
-                    }
+                    },
+                    spacing: {
+                        line: 240,
+                        lineRule: "auto", // or "atLeast", "exact"
+                    },
                 }
             },
             sections: [
                 {
                     properties: {
-                        page:{
-                            size:{
-                                orientation:"portrait", 
-                                width:11906, 
-                                height:16838,
+                        page: {
+                            size: {
+                                orientation: "portrait",
+                                width: 11906,
+                                height: 16838,
                             }
                         }
                     },
@@ -60,6 +64,10 @@ export default function ParoleApplicationDocx( props ) {
                             children: [
                                 new TextRun( { text: "श्री संघीय प्रोवेशन तथा प्यारोल बोर्ड,", bold: true } ),
                                 new TextRun( { text: "काठमाडौं ।", bold: true } ),
+                                new TextRun( { break: 1 } ),
+                                new TextRun( { text: "मार्फत श्रीमान् प्यारोल अधिकृत,", bold: true } ),
+                                new TextRun( { break: 1 } ),
+                                new TextRun( { text: `कारागार कार्यालय,${ data.letter_address } ।`, bold: true } ),
                             ],
                         } ),
                         new Paragraph( {
@@ -72,7 +80,7 @@ export default function ParoleApplicationDocx( props ) {
                             alignment: AlignmentType.JUSTIFY,
                             children: [
                                 new TextRun( {
-                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${data.recommended_district} ${data.recommended_city}मा बस्न पाउँनका लागि श्री .............. जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
+                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${ data.recommended_district } ${ data.recommended_city }मा बस्न पाउँनका लागि श्री .............. जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
                                     size: 20
                                 } ),
                             ],
@@ -208,7 +216,7 @@ export default function ParoleApplicationDocx( props ) {
                                     text: `१४. संलग्न कागजातहरुः`,
                                     size: 20,
                                     bold: true
-                                } ),                                
+                                } ),
                             ],
                         } ),
                         new Paragraph( {
@@ -253,15 +261,9 @@ export default function ParoleApplicationDocx( props ) {
                                     text: ` ${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ । `, size: 20
                                 } ),
                                 new TextRun( { break: 1 } ),
+                                
                                 new TextRun( {
-                                    text: `झ) मुद्दा अन्तिम भएको जानकारी पत्रः`, size: 20, bold: true
-                                } ),
-                                new TextRun( {
-                                    text: ` ${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ । `, size: 20
-                                } ),
-                                new TextRun( { break: 1 } ),
-                                new TextRun( {
-                                    text: `ञ) जरिवाना तथा क्षतिपुर्ती दाखिला गरेको पत्र र रसिद ।`, size: 20, bold: true
+                                    text: `झ) जरिवाना तथा क्षतिपुर्ती दाखिला गरेको पत्र र रसिद ।`, size: 20, bold: true
                                 } ),
                                 new TextRun( { break: 1 } ),
                                 new TextRun( {
@@ -347,7 +349,7 @@ export default function ParoleApplicationDocx( props ) {
         const url = URL.createObjectURL( blob );
         const a = document.createElement( "a" );
         a.href = url;
-        a.download = `${data.bandi_name}.docx`;
+        a.download = `${ data.bandi_name }.docx`;
         a.click();
         URL.revokeObjectURL( url );
     };

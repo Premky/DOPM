@@ -2091,7 +2091,8 @@ router.post( '/create_bandi_diseases', verifyToken, async ( req, res ) => {
             req.body.bandi_id,
             req.body.bandi_diseases,
             user_id,
-            active_office
+            active_office,
+            connection
         );
 
         if ( insertCount === 0 ) {
@@ -2155,7 +2156,7 @@ router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
     try {
         connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
-        const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
+        const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office, connection );
 
         if ( updatedCount === 0 ) {
             return res.status( 400 ).json( {
@@ -2199,7 +2200,8 @@ router.post( '/create_bandi_disability', verifyToken, async ( req, res ) => {
             req.body.bandi_id,
             req.body.bandi_disability,
             user_id,
-            active_office
+            active_office,
+            connection
         );
 
         if ( insertCount === 0 ) {

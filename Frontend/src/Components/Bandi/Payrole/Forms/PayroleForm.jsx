@@ -17,6 +17,9 @@ import ReuseCheckboxGroup from '../../ReusableComponents/ReuseCharactersCheckbox
 import useFetchPayroleConditions from '../useApi/useFetchPayroleConditions';
 import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
 import ReuseMunicipality from '../../../ReuseableComponents/ReuseMunicipality';
+import ReuseOffice from '../../../ReuseableComponents/ReuseOffice';
+import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
+import ReuseCourt from '../../../ReuseableComponents/ReuseCourt';
 
 const PayroleForm = () => {
   const BASE_URL = useBaseURL();
@@ -85,7 +88,7 @@ const PayroleForm = () => {
         } );
         reset();
         setEditing( false );
-        fetchOffices();
+        // fetchOffices();
       } else {
         Swal.fire( {
           title: response.data.nerr,
@@ -133,7 +136,7 @@ const PayroleForm = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReusePayroleNos
                 name='payrole_no'
-                label='प्यारोल संख्या'
+                label='प्यारोल बैठक नं.'
                 required={true}
                 control={control}
                 error={errors._no}
@@ -176,6 +179,26 @@ const PayroleForm = () => {
                 control={control}
                 error={errors.recommended_city}
                 selectedDistrict={selectedDistrictId}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name='recommended_tole_ward'
+                label='टोल/वडा नं.'
+                required={true}
+                control={control}
+                error={errors.tole_ward}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseCourt
+                name='pyarole_court'
+                label='पेश गर्ने अदालत'
+                required={true}
+                control={control}
+                office_categories_id={3}
               />
             </Grid>
 

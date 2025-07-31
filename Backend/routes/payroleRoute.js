@@ -642,6 +642,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         payrole_entry_date,
         recommended_district,
         recommended_city,
+        recommended_tole_ward,
         other_details,
         payrole_reason,
         payrole_remarks,
