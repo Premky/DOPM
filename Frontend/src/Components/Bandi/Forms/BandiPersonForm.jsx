@@ -104,7 +104,7 @@ const BandiPersonForm = () => {
   useEffect( () => {
     const fetchRandomBandiId = async () => {
       try {
-        const response = await axios.get( `${ BASE_URL }/bandi/get_random_bandi_id`,{withCredentials:true} );
+        const response = await axios.get( `${ BASE_URL }/bandi/get_random_bandi_id`, { withCredentials: true } );
         const { Status, Result } = response.data;
         if ( Status ) {
           setValue( 'office_bandi_id', Result || '' );
@@ -164,7 +164,7 @@ const BandiPersonForm = () => {
   ] );
 
   const handleSameAsAbove = () => {
-    console.log("handleSameAsAbove button is Working")
+    console.log( "handleSameAsAbove button is Working" );
     for ( let index = 1; index <= muddaCount; index++ ) {
       const isMain = watch( `is_main_mudda_${ index }` );
       if ( isMain === 1 || isMain === '1' ) {
@@ -172,8 +172,8 @@ const BandiPersonForm = () => {
         const hirasat_months_arr = watch( `hirasat_months_${ index }` );
         const hirasat_days_arr = watch( `hirasat_days_${ index }` );
         const hirasat_date_bs_arr = watch( `thuna_date_bs_${ index }` );
-        const is_life_time_arrr = watch(`is_life_time_${ index }` );
-        const release_date_bs_arr = watch(`release_date_bs_${ index}`);
+        const is_life_time_arrr = watch( `is_life_time_${ index }` );
+        const release_date_bs_arr = watch( `release_date_bs_${ index }` );
 
         // Copy these values to the "main" fields
         setValue( 'hirasat_years', hirasat_years_arr || '' );
@@ -183,8 +183,8 @@ const BandiPersonForm = () => {
         setValue( 'is_life_time', is_life_time_arrr || '' );
         setValue( 'release_date_bs', release_date_bs_arr || '' );
         break;
-      }else{
-        alert("मुख्य मुद्दा छैन।")
+      } else {
+        alert( "मुख्य मुद्दा छैन।" );
       }
     }
   };
@@ -192,7 +192,7 @@ const BandiPersonForm = () => {
 
   const onSubmit = async ( data ) => {
     // console.log( data );
-    if(!data.photo){alert('फोटो अनिवार्य छ ।')}
+    if ( !data.photo ) { alert( 'फोटो अनिवार्य छ ।' ); }
     try {
       const url = editing
         ? `${ BASE_URL }/bandi/update_bandi/${ currentData.id }`
@@ -482,7 +482,7 @@ const BandiPersonForm = () => {
           const thuna_date_bs_arr = watch( `thuna_date_bs_${ index + 1 }` );
           const kaidDuration = calculateBSDate( thuna_date_bs_arr, release_date_bs_arr );
           setValue( `total_kaid_duration_${ index + 1 }`, `${ kaidDuration.formattedDuration }` );
-       
+
           return (
             <Grid container spacing={2} key={index} sx={{ mt: 2 }}>
 
@@ -556,20 +556,20 @@ const BandiPersonForm = () => {
               {muddaCondition === 0 && ( <>
 
 
+                <Grid size={{ xs: 3 }}>
+                  <ReuseSelect
+                    name={`is_life_time_${ index + 1 }`}
+                    label="आजिवन कैद हो/होइन?"
+                    required={selectedbandi_type === 'कैदी'}
+                    options={[
+                      { value: '1', label: 'हो' },
+                      { value: '0', label: 'होइन' }
+                    ]}
+                    control={control}
+                    error={errors.is_life_time}
+                  />
+                </Grid>
                 {selectedbandi_type === 'कैदी' && ( <>
-                  <Grid size={{ xs: 3 }}>
-                    <ReuseSelect
-                      name={`is_life_time_${ index + 1 }`}
-                      label="आजिवन कैद हो/होइन?"
-                      required={selectedbandi_type === 'कैदी'}
-                      options={[
-                        { value: '1', label: 'हो' },
-                        { value: '0', label: 'होइन' }
-                      ]}
-                      control={control}
-                      error={errors.is_life_time}
-                    />
-                  </Grid>
                   {is_life_time_arr == 0 && ( <>
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                       <ReuseDateField
@@ -776,7 +776,7 @@ const BandiPersonForm = () => {
 
         {selectedbandi_type === 'कैदी' && ( <>
 
-         
+
           {is_life_time == 0 && ( <>
             <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <ReuseDateField
