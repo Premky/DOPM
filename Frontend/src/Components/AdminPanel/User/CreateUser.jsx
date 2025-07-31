@@ -148,9 +148,9 @@ const CreateUser = () => {
             const { Status, Result, Error } = response.data;
 
             if ( Status ) {
-                console.log( "Result typeof:", typeof Result );
-                console.log( "Result is array:", Array.isArray( Result ) );
-                console.log( "Result content:", Result );
+                // console.log( "Result typeof:", typeof Result );
+                // console.log( "Result is array:", Array.isArray( Result ) );
+                // console.log( "Result content:", Result );
 
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
                     // console.log( Result );
@@ -184,6 +184,7 @@ const CreateUser = () => {
                         usertype_en: opt.usertype_en,
                         office_id: opt.office_id,
                         office_np: opt.office_name_with_letter_address,
+                        mobile_no: opt.mobile_no,
                         branch_id: opt.branch_id,
                         branch_np: opt.branch_np,
                         is_active: opt.is_active ? "छ" : "छैन",
@@ -295,6 +296,7 @@ const CreateUser = () => {
         { field: "user_login_id", headerName: "प्रयोगकर्ता नाम" },
         { field: "usertype_en", headerName: "प्रकार" },
         { field: "office_np", headerName: "कार्यालय" },
+        { field: "mobile_no", headerName: "सम्पर्क नं." },
         { field: "branch_np", headerName: "शाखा" },
         { field: "is_active", headerName: "सक्रय" },
         { field: "lastpwchanged", headerName: "पासवर्ड परिवर्तन गर्न" },
