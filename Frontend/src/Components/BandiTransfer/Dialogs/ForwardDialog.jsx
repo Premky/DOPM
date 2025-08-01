@@ -74,11 +74,16 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
     else if(authState.role_name=='office_admin'){
          customRoles=[{value:"pending_supervisor", label:"विभागामा पेश"}]
     } 
-    else if(authState.role_name=='pending_supervisor'){
+    else if(authState.role_name=='supervisor'){
          customRoles = [
             {value:"pending_admin", label:"पेश गर्नुहोस्"}
          ];
     }
+    // else if(authState.role_name=='supervisor'){
+    //      customRoles = [
+    //         {value:"pending_admin", label:"पेश गर्नुहोस्"}
+    //      ];
+    // }
     // else if(authState.role_name=='pending_admin'){
     //      customRoles = [
     //         {value:"to_board", label:"प्यारोल शाखा"}
