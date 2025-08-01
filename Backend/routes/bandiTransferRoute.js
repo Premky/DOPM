@@ -289,6 +289,7 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
         //     return res.status(403).json({Status:false, message:"अनुमति छैन।"})
         // }
         connection = await pool.getConnection();
+        let is_thunuwa_permission;
         connection.beginTransaction();
         if(data.is_thunuwa_permission==="छ"){
             is_thunuwa_permission=1
