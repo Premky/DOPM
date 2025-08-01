@@ -73,7 +73,6 @@ async function calculateAge( birthDateBS ) {
 
 async function generateUniqueBandiId() {
     const maxAttempts = 10;
-
     for ( let i = 0; i < maxAttempts; i++ ) {
         const randId = Math.floor( 1000000 + Math.random() * 9000000 ); // 7-digit random number
         const [result] = await pool.query(
@@ -85,7 +84,6 @@ async function generateUniqueBandiId() {
             return randId; // Unique ID
         }
     }
-
     throw new Error( "Unable to generate a unique bandi ID after multiple attempts." );
 }
 
@@ -140,8 +138,6 @@ const upload = multer( {
     fileFilter,
     limits: { fileSize: 1 * 1024 * 1024 },
 } );
-
-
 
 pool.query( `CREATE OR REPLACE VIEW view_bandi_address_details AS
 SELECT 
@@ -286,16 +282,13 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
     }
 } );
 
-
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.username;
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
     const data = req.body;
     const office_bandi_id = data.office_bandi_id;
-
     let connection;
-
     try {
         // ✅ get a dedicated connection from the pool
         connection = await pool.getConnection();
@@ -338,7 +331,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             date: req.body[`mudda_phesala_date_${ i }`],
             vadi: req.body[`vadi_${ i }`],
         } ) );
-        console.log('muddas',muddas)
+        // console.log( 'muddas', muddas );
         await insertMuddaDetails( bandi_id, muddas, user_id, office_id, connection );
 
         const fineArray = JSON.parse( req.body.fine || '[]' );
@@ -353,25 +346,19 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         await insertContacts( bandi_id, JSON.parse( req.body.conatact_person || '[]' ), user_id, office_id, connection );
         await insertDiseasesDetails( bandi_id, JSON.parse( req.body.disease || '[]' ), user_id, office_id, connection );
         await insertDisablilityDetails( bandi_id, JSON.parse( req.body.disability || '[]' ), user_id, office_id, connection );
-
         if ( data.health_insurance?.length ) {
             await insertHealthInsurance( bandi_id, [{ ...req.body }], user_id, office_id, connection );
         }
-
         await connection.commit();
         console.log( `🟩 Transaction committed with Bandi ID ${ bandi_id } by ${ req.user.office_np }` );
-
         connection.release();
-
         res.json( {
             Status: true,
             Result: bandi_id,
             message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
         } );
-
     } catch ( error ) {
         console.error( '❌ Error during /create_bandi:', error );
-
         if ( connection ) {
             try {
                 await connection.rollback();
@@ -380,7 +367,6 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
                 console.error( '❌ Rollback failed:', rollbackErr );
             }
         }
-
         // If photo uploaded, delete it
         if ( req.file ) {
             const photoFullPath = path.join( __dirname, '..', 'uploads', 'bandi_photos', req.file.filename );
@@ -397,18 +383,15 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
                 console.error( '❌ Failed to delete photo or update DB:', unlinkErr );
             }
         }
-
         res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: 'त्रुटि भयो। विवरण सुरक्षित हुन सकेन।',
         } );
-
     } finally {
         if ( connection ) connection.release();
     }
 } );
-
 
 router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     let connection;

@@ -50,6 +50,12 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   if ( releaseBs ) {
     releaseAd = data.releaseBs && await bs2ad( data?.release_date_bs );
   }
+  let is_life_time;
+  if(data.is_life_time==undefined || data.is_life_time=="" || data.is_life_time==null){
+    is_life_time=0;
+  }else{
+    is_life_time=data.is_life_time
+  }
 
   const baseValues = [
     bandi_id,
@@ -65,7 +71,7 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   let values, sql;
 
   if ( releaseBs ) {
-    values = [...baseValues, data.is_life_time, releaseBs, releaseAd, ...auditFields];
+    values = [...baseValues, is_life_time, releaseBs, releaseAd, ...auditFields];
     sql = `INSERT INTO bandi_kaid_details (
     bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,  thuna_date_ad, is_life_time,
     release_date_bs, release_date_ad,
