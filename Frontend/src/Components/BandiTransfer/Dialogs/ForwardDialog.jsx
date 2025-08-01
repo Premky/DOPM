@@ -66,18 +66,18 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
     //   const muddaName = kaidimuddas?.[0]?.mudda_name || "";
     const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRolesUsedInProcess();
     let customRoles;
-    if(authState.role_name=='clerk'){
-         customRoles = [
-            {value:"office_admin", label:"कारागार प्रशासक"}
-         ];
+    if ( authState.role_name == 'clerk' ) {
+        customRoles = [
+            { value: "office_admin", label: "कारागार प्रशासक" }
+        ];
     }
-    else if(authState.role_name=='office_admin'){
-         customRoles=[{value:"pending_supervisor", label:"विभागामा पेश"}]
-    } 
-    else if(authState.role_name=='supervisor'){
-         customRoles = [
-            {value:"pending_admin", label:"पेश गर्नुहोस्"}
-         ];
+    else if ( authState.role_name == 'supervisor' ) {
+        customRoles = [
+            { value: "pending_admin", label: "पेश गर्नुहोस्" }
+        ];
+    }
+    else if ( authState.role_name == 'office_admin' ) {
+        customRoles = [{ value: "pending_supervisor", label: "विभागामा पेश" }];
     }
     // else if(authState.role_name=='supervisor'){
     //      customRoles = [
@@ -89,7 +89,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
     //         {value:"to_board", label:"प्यारोल शाखा"}
     //      ];
     // }
-    const role_id = watch("role_id");
+    const role_id = watch( "role_id" );
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>पेश गर्नुहोस्:</DialogTitle>
