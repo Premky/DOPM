@@ -294,7 +294,7 @@ router.post('/create_bandi_transfer_history', verifyToken, async (req, res) => {
         if(data.is_thunuwa_permission==="छ"){
             is_thunuwa_permission=1
         }else if(data.is_thunuwa_permission==="छैन"){
-            is_thunuwa_permission=0
+            is_thunuwa_permission=false
         }else{
             is_thunuwa_permission=data.is_thunuwa_permission
         }
