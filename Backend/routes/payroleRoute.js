@@ -226,8 +226,9 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         }
     }
 
-    if ( mudda_group_id ) {
-        const escapedGroupId = con.escape( mudda_group_id );
+    if ( searchmudda_id ) {
+        const escapedGroupId = con.escape( searchmudda_id );
+        console.log('mudda group', searchmudda_id)
         if ( baseWhere ) {
             baseWhere += ` AND bp.id IN (
                 SELECT bmd.bandi_id 

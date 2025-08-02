@@ -11,6 +11,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import exportToExcel from "../../Exports/ExcelPayrole";
 import useFetchRoleBasedParoleStatus from "../useApi/useFetchRoleBasedParoleStatus";
+import ReuseMuddaGroup from "../../../ReuseableComponents/ReuseMuddaGroups";
 
 
 
@@ -160,7 +161,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    <ReuseMudda
+                    <ReuseMuddaGroup
                         name="searchmudda_id"
                         label="मुद्दा"
                         control={control}

@@ -71,24 +71,31 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
             { value: "office_admin", label: "कारागार प्रशासक" }
         ];
     }
-    else if ( authState.role_name == 'supervisor' ) {
-        customRoles = [
-            { value: "pending_admin", label: "पेश गर्नुहोस्" }
-        ];
-    }
     else if ( authState.role_name == 'office_admin' ) {
         customRoles = [{ value: "pending_supervisor", label: "विभागामा पेश" }];
     }
-    // else if(authState.role_name=='supervisor'){
-    //      customRoles = [
-    //         {value:"pending_admin", label:"पेश गर्नुहोस्"}
-    //      ];
-    // }
-    // else if(authState.role_name=='pending_admin'){
-    //      customRoles = [
-    //         {value:"to_board", label:"प्यारोल शाखा"}
-    //      ];
-    // }
+    else if ( authState.role_name == 'supervisor' ) {
+        customRoles = [
+            { value: "pending_admin", label: "पेश गर्नुहोस्(शा.अ.)" },
+            { value: "pending_top_level", label: "पेश गर्नुहोस्(निर्देशक)" },
+            { value: "rejected_office_admin", label: "रद्द गर्नुहोस्" }
+            
+        ];
+    }
+    else if ( authState.role_name == 'pending_admin' ) {
+        customRoles = [
+            { value: "pending_top_level", label: "पेश गर्नुहोस् (निर्देशक)" },
+            { value: "pending_supervisor", label: "पेश गर्नुहोस् (महानिर्देशक)" },
+            // { value: "", label: "रद्द गर्नुहोस्" }
+        ];
+    }
+    else if ( authState.role_name == 'pending_top_level' ) {
+        customRoles = [
+            { value: "pending_supervisor", label: "पेश गर्नुहोस् (महानिर्देशक)" },
+            { value: "pending_supervisor", label: "रद्द गर्नुहोस्" }
+        ];
+    }
+    
     const role_id = watch( "role_id" );
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
