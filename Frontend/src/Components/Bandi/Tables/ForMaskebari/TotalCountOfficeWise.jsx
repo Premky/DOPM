@@ -65,8 +65,8 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                 <TableCell sx={tableheadstyle}>महिला</TableCell>
                                 <TableCell sx={tableheadstyle}>कैदी</TableCell>
                                 <TableCell sx={tableheadstyle}>थुनुवा</TableCell>
-                                <TableCell sx={tableheadstyle}>राष्ट्रियता</TableCell>
                                 <TableCell sx={tableheadstyle}>संख्या</TableCell>
+                                <TableCell sx={tableheadstyle}>राष्ट्रियता</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -97,8 +97,8 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                         <TableCell>{data.kaidi_male_65plus + data.kaidi_female_65plus}</TableCell>
                                         <TableCell>{data.thunuwa_male_65plus + data.thunuwa_female_65plus}</TableCell>
                                         <TableCell>{data.total_aashrit}</TableCell>
-                                        <TableCell>{data.foreign_countries}</TableCell>
                                         <TableCell>{data.foreign_count}</TableCell>
+                                        <TableCell>{data.foreign_countries}</TableCell>
                                     </>
                                 </TableRow>
                             ) )}
