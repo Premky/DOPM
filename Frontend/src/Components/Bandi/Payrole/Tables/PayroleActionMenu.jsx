@@ -117,9 +117,12 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         {/* <MenuItem>{data.payrole_status}</MenuItem> */}
       </a>
 
-      <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
-      <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
-      <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
+      {
+        authState.role_id <= 2 && ( <>
+          <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
+          <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
+          <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem></> )
+      }
 
       {
         status === 2 && ( officeId === 1 || officeId === 2 ) && (

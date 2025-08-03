@@ -17,6 +17,7 @@ const useFetchBandiForTransfer = (filters, page, rowsPerPage) => {
     try {
       const {
         searchOffice,
+        searchToOffice,
         nationality,
         searchStatus,        
         searchmudda_id,
@@ -30,6 +31,7 @@ const useFetchBandiForTransfer = (filters, page, rowsPerPage) => {
           page,
           limit: rowsPerPage,
           searchOffice,
+          searchToOffice,
           nationality,
           searchStatus,          
           searchmudda_id,

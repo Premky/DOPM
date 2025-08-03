@@ -1,12 +1,11 @@
 // MyDocGenerator.js
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle } from "docx";
 import { Button } from "@mui/material";
-import { calculateBSDate } from "../../../../../Utils/dateCalculator";
 import NepaliDate from 'nepali-datetime';
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
-export default function TransferLetterDocx( props ) {
+export default function TransferCommonLetterDocx( props ) {
     const { data } = props;
-    // console.log( data );
+    console.log( data );
     let address;
     if ( data?.nationality == 'विदेशी' ) {
         address = `${ data?.bidesh_nagarik_address_details },${ data?.country_name_np }`;
@@ -123,7 +122,7 @@ export default function TransferLetterDocx( props ) {
                             ],
                         } ),
                         new Paragraph( {
-                            alignment: AlignmentType.JUSTIFY,
+                            alignment: AlignmentType.JUSTIFIED,
                             children: [
                                 new TextRun( {
                                     text: `
@@ -145,75 +144,37 @@ export default function TransferLetterDocx( props ) {
                                 size: 100,
                                 type: WidthType.PERCENTAGE,
                             },
-                            borders: {
-                                top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
-                                bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
-                                left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
-                                right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
-                                insideHorizontal: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
-                                insideVertical: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
-                            },
                             rows: [
+                                // Header row
                                 new TableRow( {
                                     alignment: AlignmentType.CENTER,
                                     children: [
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "सि.नं.", bold: true } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "नाम, थर र ठेगाना", bold: true } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "मुद्दा", bold: true } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "कैदी/थुनुवा", bold: true } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "कैफियत", bold: true } )],
-                                        } ),
+                                        new TableCell( { children: [new Paragraph( { text: "सि.नं.", bold: true } )] } ),
+                                        new TableCell( { children: [new Paragraph( { text: "नाम, थर र ठेगाना", bold: true } )] } ),
+                                        new TableCell( { children: [new Paragraph( { text: "मुद्दा", bold: true } )] } ),
+                                        new TableCell( { children: [new Paragraph( { text: "कैदी/थुनुवा", bold: true } )] } ),
+                                        new TableCell( { children: [new Paragraph( { text: "कैफियत", bold: true } )] } ),
                                     ],
                                 } ),
-                                new TableRow( {
-                                    children: [
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "नामः" } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: `नामः${ data.bandi_name }` } )],
-                                        } ),
-                                    ]
-                                } ),
-                                new TableRow( {
-                                    children: [
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "पदः कारागार प्रशासक" } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: `दस्तखतः` } )],
-                                        } ),
-                                    ]
-                                } ),
-                                new TableRow( {
-                                    children: [
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: "दस्तखत" } )],
-                                        } ),
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: `मितिः` } )],
-                                        } ),
-                                    ]
-                                } ),
-                                new TableRow( {
-                                    children: [
-                                        new TableCell( {
-                                            children: [new Paragraph( { text: `मितिः` } )],
-                                        } ),
-                                    ]
-                                } ),
+                                // Data rows
+                                ...data.map( ( d, i ) =>
+                                    new TableRow( {
+                                        alignment: AlignmentType.CENTER,
+                                        children: [
+                                            new TableCell( { children: [new Paragraph( { text: `${ i + 1 }` } )] } ),
+                                            new TableCell( { children: [new Paragraph( { text: d.bandi_name || "" } )] } ),
+                                            new TableCell( { children: [new Paragraph( { text: d?.muddas?.[0]?.mudda_name || "" } )] } ),
+                                            new TableCell( { children: [new Paragraph( { text: d.bandi_type || "" } )] } ),
+                                            new TableCell( { children: [new Paragraph( { text: d.remarks || "" } )] } ),
+                                        ],
+                                    } )
+                                )
                             ]
-                        } ),
+                        } ),                        
 
+                        new Paragraph({ text: "", spacing: { after: 300 } }),
+
+                        
                         new Table( {
                             width: {
                                 size: 100,
@@ -232,7 +193,7 @@ export default function TransferLetterDocx( props ) {
                                     alignment: AlignmentType.CENTER,
                                     children: [
                                         new TableCell( {
-                                            children: [new Paragraph( { text: "बोधार्थः", bold: true, underline:true } )],
+                                            children: [new Paragraph( { text: "बोधार्थः", bold: true, underline: true } )],
                                         } ),
                                         new TableCell( {
                                             children: [new Paragraph( { text: ".................", bold: true } )],
@@ -279,7 +240,7 @@ export default function TransferLetterDocx( props ) {
 
     return (
         <div>
-            <Button onClick={generateDocument} variant="outlined">निवेदन(अनुसूची-१)</Button>
+            <Button onClick={generateDocument} variant="outlined">सरुवा पत्र</Button>
         </div>
     );
 }

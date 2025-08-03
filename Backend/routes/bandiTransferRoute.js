@@ -65,6 +65,7 @@ router.get( '/get_bandi_for_transfer', verifyToken, async ( req, res ) => {
         filters += ' AND bp.current_office_id = ?';
         params.push( active_office );
     }
+
     if ( bandi_id ) {
         filters += ' AND bp.office_bandi_id =?';
         params.push( bandi_id );
@@ -102,6 +103,8 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
     const user_role = req.user.role_name;
     // const [status] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE role_required=?`, user_role );
     // const [role] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE role_required=?`, user_role );
+    const searchOffice = req.query.searchOffice || null;
+    const searchToOffice = req.query.searchToOffice || null;
     const statusKey = req.query.searchStatus || null;
     const roleKey = req.query.searchRoles || null;
     // console.log( role );
@@ -117,6 +120,15 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
         if ( bandi_id ) {
             queryFilter += ' AND bp.id = ?';
             params.push( bandi_id );
+        }
+
+        if(searchOffice){
+            queryFilter += ' AND bp.current_office_id=?';
+            params.push(searchOffice);
+        }
+        if(searchToOffice){
+            queryFilter += ' AND bth.final_to_office_id = ?';
+            params.push(searchToOffice);
         }
 
         if ( statusKey ) {

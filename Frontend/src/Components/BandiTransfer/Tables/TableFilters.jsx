@@ -11,6 +11,7 @@ import useFetchBandiForTransfer from "../Fetch_APIs/useFetchBandiForTransfer";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import useFetchRoleBasedTransferStatus from "../Fetch_APIs/useFetchRoleBasedTransferStatus";
+import TransferCommonLetterDocx from "../Exports/TransferCommonLetterDocx";
 // import exportToExcel from "../../Exports/ExcelPayrole";
 
 const TableFilters = ( { onChange } ) => {
@@ -27,6 +28,7 @@ const TableFilters = ( { onChange } ) => {
     } = useForm( {
         defaultValues: {
             searchOffice: "",
+            searchToOffice: "",
             searchStatus: "",
             nationality: "",
             searchbandi_name: "",
@@ -38,6 +40,7 @@ const TableFilters = ( { onChange } ) => {
     } );
 
     const searchOffice = watch( 'searchOffice' );
+    const searchToOffice = watch( 'searchToOffice' );
     const nationality = watch( 'nationality' );
     const searchStatus = watch( 'searchStatus' );
     const searchmudda_id = watch( 'searchmudda_id' );
@@ -49,6 +52,7 @@ const TableFilters = ( { onChange } ) => {
     // Build filters object
     const filters = {
         searchOffice,
+        searchToOffice,
         nationality,
         searchStatus,
         searchmudda_id,
@@ -59,6 +63,7 @@ const TableFilters = ( { onChange } ) => {
 
     const memoFilters = useMemo( () => filters, [
         filters?.searchOffice,
+        filters?.searchToOffice,
         filters?.nationality,
         filters?.searchStatus,
         filters?.searchmudda_id,
@@ -74,6 +79,7 @@ const TableFilters = ( { onChange } ) => {
     useEffect( () => {
         const currentFilters = {
             searchOffice,
+            searchToOffice,
             nationality,
             searchStatus,
             searchmudda_id,
@@ -84,6 +90,7 @@ const TableFilters = ( { onChange } ) => {
         onChange( currentFilters );
     }, [
         searchOffice,
+        searchToOffice,
         nationality,
         searchStatus,
         searchmudda_id,
@@ -118,24 +125,32 @@ const TableFilters = ( { onChange } ) => {
             { label: 'अस्विकार गरेको', value: 'rejected_by_top_level' },
         ],
     };
-    
-    const {  optrecords:roleBasedStatus, refetchRoleBasedTransferStatus:fetchRoleBasedTransferStatus }=useFetchRoleBasedTransferStatus();
-    
+
+    const { optrecords: roleBasedStatus, refetchRoleBasedTransferStatus: fetchRoleBasedTransferStatus } = useFetchRoleBasedTransferStatus();
+
 
 
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
             <Grid container spacing={2} alignItems="flex-end">
-                {authState.office_id == 1 || authState.office_id == 2 && (
+                
                     <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
-                            label="कारागार कार्यालय"
+                            label="कारागार कार्यालय (देखी)"
                             control={control}
                             error={errors.searchOffice}
                         />
                     </Grid>
-                )}
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                        <ReuseKaragarOffice
+                            name="searchToOffice"
+                            label="स्थानान्तरण भएको कारागार"
+                            control={control}
+                            error={errors?.searchToOffice}
+                        />
+                    </Grid>
+                
                 {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseSelect
                         name="searchRole"
@@ -204,9 +219,10 @@ const TableFilters = ( { onChange } ) => {
                     </Button>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    {/* <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas )} variant="outlined" color="primary" sx={{ m: 1 }}>
-                        एक्सेल निर्यात
-                    </Button> */}
+                    {authState.office_id==2 &&(
+                        <TransferCommonLetterDocx data={filteredKaidi} />
+                    )}
+
                 </Grid>
 
 

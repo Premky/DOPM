@@ -33,9 +33,11 @@ import BandiFullReportPDF from "../View/BandiFullReportPDF";
 import PayroleActionMenu from "./PayroleActionMenu";
 // import exportToExcel from "../../Exports/ExcelPayrole";
 import exportToExcel from "../Exports/ExcelPayrole";
+import exportCharacterToExcel from "../Exports/ExcelPayroleCharacter";
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
 import useFetchAllBandiFines from "../../Apis_to_fetch/useFetchAllBandiFines";
+
 const PayroleTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
@@ -124,6 +126,10 @@ const PayroleTable = () => {
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात
             </Button>
+            <Button onClick={() => exportCharacterToExcel( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
+                चालचलन फर्मेट
+            </Button>
+
             <Menu
                 anchorEl={menuAnchorEl}
                 open={Boolean( menuAnchorEl )}
