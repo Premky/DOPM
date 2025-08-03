@@ -107,9 +107,11 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             const hirasatYears = data?.hirasat_years || 0;
             let totalKaidDuration = kaidDuration;
             let totalBhuktanDuration = bhuktanDuration;
+            let totalBakiDuration = bakiDuration;
             if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
                 totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
                 totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, formattedDateNp, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+                totalBakiDuration = calculateBSDate( formattedDateNp, data.release_date_bs, totalKaidDuration );
             }
 
             const row = worksheet.addRow( [
@@ -153,7 +155,12 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                         `${ totalBhuktanDuration?.formattedDuration } \n ${ totalBhuktanDuration.percentage }%` :
                         `${ bhuktanDuration?.formattedDuration } \n ${ bhuktanDuration.percentage }%`
                     : '',
-                mIndex === 0 ? `${ bakiDuration.formattedDuration }\n${ bakiDuration.percentage }%` : '',
+                // mIndex === 0 ? `${ bakiDuration.formattedDuration }\n${ bakiDuration.percentage }%` : '',
+                mIndex === 0 ?
+                    ( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ?
+                        `${ totalBakiDuration?.formattedDuration } \n ${ totalBakiDuration.percentage }%` :
+                        `${ bakiDuration?.formattedDuration } \n ${ bakiDuration.percentage }%`
+                    : '',
                 mIndex === 0
                     ? kaidiFines
                         .filter( fine => Boolean( fine.deposit_office ) ) // ✅ Only keep valid ones

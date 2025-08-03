@@ -188,9 +188,11 @@ const PayroleTable = () => {
                             const hirasatYears = data?.hirasat_years || 0;
                             let totalKaidDuration;
                             let totalBhuktanDuration;
+                            let totalBakiDuration;
                             if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
                                 totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
                                 totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+                                totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
                             }
 
                             return (
@@ -247,14 +249,14 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {/*भुक्तान अवधी*/}
-                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (<>
-                                                { totalBhuktanDuration?.formattedDuration}
-                                            <hr />
-                                            {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
-                                            </>):(
+                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
+                                                {totalBhuktanDuration?.formattedDuration}
+                                                <hr />
+                                                {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
+                                            </> ) : (
                                                 <>
-                                                {bhuktanDuration?.formattedDuration} <hr/>
-                                                {bhuktanDuration?.percentage}%
+                                                    {bhuktanDuration?.formattedDuration} <hr />
+                                                    {bhuktanDuration?.percentage}%
                                                 </>
                                             )}
 
@@ -264,7 +266,17 @@ const PayroleTable = () => {
                                             <br />  {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
                                         </TableCell> */}
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {bakiDuration?.formattedDuration} <hr />{bakiDuration.percentage}%</TableCell>
+                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
+                                                {totalBakiDuration?.formattedDuration}
+                                                <hr />
+                                                {totalBakiDuration?.percentage != null ? `${ totalBakiDuration.percentage }%` : '–'}
+                                            </> ) : (
+                                                <>
+                                                    {bakiDuration?.formattedDuration} <hr />
+                                                    {bakiDuration?.percentage}%
+                                                </>
+                                            )}
+                                        </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
                                                 <>
