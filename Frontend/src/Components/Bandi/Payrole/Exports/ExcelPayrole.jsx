@@ -148,7 +148,11 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
                 mIndex === 0 ? data.release_date_bs : '',
                 // mIndex === 0 ? `${ bhuktanDuration.formattedDuration }\n${ bhuktanDuration.percentage }%` : '',
-                mIndex === 0 ? `${ totalBhuktanDuration?.formattedDuration } \n ${ totalBhuktanDuration.percentage }%` : '',
+                mIndex === 0 ?
+                    ( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ?
+                        `${ totalBhuktanDuration?.formattedDuration } \n ${ totalBhuktanDuration.percentage }%` :
+                        `${ bhuktanDuration?.formattedDuration } \n ${ bhuktanDuration.percentage }%`
+                    : '',
                 mIndex === 0 ? `${ bakiDuration.formattedDuration }\n${ bakiDuration.percentage }%` : '',
                 mIndex === 0
                     ? kaidiFines
