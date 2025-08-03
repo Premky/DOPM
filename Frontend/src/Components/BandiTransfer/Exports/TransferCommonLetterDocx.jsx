@@ -161,20 +161,35 @@ export default function TransferCommonLetterDocx( props ) {
                                     new TableRow( {
                                         alignment: AlignmentType.CENTER,
                                         children: [
-                                            new TableCell( { children: [new Paragraph( { text: `${ i + 1 }` } )] } ),
-                                            new TableCell( { children: [new Paragraph( { text: d.bandi_name || "" } )] } ),
-                                            new TableCell( { children: [new Paragraph( { text: d?.muddas?.[0]?.mudda_name || "" } )] } ),
-                                            new TableCell( { children: [new Paragraph( { text: d.bandi_type || "" } )] } ),
-                                            new TableCell( { children: [new Paragraph( { text: d.remarks || "" } )] } ),
+                                            new TableCell( {
+                                                children: [new Paragraph( { text: `${ i + 1 }` } )],
+                                            } ),
+                                            new TableCell( {
+                                                children: [new Paragraph( { text: d.bandi_name || "" } )],
+                                            } ),
+                                            new TableCell( {
+                                                children: [
+                                                    new Paragraph( {
+                                                        text: d?.muddas?.map( ( m ) => m.mudda_name || "" ).join( ', ' )
+                                                    } )
+                                                ],
+                                            } ),
+                                            new TableCell( {
+                                                children: [new Paragraph( { text: d.bandi_type || "" } )],
+                                            } ),
+                                            new TableCell( {
+                                                children: [new Paragraph( { text: d.remarks || "" } )],
+                                            } ),
                                         ],
                                     } )
                                 )
+
                             ]
-                        } ),                        
+                        } ),
 
-                        new Paragraph({ text: "", spacing: { after: 300 } }),
+                        new Paragraph( { text: "", spacing: { after: 300 } } ),
 
-                        
+
                         new Table( {
                             width: {
                                 size: 100,
