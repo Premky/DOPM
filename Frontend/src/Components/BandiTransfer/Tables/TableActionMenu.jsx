@@ -215,7 +215,7 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
       {
         authState.role_name === "clerk" && (
           <>
-            {data.status_id >= 10 ? (
+            {data.status_id >= 12 ? (
               <>
                 {/* <MenuItem onClick={handleSend}>पठाउनुहोस्</MenuItem> */}
               </>
@@ -234,11 +234,11 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
       {
         authState.role_name === "office_admin" && ( <>
             {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
-          {( data.status_id == 10 ) ? ( <>
+          {( data.status_id == 12 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
-          </> ) : ( data.status_id == 11 ) ? ( <>
+          </> ) : ( data.status_id == 13 ) ? ( <>
             <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
-          </> ) : ( data.status_id < 10 ) &&
+          </> ) : ( data.status_id < 12 ) &&
           ( <>
             <MenuItem onClick={handleForward}>Forward</MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
@@ -249,7 +249,7 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
       {
         forwardRoles.includes( authState.role_name ) && (
           <>
-            {( data.status_id <= 11 ) && ( <>
+            {( data.status_id <= 13 ) && ( <>
               <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
               <MenuItem onClick={handleForward}>Forward</MenuItem>
             </> )}

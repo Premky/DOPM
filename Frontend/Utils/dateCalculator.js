@@ -1,6 +1,6 @@
 import NepaliDate from 'nepali-datetime';
 
-export const calculateBSDate = (startDate, endDate, referenceDuration = null) => {
+export const calculateBSDate = (startDate, endDate, referenceDuration = null, hirasat_years=0, hirasat_months=0, hirasat_days=0) => {
   try {
     let startDate1, endDate1;
     let startAD, endAD;

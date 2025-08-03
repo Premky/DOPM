@@ -143,7 +143,7 @@ const PayroleTable = () => {
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
                     <TableHead >
-                        <TableRow sx={{background:"blue"}}>
+                        <TableRow sx={{ background: "blue" }}>
                             <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }} >चेक</TableCell>
                             <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }}>सि.नं.</TableCell>
                             <TableCell sx={{ position: "sticky", left: 50, zIndex: 3 }}>बान्दी (id)</TableCell>
@@ -162,6 +162,7 @@ const PayroleTable = () => {
                             <TableCell>बाँकी</TableCell>
                             <TableCell>पुनरावेदन प्रमाण</TableCell>
                             <TableCell>जरिवाना प्रमाण</TableCell>
+                            <TableCell>कैफियत (कार्यालय)</TableCell>
                             <TableCell>कैफियत (विभाग)</TableCell>
                             <TableCell>#</TableCell>
                         </TableRow>
@@ -171,10 +172,14 @@ const PayroleTable = () => {
                         {filteredKaidi.map( ( data, index ) => {
                             const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                             const bandiFines = fetchedFines[data.bandi_id] || [];
+                            console.log(data)
                             const rowStyle = {
                                 backgroundColor:
                                     getRowBackgroundColor( data.pyarole_rakhan_upayukat )
-                                };
+                            };
+                            const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+                            const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
+                            const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
 
                             return (
                                 <Fragment key={data.id}>
@@ -209,13 +214,27 @@ const PayroleTable = () => {
                                         <TableCell>{kaidiMuddas[0]?.vadi}</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.punarabedan_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( data.thuna_date_bs, current_date ).formattedDuration}
-                                            <br /> {calculateBSDate( data.release_date_bs, current_date,
-                                                calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {/* कैद अवधी */}
+                                            {(data.hirasat_days || data.hirasat_months || data.hirasat_years)&&(
+                                                1111
+                                            )}
+                                            <hr /> {kaidDuration.formattedDuration} 
+                                            <hr />{kaidDuration.totalDays} दिन
                                         </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{calculateBSDate( current_date, data.release_date_bs ).formattedDuration}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {/*भुक्तान अवधी*/}
+                                            {bhuktanDuration.formattedDuration}
+                                            <hr />
+                                            {bhuktanDuration?.percentage != null ? `${ bhuktanDuration.percentage }%` : '–'}
+                                        </TableCell>
+                                        {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                    {bhuktanDuration.formattedDuration}
+                                            <br />  {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
+                                        </TableCell> */}
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {bakiDuration.formattedDuration} <hr />{bakiDuration.percentage}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.punarabedan_office_ch_no}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {bandiFines.map( ( fine, i ) => (
@@ -229,6 +248,7 @@ const PayroleTable = () => {
                                             ) )}
 
                                         </TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
