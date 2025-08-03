@@ -233,7 +233,7 @@ const PayroleTable = () => {
                                             {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
                                                 <>
                                                     जम्मा कैदः <br />
-                                                    {totalKaidDuration.formattedDuration}
+                                                    {totalKaidDuration?.formattedDuration}
                                                     <hr />
                                                     हिरासत/थुना अवधीः <br />
                                                     {data?.hirasat_years || 0} | {data?.hirasat_months || 0} | {data?.hirasat_days || 0}
@@ -241,7 +241,7 @@ const PayroleTable = () => {
                                                 </>
                                             ) : null}
                                             बेरुजु कैदः <br />
-                                            {kaidDuration.formattedDuration}
+                                            {kaidDuration?.formattedDuration}
                                         </TableCell>
 
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
@@ -257,7 +257,7 @@ const PayroleTable = () => {
                                             <br />  {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
                                         </TableCell> */}
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {bakiDuration.formattedDuration} <hr />{bakiDuration.percentage}</TableCell>
+                                            {bakiDuration?.formattedDuration} <hr />{bakiDuration.percentage}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
                                                 <>
