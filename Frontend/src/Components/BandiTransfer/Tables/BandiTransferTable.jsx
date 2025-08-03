@@ -102,10 +102,13 @@ const BandiTransferTable = () => {
             case 9:
                 return '#ff6f6f'; // अस्विकार (Reject)
             case 10:
-            case 12:
-                return '#ffcc00'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
             case 11:
+                return '#ffcc00'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
+            case 12:
+                return '#ffcc00';
             case 13:
+                return '#767876ff'; // पठाएको र स्विकार गरेको
+            case 15:
                 return '#66ff66'; // पठाएको र स्विकार गरेको
             default:
                 return '#ffffff'; // Default white background

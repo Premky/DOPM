@@ -230,7 +230,6 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
           </>
         )
       }
-
       {
         authState.role_name === "office_admin" && ( <>
             {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
