@@ -247,17 +247,24 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {/*भुक्तान अवधी*/}
-
-                                            {totalBhuktanDuration?.formattedDuration}
+                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (<>
+                                                { totalBhuktanDuration?.formattedDuration}
                                             <hr />
                                             {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
+                                            </>):(
+                                                <>
+                                                {bhuktanDuration?.formattedDuration} <hr/>
+                                                {bhuktanDuration?.percentage}%
+                                                </>
+                                            )}
+
                                         </TableCell>
                                         {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                     {bhuktanDuration.formattedDuration}
                                             <br />  {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
                                         </TableCell> */}
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {bakiDuration?.formattedDuration} <hr />{bakiDuration.percentage}</TableCell>
+                                            {bakiDuration?.formattedDuration} <hr />{bakiDuration.percentage}%</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
                                                 <>
