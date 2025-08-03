@@ -10,6 +10,7 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
   const [error, setError] = useState(null);
   const [fetchedMuddas, setFetchedMuddas] = useState({});
   const [fetchedFines, setFetchedFines] = useState({});
+  const [fetchedNoPunarabedan, setFetchedNoPunarabedan] = useState({});
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -90,15 +91,38 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
 
       if (Status) {
         const grouped = {};
-        Result.forEach((fine) => {
-          const bandiId = fine.bandi_id;
+        Result.forEach((nop) => {
+          const bandiId = nop.bandi_id;
           if (!grouped[bandiId]) grouped[bandiId] = [];
-          grouped[bandiId].push(fine);
+          grouped[bandiId].push(nop);
         });
         setFetchedFines(grouped);
       } else {
         console.warn(Error || 'Failed to fetch mudda.');
         setFetchedFines({});
+      }
+    } catch (error) {
+      console.error('Error fetching muddas:', error);
+    }
+  }, [BASE_URL]);
+
+  const fetchNoPunrabedan = useCallback(async () => {
+    try {
+      const url = `${BASE_URL}/bandi/get_bandi_no_punrabedan`;
+      const response = await axios.get(url, { withCredentials: true });
+      const { Status, Result, Error } = response.data;
+
+      if (Status) {
+        const grouped = {};
+        Result.forEach((fine) => {
+          const bandiId = fine.bandi_id;
+          if (!grouped[bandiId]) grouped[bandiId] = [];
+          grouped[bandiId].push(fine);
+        });
+        setFetchedNoPunarabedan(grouped);
+      } else {
+        console.warn(Error || 'Failed to fetch mudda.');
+        setFetchedNoPunarabedan({});
       }
     } catch (error) {
       console.error('Error fetching muddas:', error);
@@ -116,7 +140,12 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
     fetchFines();
   }, [fetchFines]);
 
-  return { data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, refetchPayrole: fetchData, refetchMuddas: fetchMuddas, refetchFines: fetchFines };
+  useEffect(() => {
+    fetchNoPunrabedan();
+  }, [fetchNoPunrabedan]);
+
+  return { data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, fetchedNoPunarabedan,
+     refetchNoPunarabedan:fetchNoPunrabedan, refetchPayrole: fetchData, refetchMuddas: fetchMuddas, refetchFines: fetchFines };
 };
 
 export default useFetchPayroles;

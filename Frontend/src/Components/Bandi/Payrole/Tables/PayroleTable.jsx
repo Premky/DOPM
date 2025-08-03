@@ -63,7 +63,8 @@ const PayroleTable = () => {
     };
 
 
-    const { data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, refetchFines, refetchPayrole, refetchMuddas } =
+    const { data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, fetchedNoPunarabedan,
+        refetchNoPunarabedan, refetchFines, refetchPayrole, refetchMuddas } =
         useFetchPayroles( filters, page, rowsPerPage );
 
     const { bandiFinesMap, loading: bandiFineLoading, refetchBandiFine: fetchBandiFineRecords } = useFetchAllBandiFines();
@@ -120,7 +121,7 @@ const PayroleTable = () => {
 
     return (
         <>
-            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedFines, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
+            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात
             </Button>
             <Menu
@@ -158,8 +159,8 @@ const PayroleTable = () => {
                             <TableCell>थुना मिति</TableCell>
                             <TableCell>कैद अवधि</TableCell>
                             <TableCell>छुट मिति</TableCell>
-                            <TableCell>भुक्तान</TableCell>
-                            <TableCell>बाँकी</TableCell>
+                            <TableCell>भुक्तान कैद</TableCell>
+                            <TableCell>प्यारोलमा राख्नुपर्ने कैद</TableCell>
                             <TableCell>पुनरावेदन प्रमाण</TableCell>
                             <TableCell>जरिवाना प्रमाण</TableCell>
                             <TableCell>कैफियत (कार्यालय)</TableCell>
@@ -172,7 +173,8 @@ const PayroleTable = () => {
                         {filteredKaidi.map( ( data, index ) => {
                             const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                             const bandiFines = fetchedFines[data.bandi_id] || [];
-                            console.log(data)
+                            const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
+                            // console.log( bandiFines );
                             const rowStyle = {
                                 backgroundColor:
                                     getRowBackgroundColor( data.pyarole_rakhan_upayukat )
@@ -180,6 +182,16 @@ const PayroleTable = () => {
                             const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
                             const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
                             const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
+
+                            const hirasatDays = data?.hirasat_days || 0;
+                            const hirasatMonths = data?.hirasat_months || 0;
+                            const hirasatYears = data?.hirasat_years || 0;
+                            let totalKaidDuration;
+                            let totalBhuktanDuration;
+                            if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+                                totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+                                totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+                            }
 
                             return (
                                 <Fragment key={data.id}>
@@ -215,19 +227,30 @@ const PayroleTable = () => {
                                         <TableCell>{kaidiMuddas[0]?.punarabedan_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {/* कैद अवधी */}
-                                            {(data.hirasat_days || data.hirasat_months || data.hirasat_years)&&(
-                                                1111
-                                            )}
-                                            <hr /> {kaidDuration.formattedDuration} 
-                                            <hr />{kaidDuration.totalDays} दिन
+                                            {/* कैद अवधि */}
+                                            {/* {totalKaidDuration?.totalDays} दिन <br />
+                                            {kaidDuration?.totalDays} din <br /> */}
+                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
+                                                <>
+                                                    जम्मा कैदः <br />
+                                                    {totalKaidDuration.formattedDuration}
+                                                    <hr />
+                                                    हिरासत/थुना अवधीः <br />
+                                                    {data?.hirasat_years || 0} | {data?.hirasat_months || 0} | {data?.hirasat_days || 0}
+                                                    <hr />
+                                                </>
+                                            ) : null}
+                                            बेरुजु कैदः <br />
+                                            {kaidDuration.formattedDuration}
                                         </TableCell>
+
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {/*भुक्तान अवधी*/}
-                                            {bhuktanDuration.formattedDuration}
+
+                                            {totalBhuktanDuration?.formattedDuration}
                                             <hr />
-                                            {bhuktanDuration?.percentage != null ? `${ bhuktanDuration.percentage }%` : '–'}
+                                            {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
                                         </TableCell>
                                         {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                     {bhuktanDuration.formattedDuration}
@@ -235,13 +258,25 @@ const PayroleTable = () => {
                                         </TableCell> */}
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {bakiDuration.formattedDuration} <hr />{bakiDuration.percentage}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.punarabedan_office_ch_no}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
+                                                <>
+                                                    <Fragment key={`noPunrabedan-${ data.id }-${ i }`}>
+                                                        {i + 1}. {noPunrabedan.punarabedan_office}को च.नं. {noPunrabedan.punarabedan_office_ch_no},   {noPunrabedan.punarabedan_office_date} गते ।
+                                                        <hr />
+                                                    </Fragment>
+                                                </>
+
+                                            ) )}
+                                        </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {bandiFines.map( ( fine, i ) => (
                                                 <>
                                                     <Fragment key={`fine-${ data.id }-${ i }`}>
-                                                        {i + 1}. {fine.deposit_office}को मिति {fine.deposit_date} गतेको च.नं. {fine.deposit_ch_no} बाट रु.{fine.deposit_amount}  {fine.fine_name_np} बुझाएको ।
-                                                        <hr />
+                                                        {( fine.deposit_office === undefined || fine.deposit_office === '' || fine.deposit_office === null ) && ( <>
+                                                            {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.{fine.deposit_amount}  {fine.fine_name_np} बुझाएको ।
+                                                            <hr />
+                                                        </> )}
                                                     </Fragment>
                                                 </>
 

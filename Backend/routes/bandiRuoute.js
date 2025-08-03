@@ -291,7 +291,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     let connection;
     const c_user_id = Number( user_id );
     if ( isNaN( c_user_id ) ) {
-        console.error("❌ Old Id Used!!!")
+        console.error( "❌ Old Id Used!!!" );
         return res.status( 500 ).json( {
             Status: false,
             message: `कृपया नयाँ ID प्रयोग गर्नुहोला । ${ req.params.c_user_id } निष्कृय गरिएको छ !!!`
@@ -1877,6 +1877,28 @@ router.get( '/get_bandi_fines/', async ( req, res ) => {
         FROM bandi_fine_details bfd
         LEFT JOIN fine_types f ON bfd.fine_type_id = f.id
         LEFT JOIN offices o ON bfd.deposit_office = o.id
+    `;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+router.get( '/get_bandi_no_punrabedan/', async ( req, res ) => {
+    // const active_office = req.user.office_id;
+    const { id } = req.params;
+    const sql = `
+        SELECT bpd.*,             
+            o.office_name_with_letter_address AS punarabedan_office                       
+        FROM bandi_punarabedan_details bpd        
+        LEFT JOIN offices o ON bpd.punarabedan_office_id = o.id
     `;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query

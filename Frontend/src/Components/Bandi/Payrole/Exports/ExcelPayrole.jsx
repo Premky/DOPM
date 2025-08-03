@@ -7,7 +7,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 
-const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, filters, BASE_URL ) => {
+const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL ) => {
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
@@ -74,7 +74,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, filter
         'मुद्दा', 'जाहेरवाला', 'मुद्दाको अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति', 'पुनरावेदन नपरेको प्रमाण', 'कैद परेको मिति',
         'तोकिएको कैद (वर्ष|महिना|दिन)', 'कैदी पुर्जीमा उल्लेखित छुटि जाने मिति', 'भुक्तान कैद (वर्ष|महिना|दिन) र प्रतिशत', 'प्यारोलमा राख्नुपर्ने कैद (वर्ष|महिना|दिन) र प्रतिशत',
         'तोकिएको जरिवाना/क्षतिपुर्ती/बिगो/पिडित राहत कोष तिरेको प्रमाण',
-        'कैफियत(कार्यालय)',
+        'कैफियत(कारागार)',
         'कैफियत(विभाग)'
     ] );
     tableHeader.eachCell( ( cell ) => {
@@ -91,13 +91,26 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, filter
     let currentRow = 3; // Start from row 2 (row 1 = header)
 
     filteredKaidi.forEach( ( data, index ) => {
+        console.log( data );
         const kaidiMuddas = fetchedMuddas[data.bandi_id] || [{}];
         const kaidiFines = fetchedFines[data.bandi_id] || [{}];
+        const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
+
         const muddaCount = kaidiMuddas.length;
         kaidiMuddas.forEach( ( mudda, mIndex ) => {
             const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
             const bhuktanDuration = calculateBSDate( data.thuna_date_bs, formattedDateNp, kaidDuration );
             const bakiDuration = calculateBSDate( formattedDateNp, data.release_date_bs, kaidDuration );
+
+            const hirasatDays = data?.hirasat_days || 0;
+            const hirasatMonths = data?.hirasat_months || 0;
+            const hirasatYears = data?.hirasat_years || 0;
+            let totalKaidDuration = kaidDuration;
+            let totalBhuktanDuration = bhuktanDuration;
+            if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+                totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+                totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, formattedDateNp, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+            }
 
             const row = worksheet.addRow( [
                 mIndex === 0 ? index + 1 : '',
@@ -115,20 +128,37 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, filter
 
                 `${ mudda.mudda_name }\n${ mudda.mudda_no }` || '',
                 mudda.vadi || '',
-                `${ mudda.punarabedan_office || '' } \n ${ mudda.mudda_phesala_antim_office_date || '' }`,
+                `${ mudda.mudda_phesala_antim_office || '' } \n ${ mudda.mudda_phesala_antim_office_date || '' }`,
                 mIndex === 0
-                    ? `${ data.office_name_with_letter_address || '' }को च.नं. ${ data.punarabedan_office_ch_no || '' } मिति ${ data.punarabedan_office_date || '' }`
+                    ? bandiNoPunarabedan.map( ( noPunrabedan, i ) =>
+                        `${ i + 1 }. ${ noPunrabedan.punarabedan_office || '' }को च.नं. ${ noPunrabedan.punarabedan_office_ch_no || '' } मिति ${ noPunrabedan.punarabedan_office_date || '' } ` )
+                        .join( '\n' )
                     : '',
                 mIndex === 0 ? data.thuna_date_bs : '',
-                mIndex === 0 ? `${ kaidDuration.formattedDuration }` : '',
+
+                mIndex === 0
+                    ? [
+                        ( data.hirasat_days || data.hirasat_months || data.hirasat_years )
+                            ? `जम्मा कैदः \n ${ totalKaidDuration.formattedDuration }\n` +
+                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 }`
+                            : '',
+                        `बेरुजु कैदः \n ${ kaidDuration.formattedDuration }`
+                    ].filter( Boolean ).join( '\n\n' )
+                    : '',
+
                 mIndex === 0 ? data.release_date_bs : '',
-                mIndex === 0 ? `${ bhuktanDuration.formattedDuration }\n${ bhuktanDuration.percentage }%` : '',
+                // mIndex === 0 ? `${ bhuktanDuration.formattedDuration }\n${ bhuktanDuration.percentage }%` : '',
+                mIndex === 0 ? `${ totalBhuktanDuration?.formattedDuration } \n ${ totalBhuktanDuration.percentage }%` : '',
                 mIndex === 0 ? `${ bakiDuration.formattedDuration }\n${ bakiDuration.percentage }%` : '',
                 mIndex === 0
                     ? kaidiFines
-                        .map( ( fine, i ) => `${ i + 1 }. ${ fine.deposit_office }को मिति ${ fine.deposit_date } गतेको च.नं. ${ fine.deposit_ch_no } बाट रु.${ fine.deposit_amount } ${ fine.fine_name_np } बुझाएको ।` )
+                        .filter( fine => Boolean( fine.deposit_office ) ) // ✅ Only keep valid ones
+                        .map( ( fine, i ) =>
+                            `${ i + 1 }. ${ fine.deposit_office }को मिति ${ fine.deposit_date } गतेको च.नं. ${ fine.deposit_ch_no } बाट रु.${ fine.deposit_amount } ${ fine.fine_name_np } बुझाएको ।`
+                        )
                         .join( '\n' )
                     : '',
+
 
                 // mIndex === 0 ? data.other_details || '' : '',
                 // mIndex === 0 ? data.payrole_reason || '' : '',
