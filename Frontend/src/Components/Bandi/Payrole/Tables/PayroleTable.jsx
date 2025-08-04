@@ -295,6 +295,7 @@ const PayroleTable = () => {
                                             ) )}
                                         </TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
+<<<<<<< HEAD
                                             {bandiFines
                                                 .filter( ( fine ) => fine.deposit_ch_no && fine.deposit_ch_no !== '' )
                                                 .map( ( fine, i ) => (
@@ -307,6 +308,21 @@ const PayroleTable = () => {
                                                 ) )}
                                         </TableCell>
 
+=======
+                                            {bandiFines.map( ( fine, i ) => (
+                                                <>
+                                                    <Fragment key={`fine-${ data.id }-${ i }`}>
+                                                        {/* {( fine.deposit_ch_no === undefined || fine.deposit_ch_no === '' || fine.deposit_ch_no === null ) && ( <> */}
+                                                            {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.{fine.deposit_amount}  {fine.fine_name_np} {fine.amount_deposited == true ?('बुझाएको'):('नबुझाएको')} ।
+                                                            <hr />
+                                                        {/* </> )} */}
+                                                    </Fragment>
+                                                </>
+
+                                            ) )}
+
+                                        </TableCell>
+>>>>>>> c4ab9485ba0aa02889e8176f82c25ae8f0c79007
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
