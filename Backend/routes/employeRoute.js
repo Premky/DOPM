@@ -420,7 +420,6 @@ router.get("/get_emp_sanket_no", verifyToken, async (req, res) => {
 
 router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
     const active_office = req.user.office_id;
-
     try {
         const [[officeRow]] = await pool.query(
             `SELECT id FROM offices WHERE id = ?`,
@@ -430,6 +429,7 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
         if (!officeRow) return res.status(400).json({ Status: false, message: "Invalid office" });
 
         const office_id = officeRow.id;
+        const newOfficeId = office_id * 1000;
 
         const [[countRow]] = await pool.query(
             `SELECT COUNT(*) AS count 
@@ -440,7 +440,8 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
         );
 
         const nextCount = countRow.count + 1;
-        const sanket_no = `${office_id}${nextCount}`;
+
+        const sanket_no = `${newOfficeId}${nextCount}`;
 
         res.json({ Status: true, sanket_no });
     } catch (error) {
