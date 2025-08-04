@@ -1,0 +1,190 @@
+CREATE TABLE bandi_transfer_log_auto (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  bandi_transfer_id INT,
+  bandi_id INT,
+  action_type ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+  changed_by INT,
+  changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  transfer_from_office_id INT,
+  recommended_to_office_id INT,
+  final_to_office_id INT,
+  transfer_reason_id INT,
+  is_thunuwa_permission TINYINT,
+  transfer_reason VARCHAR(250),
+  decision_date VARCHAR(10),
+  transfer_from_date VARCHAR(10),
+  transfer_to_date VARCHAR(10),
+  bandi_character VARCHAR(250),
+  remarks VARCHAR(250),
+  role_id INT,
+  status_id INT,
+  is_completed ENUM('Completed','Pending'),
+  created_office_id INT,
+  json_snapshot JSON
+);
+
+DROP TRIGGER IF EXISTS trg_bandi_transfer_insert;
+DROP TRIGGER IF EXISTS trg_bandi_transfer_update;
+DROP TRIGGER IF EXISTS trg_bandi_transfer_delete;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_bandi_transfer_insert
+AFTER INSERT ON bandi_transfer_history
+FOR EACH ROW
+BEGIN
+  INSERT INTO bandi_transfer_log_auto (
+    bandi_transfer_id, bandi_id, action_type, changed_by, changed_at,
+    transfer_from_office_id, recommended_to_office_id, final_to_office_id,
+    transfer_reason_id, is_thunuwa_permission, transfer_reason,
+    decision_date, transfer_from_date, transfer_to_date,
+    bandi_character, remarks, role_id, status_id, is_completed, created_office_id,
+    json_snapshot
+  ) VALUES (
+    NEW.id, NEW.bandi_id, 'INSERT', NEW.created_by, NOW(),
+    NEW.transfer_from_office_id, NEW.recommended_to_office_id, NEW.final_to_office_id,
+    NEW.transfer_reason_id, NEW.is_thunuwa_permission, NEW.transfer_reason,
+    NEW.decision_date, NEW.transfer_from_date, NEW.transfer_to_date,
+    NEW.bandi_character, NEW.remarks, NEW.role_id, NEW.status_id, NEW.is_completed, NEW.created_office_id,
+    JSON_OBJECT(
+      'old', NULL,
+      'new', JSON_OBJECT(
+        'bandi_id', NEW.bandi_id,
+        'transfer_from_office_id', NEW.transfer_from_office_id,
+        'recommended_to_office_id', NEW.recommended_to_office_id,
+        'final_to_office_id', NEW.final_to_office_id,
+        'transfer_reason_id', NEW.transfer_reason_id,
+        'is_thunuwa_permission', NEW.is_thunuwa_permission,
+        'transfer_reason', NEW.transfer_reason,
+        'decision_date', NEW.decision_date,
+        'transfer_from_date', NEW.transfer_from_date,
+        'transfer_to_date', NEW.transfer_to_date,
+        'bandi_character', NEW.bandi_character,
+        'remarks', NEW.remarks,
+        'role_id', NEW.role_id,
+        'status_id', NEW.status_id,
+        'is_completed', NEW.is_completed,
+        'created_office_id', NEW.created_office_id
+      )
+    )
+  );
+END $$
+
+DELIMITER ;
+
+
+//Update 
+DELIMITER $$
+
+CREATE TRIGGER trg_bandi_transfer_update
+AFTER UPDATE ON bandi_transfer_history
+FOR EACH ROW
+BEGIN
+  INSERT INTO bandi_transfer_log_auto (
+    bandi_transfer_id, bandi_id, action_type, changed_by, changed_at,
+    transfer_from_office_id, recommended_to_office_id, final_to_office_id,
+    transfer_reason_id, is_thunuwa_permission, transfer_reason,
+    decision_date, transfer_from_date, transfer_to_date,
+    bandi_character, remarks, role_id, status_id, is_completed, created_office_id,
+    json_snapshot
+  ) VALUES (
+    NEW.id, NEW.bandi_id, 'UPDATE', NEW.updated_by, NOW(),
+    NEW.transfer_from_office_id, NEW.recommended_to_office_id, NEW.final_to_office_id,
+    NEW.transfer_reason_id, NEW.is_thunuwa_permission, NEW.transfer_reason,
+    NEW.decision_date, NEW.transfer_from_date, NEW.transfer_to_date,
+    NEW.bandi_character, NEW.remarks, NEW.role_id, NEW.status_id, NEW.is_completed, NEW.created_office_id,
+    JSON_OBJECT(
+      'old', JSON_OBJECT(
+        'bandi_id', OLD.bandi_id,
+        'transfer_from_office_id', OLD.transfer_from_office_id,
+        'recommended_to_office_id', OLD.recommended_to_office_id,
+        'final_to_office_id', OLD.final_to_office_id,
+        'transfer_reason_id', OLD.transfer_reason_id,
+        'is_thunuwa_permission', OLD.is_thunuwa_permission,
+        'transfer_reason', OLD.transfer_reason,
+        'decision_date', OLD.decision_date,
+        'transfer_from_date', OLD.transfer_from_date,
+        'transfer_to_date', OLD.transfer_to_date,
+        'bandi_character', OLD.bandi_character,
+        'remarks', OLD.remarks,
+        'role_id', OLD.role_id,
+        'status_id', OLD.status_id,
+        'is_completed', OLD.is_completed,
+        'created_office_id', OLD.created_office_id
+      ),
+      'new', JSON_OBJECT(
+        'bandi_id', NEW.bandi_id,
+        'transfer_from_office_id', NEW.transfer_from_office_id,
+        'recommended_to_office_id', NEW.recommended_to_office_id,
+        'final_to_office_id', NEW.final_to_office_id,
+        'transfer_reason_id', NEW.transfer_reason_id,
+        'is_thunuwa_permission', NEW.is_thunuwa_permission,
+        'transfer_reason', NEW.transfer_reason,
+        'decision_date', NEW.decision_date,
+        'transfer_from_date', NEW.transfer_from_date,
+        'transfer_to_date', NEW.transfer_to_date,
+        'bandi_character', NEW.bandi_character,
+        'remarks', NEW.remarks,
+        'role_id', NEW.role_id,
+        'status_id', NEW.status_id,
+        'is_completed', NEW.is_completed,
+        'created_office_id', NEW.created_office_id
+      )
+    )
+  );
+END $$
+
+DELIMITER ;
+
+//Delete
+
+DELIMITER $$
+
+CREATE TRIGGER trg_bandi_transfer_delete
+AFTER DELETE ON bandi_transfer_history
+FOR EACH ROW
+BEGIN
+  INSERT INTO bandi_transfer_log_auto (
+    bandi_transfer_id, bandi_id, action_type, changed_by, changed_at,
+    transfer_from_office_id, recommended_to_office_id, final_to_office_id,
+    transfer_reason_id, is_thunuwa_permission, transfer_reason,
+    decision_date, transfer_from_date, transfer_to_date,
+    bandi_character, remarks, role_id, status_id, is_completed, created_office_id,
+    json_snapshot
+  ) VALUES (
+    OLD.id, OLD.bandi_id, 'DELETE', OLD.updated_by, NOW(),
+    OLD.transfer_from_office_id, OLD.recommended_to_office_id, OLD.final_to_office_id,
+    OLD.transfer_reason_id, OLD.is_thunuwa_permission, OLD.transfer_reason,
+    OLD.decision_date, OLD.transfer_from_date, OLD.transfer_to_date,
+    OLD.bandi_character, OLD.remarks, OLD.role_id, OLD.status_id, OLD.is_completed, OLD.created_office_id,
+    JSON_OBJECT(
+      'old', JSON_OBJECT(
+        'bandi_id', OLD.bandi_id,
+        'transfer_from_office_id', OLD.transfer_from_office_id,
+        'recommended_to_office_id', OLD.recommended_to_office_id,
+        'final_to_office_id', OLD.final_to_office_id,
+        'transfer_reason_id', OLD.transfer_reason_id,
+        'is_thunuwa_permission', OLD.is_thunuwa_permission,
+        'transfer_reason', OLD.transfer_reason,
+        'decision_date', OLD.decision_date,
+        'transfer_from_date', OLD.transfer_from_date,
+        'transfer_to_date', OLD.transfer_to_date,
+        'bandi_character', OLD.bandi_character,
+        'remarks', OLD.remarks,
+        'role_id', OLD.role_id,
+        'status_id', OLD.status_id,
+        'is_completed', OLD.is_completed,
+        'created_office_id', OLD.created_office_id
+      ),
+      'new', NULL
+    )
+  );
+END $$
+
+DELIMITER ;
+
+
+
+
+
+
