@@ -299,7 +299,7 @@ const PayroleTable = () => {
                                                 <>
                                                     <Fragment key={`fine-${ data.id }-${ i }`}>
                                                         {( fine.deposit_office === undefined || fine.deposit_office === '' || fine.deposit_office === null ) && ( <>
-                                                            {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.{fine.deposit_amount}  {fine.fine_name_np} बुझाएको ।
+                                                            {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.{fine.deposit_amount}  {fine.fine_name_np} {fine.amount_deposited == true ?('बुझाएको'):('नबुझाएको')} ।
                                                             <hr />
                                                         </> )}
                                                     </Fragment>

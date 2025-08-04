@@ -228,7 +228,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 
     if ( searchmudda_id ) {
         const escapedGroupId = con.escape( searchmudda_id );
-        console.log('mudda group', searchmudda_id)
+        console.log( 'mudda group', searchmudda_id );
         if ( baseWhere ) {
             baseWhere += ` AND bp.id IN (
                 SELECT bmd.bandi_id 
@@ -334,10 +334,15 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 nci.city_name_np,
                 bmd_combined.mudda_id,
                 bmd_combined.mudda_name,
+                bmd_combined.mudda_no,
                 bmd_combined.is_main_mudda,
                 bmd_combined.is_last_mudda,
-                bmd_combined.office_name_with_letter_address,
+                bmd_combined.mudda_phesala_antim_office_id,
+                -- bmd_combined.office_name_with_letter_address,
                 bmd_combined.vadi,
+                bmd_combined.thuna_date_bs,
+                bmd_combined.release_date_bs,
+                bmd_combined.mudda_phesala_antim_office,
                 bmd_combined.mudda_phesala_antim_office_date,
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs,
@@ -359,7 +364,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 bpd.punarabedan_office_ch_no,
                 bpd.punarabedan_office_date
 
-                bfd
+                -- bfd
 
             FROM payroles p
             LEFT JOIN bandi_person bp ON p.bandi_id=bp.id
@@ -377,21 +382,6 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN bandi_punarabedan_details bpd ON bp.id=bpd.bandi_id
             LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
             LEFT JOIN bandi_fine_details bfd ON bp.id=bfd.bandi_id
-            
-            LEFT JOIN (
-                SELECT 
-                    bmd.bandi_id,
-                    bmd.mudda_id,
-                    bmd.is_main_mudda,
-                    bmd.is_last_mudda,
-                    m.mudda_name,
-                    bmd.vadi,
-                    bmd.mudda_phesala_antim_office_date,
-                    o.office_name_with_letter_address
-                FROM bandi_mudda_details bmd
-                LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
-            ) AS bmd_xcombined ON bp.id = bmd_xcombined.bandi_id
 
             LEFT JOIN (
                     SELECT *
@@ -399,12 +389,16 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                         SELECT 
                             bmd.bandi_id,
                             bmd.mudda_id,
+                            m.mudda_name,
+                            bmd.mudda_no,
+                            bmd.thuna_date_bs,
+                            bmd.release_date_bs,
+                            bmd.vadi,
                             bmd.is_main_mudda,
                             bmd.is_last_mudda,
-                            m.mudda_name,
-                            bmd.vadi,
+                            bmd.mudda_phesala_antim_office_id,
                             bmd.mudda_phesala_antim_office_date,
-                            o.office_name_with_letter_address,
+                            o.office_name_with_letter_address AS mudda_phesala_antim_office,
                             ROW_NUMBER() OVER (
                                 PARTITION BY bmd.bandi_id 
                                 ORDER BY 
@@ -415,7 +409,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                             ) AS rn
                         FROM bandi_mudda_details bmd
                         LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                        LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+                        LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_id = o.id
                     ) ranked
                     WHERE ranked.rn = 1
                 ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
@@ -432,12 +426,16 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             const {
                 bandi_id,
                 mudda_id,
+                mudda_no,
                 mudda_name,
                 is_main_mudda,
                 is_last_mudda,
                 punarabedan_office,
                 vadi,
+                mudda_phesala_antim_office,
                 mudda_phesala_antim_office_date,
+                thuna_date_bs,
+                release_date_bs,
                 ...bandiData
             } = row;
 
@@ -452,11 +450,15 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             if ( mudda_id ) {
                 grouped[bandi_id].muddas.push( {
                     mudda_id,
+                    mudda_no,
                     mudda_name,
                     is_main_mudda,
                     is_last_mudda,
                     vadi,
-                    mudda_phesala_antim_office_date
+                    mudda_phesala_antim_office,
+                    mudda_phesala_antim_office_date,
+                    thuna_date_bs,
+                    release_date_bs
                 } );
             }
         } );

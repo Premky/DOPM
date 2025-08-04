@@ -33,8 +33,9 @@ export default function PayroleNoPunrabedanDocx( props ) {
                 "मुद्दाको नाम",
                 "मुद्दा नं.",
                 "जाहेरवाला(वादी)",
-                "ठेकिएको कैद",
+                // "ठेकिएको कैद",
                 "फैसला गर्ने निकाय",
+                "फैसला मिति",
                 "कैद परेको मिति",
                 "कैद भुक्तान हुने मिति",
                 "कैफियत",
@@ -49,6 +50,7 @@ export default function PayroleNoPunrabedanDocx( props ) {
                 } ),
             ),
         } );
+        console.log(data)
         const dataRows = data.muddas.map( ( item, index ) => {
             return new TableRow( {
                 children: [
@@ -56,11 +58,13 @@ export default function PayroleNoPunrabedanDocx( props ) {
                     item?.mudda_name,
                     item?.mudda_no,
                     item?.vadi,
-                    item?.kaid_duration,
-                    item?.office_name_with_letter_address,
-                    data?.thuna_date_bs,
-                    data?.release_date_bs,
-                    item?.remarks,
+                    // item?.kaid_duration,
+                    item?.mudda_phesala_antim_office,
+                    item?.mudda_phesala_antim_office_date,
+                    item?.thuna_date_bs,
+                    item?.release_date_bs,
+                    '',
+                    // item?.remarks,
                 ].map(
                     ( text ) =>
                         new TableCell( {

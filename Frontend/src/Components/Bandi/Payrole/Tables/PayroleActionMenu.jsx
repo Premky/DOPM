@@ -122,6 +122,7 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
           <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
           <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
           <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem></> )
+          
       }
 
       {
