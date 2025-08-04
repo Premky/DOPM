@@ -429,12 +429,8 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
         if (!officeRow) return res.status(400).json({ Status: false, message: "Invalid office" });
 
         const office_id = officeRow.id;
-<<<<<<< HEAD
         let newOfficeId;
         newOfficeId=office_id*1000
-=======
-        const newOfficeId = office_id * 1000;
->>>>>>> c4ab9485ba0aa02889e8176f82c25ae8f0c79007
 
         const [[countRow]] = await pool.query(
             `SELECT COUNT(*) AS count 
@@ -446,11 +442,7 @@ router.get("/next_sanket_no_for_karar", verifyToken, async (req, res) => {
 
         const nextCount = countRow.count + 1;
 
-<<<<<<< HEAD
         const sanket_no = newOfficeId+nextCount;
-=======
-        const sanket_no = `${newOfficeId}${nextCount}`;
->>>>>>> c4ab9485ba0aa02889e8176f82c25ae8f0c79007
 
         res.json({ Status: true, sanket_no });
     } catch (error) {
