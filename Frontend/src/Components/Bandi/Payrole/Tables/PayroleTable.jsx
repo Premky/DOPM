@@ -246,9 +246,9 @@ const PayroleTable = () => {
                                                     हिरासत/थुना अवधीः <br />
                                                     {data?.hirasat_years || 0} | {data?.hirasat_months || 0} | {data?.hirasat_days || 0}
                                                     <hr />
+                                                    बेरुजु कैदः <br />
                                                 </>
                                             ) : null}
-                                            बेरुजु कैदः <br />
                                             {kaidDuration?.formattedDuration}
                                         </TableCell>
 
@@ -287,7 +287,7 @@ const PayroleTable = () => {
                                             {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
                                                 <>
                                                     <Fragment key={`noPunrabedan-${ data.id }-${ i }`}>
-                                                        {i + 1}. {noPunrabedan.punarabedan_office}को च.नं. {noPunrabedan.punarabedan_office_ch_no},   {noPunrabedan.punarabedan_office_date} गते ।
+                                                        {i + 1}. {noPunrabedan.punarabedan_office}को च.नं. {noPunrabedan.punarabedan_office_ch_no}, मिति {noPunrabedan.punarabedan_office_date} गतेको पत्र ।
                                                         <hr />
                                                     </Fragment>
                                                 </>
