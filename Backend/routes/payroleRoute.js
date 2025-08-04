@@ -340,8 +340,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 bmd_combined.mudda_phesala_antim_office_id,
                 -- bmd_combined.office_name_with_letter_address,
                 bmd_combined.vadi,
-                bmd_combined.thuna_date_bs,
-                bmd_combined.release_date_bs,
+                bmd_combined.thuna_date_bs AS bmd_thuna_date,
+                bmd_combined.release_date_bs AS bmd_release_date,
                 bmd_combined.mudda_phesala_antim_office,
                 bmd_combined.mudda_phesala_antim_office_date,
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
@@ -434,8 +434,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 vadi,
                 mudda_phesala_antim_office,
                 mudda_phesala_antim_office_date,
-                thuna_date_bs,
-                release_date_bs,
+                bmd_thuna_date,
+                bmd_release_date,
                 ...bandiData
             } = row;
 
@@ -457,8 +457,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                     vadi,
                     mudda_phesala_antim_office,
                     mudda_phesala_antim_office_date,
-                    thuna_date_bs,
-                    release_date_bs
+                    bmd_thuna_date,
+                    bmd_release_date
                 } );
             }
         } );
@@ -577,26 +577,6 @@ router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
         const age = await calculateAge( bandi.dob ); // Assuming dob is BS like '2080-01-10'
         bandi.age = age;
         // console.log(age)
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( err );
-        return res.json( { Status: false, Error: "Query Error" } );
-    }
-} );
-
-router.get( '/get_bandi_name_for_select1/:id', async ( req, res ) => {
-    const { id } = req.params;
-    const sql = `SELECT bp.*,bp.id AS bandi_id, bp.id AS bandi_office_id, m.mudda_name from bandi_person bp
-                LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
-                LEFT JOIN muddas m ON bmd.mudda_id=m.id
-                WHERE bmd.is_main_mudda=1 AND bp.current_office_id=?`;
-    try {
-        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
-        // console.log('id', result)
-
-        if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi not found for select" } );
-        }
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( err );

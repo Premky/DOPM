@@ -61,8 +61,8 @@ export default function PayroleNoPunrabedanDocx( props ) {
                     // item?.kaid_duration,
                     item?.mudda_phesala_antim_office,
                     item?.mudda_phesala_antim_office_date,
-                    item?.thuna_date_bs,
-                    item?.release_date_bs,
+                    item?.bmd_thuna_date,
+                    item?.bmd_release_date,
                     '',
                     // item?.remarks,
                 ].map(
