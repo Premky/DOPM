@@ -298,10 +298,10 @@ const PayroleTable = () => {
                                             {bandiFines.map( ( fine, i ) => (
                                                 <>
                                                     <Fragment key={`fine-${ data.id }-${ i }`}>
-                                                        {( fine.deposit_office === undefined || fine.deposit_office === '' || fine.deposit_office === null ) && ( <>
+                                                        {/* {( fine.deposit_ch_no === undefined || fine.deposit_ch_no === '' || fine.deposit_ch_no === null ) && ( <> */}
                                                             {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.{fine.deposit_amount}  {fine.fine_name_np} {fine.amount_deposited == true ?('बुझाएको'):('नबुझाएको')} ।
                                                             <hr />
-                                                        </> )}
+                                                        {/* </> )} */}
                                                     </Fragment>
                                                 </>
 
