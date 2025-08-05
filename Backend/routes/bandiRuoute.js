@@ -1997,18 +1997,19 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
     const user_id = req.user.username;
     const {
+        fine_type_id,
         amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
         deposit_amount, district_name_np, fine_type
     } = req.body;
     // console.log(req.body)
     let sql;
     let values;
-    sql = `UPDATE bandi_fine_details SET amount_fixed =?, amount_deposited =?, deposit_office =?, deposit_district =?, deposit_ch_no =?,
+    sql = `UPDATE bandi_fine_details SET fine_type_id=?, amount_fixed =?, amount_deposited =?, deposit_office =?, deposit_district =?, deposit_ch_no =?,
     deposit_date =?, deposit_amount =?, updated_by=? WHERE id =? `;
     if ( Number( amount_fixed ) === 1 ) {
         if ( Number( amount_deposited ) === 1 ) {
             values = [
-                amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
+                fine_type_id, amount_fixed, amount_deposited, deposit_office, deposit_district, deposit_ch_no, deposit_date,
                 deposit_amount, user_id, id
             ];
         } else {
