@@ -176,7 +176,8 @@ const PayroleTable = () => {
                     </TableHead>
 
                     <TableBody>
-                        {filteredKaidi.map( ( data, index ) => {
+                        {filteredKaidi                            
+                            .map( ( data, index ) => {
                             const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                             const bandiFines = fetchedFines[data.bandi_id] || [];
                             const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
@@ -283,7 +284,10 @@ const PayroleTable = () => {
                                                 </>
                                             )}
                                         </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                        <TableCell
+                                            rowSpan={kaidiMuddas.length || 1}
+                                            style={bandiNoPunarabedan.length === 0 ? { background: 'red' } : {}}
+                                        >
                                             {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
                                                 <>
                                                     <Fragment key={`noPunrabedan-${ data.id }-${ i }`}>
@@ -301,7 +305,9 @@ const PayroleTable = () => {
                                                     <div key={`fine-${ data.id }-${ i }`}>
                                                         {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.
                                                         {fine.deposit_amount} {fine.fine_name_np}{" "}
-                                                        {fine.amount_deposited ? 'बुझाएको' : 'नबुझाएको'} ।
+                                                        {!fine.amount_deposited ? 'बुझाएको' :
+                                                            <span style={{ color: 'red' }}>नबुझाएको</span>
+                                                        } ।
                                                         <hr />
                                                     </div>
                                                 ) )}

@@ -6,7 +6,7 @@ import NepaliDate from 'nepali-datetime';
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 export default function ParoleApplicationDocx( props ) {
     const { data } = props;
-    // console.log( data );
+    console.log( data );
     let address;
     if ( data?.nationality == 'विदेशी' ) {
         address = `${ data?.bidesh_nagarik_address_details },${ data?.country_name_np }`;
@@ -80,7 +80,7 @@ export default function ParoleApplicationDocx( props ) {
                             alignment: AlignmentType.JUSTIFY,
                             children: [
                                 new TextRun( {
-                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${ data.recommended_district } ${ data.recommended_city }मा बस्न पाउँनका लागि श्री .............. जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
+                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${ data.recommended_district } ${ data.recommended_city } ${data.recommended_tole_ward} मा बस्न पाउँनका लागि श्री ${data.recommended_court} जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
                                     size: 20
                                 } ),
                             ],
@@ -134,7 +134,7 @@ export default function ParoleApplicationDocx( props ) {
                                     bold: true
                                 } ),
                                 new TextRun( {
-                                    text: `${ data.muddas[0].office_name_with_letter_address }, ${ data.muddas[0].mudda_phesala_antim_office_date }`,
+                                    text: `${ data.muddas[0].mudda_phesala_antim_office }, ${ data.muddas[0].mudda_phesala_antim_office_date }`,
                                     size: 20,
                                 } ),
                                 new TextRun( { break: 1 } ),
@@ -258,7 +258,7 @@ export default function ParoleApplicationDocx( props ) {
                                     text: `ज) मुद्दा अन्तिम भएको जानकारी पत्रः`, size: 20, bold: true
                                 } ),
                                 new TextRun( {
-                                    text: ` ${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ । `, size: 20
+                                    text: ` ${ data.punarabedan_office_name }को  च.नं. ${ data.punarabedan_office_ch_no } मिति ${ data.punarabedan_office_date } गतेको पत्र संलग्न रहेको छ । `, size: 20
                                 } ),
                                 new TextRun( { break: 1 } ),
                                 
@@ -349,7 +349,7 @@ export default function ParoleApplicationDocx( props ) {
         const url = URL.createObjectURL( blob );
         const a = document.createElement( "a" );
         a.href = url;
-        a.download = `${ data.bandi_name }.docx`;
+        a.download = `${ data.bandi_name } को निवेदन(अनुसूची-१).docx`;
         a.click();
         URL.revokeObjectURL( url );
     };

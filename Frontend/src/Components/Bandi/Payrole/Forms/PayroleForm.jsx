@@ -82,7 +82,7 @@ const PayroleForm = () => {
       console.log( response );
       if ( Status ) {
         Swal.fire( {
-          title: `Office ${ editing ? 'updated' : 'created' } successfully!`,
+          title: `Record ${ editing ? 'updated' : 'saved' } successfully!`,
           icon: "success",
           draggable: true
         } );
@@ -194,7 +194,7 @@ const PayroleForm = () => {
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseCourt
-                name='pyarole_court'
+                name='recommended_court_id'
                 label='पेश गर्ने अदालत'
                 required={true}
                 control={control}

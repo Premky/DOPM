@@ -355,12 +355,14 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 p.remark,
                 p.is_checked,
                 p.pyarole_rakhan_upayukat,
-                p.dopm_remarks,
+                p.dopm_remarks,                
                 ncr.city_name_np AS recommended_city, ndr.district_name_np AS recommended_district,
+                p.recommended_tole_ward,
+                ro.office_name_with_letter_address AS recommended_court,
                 pm.mudda_name AS payrole_mudda_name,
                 o.letter_address,
                 
-                bpdo.office_name_with_letter_address AS punarabedan_office,
+                bpdOffice.office_name_with_letter_address AS punarabedan_office_name,                
                 bpd.punarabedan_office_ch_no,
                 bpd.punarabedan_office_date
 
@@ -375,13 +377,14 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
             LEFT JOIN np_district ndr ON p.recommended_district = ndr.did
             LEFT JOIN np_city ncr ON p.recommended_city = ncr.cid
+            LEFT JOIN offices ro ON p.recommended_court_id = ro.id
             LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id 
             LEFT JOIN bandi_release_details brd ON bp.id = brd.bandi_id       
             LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id
             LEFT JOIN offices o ON bp.current_office_id = o.id
             LEFT JOIN bandi_punarabedan_details bpd ON bp.id=bpd.bandi_id
-            LEFT JOIN offices bpdo ON bpd.punarabedan_office_id=bpdo.id
-            LEFT JOIN bandi_fine_details bfd ON bp.id=bfd.bandi_id
+            LEFT JOIN offices bpdOffice ON bpd.punarabedan_office_id = bpdOffice.id            
+            LEFT JOIN bandi_fine_details bfd ON bp.id=bfd.bandi_id            
 
             LEFT JOIN (
                     SELECT *
@@ -626,6 +629,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         recommended_district,
         recommended_city,
         recommended_tole_ward,
+        recommended_court_id,
         other_details,
         payrole_reason,
         payrole_remarks,
@@ -670,6 +674,8 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                 payrole_entry_date,
                 recommended_district,
                 recommended_city,
+                recommended_tole_ward,
+                recommended_court_id,
                 payrole_reason,
                 other_details,
                 payrole_remarks,
@@ -685,12 +691,14 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
 
             const sql = `
                 INSERT INTO payroles (
-                    bandi_id, office_bandi_id, payrole_entry_date, recommended_district, recommended_city,
+                    bandi_id, office_bandi_id, payrole_entry_date, 
+                    recommended_district, recommended_city, recommended_tole_ward, recommended_court_id,
                     payrole_reason, other_details, remark, status, payrole_no_id, is_checked,
                     user_role_id, is_completed, created_by, created_office, updated_office
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
+            await connection.query(`UPDATE bandi_person SET is_under_facility=? WHERE id=?`, [1,bandi_id])
             const [result] = await connection.query( sql, values );
             await connection.commit();
 

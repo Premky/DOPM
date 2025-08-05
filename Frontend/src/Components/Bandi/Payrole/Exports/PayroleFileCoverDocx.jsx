@@ -272,7 +272,7 @@ export default function PayroleFileCoverDocx( props ) {
         } );
 
         const blob = await Packer.toBlob( doc );
-        saveAs( blob, "payrole_cover.docx" );
+        saveAs( blob, `${ data.bandi_name } को फाइल कभर.docx` );
     };
 
     return (
