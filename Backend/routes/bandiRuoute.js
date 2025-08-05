@@ -2393,7 +2393,7 @@ router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) 
         connection = await pool.getConnection();
         console.log( "📝 Update contact request:", req.body );
 
-        const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
+        const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office, connection );
 
         if ( updatedCount === 0 ) {
             return res.status( 400 ).json( {

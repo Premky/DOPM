@@ -334,6 +334,7 @@ const AllBandiTable = () => {
                     title="बन्दीहरुको सूची"
                     showView
                     onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+                    // showDelete
                 />
                 {/* <ReusableTable
                     columns={columns}
