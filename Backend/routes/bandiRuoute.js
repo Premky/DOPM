@@ -2004,8 +2004,9 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     // console.log(req.body)
     let sql;
     let values;
-    sql = `UPDATE bandi_fine_details SET fine_type_id=?, amount_fixed =?, amount_deposited =?, deposit_office =?, deposit_district =?, deposit_ch_no =?,
-    deposit_date =?, deposit_amount =?, updated_by=? WHERE id =? `;
+    sql = `UPDATE bandi_fine_details SET 
+    fine_type_id=?, amount_fixed =?, amount_deposited =?, deposit_office =?, 
+    deposit_district =?, deposit_ch_no =?, deposit_date =?, deposit_amount =?, updated_by=? WHERE id =? `;
     if ( Number( amount_fixed ) === 1 ) {
         if ( Number( amount_deposited ) === 1 ) {
             values = [
