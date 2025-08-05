@@ -305,7 +305,7 @@ const PayroleTable = () => {
                                                     <div key={`fine-${ data.id }-${ i }`}>
                                                         {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.
                                                         {fine.deposit_amount} {fine.fine_name_np}{" "}
-                                                        {!fine.amount_deposited ? 'बुझाएको' :
+                                                        {fine.amount_deposited===1 ? 'बुझाएको' :
                                                             <span style={{ color: 'red' }}>नबुझाएको</span>
                                                         } ।
                                                         <hr />
