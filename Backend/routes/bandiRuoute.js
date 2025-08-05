@@ -1253,12 +1253,12 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     try {
         const [result] = await pool.query( `
             UPDATE bandi_person SET                
-                bandi_name = ?, gender = ?, dob = ?, dob_ad=?, married_status = ?,
+                bandi_name = ?, lagat_no=?, gender = ?, dob = ?, dob_ad=?, married_status = ?,
                 bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
                 updated_by = ?, updated_at = NOW()
             WHERE id = ?
         `, [
-            data.bandi_name, data.gender, data.dob, dob_ad, data.married_status,
+            data.bandi_name, data.lagat_no, data.gender, data.dob, dob_ad, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
             req.user.username, id
         ] );
@@ -1268,6 +1268,35 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
         console.error( error );
         res.status( 500 ).json( { Status: false, message: "Server error", error: error.message } );
     }
+} );
+
+router.delete( '/delete_bandi/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const role_name = req.user.role_name;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    console.log( role_name );
+
+    if ( role_id !== 99 && role_name !== 'superadmin' ) {
+        console.error( `Unauthorized Delete Trial for Bandi Id ${ id }` );
+        return res.status( 403 ).json( {
+            Status: false,
+            message: `You are not authorized to delete. Please contact administrator.`
+        } );
+    }
+
+    try {
+       const [result] = await pool.query( `DELETE FROM bandi_person WHERE id=?`, [id] );
+        res.json( {
+            Status: true,
+            message: "बन्दी DELETE गरियो।"
+        } );
+    } catch ( error ) {
+        console.error( error );
+
+    }
+
 } );
 
 router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
@@ -1295,6 +1324,7 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
         let values = [];
 
         if ( Number( nationality_id ) === 1 ) {
+            await connection.query( `UPDATE bandi_person SET nationality = 'स्वदेशी' WHERE id=?`, [id] );
             sql = `
         UPDATE bandi_address
         SET nationality_id = ?, province_id = ?, district_id = ?, gapa_napa_id = ?, wardno = ?,
@@ -1302,6 +1332,7 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
         WHERE id = ?`;
             values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, user_id, active_office, id];
         } else {
+            await connection.query( `UPDATE bandi_person SET nationality = 'विदेशी' WHERE id=?`, [id] );
             sql = `
         UPDATE bandi_address
         SET nationality_id = ?, bidesh_nagarik_address_details = ?,
@@ -1446,13 +1477,13 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
             thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?,
             is_life_time = ?,
-            updated_by = ?, current_office_id = ?
+            updated_by = ?,
         WHERE id = ?`;
             kaidValues = [
                 hirasat_years, hirasat_months, hirasat_days,
                 thuna_date_bs, thunaDateAd,
                 release_date_bs, is_life_time,
-                user_id, active_office,
+                user_id,
                 id
             ];
         } else if ( bandi_type === 'थुनुवा' ) {
@@ -1460,12 +1491,12 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         UPDATE bandi_kaid_details
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
             thuna_date_bs = ?, thuna_date_ad = ?,
-            updated_by = ?, current_office_id = ?
+            updated_by = ?
         WHERE id = ?`;
             kaidValues = [
                 hirasat_years, hirasat_months, hirasat_days,
                 thuna_date_bs, thunaDateAd,
-                user_id, active_office,
+                user_id,
                 id
             ];
         } else {
@@ -1477,8 +1508,8 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
 
         // Update bandi type in bandi_person
         await connection.query(
-            `UPDATE bandi_person SET bandi_type = ?, updated_by = ?, current_office_id = ? WHERE id = ?`,
-            [bandi_type, user_id, active_office, bandi_id]
+            `UPDATE bandi_person SET bandi_type = ?, updated_by = ?, WHERE id = ?`,
+            [bandi_type, user_id, bandi_id]
         );
 
         await connection.commit();
@@ -2025,7 +2056,7 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     }
     try {
         const [result] = await pool.query( sql, values );
-        console.log( result );
+        // console.log( result );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( 'Database error', err );

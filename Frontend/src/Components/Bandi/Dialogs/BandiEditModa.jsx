@@ -23,11 +23,11 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
             // office_bandi_id: "",
 
             bandi_name: "",
-            gender: "",
-            dob: "",
-            married_status: "",
             bandi_education: "",
+            gender: "",
+            married_status: "",
             bandi_huliya: "",
+            dob: "",
             remarks: "",
         }
     } );
@@ -71,7 +71,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         // { name: "bandi_huliya", label: "हुलिया" },
                         // { name: "remarks", label: "कैफियत" },
                     ].map( ( field ) => (
-                        <Grid size={{xs:6}} key={field.name}>
+                        <Grid size={{ xs: 6 }} key={field.name}>
                             <Controller
                                 name={field.name}
                                 control={control}
@@ -88,7 +88,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         </Grid>
                     ) )}
 
-                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
+                    <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="bandi_name"
                             label="नामथर"
@@ -96,8 +96,17 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                         />
                     </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        <ReuseInput
+                            name='lagat_no'
+                            label="लगत नं."
+                            // defaultValue={band_rand_id}
+                            required={false}
+                            control={control}
+                            error={errors.lagat_no} />
+                    </Grid>
 
-                    <Grid size={{xs:12}}>
+                    <Grid size={{ xs: 12 }}>
                         <Controller
                             name="bandi_education"
                             control={control}
@@ -117,7 +126,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         />
                     </Grid>
 
-                    <Grid size={{xs:12}}>
+                    <Grid size={{ xs: 12 }}>
                         <Controller
                             name="gender"
                             control={control}
@@ -137,7 +146,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         />
                     </Grid>
 
-                    <Grid size={{xs:12}}>
+                    <Grid size={{ xs: 12 }}>
                         <Controller
                             name="married_status"
                             control={control}
@@ -156,7 +165,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             )}
                         />
                     </Grid>
-                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
+                    <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="bandi_huliya"
                             label="हुलिया"
@@ -164,14 +173,14 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                         />
                     </Grid>
-                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
+                    <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
                         <ReuseDatePickerBS
                             name="dob"
                             control={control}
                             label="जन्म मिति"
                         />
                     </Grid>
-                    <Grid size={{xs:12}} style={{ position: 'relative' }}>
+                    <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="remarks"
                             placeholder={'कैफियत'}

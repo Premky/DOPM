@@ -1,4 +1,4 @@
-import {Box, Button, Grid} from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
@@ -13,7 +13,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 // import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
-const ReusableBandiTable = React.lazy(()=> import ('../ReusableComponents/ReusableBandiTable'));
+const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 
 const AllBandiTable = () => {
@@ -22,7 +22,7 @@ const AllBandiTable = () => {
     const navigate = useNavigate();
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
-    const { records:muddaGroups, optrecords:mudaGroupsOpt, loading:muddaGroupsLoading } = fetchMuddaGroups();
+    const { records: muddaGroups, optrecords: mudaGroupsOpt, loading: muddaGroupsLoading } = fetchMuddaGroups();
     useEffect( () => {
         setValue( 'searchOffice', authState.office_id | '' );
     }, [authState] );
@@ -151,6 +151,31 @@ const AllBandiTable = () => {
         } catch ( err ) {
             console.error( err );
             Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+        }
+    };
+
+    const handleDelete = async ( bandi ) => {
+        const result = await Swal.fire( {
+            title: `Delete ${ bandi.bandi_name }?`,
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+        } );
+
+        if ( result.isConfirmed ) {
+            try {
+                const res = await axios.delete( `${BASE_URL}/bandi/delete_bandi/${ bandi.id }`, {withCredentials:true} );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    fetchKaidi(); // Re-fetch updated data
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
+            }
         }
     };
 
@@ -293,7 +318,7 @@ const AllBandiTable = () => {
                         <ReuseSelect
                             name="is_active"
                             label='छुटेर गएको/नगएको'
-                            options={[                                
+                            options={[
                                 { label: 'छुटेर गएको', value: '0' },
                                 { label: 'छुटेर नगएको', value: '1' }
                             ]}
@@ -304,7 +329,7 @@ const AllBandiTable = () => {
                     <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="mudda_group_id"
-                            label='मुद्दा समूह'                           
+                            label='मुद्दा समूह'
                             control={control}
                             options={mudaGroupsOpt}
                         />
@@ -326,17 +351,18 @@ const AllBandiTable = () => {
             </Box>
             {/* <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}> */}
 
-                <ReusableBandiTable
-                    columns={columns}
-                    rows={filteredKaidi}
-                    loading={loading}
-                    primaryMergeKey="bandi_id"
-                    title="बन्दीहरुको सूची"
-                    showView
-                    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
-                    // showDelete
-                />
-                {/* <ReusableTable
+            <ReusableBandiTable
+                columns={columns}
+                rows={filteredKaidi}
+                loading={loading}
+                primaryMergeKey="bandi_id"
+                title="बन्दीहरुको सूची"
+                showView
+                onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+                onDelete={handleDelete}
+                showDelete={authState.role_name === 'supervisor' || authState.role_id === 99}
+            />
+            {/* <ReusableTable
                     columns={columns}
                     rows={rows}
                     loading={loading}

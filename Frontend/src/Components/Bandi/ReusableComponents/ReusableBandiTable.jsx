@@ -191,7 +191,7 @@ const ReusableBandiTable = ( {
 
                                     {muddaIndex === 0 && (
                                         <TableCell rowSpan={rowSpan} align="center">
-                                            {Number(bandi.is_under_facility===0 || bandi.is_under_facility===null ) && (
+                                            {( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
                                                 <a
                                                     href={`/bandi/view_saved_record/${ bandi.id }`}
                                                     target="_blank"
@@ -201,6 +201,7 @@ const ReusableBandiTable = ( {
                                                     <Button variant="outlined" size="small" color="primary">VIEW</Button>
                                                 </a>
                                             )}
+
 
                                             {showEdit && (
                                                 <Button
