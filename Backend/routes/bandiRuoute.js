@@ -2014,12 +2014,12 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
             ];
         } else {
             values = [
-                amount_fixed, amount_deposited, null, null, null, null, deposit_amount, user_id, id
+                fine_type_id, amount_fixed, amount_deposited, null, null, null, null, deposit_amount, user_id, id
             ];
         }
     } else {
         values = [
-            amount_fixed, null, null, null, null, null, null, user_id, id
+            fine_type_id, amount_fixed, null, null, null, null, null, null, user_id, id
         ];
     }
     try {
