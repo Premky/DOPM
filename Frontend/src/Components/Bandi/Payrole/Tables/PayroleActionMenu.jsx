@@ -170,7 +170,6 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
             //   <MenuItem onClick={handleForward}>Forward</MenuItem>
             //   {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
             // </> ) : ( <>
-
             // </> )
           )
       }
