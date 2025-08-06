@@ -5,64 +5,68 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReusePunarabedanOffice = ({ name, label, required, control, error,defaultValue, disabled }) => {
+const ReusePunarabedanOffice = ( { name, label, required, control, error, defaultValue, disabled } ) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem( 'token' );
 
     // State to store office options
-    const [formattedOptions, setFormattedOptions] = useState([]);
-    const [loading, setLoading] = useState(true);
-
+    const [formattedOptions, setFormattedOptions] = useState( [] );
+    const [loading, setLoading] = useState( true );
+    const addedOffice = {
+        sn: 95,
+        label: "सर्वोच्च अदालत", // <-- change this to your desired office name
+        value: 95, // <-- make sure it doesn’t conflict with real office IDs
+    };
     // Fetch office data
-    const fetchPunarabedanOffice = async (name_type) => {
+    const fetchPunarabedanOffice = async ( name_type ) => {
         try {
-            const url = `${BASE_URL}/public/get_all_punarabedan_offices`;
-            const response = await axios.get(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const url = `${ BASE_URL }/public/get_all_punarabedan_offices`;
+            const response = await axios.get( url, {
+                headers: { Authorization: `Bearer ${ token }` },
+            } );
 
             const { Status, Result, Error } = response.data;
 
-            if (Status) {
-                if (Array.isArray(Result) && Result.length > 0) {
+            if ( Status ) {
+                if ( Array.isArray( Result ) && Result.length > 0 ) {
                     // const filtered = Result.filter(a => a.office_categories_id == 2 || a.office_categories_id == 3);
                     const filtered = Result;
                     let formatted;
-                    if(name_type='short'){
-                        formatted = filtered.map((opt, index) => ({
-                            sn: index + 1,
-                            label:opt.office_name_with_letter_address,
-                            value: opt.id,
-                        }));
-                        // console.log(formatted)
-                        setFormattedOptions(formatted);
-                    }else{
-                        formatted = filtered.map((opt, index) => ({
+                    if ( name_type = 'short' ) {
+                        formatted = filtered.map( ( opt, index ) => ( {
                             sn: index + 1,
                             label: opt.office_name_with_letter_address,
                             value: opt.id,
-                        }));
+                        } ) );
                         // console.log(formatted)
-                        setFormattedOptions(formatted);
+                        setFormattedOptions( [addedOffice,...formatted] );
+                    } else {
+                        formatted = filtered.map( ( opt, index ) => ( {
+                            sn: index + 1,
+                            label: opt.office_name_with_letter_address,
+                            value: opt.id,
+                        } ) );
+                        // console.log(formatted)
+                        setFormattedOptions( [addedOffice,...formatted] );
                     }
                 } else {
-                    console.log('No records found.');
+                    console.log( 'No records found.' );
                 }
             } else {
-                console.log(Error || 'Failed to fetch.');
+                console.log( Error || 'Failed to fetch.' );
             }
-        } catch (error) {
-            console.error('Error fetching records:', error);
+        } catch ( error ) {
+            console.error( 'Error fetching records:', error );
         } finally {
-            setLoading(false);
+            setLoading( false );
         }
-    }
+    };
 
-    useEffect(() => {
+    useEffect( () => {
         fetchPunarabedanOffice();
-    }, []);
+    }, [] );
 
     return (
         <>
@@ -79,30 +83,30 @@ const ReusePunarabedanOffice = ({ name, label, required, control, error,defaultV
                     control={control}
                     defaultValue={defaultValue}
                     rules={{
-                        ...(required && {
+                        ...( required && {
                             required: {
                                 value: true,
                                 message: 'यो फिल्ड अनिवार्य छ',
                             },
-                        })
+                        } )
                     }}
-                    render={({ field: { onChange, value, ref } }) => (
+                    render={( { field: { onChange, value, ref } } ) => (
                         <Autocomplete
-                            key={`${name}_${value || ''}`}
+                            key={`${ name }_${ value || '' }`}
                             id={name}
                             options={formattedOptions} // Use fetched districts
                             autoHighlight
-                            getOptionLabel={(option) => option.label || ''} // Prevents crashes if `label` is missing
-                            value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
-                            onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
+                            getOptionLabel={( option ) => option.label || ''} // Prevents crashes if `label` is missing
+                            value={formattedOptions.find( ( option ) => option.value === value ) || null} // Ensure selected value matches
+                            onChange={( _, newValue ) => onChange( newValue ? newValue.value : '' )} // Store only value
                             sx={{ width: '100%' }}
                             disabled={disabled}
-                            renderOption={(props, option) => (
+                            renderOption={( props, option ) => (
                                 <Box component="li" {...props} key={option.value}>
                                     {option.label}
                                 </Box>
                             )}
-                            renderInput={(params) => (
+                            renderInput={( params ) => (
                                 <TextField
                                     // defaultValue=''
                                     {...params}
