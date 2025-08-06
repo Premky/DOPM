@@ -63,9 +63,14 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
     let months = endMonth - startMonth + hirasat_months;
     let days = endDay - startDay + hirasat_days;
 
-    if ( days < 0 ) {
+    
+    if ( days <= 0 ) {
       months--;
-      days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
+      console.log('endDay',endDay, 'startDay', startDay,'hirasatday', hirasat_days, 'days',days)
+      console.log('days:',days, 'added:',NepaliDate.getDaysOfMonth( endYear, endMonth - 1 ))
+      // days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
+      days += 30;
+      console.log('newDays', days)
     }
 
     // if ( days >= NepaliDate.getDaysOfMonth( endYear, endMonth ) ) {
@@ -75,7 +80,7 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
 
     if ( days >= 30 ) {
       months++;
-      days -= 30;
+      days -= 30;      
     }
 
     if ( months < 0 ) {
