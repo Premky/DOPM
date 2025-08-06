@@ -142,7 +142,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                     ? [
                         ( data.hirasat_days || data.hirasat_months || data.hirasat_years )
                             ? `जम्मा कैदः \n ${ totalKaidDuration.formattedDuration }\n` +
-                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः`: '',` ${ kaidDuration.formattedDuration }`
+                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः \n ${ kaidDuration.formattedDuration }`:`${ kaidDuration.formattedDuration }`
                     ].filter( Boolean ).join( '\n\n' )
                     : '',
                 mIndex === 0 ? data.release_date_bs : '',
