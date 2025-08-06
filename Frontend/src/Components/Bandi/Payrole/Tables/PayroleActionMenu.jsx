@@ -12,6 +12,7 @@ import PayroleApplicationDocx from "../Exports/ParoleApplicationDocx";
 import PayroleFileCoverDocx from "../Exports/PayroleFileCoverDocx";
 import PayroleNoPunrabedanDocx from "../Exports/PayroleNoPunrabedanDocx";
 import PayroleResultModal from "../Dialogs/PayroleResultModal";
+import PayroleCharacterDocx from "../Exports/PayroleCharacterDocx";
 
 const handleViewPayrole = async ( row ) => {
 
@@ -121,8 +122,10 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         authState.role_id <= 2 && ( <>
           <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
           <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem></> )
-          
+          <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
+          <MenuItem><PayroleCharacterDocx data={data} /> </MenuItem>
+        </> )
+
       }
 
       {

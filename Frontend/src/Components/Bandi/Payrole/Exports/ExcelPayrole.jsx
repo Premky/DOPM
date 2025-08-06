@@ -91,7 +91,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     let currentRow = 3; // Start from row 2 (row 1 = header)
 
     filteredKaidi.forEach( ( data, index ) => {
-        console.log( data );
+        // console.log( data );
         const kaidiMuddas = fetchedMuddas[data.bandi_id] || [{}];
         const kaidiFines = fetchedFines[data.bandi_id] || [{}];
         const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
@@ -113,7 +113,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                 totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, formattedDateNp, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
                 totalBakiDuration = calculateBSDate( formattedDateNp, data.release_date_bs, totalKaidDuration );
             }
-
+            // console.log(mudda.mudda_office)
             const row = worksheet.addRow( [
                 mIndex === 0 ? index + 1 : '',
                 mIndex === 0 ? data.letter_address : '',
@@ -130,10 +130,10 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
                 `${ mudda.mudda_name }\n${ mudda.mudda_no }` || '',
                 mudda.vadi || '',
-                `${ mudda.mudda_phesala_antim_office || '' } \n ${ mudda.mudda_phesala_antim_office_date || '' }`,
+                `${ mudda.mudda_office || '' } \n ${ mudda.mudda_phesala_antim_office_date || '' }`,
                 mIndex === 0
                     ? bandiNoPunarabedan.map( ( noPunrabedan, i ) =>
-                        `${ i + 1 }. ${ noPunrabedan.punarabedan_office || '' }को च.नं. ${ noPunrabedan.punarabedan_office_ch_no || '' } मिति ${ noPunrabedan.punarabedan_office_date || '' } ` )
+                        `${ i + 1 }. ${ noPunrabedan.punarabedan_office || '' }को च.नं. ${ noPunrabedan.punarabedan_office_ch_no || '' }, मिति ${ noPunrabedan.punarabedan_office_date || '' } गतेको पत्र ।` )
                         .join( '\n' )
                     : '',
                 mIndex === 0 ? data.thuna_date_bs : '',
@@ -142,12 +142,9 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                     ? [
                         ( data.hirasat_days || data.hirasat_months || data.hirasat_years )
                             ? `जम्मा कैदः \n ${ totalKaidDuration.formattedDuration }\n` +
-                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः`
-                            : '',
-                        ` \n ${ kaidDuration.formattedDuration }`
+                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः`: '',` ${ kaidDuration.formattedDuration }`
                     ].filter( Boolean ).join( '\n\n' )
                     : '',
-
                 mIndex === 0 ? data.release_date_bs : '',
                 // mIndex === 0 ? `${ bhuktanDuration.formattedDuration }\n${ bhuktanDuration.percentage }%` : '',
                 mIndex === 0 ?
@@ -165,7 +162,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                     ? kaidiFines
                         .filter( fine => Boolean( fine.deposit_office ) ) // ✅ Only keep valid ones
                         .map( ( fine, i ) =>
-                            `${ i + 1 }. ${ fine.deposit_office }को मिति ${ fine.deposit_date } गतेको च.नं. ${ fine.deposit_ch_no } बाट रु.${ fine.deposit_amount } ${ fine.fine_name_np } बुझाएको ।`
+                            `${ i + 1 }. ${ fine.deposit_office }को च.नं. ${ fine.deposit_ch_no }, मिति ${ fine.deposit_date } गतेको पत्रबाट रु.${ fine.deposit_amount } ${ fine.fine_name_np } बुझाएको ।`
                         )
                         .join( '\n' )
                     : '',

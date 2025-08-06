@@ -201,7 +201,7 @@ const PayroleTable = () => {
                                 totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
                                 totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
                             }
-
+                            // console.log(kaidiMuddas)
                             return (
                                 <Fragment key={data.id}>
                                     <TableRow sx={rowStyle}>
@@ -233,7 +233,7 @@ const PayroleTable = () => {
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np} ({data.nationality})</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.mudda_name}</TableCell>
                                         <TableCell>{kaidiMuddas[0]?.vadi}</TableCell>
-                                        <TableCell>{kaidiMuddas[0]?.punarabedan_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
+                                        <TableCell>{kaidiMuddas[0]?.mudda_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             {/* कैद अवधि */}
@@ -326,7 +326,7 @@ const PayroleTable = () => {
                                         <TableRow key={`mudda-${ data.id }-${ i }`} sx={rowStyle}>
                                             <TableCell>{mudda.mudda_name}</TableCell>
                                             <TableCell>{mudda.vadi}</TableCell>
-                                            <TableCell>{mudda.punarabedan_office}<br />{mudda.mudda_phesala_antim_office_date}</TableCell>
+                                            <TableCell>{mudda.mudda_office}<br />{mudda.mudda_phesala_antim_office_date}</TableCell>
                                         </TableRow>
                                     ) )}
                                 </Fragment>

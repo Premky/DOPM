@@ -17,6 +17,22 @@ const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
 export default function PayroleFileCoverDocx( props ) {
     const { data } = props;
+    // console.log(data)
+    const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+    const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
+    const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
+
+    const hirasatDays = data?.hirasat_days || 0;
+    const hirasatMonths = data?.hirasat_months || 0;
+    const hirasatYears = data?.hirasat_years || 0;
+    let totalKaidDuration = kaidDuration;
+    let totalBhuktanDuration = bhuktanDuration;
+    let totalBakiDuration = bakiDuration;
+    if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+        totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+        totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+        totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
+    }
 
     // Handle address
     let address = "";
@@ -173,7 +189,7 @@ export default function PayroleFileCoverDocx( props ) {
                             },
                             children: [
                                 new TextRun( { text: `कैद भुक्तान हुने मितिः-`, bold: true } ),
-                                new TextRun( `${ data.release_date_b } ` || "" ),
+                                new TextRun( `${ data.release_date_bs } ` || "" ),
                             ],
                         } ),
                         new Paragraph( {
@@ -183,7 +199,7 @@ export default function PayroleFileCoverDocx( props ) {
                             },
                             children: [
                                 new TextRun( { text: `कैद भुक्तान अवधिः-`, bold: true } ),
-                                new TextRun( `${ calculateBSDate( data.thuna_date_bs, current_date ).formattedDuration }  ` || "" ),
+                                new TextRun( `${ totalKaidDuration.formattedDuration}` || "" ),
                             ],
                         } ),
                         new Paragraph( {
@@ -192,8 +208,8 @@ export default function PayroleFileCoverDocx( props ) {
                                 level: 0,
                             },
                             children: [
-                                new TextRun( { text: `कैद भुक्तान प्रतिशत-`, bold: true } ),
-                                new TextRun( `${ calculateBSDate( data.thuna_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ) ).percentage }% ` || "" ),
+                                new TextRun( { text: `कैद भुक्तान अवधि/प्रतिशत-`, bold: true } ),
+                                new TextRun( `${totalBhuktanDuration.formattedDuration} (${totalBhuktanDuration.percentage}%) ` || "" ),
                             ],
                         } ),
                         new Paragraph( {
@@ -203,7 +219,7 @@ export default function PayroleFileCoverDocx( props ) {
                             },
                             children: [
                                 new TextRun( { text: `मुद्दाको अन्तिम फैसला गर्ने निकाय र मितिः-`, bold: true } ),
-                                new TextRun( `${data?.muddas[0]?.office_name_with_letter_address}को मिति ${data?.muddas[0]?.mudda_phesala_antim_office_date} ` || "" ),
+                                new TextRun( `${ data?.muddas[0]?.mudda_phesala_antim_office }को मिति ${ data?.muddas[0]?.mudda_phesala_antim_office_date } ` || "" ),
                             ],
                         } ),
                         new Paragraph( {
@@ -213,7 +229,7 @@ export default function PayroleFileCoverDocx( props ) {
                             },
                             children: [
                                 new TextRun( { text: `पुनरावेदन नपरेको प्रमाणः-`, bold: true } ),
-                                new TextRun( `${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ ।  ` || "" ),
+                                new TextRun( `${ data.punarabedan_office_name }को च.नं. ${ data.punarabedan_office_ch_no }, मिति ${ data.punarabedan_office_date } गतेको पत्र संलग्न रहेको छ ।  ` || "" ),
                             ],
                         } ),
                         new Paragraph( {

@@ -171,9 +171,8 @@ LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
 
-router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     let connection;
-
     const bandi_id = req.params.id;
     const { bandi_name, office_bandi_id } = req.body;
     const photoFile = req.file;
@@ -199,27 +198,17 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
             `UPDATE bandi_person SET photo_path = ? WHERE id = ?`,
             [photo_path, bandi_id]
         );
-
         await connection.commit();
-
-        // Delete old photo after successful commit
-        // if ( oldPhotoPath && fs.existsSync( `.${ oldPhotoPath }` ) ) {
-        //     fs.unlink( `.${ oldPhotoPath }`, ( err ) => {
-        //         if ( err ) console.error( 'Failed to delete old photo:', err );
-        //     } );
-        // }
-
         if ( oldPhotoPath ) {
             const oldPath = path.join( '.', oldPhotoPath );
             try {
                 await fs.promises.access( oldPath );
                 await fs.promises.unlink( oldPath );
                 console.log( `🗑️ Old photo deleted: ${ oldPath }` );
-            } catch {
-                console.warn( '⚠️ Old photo not found or already deleted' );
+            } catch ( unlinkErr ) {
+                console.warn( `⚠️ Could not delete old photo (${ oldPath }):`, unlinkErr.message );
             }
         }
-
         res.status( 200 ).json( {
             success: true,
             message: 'फोटो सफलतापूर्वक अपडेट भयो',
@@ -231,7 +220,7 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
                 await connection.rollback();
 
                 // Set photo_path = NULL for that specific bandi
-                await connection.query(
+                await pool.query(
                     `UPDATE bandi_person SET photo_path = NULL WHERE id = ?`,
                     [bandi_id] // make sure you have bandiId defined from context
                 );
@@ -241,17 +230,6 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
                 connection.release();
             }
         }
-
-        // Delete the uploaded file
-
-        // if ( photoFile && fs.existsSync( photoFile.path ) ) {
-        //     fs.unlink( photoFile.path, ( unlinkErr ) => {
-        //         if ( unlinkErr )
-        //             console.error( "⚠️ Rollback failed to delete uploaded file:", unlinkErr );
-        //     } );}
-
-        // Send error response
-
         if ( photoFile ) {
             const uploadedPath = photoFile.path;
             try {
@@ -282,6 +260,99 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
     }
 } );
 
+router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+    let connection;
+    const bandi_id = req.params.id;
+    const { bandi_name, office_bandi_id } = req.body;
+    const photoFile = req.file;
+    const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
+
+    if ( !photoFile || !bandi_name || !office_bandi_id ) {
+        return res.status( 400 ).json( { success: false, message: 'Missing required fields' } );
+    }
+
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        // Fetch old photo
+        const [result] = await connection.query(
+            'SELECT photo_path FROM bandi_person WHERE id = ?',
+            [bandi_id]
+        );
+        const oldPhotoPath = result?.[0]?.photo_path;
+
+        // Delete old photo from disk (if exists)
+        if ( oldPhotoPath ) {
+            const oldPath = path.join( '.', oldPhotoPath );
+            try {
+                await fs.promises.access( oldPath );
+                await fs.promises.unlink( oldPath );
+                await pool.query( 'UPDATE bandi_person SET photo_path = NULL WHERE id = ?', [bandi_id] );
+                console.log( `🗑️ Old photo deleted: ${ oldPath }` );
+            } catch ( unlinkErr ) {
+                console.warn( `⚠️ Could not delete old photo (${ oldPath }):`, unlinkErr.message );
+            }
+        }
+
+        // Update photo path in DB
+        await connection.query(
+            'UPDATE bandi_person SET photo_path = ? WHERE id = ?',
+            [photo_path, bandi_id]
+        );
+        await connection.commit();
+
+
+
+        res.status( 200 ).json( {
+            success: true,
+            message: 'फोटो सफलतापूर्वक अपडेट भयो',
+            photo_path,
+        } );
+    } catch ( err ) {
+        console.error( '❌ Update transaction failed:', err );
+
+        // Cleanup if error occurred
+        if ( connection ) {
+            try {
+                await connection.rollback();
+            } catch ( rollbackErr ) {
+                console.error( '⚠️ Rollback failed:', rollbackErr );
+            } finally {
+                connection.release();
+            }
+        }
+
+        // Delete newly uploaded photo if it exists
+        if ( photoFile ) {
+            const uploadedPath = photoFile.path;
+            try {
+                await fs.promises.access( uploadedPath );
+                await fs.promises.unlink( uploadedPath );
+                console.log( '🗑️ Uploaded photo deleted due to error' );
+            } catch {
+                console.warn( '⚠️ Uploaded photo already missing' );
+            }
+
+            // Set photo_path = NULL in DB if it was inserted before failure
+            try {
+                await pool.query( 'UPDATE bandi_person SET photo_path = NULL WHERE id = ?', [bandi_id] );
+                console.log( '📛 photo_path reset to NULL due to error' );
+            } catch ( dbErr ) {
+                console.error( '❌ Failed to reset photo_path to NULL:', dbErr );
+            }
+        }
+
+        res.status( 500 ).json( {
+            success: false,
+            message: 'फोटो अपडेट असफल भयो',
+            error: err.message,
+        } );
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
+
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.username;
     const office_id = req.user.office_id;
@@ -297,7 +368,6 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             message: `कृपया नयाँ ID प्रयोग गर्नुहोला । ${ req.params.c_user_id } निष्कृय गरिएको छ !!!`
         } );
     }
-
 
     try {
         // ✅ get a dedicated connection from the pool
@@ -1287,14 +1357,17 @@ router.delete( '/delete_bandi/:id', verifyToken, async ( req, res ) => {
     }
 
     try {
-       const [result] = await pool.query( `DELETE FROM bandi_person WHERE id=?`, [id] );
+        const [result] = await pool.query( `DELETE FROM bandi_person WHERE id=?`, [id] );
         res.json( {
             Status: true,
             message: "बन्दी DELETE गरियो।"
         } );
     } catch ( error ) {
         console.error( error );
-
+        res.json( {
+            Status: false,
+            message: "Something Wrong!"
+        } );
     }
 
 } );
@@ -1477,7 +1550,7 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
             thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?,
             is_life_time = ?,
-            updated_by = ?,
+            updated_by = ?
         WHERE id = ?`;
             kaidValues = [
                 hirasat_years, hirasat_months, hirasat_days,
@@ -1508,7 +1581,7 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
 
         // Update bandi type in bandi_person
         await connection.query(
-            `UPDATE bandi_person SET bandi_type = ?, updated_by = ?, WHERE id = ?`,
+            `UPDATE bandi_person SET bandi_type = ?, updated_by = ? WHERE id = ?`,
             [bandi_type, user_id, bandi_id]
         );
 

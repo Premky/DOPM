@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Dialog,
     DialogTitle,
@@ -17,44 +17,102 @@ import useFetchUserRolesUsedInProcess from "../../Apis_to_fetch/useFetchUserRole
 import { useAuth } from "../../../../Context/AuthContext";
 import useFetchAllowedActions from "../../Apis_to_fetch/useFetchAllowedActions";
 
+
+// const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
+//     const { state: authState } = useAuth();
+//     const {
+//         control,
+//         handleSubmit,
+//         reset,
+//         register,
+//         watch,
+//         formState: { errors },
+//     } = useForm( {
+//         defaultValues: {
+//             id: editingData?.id || '',
+//             payrole_id: editingData?.payrole_id || '',
+//             to_user: editingData?.to_user || '',
+//             to_role: editingData?.to_role || '',
+//             remarks: editingData?.remarks || '',
+//         }
+//     } );
+
+
+
+//     const isComposing = useRef( false );
+//     const [localValue, setLocalValue] = useState( "" );
+//     // console.log(editingData)
+//     useEffect( () => {
+//         if ( editingData ) {
+//             // console.log( editingData );
+//             reset( {
+//                 id: editingData.id || "", // ✅ Include this
+//                 payrole_id: editingData.payrole_id || "",
+//                 to_user: editingData.to_user || "",
+//                 to_role: editingData.to_role || "",
+//             } );
+//         } else {
+//             reset( {
+//                 id: "",
+//                 payrole_id: "",
+//                 to_user: "",
+//                 to_role: "",
+//             } );
+//         }
+//     }, [editingData, reset] );
+
+//     const onSubmit = ( data ) => {
+//         console.log( 'data:', data, 'id:', editingData?.id );
+//         onSave( data, editingData?.id );
+//         onClose();
+//     };
+
+//     useEffect( () => {
+//         reset( {
+//             id: editingData?.id || '',
+//             payrole_id: editingData?.payrole_id || '',
+//             to_user: editingData?.to_user || '',
+//             to_role: editingData?.to_role || '',
+//             remarks: editingData?.remarks || '',
+//         } );
+//         setLocalValue( editingData?.remarks || '' );
+//     }, [editingData, reset] );
+
 const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     const { state: authState } = useAuth();
     const {
         control,
         handleSubmit,
         reset,
-        register,
-        watch,
         formState: { errors },
     } = useForm( {
-        defaultValues: { editingData },
+        defaultValues: {
+            id: '',
+            payrole_id: '',
+            to_user: '',
+            to_role: '',
+            remarks: '',
+        },
     } );
-    // console.log(editingData)
+
+    const isComposing = useRef( false );
+    const [localValue, setLocalValue] = useState( '' );
+
     useEffect( () => {
-        if ( editingData ) {
-            // console.log( editingData );
-            reset( {
-                id: editingData.id || "", // ✅ Include this
-                payrole_id: editingData.payrole_id || "",
-                to_user: editingData.to_user || "",
-                to_role: editingData.to_role || "",
-            } );
-        } else {
-            reset( {
-                id: "",
-                payrole_id: "",
-                to_user: "",
-                to_role: "",
-            } );
-        }
+        reset( {
+            id: editingData?.id || '',
+            payrole_id: editingData?.payrole_id || '',
+            to_user: editingData?.to_user || '',
+            to_role: editingData?.to_role || '',
+            remarks: editingData?.remarks || '',
+        } );
+        setLocalValue( editingData?.remarks || '' );
     }, [editingData, reset] );
 
     const onSubmit = ( data ) => {
-        console.log( 'data:', data, 'id:', editingData?.id );
         onSave( data, editingData?.id );
         onClose();
     };
-
 
     const fullAddress =
         editingData?.nationality === "स्वदेशी"
@@ -63,7 +121,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
 
     //   const muddaName = kaidimuddas?.[0]?.mudda_name || "";
     const { records: userRoles, optrecords: optUserRoles, loading: userRolesLoading } = useFetchUserRolesUsedInProcess();
-    const { records: userActions, optrecords: optUserActions, loading: userActionsLoading } = useFetchAllowedActions(editingData?.payrole_status);
+    const { records: userActions, optrecords: optUserActions, loading: userActionsLoading } = useFetchAllowedActions( editingData?.payrole_status );
 
     // console.log( optUserRoles );
     let customUserRoles;
@@ -72,6 +130,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     } else if ( authState.role_name == 'office_admin' ) {
         customUserRoles = [{ value: 'supervisor', lable: 'विभागमा पेश गर्नुहोस्' }];
     }
+
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
@@ -99,36 +158,26 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
                     required={true}
                 />
 
-                {/* <ReuseInput
-                    name="user_id"
-                    label="नाम"
-                    control={control}
-                    required={true}
-                /> */}
-
-                {/* <Grid size={{ xs: 12 }}>
-                    <TextField
-                        select
-                        label="प्यारोल पास / फेल"
-                        fullWidth
-                        defaultValue={editingData?.pyarole_rakhan_upayukat}
-                        {...register( "pyarole_rakhan_upayukat", { required: true } )}
-                        error={!!errors.pyarole_rakhan_upayukat}
-                        helperText={errors.pyarole_rakhan_upayukat ? "चयन गर्नुहोस्" : ""}
-                    >
-                        <MenuItem value="योग्य">योग्य</MenuItem>
-                        <MenuItem value="अयोग्य">अयोग्य</MenuItem>
-                        <MenuItem value="छलफल">छलफल</MenuItem>
-                        <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
-                    </TextField>
-                </Grid> */}
-
-                <ReuseInput
+                <Controller
                     name="remarks"
-                    label="कैफियत"
                     control={control}
-                    required={false}
+                    defaultValue={editingData?.remarks || ""}
+                    render={( { field } ) => (
+                        <TextField
+                            {...field}
+                            label="कैफियत"
+                            variant="outlined"
+                            fullWidth
+                            defaultValue={editingData?.remarks || ""}
+                            onChange={field.onChange}
+                        />
+                    )}
                 />
+
+
+
+
+
             </DialogContent>
 
             <DialogActions>

@@ -54,6 +54,7 @@ axios.interceptors.response.use(
 );
 
 import { Outlet } from 'react-router-dom';
+import NepaliIME from './Components/Bandi/Payrole/Dialogs/NepaliIME';
 
 
 // Layout component to wrap protected routes with navigation
@@ -80,6 +81,7 @@ function App() {
 
             {/* Routes wrapped with LoggedIn middleware */}
             <Route path="/" element={<Login />} />
+            <Route path="/test" element={<NepaliIME />} />
             <Route path="/login" element={<Login />} />
             <Route element={<LoggedIn />}>
 

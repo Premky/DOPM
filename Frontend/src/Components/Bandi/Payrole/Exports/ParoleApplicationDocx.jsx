@@ -6,12 +6,28 @@ import NepaliDate from 'nepali-datetime';
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 export default function ParoleApplicationDocx( props ) {
     const { data } = props;
-    console.log( data );
+    // console.log( data );
+    const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+    const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
+    const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
+
+    const hirasatDays = data?.hirasat_days || 0;
+    const hirasatMonths = data?.hirasat_months || 0;
+    const hirasatYears = data?.hirasat_years || 0;
+    let totalKaidDuration = kaidDuration;
+    let totalBhuktanDuration = bhuktanDuration;
+    let totalBakiDuration = bakiDuration;
+    if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+        totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+        totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+        totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
+    }
+
     let address;
     if ( data?.nationality == 'विदेशी' ) {
         address = `${ data?.bidesh_nagarik_address_details },${ data?.country_name_np }`;
     } else if ( data?.nationality == 'स्वदेशी' ) {
-        address = `${data.city_name_np, data.district_name_np, data.district_name_np, data.state_name_np, data.country_name_np}`;
+        address = `${ data.city_name_np, data.district_name_np, data.district_name_np, data.state_name_np, data.country_name_np }`;
     }
     let mudda_name;
     if ( data?.muddas ) {
@@ -80,7 +96,7 @@ export default function ParoleApplicationDocx( props ) {
                             alignment: AlignmentType.JUSTIFY,
                             children: [
                                 new TextRun( {
-                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${ data.recommended_district } ${ data.recommended_city } ${data.recommended_tole_ward} मा बस्न पाउँनका लागि श्री ${data.recommended_court} जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
+                                    text: `म निवेदक देहाय बमोजिमको विवरण तथा संलग्न कागजात सहित प्यारोलमा जिल्ला ${ data.recommended_district } ${ data.recommended_city } ${ data.recommended_tole_ward } मा बस्न पाउँनका लागि श्री ${ data.recommended_court } जिल्ला अदालत समक्ष सिफारिस गरि पाउन सादर अनुरोध गर्दछु ।`,
                                     size: 20
                                 } ),
                             ],
@@ -144,7 +160,7 @@ export default function ParoleApplicationDocx( props ) {
                                     bold: true
                                 } ),
                                 new TextRun( {
-                                    text: `${ calculateBSDate( data.thuna_date_bs, data.release_date_bs ).formattedDuration }`,
+                                    text: `${ totalKaidDuration.formattedDuration }`,
                                     size: 20,
                                 } ),
                                 new TextRun( { break: 1 } ),
@@ -155,7 +171,7 @@ export default function ParoleApplicationDocx( props ) {
                                 } ),
 
                                 new TextRun( {
-                                    text: ` ${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ । `,
+                                    text: ` ${ data.punarabedan_office_name }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ । `,
                                     size: 20
                                 } ),
 
@@ -176,7 +192,7 @@ export default function ParoleApplicationDocx( props ) {
                                     bold: true
                                 } ),
                                 new TextRun( {
-                                    text: `${ calculateBSDate( data.thuna_date_bs, current_date ).formattedDuration } (${ calculateBSDate( data.thuna_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ) ).percentage }%)`,
+                                    text: `${ totalBhuktanDuration.formattedDuration} (${totalBhuktanDuration.percentage})%`,
                                     size: 20,
                                 } ),
                                 new TextRun( { break: 1 } ),
@@ -261,7 +277,7 @@ export default function ParoleApplicationDocx( props ) {
                                     text: ` ${ data.punarabedan_office_name }को  च.नं. ${ data.punarabedan_office_ch_no } मिति ${ data.punarabedan_office_date } गतेको पत्र संलग्न रहेको छ । `, size: 20
                                 } ),
                                 new TextRun( { break: 1 } ),
-                                
+
                                 new TextRun( {
                                     text: `झ) जरिवाना तथा क्षतिपुर्ती दाखिला गरेको पत्र र रसिद ।`, size: 20, bold: true
                                 } ),
