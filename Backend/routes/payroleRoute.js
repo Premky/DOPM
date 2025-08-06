@@ -532,7 +532,6 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
         LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
         LEFT JOIN offices o ON o.id = bp.current_office_id
         ${ whereClause }
-        
     `;
 
     try {

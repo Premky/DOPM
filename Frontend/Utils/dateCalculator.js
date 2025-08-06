@@ -68,6 +68,16 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
       days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
     }
 
+    // if ( days >= NepaliDate.getDaysOfMonth( endYear, endMonth ) ) {
+    //   months++;
+    //   days -= NepaliDate.getDaysOfMonth( endYear, endMonth );
+    // }
+
+    if ( days >= 30 ) {
+      months++;
+      days -= 30;
+    }
+
     if ( months < 0 ) {
       years--;
       months += 12;
