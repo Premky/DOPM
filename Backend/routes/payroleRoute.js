@@ -697,7 +697,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
-            await connection.query(`UPDATE bandi_person SET is_under_facility=? WHERE id=?`, [1,bandi_id])
+            await connection.query( `UPDATE bandi_person SET is_under_facility=? WHERE id=?`, [1, bandi_id] );
             const [result] = await connection.query( sql, values );
             await connection.commit();
 
@@ -824,9 +824,13 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
 
     let sql;
     let values;
-
-    sql = `UPDATE payroles SET user_role_id=?, status=?, updated_by=?, updated_at=? WHERE id=?`;
-    values = [role_id, status_id, active_user_id, new Date(), reqData.payrole_id];
+    if ( reqData.remarks ) {
+        sql = `UPDATE payroles SET user_role_id=?, status=?, remark=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, reqData.remarks, active_user_id, new Date(), reqData.payrole_id];
+    } else if ( reqData.dopm_remarks ) {
+        sql = `UPDATE payroles SET user_role_id=?, status=?, dopm_remarks=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, reqData.dopm_remarks, active_user_id, new Date(), reqData.payrole_id];
+    }
 
     try {
         const [result] = await pool.query( sql, values );
@@ -843,9 +847,18 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     const user_id = req.user.username;
     const payrole_id = req.params.id;
     const { pyarole_rakhan_upayukat, dopmremark } = req.body;
-    console.log( req.body );
-    const sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
-    const values = [pyarole_rakhan_upayukat, dopmremark, payrole_id];
+    // console.log( req.body );
+    let sql;
+    let values;
+    if ( pyarole_rakhan_upayukat == 'पास' || pyarole_rakhan_upayukat == 'फेल' ) {
+        const [board_decision] = await pool.query( `SELECT id FROM payrole_status WHERE status_key=?`, ['board_decision'] );
+        const status_id= board_decision[0].id;
+        sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?,status=?, dopm_remarks=? WHERE id=?`;
+        values = [pyarole_rakhan_upayukat, status_id, dopmremark, payrole_id];
+    }else{
+        sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
+        values = [pyarole_rakhan_upayukat, dopmremark, payrole_id];
+    }
     // console.log( values );
     try {
         const [result] = await pool.query( sql, values );

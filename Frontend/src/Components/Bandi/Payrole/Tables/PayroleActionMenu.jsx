@@ -13,6 +13,7 @@ import PayroleFileCoverDocx from "../Exports/PayroleFileCoverDocx";
 import PayroleNoPunrabedanDocx from "../Exports/PayroleNoPunrabedanDocx";
 import PayroleResultModal from "../Dialogs/PayroleResultModal";
 import PayroleCharacterDocx from "../Exports/PayroleCharacterDocx";
+import ForwardDialog4Bibhag from "../Dialogs/ForwardDialog4Bibhag";
 
 const handleViewPayrole = async ( row ) => {
 
@@ -52,10 +53,14 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
   };
 
   const [forwardModalOpen, setForwardModalOpen] = useState( false );
+  const [forwardModalOpen4dopm, setForwardModalOpen4dopm] = useState( false );
   const handleForward = () => {
     setForwardModalOpen( true );
   };
 
+  const handleForward4dopm = () => {
+    setForwardModalOpen4dopm( true );
+  };
   const [approvalModalOpen, setApprovalModalOpen] = useState( false );
   const handleApproval = () => {
     setApprovalModalOpen( true );
@@ -99,6 +104,12 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
       <ForwardToKapraDialog
         open={forwardModalOpen}
         onClose={() => setForwardModalOpen( false )}
+        onSave={handleForwardSave}
+        editingData={data}
+      />
+      <ForwardDialog4Bibhag
+        open={forwardModalOpen4dopm}
+        onClose={() => setForwardModalOpen4dopm( false )}
         onSave={handleForwardSave}
         editingData={data}
       />
@@ -180,7 +191,7 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
       {
         authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (
           <>
-            <MenuItem onClick={handleForward} >
+            <MenuItem onClick={handleForward4dopm} >
               <Button variant="outlined" color="warning">
                 Forward/Backward
               </Button>

@@ -313,7 +313,7 @@ const PayroleTable = () => {
                                                 ) )}
                                         </TableCell>
 
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remarks}</TableCell>
+                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
                                         <TableCell rowSpan={kaidiMuddas.length || 1}>
                                             <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
