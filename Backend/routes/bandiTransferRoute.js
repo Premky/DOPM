@@ -813,7 +813,7 @@ router.put( '/update_bandi_old_transfer_history/:id', verifyToken, async ( req, 
         data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
         data.transfer_from_date, data.transfer_to_date,
         data.transfer_reason_id, data.transfer_reason, role_id,
-        'Completed',  user_id, new Date()
+        'Completed',  user_id, new Date(), id
     ];
 
     try {
@@ -821,7 +821,7 @@ router.put( '/update_bandi_old_transfer_history/:id', verifyToken, async ( req, 
         const [result] = await pool.query( `UPDATE bandi_transfer_history SET
                         bandi_id=?, transfer_from_office_id=?, final_to_office_id=?, transfer_from_date=?, transfer_to_date=?,
                         transfer_reason_id=?, transfer_reason=?, role_id=?, 
-                        is_completed=?, updated_by=?, updated_at=? `, values );
+                        is_completed=?, updated_by=?, updated_at=? WHERE id=?`, values );
         // await commitAsync();
         return res.json( {
             Status: true,
