@@ -176,7 +176,7 @@ const CreateUser = () => {
                     // // console.log(formatted)
 
                     const formatted = Result[0].map( ( opt, index ) => ( {
-                        id: opt.id?? opt.user_id ?? opt.branch_id ?? opt.id ?? `user-${ index }`,
+                        id: opt.id ?? opt.user_id ?? opt.branch_id ?? opt.id ?? `user-${ index }`,
                         sn: index + 1,
                         user_name: opt.user_name,
                         user_login_id: opt.user_login_id,
@@ -193,7 +193,7 @@ const CreateUser = () => {
                             : "N/A",
                     } ) );
 
-                    console.log( "Formatted:", formatted );
+                    // console.log( "Formatted:", formatted );
                     // console.log(Result[0])
                     setFormattedOptions( formatted );
                 } else {
@@ -405,15 +405,15 @@ const CreateUser = () => {
                                     required
                                 />
                             </Grid>
-                        )}
+                        )}                        
                         <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                             <ReuseSelect
                                 name='branch'
                                 label='शाखा'
                                 control={control}
                                 error={errors.branch}
+                                required
                                 options={optBranches}
-                                required={true}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 4, md: 3 }}>
