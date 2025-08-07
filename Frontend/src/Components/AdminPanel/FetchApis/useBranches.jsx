@@ -16,7 +16,7 @@ const useBranches = ( bandi_id ) => {
             const response = await axios.get( `${ BASE_URL }/admin/get_branch_name`,
                 { withCredentials: true } );
                 const { Status, Result, Error } = response.data;
-                console.log( Result );
+                // console.log( Result );
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
