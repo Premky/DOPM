@@ -6,12 +6,14 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useBaseURL } from '../../Context/BaseURLProvider';
 import { menuAccess } from './Menues/menuAccess';
+import ResetPasswordDialog from '../Auth/ResetPasswordDialog';
 
 const CombinedNav = ( { user } ) => {
   const BASE_URL = useBaseURL();
-  const { dispatch } = useAuth();
-  const { state: authState } = useAuth();
+  const { dispatch, state:authState } = useAuth();
+
   const navigate = useNavigate();
+
   const location = useLocation();
 
   const filterSubmenuByRole = ( menuKey, submenu ) => {
@@ -74,7 +76,7 @@ const CombinedNav = ( { user } ) => {
       defaultPath: '/bandi_transfer',
       submenu: [
         // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
-        { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },        
+        { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },
         { name: 'स्थानान्तरण(स्विकृती)', path: '/bandi_transfer/approve_bandi_final_transfer' },
         // { name: 'स्थानान्तरण ', path: '/bandi_transfer/bandi_transfer_result' },
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
@@ -93,6 +95,7 @@ const CombinedNav = ( { user } ) => {
       ]
     }
   ];
+  const [resetPasswordOpen, setResetPasswordOpen] = useState( false );
   // console.log(authState)
   const handleTopNavClick = ( menu ) => {
     setSidebarMenu( menu.name );
@@ -140,8 +143,38 @@ const CombinedNav = ( { user } ) => {
 
   };
 
+  const changePassword=()=>{
+    setResetPasswordOpen(true);
+  }
+
+  const handlePasswordChange = async ( formData ) => {
+    try {
+      const res = await axios.put( `${ BASE_URL }/auth/reset_password`, formData, { withCredentials: true } );
+      Swal.fire( { title: "Password Changed", icon: "success" } );
+      setResetPasswordOpen( false );
+      // navigate( '/bandi' );
+      handleLogout();
+    } catch ( err ) {
+      Swal.fire( {
+        title: "Password Change Failed",
+        text: err.response?.data?.message || "Something went wrong",
+        icon: "error",
+      } );
+    }
+  };
   return (
     <div>
+      <ResetPasswordDialog
+        editingData={{
+          user_id: authState?.id || '',
+        }}
+        open={resetPasswordOpen}
+        onClose={() => {
+          setResetPasswordOpen( false );
+          navigate( '/bandi' );
+        }}
+        onSave={handlePasswordChange}
+      />
       {/* Top Navigation */}
       <div className="topnav">
         {topMenu.map( menu => (
@@ -184,6 +217,7 @@ const CombinedNav = ( { user } ) => {
 
 
         <a onClick={handleLogout} style={{ color: 'red' }}>🔒 Logout</a>
+        <a onClick={changePassword} style={{ color: 'red' }}>🔒 Change Password</a>
       </div>
       {/* Main content rendered here */}
       <div style={{ marginLeft: '180px', padding: '1rem', paddingTop: '60px' }}>
