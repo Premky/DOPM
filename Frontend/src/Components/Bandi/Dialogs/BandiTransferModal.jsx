@@ -122,18 +122,20 @@ const BandiTransfer = ( { open, onClose, onSave, editingData, bandi_id } ) => {
 
                 <Grid container>
                     <Grid size={{ xs: 6 }}>
-                        <ReuseDatePickerBS
+                        <ReuseDateField
                             name='transfer_from_date'
                             label='देखी'
+                            placeholder='YYYY-MM-DD'
                             required={true}
                             control={control}
                             error={!!errors.transfer_from_date}
                         />
                     </Grid>
                     <Grid size={{ xs: 6 }}>
-                        <ReuseDatePickerBS
+                        <ReuseDateField
                             name='transfer_to_date'
                             label='सम्म'
+                            placeholder='YYYY-MM-DD'
                             required={true}
                             control={control}
                             error={!!errors.transfer_to_date}

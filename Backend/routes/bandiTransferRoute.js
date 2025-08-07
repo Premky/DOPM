@@ -122,13 +122,13 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             params.push( bandi_id );
         }
 
-        if(searchOffice){
+        if ( searchOffice ) {
             queryFilter += ' AND bp.current_office_id=?';
-            params.push(searchOffice);
+            params.push( searchOffice );
         }
-        if(searchToOffice){
+        if ( searchToOffice ) {
             queryFilter += ' AND bth.final_to_office_id = ?';
-            params.push(searchToOffice);
+            params.push( searchToOffice );
         }
 
         if ( statusKey ) {
@@ -310,10 +310,10 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
         } else {
             is_thunuwa_permission = data.is_thunuwa_permission;
         }
-        let insertsql
-        let values
+        let insertsql;
+        let values;
         if ( data.is_thunuwa_permission ) {
-             insertsql = `INSERT INTO bandi_transfer_history (
+            insertsql = `INSERT INTO bandi_transfer_history (
                 bandi_id, transfer_reason_id, transfer_reason, 
                 transfer_from_office_id, recommended_to_office_id,
                 is_thunuwa_permission, bandi_character,
@@ -321,14 +321,14 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
                 created_by, updated_by, created_at, updated_at, created_office_id)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
-             values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
+            values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
                 active_office, data.recommended_to_office_id,
                 is_thunuwa_permission, data.bandi_character,
                 user_role_id, user_role_id,
                 user_id, user_id, new Date(), new Date(), active_office
             ];
         } else {
-             insertsql = `INSERT INTO bandi_transfer_history (
+            insertsql = `INSERT INTO bandi_transfer_history (
                 bandi_id, transfer_reason_id, transfer_reason, 
                 transfer_from_office_id, recommended_to_office_id,
                  bandi_character,
@@ -336,9 +336,9 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
                 created_by, updated_by, created_at, updated_at, created_office_id)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
-             values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
+            values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
                 active_office, data.recommended_to_office_id,
-                data.bandi_character,
+            data.bandi_character,
                 user_role_id, user_role_id,
                 user_id, user_id, new Date(), new Date(), active_office
             ];
@@ -765,45 +765,76 @@ router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
     }
 } );
 //
-router.put( '/update_bandi_transfer_history1/:id', verifyToken, async ( req, res ) => {
+router.post( '/create_bandi_old_transfer_history', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
-    const contactId = req.params.id;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    const data = req.body.bandi_transfer_details[0];
+    // console.log( "📝 Update contact request:", data );
+    const [received_status] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE status_key=?`, ['received'] );
+    const status_id = received_status?.[0].id;
+    const values = [
+        data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
+        data.transfer_from_date, data.transfer_to_date,
+        data.transfer_reason_id, data.transfer_reason, role_id, status_id,
+        'Completed', user_id, new Date(), user_id, new Date(), active_office
+    ];
 
-    let connection;
     try {
-        connection = await pool.getConnection();
-        console.log( "📝 Update contact request:", req.body );
-
-        const updatedCount = await updateContactPerson( contactId, req.body, user_id, active_office );
-
-        if ( updatedCount === 0 ) {
-            return res.status( 400 ).json( {
-                Status: false,
-                message: "डेटा अपडेट गर्न सकेनौं। कृपया सबै विवरणहरू जाँच गर्नुहोस्।"
-            } );
-        }
-
+        const [result] = await pool.query( `INSERT INTO bandi_transfer_history(
+                    bandi_id, transfer_from_office_id, final_to_office_id, transfer_from_date, transfer_to_date,
+                        transfer_reason_id, transfer_reason, role_id, status_id,
+                        is_completed, created_by, created_at, updated_by, updated_at, created_office_id)VALUES(?)`, [values] );
         // await commitAsync();
-        await connection.commit();
-
         return res.json( {
             Status: true,
             message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
         } );
-
     } catch ( error ) {
         // await rollbackAsync();
-        await connection.rollback();
         console.error( "❌ Update failed:", error );
-
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
         } );
-    } finally {
-        if ( connection ) connection.release();
+    }
+} );
+
+router.put( '/update_bandi_old_transfer_history/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    const data = req.body.bandi_transfer_details[0];
+    console.log( "📝 Update contact request:", data );    
+    const values = [
+        data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
+        data.transfer_from_date, data.transfer_to_date,
+        data.transfer_reason_id, data.transfer_reason, role_id,
+        'Completed',  user_id, new Date()
+    ];
+
+    try {
+        
+        const [result] = await pool.query( `UPDATE bandi_transfer_history SET
+                        bandi_id=?, transfer_from_office_id=?, final_to_office_id=?, transfer_from_date=?, transfer_to_date=?,
+                        transfer_reason_id=?, transfer_reason=?, role_id=?, 
+                        is_completed=?, updated_by=?, updated_at=? `, values );
+        // await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+    } catch ( error ) {
+        // await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+        } );
     }
 } );
 

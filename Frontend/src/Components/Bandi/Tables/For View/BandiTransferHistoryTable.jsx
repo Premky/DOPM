@@ -68,8 +68,8 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
             if ( id ) {
                 // Update existing contact
                 response = await axios.put(
-                    `${ BASE_URL }/bandi/update_bandi_transfer_history/${ id }`,
-                    formData,
+                    `${ BASE_URL }/bandiTransfer/update_bandi_old_transfer_history/${ id }`,
+                    {bandi_transfer_details: [formData]},
                     { withCredentials: true }
                 );
 
@@ -81,7 +81,7 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
             } else {
                 // Create new contact
                 response = await axios.post(
-                    `${ BASE_URL }/bandi/create_bandi_transfer_history`,
+                    `${ BASE_URL }/bandiTransfer/create_bandi_old_transfer_history`,
                     {
                         bandi_id: bandi_id,
                         bandi_transfer_details: [formData],
