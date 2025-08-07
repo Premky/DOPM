@@ -852,10 +852,10 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     let values;
     if ( pyarole_rakhan_upayukat == 'पास' || pyarole_rakhan_upayukat == 'फेल' ) {
         const [board_decision] = await pool.query( `SELECT id FROM payrole_status WHERE status_key=?`, ['board_decision'] );
-        const status_id= board_decision[0].id;
+        const status_id = board_decision[0].id;
         sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?,status=?, dopm_remarks=? WHERE id=?`;
         values = [pyarole_rakhan_upayukat, status_id, dopmremark, payrole_id];
-    }else{
+    } else {
         sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
         values = [pyarole_rakhan_upayukat, dopmremark, payrole_id];
     }
@@ -951,6 +951,43 @@ router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) 
     } catch ( err ) {
         console.log( err );
         res.status( 500 ).json( { error: err.message } );
+    }
+} );
+
+router.delete( '/delete_payrole_maskebari_count/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const role_name = req.user.role_name;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    console.log( role_name );
+
+    if (
+        !(
+            ( role_id === 2 && role_name === 'office_admin' ) ||
+            ( role_id === 99 && role_name === 'superadmin' )
+        )
+    ) {
+        console.error( `❌ Unauthorized Delete Attempt for Payrole Maskebari Id ${ id }` );
+        return res.status( 403 ).json( {
+            Status: false,
+            message: `You are not authorized to delete. Please contact the administrator.`
+        } );
+    }
+
+
+    try {
+        const [result] = await pool.query( `DELETE FROM payrole_maskebari WHERE id=?`, [id] );
+        res.json( {
+            Status: true,
+            message: "बन्दी DELETE गरियो।"
+        } );
+    } catch ( error ) {
+        console.error( error );
+        res.json( {
+            Status: false,
+            message: "Something Wrong!"
+        } );
     }
 } );
 

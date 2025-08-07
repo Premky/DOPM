@@ -75,9 +75,8 @@ const PayroleMakebari = () => {
             cancelButtonText: 'रद्द',
         } );
         if ( !confirm.isConfirmed ) return;
-
         try {
-            await axios.delete( `${ BASE_URL }/payrole/create_payrole_maskebari_count/${ id }`, {
+            await axios.delete( `${ BASE_URL }/payrole/delete_payrole_maskebari_count/${ id }`, {
                 withCredentials: true,
             } );
             Swal.fire( 'मेटाइयो!', 'रेकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
@@ -344,10 +343,10 @@ const PayroleMakebari = () => {
                                         <TableCell>{row.total_payrole_regulation}</TableCell>
                                         <TableCell>{row.remarks}</TableCell>
                                         <TableCell>
-                                            <Button onClick={() => {
+                                            {/* <Button onClick={() => {
                                                 setSelectedData( row );
                                                 setEditDialogOpen( true );
-                                            }} size="small" variant="outlined">Edit</Button>
+                                            }} size="small" variant="outlined">Edit</Button> */}
                                             <Button onClick={() => handleDelete( row.id )} size="small" variant="outlined" color="error" sx={{ ml: 1 }}>Delete</Button>
                                         </TableCell>
                                     </TableRow>
