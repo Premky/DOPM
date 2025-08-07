@@ -22,7 +22,7 @@ const useBranches = ( bandi_id ) => {
                     const resultArray = Object.values( Result );
 
                     const formatted = resultArray.map( ( opt, index ) => ( {
-                        label: opt.branch_np ,
+                        label: opt.branch_np,
                         value: opt.id || index  // fallback for value if id is missing
                     } ) );
 

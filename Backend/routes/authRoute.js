@@ -61,7 +61,7 @@ router.post( "/create_user", verifyToken, async ( req, res ) => {
             created_by, updated_by, created_at, updated_at,created_office_id) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         try {
-            const result = await query( sql, [name_np, username, userrole, hashedPassword, current_office, branch, is_active,
+            const result = await pool.query( sql, [name_np, username, userrole, hashedPassword, current_office, branch, is_active,
                 active_user, active_user, new Date(), new Date(), active_office
             ] );
             return res.json( { Status: true, Result: result } );
