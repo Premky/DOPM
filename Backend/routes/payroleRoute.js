@@ -418,7 +418,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
 
             WHERE bp.id IN (${ placeholders })
-            ORDER BY bp.id DESC
+            ORDER BY p.id DESC
         `;
         // console.log( bandiIds );
         const [fullRows] = await pool.query( fullQuery, bandiIds );

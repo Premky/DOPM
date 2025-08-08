@@ -165,7 +165,7 @@ const AllBandiTable = () => {
 
         if ( result.isConfirmed ) {
             try {
-                const res = await axios.delete( `${BASE_URL}/bandi/delete_bandi/${ bandi.id }`, {withCredentials:true} );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi/${ bandi.id }`, { withCredentials: true } );
                 if ( res.data.Status ) {
                     Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
                     fetchKaidi(); // Re-fetch updated data
@@ -234,7 +234,19 @@ const AllBandiTable = () => {
         { field: "gender", headerName: "लिङ्ग", width: 100 },
         { field: "nationality", headerName: "राष्ट्रियता", width: 100 },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
-        { field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100 },
+        {
+            field: "release_date", headerName: "कैदमुक्त मिति", width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                if ( row.is_active === 0 ) {
+                    // Build Nepali address string
+                    return `हुनेः ${ row.release_date_bs || '' } \n  भएकोः ${ row.last_karnayan_miti || '' }`;
+                } else {
+                    // Foreign address + country
+                    return `${ row.release_date_bs || '' }`;
+                }
+            }
+        },
         // { field: "mudda_name", headerName: "मुद्दा", width: 100 },
         // { field: "vadi", headerName: "जाहेरवाला", width: 100 },
         // {
@@ -336,7 +348,7 @@ const AllBandiTable = () => {
                     </Grid>
 
 
-                    <Grid xs={12}>
+                    <Grid size={{xs:6}} mt={3}>
                         <Button
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
                             onClick={fetchKaidi}>

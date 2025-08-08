@@ -862,7 +862,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.mudda_group_name,
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs,
-                oo.letter_address AS current_office_letter_address
+                oo.letter_address AS current_office_letter_address,
+                brd_combined.last_karnayan_miti
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
@@ -873,21 +874,21 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN offices oo ON bp.current_office_id = oo.id
             LEFT JOIN (
                 SELECT 
-                    bmd.bandi_id,
-                    bmd.mudda_id,
-                    bmd.is_main_mudda,
-                    bmd.is_last_mudda,
-                    m.mudda_name,
-                    bmd.vadi,
+                    bmd.bandi_id, bmd.mudda_id, bmd.is_main_mudda,
+                    bmd.is_last_mudda, m.mudda_name, bmd.vadi,
                     bmd.mudda_phesala_antim_office_date,
                     o.office_name_with_letter_address,
-                    mg.mudda_group_name,
-                    mg.id AS mudda_group_id
+                    mg.mudda_group_name, mg.id AS mudda_group_id
                 FROM bandi_mudda_details bmd
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
                 LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
                 LEFT JOIN muddas_groups mg ON m.muddas_group_id=mg.id                
             ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+             LEFT JOIN (
+             SELECT brd.bandi_id, MAX(brd.karnayan_miti) AS last_karnayan_miti
+             FROM bandi_release_details brd  
+             GROUP BY bandi_id         
+             ) AS brd_combined ON bp.id=brd_combined.bandi_id
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
@@ -4159,7 +4160,6 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
             TotalReleasedInDateRange > 0
         ORDER BY m.mudda_name ASC
     `;
-
     try {
         const [result] = await pool.query( finalSql, params );
         res.json( { Status: true, Result: result } );
