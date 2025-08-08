@@ -43,14 +43,14 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     useEffect( () => {
         if ( editingData ) {
             console.log( editingData );
-            setValue( 'final_to_office_id', editingData.final_to_office_id );
+            setValue( 'final_to_office_id', editingData.final_to_office_id || editingData.recommended_to_office_id);
             reset( {
                 id: editingData.transfer_id || "", // ✅ Include this
                 transfer_id: editingData.transfer_id || "",
                 decision_date: editingData.decision_date || "",
                 to_user: editingData.to_user || "",
                 to_role: editingData.to_role || "",
-                final_to_office_id: editingData.final_to_office_id || "",
+                final_to_office_id: editingData.final_to_office_id || editingData.recommended_to_office_id,
             } );
         } else {
             reset( {
