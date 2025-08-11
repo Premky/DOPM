@@ -3783,8 +3783,10 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         FROM bandi_person bp
         LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
         LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
-        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-        WHERE (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id    
+        WHERE
+        bp.is_under_payrole=0 AND
+        (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
         ${ extraSubqueryFilters }
         GROUP BY bp.id
       ) bp ON bp.current_office_id = o.id
@@ -3795,10 +3797,12 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         GROUP BY bandi_id
       ) brd ON brd.bandi_id = bp.id
 
-      WHERE (
+      WHERE 
+       (
         brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d')
       )
       AND o.office_categories_id = ?
+       
       ${ officeFilterSql }
       GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
       ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
@@ -4109,6 +4113,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
     // Only include main and last mudda to avoid duplicates
     filters.push( "bp.is_active = 1" );
+    filters.push( "bp.is_under_payrole=0" );
     // filters.push(
     //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
     // );
@@ -4137,15 +4142,6 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
         filters.push( "bp.current_office_id=?" );
         params.push( active_office );
     }
-
-    // if ( office_id ) {
-    //     filters.push( "bp.current_office_id = ?" );
-    //     params.push( office_id );
-    // } else {
-    //     if ( active_office == 1 || active_office == 2 ) {
-    //         filters.push( 1 == 1 );
-    //     }
-    // }
 
     const whereClause = filters.length ? `WHERE ${ filters.join( " AND " ) }` : '';
 
@@ -4195,6 +4191,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         endDate = today_date_bs;
     }
 
+    filters.push( `bp.is_under_payrole=0 ` );
     filters.push( `bkd.thuna_date_bs <= ?` );
     filters.push( `(brd.karnayan_miti IS NULL OR brd.karnayan_miti >= ?)` );
 

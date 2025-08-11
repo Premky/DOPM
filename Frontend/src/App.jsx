@@ -23,7 +23,7 @@ const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
 const PayroleMakebari = lazy( () => import( './Components/Bandi/Payrole/Tables/PayroleMakebari' ) );
 const PayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PayroleForm' ) );
-const PreviousPayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PreviousPayroleForm' ) );
+const PreviousParoleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PreviousParoleForm' ) );
 const PayroleTable = lazy( () => import( './Components/Bandi/Payrole/Tables/PayroleTable' ) );
 const PayroleLogForm = lazy( () => import( './Components/Bandi/Forms/PayroleLogForm' ) );
 
@@ -55,6 +55,7 @@ axios.interceptors.response.use(
 
 import { Outlet } from 'react-router-dom';
 import NepaliIME from './Components/Bandi/Payrole/Dialogs/NepaliIME';
+import ParoleLogForm from './Components/Bandi/Payrole/Forms/PayroleLogForm';
 
 
 // Layout component to wrap protected routes with navigation
@@ -122,10 +123,8 @@ function App() {
 
                 {/* Payrole Routes */}
                 <Route path="payrole" element={<OutletLayout />}>
-                  <Route index element={<PayroleMakebari />} />
-                  <Route path="create_previous_payrole1" element={<PreviousPayroleForm />} />
-                  <Route path="create_previous_parole" element={<PayroleForm status='under_parole'/>} />
-                  <Route path="accept_previous_parole" element={<PayroleTable status='under_parole'/>} />
+                  <Route index element={<PayroleMakebari />} />                  
+                  <Route path="create_previous_parole" element={<PreviousParoleForm status='under_parole'/>} />                  
                   <Route path="create_payrole" element={<PayroleForm />} />
                   <Route path="payrole_user_check" element={<PayroleTable status='user_not_submitted'/>} />
                   <Route path="payrole_client_check" element={<PayroleTable status='user_submitted'/>} />
@@ -133,7 +132,7 @@ function App() {
                   <Route path="payrole_client_pesh" element={<PayroleTable />} />
                   <Route path="payrole_table" element={<PayroleTable />} />
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
-                  <Route path="payrole_log" element={<PayroleLogForm />} />
+                  <Route path="payrole_log" element={<ParoleLogForm />} />
                 </Route>
 
                 {/* Payrole Routes */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos';
 import { useForm } from 'react-hook-form';
-import { Box, Button, Grid, useScrollTrigger } from '@mui/material';
+import { Box, Button, FormControlLabel, Grid, useScrollTrigger } from '@mui/material';
 import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
 import ViewBandi from '../../ViewBandi';
 import ReuseInput from '../../../ReuseableComponents/ReuseInput';
@@ -11,8 +11,14 @@ import axios from 'axios';
 import { useAuth } from '../../../../Context/AuthContext';
 import useFetchBandi from '../useApi/useFetchBandi';
 import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import { CheckBox } from '@mui/icons-material';
+import ReuseCheckboxGroup from '../../ReusableComponents/ReuseCharactersCheckbox';
+import useFetchPayroleConditions from '../useApi/useFetchPayroleConditions';
+import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
+import ReuseMunicipality from '../../../ReuseableComponents/ReuseMunicipality';
+import ReuseCourt from '../../../ReuseableComponents/ReuseCourt';
 
-const PreviousPayroleForm = () => {
+const PreviousParoleForm = ( { status } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -62,25 +68,24 @@ const PreviousPayroleForm = () => {
   const onFormSubmit = async ( data ) => {
     setLoading( true );
     try {
-      console.log( data );
-      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }`
-        : `${ BASE_URL }/payrole/create_initial_payrole`;
+      // console.log( data );
+      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/payrole/create_previous_payrole`;
       const method = editing ? 'PUT' : 'POST';
       const response = await axios( {
         method, url, data: data,
         withCredentials: true
       } );
       const { Status, Result, Error } = response.data;
-      console.log( response );
+      // console.log( response );
       if ( Status ) {
         Swal.fire( {
-          title: `Payrole ${ editing ? 'updated' : 'created' } successfully!`,
+          title: `Record ${ editing ? 'updated' : 'saved' } successfully!`,
           icon: "success",
           draggable: true
         } );
         reset();
         setEditing( false );
-        fetchOffices();
+        // fetchOffices();
       } else {
         Swal.fire( {
           title: response.data.nerr,
@@ -88,19 +93,23 @@ const PreviousPayroleForm = () => {
           draggable: true
         } );
       }
-
     } catch ( err ) {
       console.error( err );
+
       Swal.fire( {
-        title: err?.response?.data?.nerr || err.message || "सर्भरमा समस्या आयो।",
+        title: err?.response?.data.message || "सर्भरमा समस्या आयो ।",
+        // text: err?.response?.data.message || "सर्भरमा समस्या आयो ।",
         icon: 'error',
+        // confirmButtonText: 'Cool'
         draggable: true
       } );
     } finally {
       setLoading( false );
     }
   };
+  const selectedDistrictId = watch( 'recommended_district' );
   const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
+  const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
     <>
       <Box sx={{ flexGrow: 1 }}>
@@ -122,21 +131,12 @@ const PreviousPayroleForm = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReusePayroleNos
                 name='payrole_no'
-                label='प्यारोल संख्या'
+                label='प्यारोल बैठक नं.'
                 required={true}
                 control={control}
-                error={errors.payrole_no}
+                error={errors._no}
               />
             </Grid>
-            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <ReuseDateField
-                name='payrole_count_date'
-                label='प्यारोल गणना मिति'
-                required={true}
-                control={control}
-                error={errors.payrole_count_date}
-              />
-            </Grid> */}
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
@@ -148,16 +148,90 @@ const PreviousPayroleForm = () => {
               />
             </Grid>
 
-            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }} >
-              <ReuseMudda
-                name='mudda_id'
-                label='मुददा'
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDistrict
+                name='recommended_district'
+                label='प्यारोल बस्ने इच्छुक जिल्ला'
                 required={true}
                 control={control}
-                error={errors.mudda_id}
+                error={errors.recommended_district}
               />
-            </Grid> */}
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseMunicipality
+                name='recommended_city'
+                label='प्यारोल बस्ने इच्छुक स्थानिय तह'
+                required={true}
+                control={control}
+                error={errors.recommended_city}
+                selectedDistrict={selectedDistrictId}
+              />
+            </Grid>
 
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name='recommended_tole_ward'
+                label='टोल/वडा नं.'
+                required={true}
+                control={control}
+                error={errors.tole_ward}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseSelect
+                name='payrole_rakhan_upayukat'
+                label='प्यारोल बोर्डको निर्णय'
+                required={true}
+                control={control}
+                options={[{ label: 'पास', value: 'पास' }, { label: 'फेल', value: 'फेल' }]}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseCourt
+                name='recommended_court_id'
+                label='पेश गर्ने अदालत'
+                required={true}
+                control={control}
+                office_categories_id={3}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDateField
+                name='payrole_granted_aadesh_date'
+                label='आदेश (मिति)'
+                required={true}
+                control={control}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name='payrole_granted_letter_no'
+                label='अदालतको पत्रको च.नं.'
+                required={true}
+                control={control}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name='payrole_granted_letter_date'
+                label='मिति'
+                required={true}
+                control={control}
+                office_categories_id={3}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseSelect
+                name='payrole_result'
+                label='अदालतको निर्णय'
+                required={true}
+                control={control}
+                options={[{ label: 'पास', value: 'पास' }, { label: 'फेल', value: 'फेल' }]}
+              />
+            </Grid>
           </Grid>
           <Grid container spacing={2}>
             {bandi?.payrole_id ?
@@ -177,31 +251,23 @@ const PreviousPayroleForm = () => {
           </Grid>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12 }}>
-              <ReuseInput
-                name='other_details'
-                label="बृद्ध, रोगी, वा अशक्त भए सो समेत उल्लेख गर्ने"
-                // defaultValue={band_rand_id}
-                required={true}
+              {/* <ReuseCheckboxGroup
+                name="character_conditions"
+                label="चरित्र सर्तहरू"
                 control={control}
-                error={errors.other_details} />
+                options={conditions} // [{ id: 1, name: "शुद्ध आचरण" }, ...]
+                required={true}
+                error={errors.character_conditions}
+              /> */}
             </Grid>
             <Grid size={{ xs: 12 }}>
               <ReuseInput
-                name='payrole_reason'
-                label="प्यारोलमा राख्न सिफारिस गर्नुको आधार र कारण"
-                // defaultValue={band_rand_id}
-                required={true}
-                control={control}
-                error={errors.payrole_reason} />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <ReuseInput
-                name='payrole_remarks'
+                name='payrole_decision_remark'
                 label="कैफियत"
                 // defaultValue={band_rand_id}
                 required={false}
                 control={control}
-                error={errors.payrole_remarks} />
+                error={errors.payrole_decision_remark} />
             </Grid>
           </Grid>
           <Grid container spacing={2}>
@@ -216,5 +282,4 @@ const PreviousPayroleForm = () => {
     </>
   );
 };
-
-export default PreviousPayroleForm;
+export default PreviousParoleForm;

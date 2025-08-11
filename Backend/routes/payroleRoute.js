@@ -614,6 +614,132 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     }
 } );
 
+router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const user_role_id = req.user.role_id;
+
+    const {
+        bandi_id,
+        payrole_no,
+        payrole_entry_date,
+        recommended_district,
+        recommended_city,
+        recommended_tole_ward,
+        recommended_court_id,
+        payrole_rakhan_upayukat,
+
+        payrole_reason,
+        payrole_remarks,
+        payrole_granted_aadesh_date,
+        payrole_granted_letter_no,
+        payrole_granted_letter_date,
+        payrole_result,
+        payrole_decision_remark,
+
+        other_details,
+
+        dopmremark
+    } = req.body;
+    console.log( req.body );
+
+    let payrole_no_bandi_id = '';
+    if ( bandi_id && payrole_no ) {
+        payrole_no_bandi_id = `${ payrole_no }${ bandi_id }`;
+    }
+
+    try {
+        const [office_bandi_id_res] = await pool.query(
+            `SELECT office_bandi_id FROM bandi_person WHERE id = ?`,
+            [bandi_id]
+        );
+        const office_bandi_id = office_bandi_id_res[0]?.office_bandi_id;
+
+        const [chk_payrole_duplicate] = await pool.query(
+            `SELECT office_bandi_id FROM payroles WHERE office_bandi_id = ?`,
+            [office_bandi_id]
+        );
+
+        if ( chk_payrole_duplicate.length > 0 ) {
+            return res.status( 409 ).json( {
+                Status: false,
+                message: `बन्दी ID ${ office_bandi_id } को प्यारोल सिफारिस अगाडि नै भइसकेको छ।`
+            } );
+        }
+
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            const values = [
+                bandi_id,
+                office_bandi_id,
+                payrole_entry_date,
+                recommended_district,
+                recommended_city,
+                recommended_tole_ward,
+                recommended_court_id,
+                payrole_reason,
+                other_details,
+                payrole_remarks,
+                15, // status
+                payrole_no,
+                0,
+                payrole_rakhan_upayukat,
+                user_role_id,
+                'Pending',
+                user_id,
+                active_office,
+                active_office
+            ];
+
+            const sql = `
+                INSERT INTO payroles (
+                    bandi_id, office_bandi_id, payrole_entry_date, 
+                    recommended_district, recommended_city, recommended_tole_ward, recommended_court_id,
+                    payrole_reason, other_details, remark, status, payrole_no_id, is_checked, pyarole_rakhan_upayukat,
+                    user_role_id, is_completed, created_by, created_office, updated_office
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const [result] = await connection.query( sql, values );
+            await connection.query( `INSERT INTO payrole_decisions 
+                (bandi_id, office_bandi_id, payrole_id, payrole_nos, payrole_granted_court, 
+                payrole_granted_aadesh_date, payrole_granted_letter_no, 
+                payrole_granted_letter_date, payrole_result, payrole_decision_remark, 
+                decision_updated_by, decision_updated_at, decision_updated_office) 
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
+                [bandi_id, office_bandi_id, result.insertId, payrole_no, recommended_court_id,
+                    payrole_granted_aadesh_date, payrole_granted_letter_no,
+                    payrole_granted_letter_date, payrole_result, payrole_decision_remark,
+                    user_id, new Date(), active_office
+                ] );
+
+            await connection.query( `UPDATE bandi_person SET is_under_payrole=? WHERE id=?`, [1, bandi_id] );
+            await connection.commit();
+            return res.json( {
+                Status: true,
+                message: "प्यारोल सफलतापूर्वक सुरक्षित गरियो।"
+            } );
+        } catch ( error ) {
+            await connection.rollback();
+            console.error( "Transaction failed:", error );
+            return res.status( 500 ).json( {
+                Status: false,
+                Error: error.message,
+                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            } );
+        } finally {
+            connection.release();
+        }
+    } catch ( error ) {
+        console.error( "Server error:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो।"
+        } );
+    }
+} );
+
 router.post( '/create_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
@@ -1212,7 +1338,7 @@ router.get( '/get_selected_mudda_group/:id', verifyToken, async ( req, res ) => 
 } );
 
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
-    
+
     const { id } = req.params;
     const sql = `
         SELECT bmd.*, m.mudda_name,
