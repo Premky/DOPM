@@ -114,6 +114,7 @@ const BandiReleaseForm = () => {
                                     name='decision_date'
                                     label='निर्णय मिति'
                                     control={control}
+                                    required={true}
                                     errors={errors.decision_date}
                                 />
                             </Grid>
@@ -133,6 +134,7 @@ const BandiReleaseForm = () => {
                                     name='nirnay_officer'
                                     label='निर्णय गर्ने अधिकारी'
                                     control={control}
+                                    required={true}
                                     errors={errors.nirnay_officer}
                                 />
                             </Grid>
@@ -144,6 +146,7 @@ const BandiReleaseForm = () => {
                                     label='बुझ्ने मान्छे छान्नुहोस्'
                                     options={relativeOptions}
                                     control={control}
+                                    required={true}
                                     errors={errors.aafanta_id}
                                 />
                             </Grid>

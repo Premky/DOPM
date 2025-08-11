@@ -153,7 +153,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id,con
     // 🛑 Skip this mudda if mudda_id is missing or empty
     if ( !m.mudda_id ) continue;
     let is_life_time
-    if(m.is_life_time == null || m.is_life_time == undefined || m.is_life_time==''){
+    if(m.is_life_time === null || m.is_life_time === undefined || m.is_life_time===''){
       is_life_time=0
     }else{
       is_life_time=m.is_life_time
