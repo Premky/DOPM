@@ -110,6 +110,10 @@ const ParoleLogForm = () => {
 
     return (
         <Box component="form" onSubmit={handleSubmit( onSubmit )}>
+            <Grid container spacing={2} style={{color:'red'}}>
+                अहिले यो फर्म काम नगरेकोले कृपया यसमा इन्ट्रि नगरिदिनुहोल ।
+            </Grid>
+
             <Grid container spacing={2}>
                 <Grid size={{ xs: 12 }}>
                     <ReusePayroleBandi
@@ -270,7 +274,7 @@ const ParoleLogForm = () => {
                                 <ReuseInput
                                     required
                                     name="court_order"
-                                    label="अदालतको आदेश"                                    
+                                    label="अदालतको आदेश"
                                     control={control}
                                 />
                             </Grid>
