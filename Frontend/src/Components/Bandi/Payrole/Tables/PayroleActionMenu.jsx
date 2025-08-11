@@ -165,6 +165,7 @@ const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose } ) => {
                 <MenuItem onClick={handleForward}>
                   <Button variant='outline'>कार्यालय प्रमुखमा पेश गर्नुहोस्</Button>
                 </MenuItem>
+                
                 {oldStatus === "under_parole" && (
                   <MenuItem onClick={handleApproval}>
                     <Button variant="outlined" color="success">
