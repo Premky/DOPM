@@ -1212,7 +1212,7 @@ router.get( '/get_selected_mudda_group/:id', verifyToken, async ( req, res ) => 
 } );
 
 router.get( '/get_bandi_mudda/', async ( req, res ) => {
-    // const active_office = req.user.office_id;
+    
     const { id } = req.params;
     const sql = `
         SELECT bmd.*, m.mudda_name,
