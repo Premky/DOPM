@@ -975,7 +975,6 @@ router.delete( '/delete_payrole_maskebari_count/:id', verifyToken, async ( req, 
         } );
     }
 
-
     try {
         const [result] = await pool.query( `DELETE FROM payrole_maskebari WHERE id=?`, [id] );
         res.json( {
@@ -1209,6 +1208,33 @@ router.get( '/get_selected_mudda_group/:id', verifyToken, async ( req, res ) => 
     } catch ( err ) {
         console.log( err );
         res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
+
+router.get( '/get_bandi_mudda/', async ( req, res ) => {
+    // const active_office = req.user.office_id;
+    const { id } = req.params;
+    const sql = `
+        SELECT bmd.*, m.mudda_name,
+    o.office_name_with_letter_address,
+    o.office_name_with_letter_address AS mudda_office,
+    nd.district_name_np
+        FROM bandi_mudda_details bmd
+        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+        LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_id = o.id
+        LEFT JOIN np_district nd ON bmd.mudda_phesala_antim_office_district = nd.did
+    WHERE bmd.is_last_mudda=?
+    `;
+    try {
+        const [result] = await pool.query( sql, 1 ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
     }
 } );
 

@@ -123,7 +123,9 @@ function App() {
                 {/* Payrole Routes */}
                 <Route path="payrole" element={<OutletLayout />}>
                   <Route index element={<PayroleMakebari />} />
-                  <Route path="create_previous_payrole" element={<PreviousPayroleForm />} />
+                  <Route path="create_previous_payrole1" element={<PreviousPayroleForm />} />
+                  <Route path="create_previous_parole" element={<PayroleForm status='under_parole'/>} />
+                  <Route path="accept_previous_parole" element={<PayroleTable status='under_parole'/>} />
                   <Route path="create_payrole" element={<PayroleForm />} />
                   <Route path="payrole_user_check" element={<PayroleTable status='user_not_submitted'/>} />
                   <Route path="payrole_client_check" element={<PayroleTable status='user_submitted'/>} />

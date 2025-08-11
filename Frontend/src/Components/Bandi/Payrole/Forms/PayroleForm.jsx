@@ -21,7 +21,7 @@ import ReuseOffice from '../../../ReuseableComponents/ReuseOffice';
 import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
 import ReuseCourt from '../../../ReuseableComponents/ReuseCourt';
 
-const PayroleForm = () => {
+const PayroleForm = ({status})=> {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -71,7 +71,7 @@ const PayroleForm = () => {
   const onFormSubmit = async ( data ) => {
     setLoading( true );
     try {
-      console.log( data );
+      // console.log( data );
       const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/payrole/create_payrole`;
       const method = editing ? 'PUT' : 'POST';
       const response = await axios( {
@@ -79,7 +79,7 @@ const PayroleForm = () => {
         withCredentials: true
       } );
       const { Status, Result, Error } = response.data;
-      console.log( response );
+      // console.log( response );
       if ( Status ) {
         Swal.fire( {
           title: `Record ${ editing ? 'updated' : 'saved' } successfully!`,

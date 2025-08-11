@@ -22,7 +22,7 @@ const handleViewPayrole = async ( row ) => {
   saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
 };
 
-const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
+const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -114,11 +114,19 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
         editingData={data}
       />
       <PayroleResultModal
+        oldStatus={oldStatus}
         open={approvalModalOpen}
         onClose={() => setApprovalModalOpen( false )}
         onSave={handleApprovalSave}
         data={data}
       />
+      {/* <Paro
+        oldStatus={oldStatus}
+        open={approvalModalOpen}
+        onClose={() => setApprovalModalOpen( false )}
+        onSave={handleApprovalSave}
+        data={data}
+      /> */}
       <a
         href={`/bandi/view_saved_record/${ data?.bandi_id }`}
         target="_blank"
@@ -157,6 +165,13 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
                 <MenuItem onClick={handleForward}>
                   <Button variant='outline'>कार्यालय प्रमुखमा पेश गर्नुहोस्</Button>
                 </MenuItem>
+                {oldStatus === "under_parole" && (
+                  <MenuItem onClick={handleApproval}>
+                    <Button variant="outlined" color="success">
+                      Approve
+                    </Button>
+                  </MenuItem>
+                )}
               </>
             )
             }
@@ -167,7 +182,10 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
       {
         authState.role_name === "office_admin" ? ( <>
           <MenuItem onClick={handleForward}>Forward</MenuItem>
-          {/* <MenuItem >{authState.payrole_status}</MenuItem> */}
+          <MenuItem onClick={handleApproval}>
+            <Button variant="outlined" color="success">
+              Approve {oldStatus}
+            </Button></MenuItem>
           {( data.status_id == 10 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 11 ) ? ( <>
@@ -210,16 +228,3 @@ const PayroleActionMenu = ( { data, onResultClick, onClose } ) => {
 };
 
 export default PayroleActionMenu;
-
-
-// {
-//   forwardRoles.includes( authState.role_name ) && (
-//     <>
-//       {( data.status_id <= 11 ) && ( <>
-//         <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
-//         <MenuItem onClick={handleForward}>Forward</MenuItem>
-//       </> )}
-//       {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-//     </>
-//   )
-// }

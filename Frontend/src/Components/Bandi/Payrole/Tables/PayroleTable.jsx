@@ -38,7 +38,7 @@ import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
 import useFetchAllBandiFines from "../../Apis_to_fetch/useFetchAllBandiFines";
 
-const PayroleTable = () => {
+const PayroleTable = ({status}) => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
     const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
@@ -127,7 +127,7 @@ const PayroleTable = () => {
                 एक्सेल निर्यात
             </Button>
             <Button onClick={() => exportCharacterToExcel( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
-                चालचलन फर्मेट
+                चालचलन फर्मेट 
             </Button>
 
             <Menu
@@ -137,6 +137,7 @@ const PayroleTable = () => {
             >
                 {menuRowData && (
                     <PayroleActionMenu
+                        oldStatus={status}
                         data={menuRowData}
                         onClose={handleMenuClose}
                         onResultClick={() => {

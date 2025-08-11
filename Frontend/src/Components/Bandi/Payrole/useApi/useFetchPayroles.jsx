@@ -62,7 +62,7 @@ const useFetchPayroles = (filters, page, rowsPerPage) => {
 
   const fetchMuddas = useCallback(async () => {
     try {
-      const url = `${BASE_URL}/bandi/get_bandi_mudda`;
+      const url = `${BASE_URL}/payrole/get_bandi_mudda`;
       const response = await axios.get(url, { withCredentials: true });
       const { Status, Result, Error } = response.data;
 

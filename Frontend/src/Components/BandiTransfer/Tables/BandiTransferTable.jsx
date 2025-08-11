@@ -111,7 +111,7 @@ const BandiTransferTable = () => {
             case 15:
                 return '#66ff66'; // पठाएको र स्विकार गरेको
             default:
-                return '#ffffff'; // Default white background
+                return 'rgba(255, 255, 255, 1)'; // Default white background
         }
     };
 

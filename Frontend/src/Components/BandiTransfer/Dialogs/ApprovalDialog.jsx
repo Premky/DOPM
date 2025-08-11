@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 
-
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import useFetchUserRolesUsedInProcess from "../../Bandi/Apis_to_fetch/useFetchUserRolesUsedInProcess";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
@@ -63,8 +62,6 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
             } );
         }
     }, [editingData, reset] );
-    // console.log( 'data:', data, 'id:', editingData?.transfer_id );
-    // onSave( data, editingData?.transfer_id );
 
     const onSubmit = async ( data ) => {
         onSave( data, editingData );

@@ -3,6 +3,8 @@ export const menuAccess = {
     clerk: [
       '/payrole/create_payrole',
       '/payrole/payrole_user_check',
+      '/payrole/create_previous_parole',
+      '/payrole/accept_previous_parole',
     ],
     office_admin: [
       '/payrole/create_payrole',

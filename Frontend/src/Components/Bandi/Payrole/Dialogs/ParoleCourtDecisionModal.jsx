@@ -13,7 +13,7 @@ import { useEffect } from "react";
 import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
 import Swal from "sweetalert2";
 
-const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, oldStatus } ) => {
+export default ParoleCourtDecisionModal = ( { open, onClose, data, kaidimuddas, onSave, oldStatus } ) => {
   const {
     handleSubmit,
     register,
@@ -107,4 +107,4 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, oldStat
   );
 };
 
-export default PayroleResultModal;
+
