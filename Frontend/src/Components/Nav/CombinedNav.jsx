@@ -59,7 +59,7 @@ const CombinedNav = ( { user } ) => {
         { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
         { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
         { name: 'पुरानो प्यारोल', path: '/payrole/create_previous_parole' },
-        // { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
+        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
         // { name: 'पुरानो (स्विकृत)', path: '/payrole/accept_previous_parole' },
         // { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
       ]

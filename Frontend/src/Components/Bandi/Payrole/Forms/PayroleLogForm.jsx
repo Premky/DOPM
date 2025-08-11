@@ -12,7 +12,7 @@ import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
 import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
 import ReusePayroleBandi from '../../../ReuseableComponents/ReusePayroleBandi';
 import ReusableTable from '../../../ReuseableComponents/ReuseTable';
-import PayroleLogTable from '../../Tables/PayroleLogTable';
+import PayroleLogTable from '../Tables/PayroleLogTable';
 import fetchPayroleLogs from '../../../ReuseableComponents/fetchPayroleLog';
 import Swal from 'sweetalert2';
 import axios from 'axios';
@@ -123,7 +123,7 @@ const ParoleLogForm = () => {
                 <Grid container size={{ sm: 6 }} spacing={2}>
                     <Grid size={{ sm: 6 }}>
                         <ReuseDateField
-                            name="hajir_current_date"
+                            name="hajir_date"
                             label="हाजिर मिति"
                             placeholder="YYYY-MM-DD"
                             control={control}
@@ -135,9 +135,9 @@ const ParoleLogForm = () => {
                             name="hajir_status"
                             label="उपस्थित/अनुउपस्थित"
                             options={[
-                                { label: 'उपस्थित', value: '1' },
-                                { label: 'अनुउपस्थित', value: '2' },
-                                { label: 'कैद भुक्तान', value: '3' },
+                                { label: 'उपस्थित', value: 'उपस्थित' },
+                                { label: 'अनुउपस्थित', value: 'अनुउपस्थित' },
+                                { label: 'कैद भुक्तान', value: 'कैद भुक्तान' },
                             ]}
                             control={control}
                             required={true}
@@ -156,7 +156,7 @@ const ParoleLogForm = () => {
 
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseKaragarOffice
-                            name="hajir_office"
+                            name="hajir_office_id"
                             label="हाजिर हुने कार्यालय"
                             control={control}
                         />
@@ -170,7 +170,7 @@ const ParoleLogForm = () => {
                         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                             <ReuseSelect
                                 required
-                                name="no_hajir_reason"
+                                name="absent_reason"
                                 label="अनुपश्थितिको कारण"
                                 options={[
                                     { label: 'फरार', value: 'फरार' },
@@ -178,17 +178,18 @@ const ParoleLogForm = () => {
                                         label: 'अन्य मुद्दामा थुना/हिरासतमा रहेको',
                                         value: 'अन्य मुद्दामा थुना/हिरासतमा रहेको',
                                     },
+                                    { label: 'मृत्यु', value: 'मृत्यु' },
                                 ]}
                                 control={control}
                             />
                         </Grid>
 
-                        {no_hajir_reason === 'अन्य मुद्दामा थुना/हिरासतमा रहेको' && (
+                        {absent_reason === 'अन्य मुद्दामा थुना/हिरासतमा रहेको' && (
                             <>
                                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseMudda
                                         required
-                                        name="no_hajir_mudda"
+                                        name="no_hajir_mudda_id"
                                         label="मुद्दा"
                                         control={control}
                                     />
@@ -196,7 +197,7 @@ const ParoleLogForm = () => {
                                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseDistrict
                                         required
-                                        name="no_hajir_mudda_district"
+                                        name="thuna_district"
                                         label="थुना/हिरासतमा रहेको जिल्ला"
                                         control={control}
                                     />
@@ -204,7 +205,7 @@ const ParoleLogForm = () => {
                                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseSelect
                                         required
-                                        name="no_hajir_reason_office_type"
+                                        name="thuna_office_type"
                                         label="थुना/हिरासतमा रहेको कार्यालय"
                                         options={[
                                             { label: 'कारागार', value: 'कारागार' },
@@ -214,11 +215,11 @@ const ParoleLogForm = () => {
                                     />
                                 </Grid>
 
-                                {no_hajir_reason_office_type === 'कारागार' ? (
+                                {thuna_office_type === 'कारागार' ? (
                                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                         <ReuseKaragarOffice
                                             required
-                                            name="office_name"
+                                            name="thuna_office_id"
                                             label="कारागारको नाम"
                                             control={control}
                                         />
@@ -227,7 +228,7 @@ const ParoleLogForm = () => {
                                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                         <ReuseInput
                                             required
-                                            name="office_name"
+                                            name="thuna_office_name"
                                             label="कार्यालयको नाम"
                                             control={control}
                                         />
@@ -239,7 +240,7 @@ const ParoleLogForm = () => {
                         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                             <ReuseSelect
                                 required
-                                name="no_hajir_is_pratibedan"
+                                name="is_reported_to_court"
                                 label="सुरु अदालतमा प्रतिवेदन पेश गरे/नगरेको"
                                 options={[
                                     { label: 'गरेको', value: '1' },
@@ -249,16 +250,27 @@ const ParoleLogForm = () => {
                             />
                         </Grid>
 
-                        {no_hajir_is_pratibedan === '1' && (
+                        {is_reported_to_court === '1' && (
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseSelect
                                     required
-                                    name="no_hajir_is_aadesh"
+                                    name="is_court_order"
                                     label="सुरु अदालतबाट आदेश भए/नभएको"
                                     options={[
                                         { label: 'भएको', value: '1' },
                                         { label: 'नभएको', value: '0' },
                                     ]}
+                                    control={control}
+                                />
+                            </Grid>
+                        )}
+
+                        {is_court_order === '1' && (
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <ReuseInput
+                                    required
+                                    name="court_order"
+                                    label="अदालतको आदेश"                                    
                                     control={control}
                                 />
                             </Grid>

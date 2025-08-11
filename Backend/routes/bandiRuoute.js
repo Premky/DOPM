@@ -765,6 +765,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
         }
     }
+    baseWhere +=` AND bp.is_under_payrole=0`
     if ( nationality ) {
         // console.log(nationality)
         if ( baseWhere ) {

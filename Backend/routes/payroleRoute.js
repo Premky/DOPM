@@ -866,7 +866,7 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
       FROM payroles p
       LEFT JOIN bandi_person bp ON p.bandi_id = bp.id
       LEFT JOIN muddas m ON p.payrole_mudda_id = m.id
-      WHERE p.status = 5
+      WHERE p.status = 15
     `;
 
         let finalQuery = baseQuery;
@@ -1174,15 +1174,17 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
             FROM bandi_mudda_details bmd
             )
             SELECT 
-            pl.payrole_id, pl.hajir_current_date, pl.hajir_status, 
-            pl.hajir_next_date, pl.hajir_office, pl.no_hajir_reason, 
-            pl.no_hajir_mudda, pl.no_hajir_mudda_district, 
-            pl.no_hajir_reason_office_type, pl.no_hajir_reason_office_id, 
-            pl.no_hajir_reason_office_name, pl.no_hajir_is_pratibedan, 
-            pl.no_hajir_is_aadesh, pl.hajir_remarks,
+            pl.payrole_id, pl.hajir_date, pl.hajir_status, 
+            pl.next_hajir_date, pl.hajir_office_id, pl.absent_reason, 
+            pl.absent_mudda_id, pl.thuna_district, 
+            pl.thuna_office_type, pl.thuna_office_id, 
+            pl.thuna_office_name, pl.is_reported_to_court, 
+            pl.is_court_ordered, pl.court_order,
+            pl.hajir_remarks,
             bp.bandi_type, bp.bandi_name, 
             m.mudda_name
             FROM payrole_logs pl
+            LEFT JOIN payroles p ON pl.payrole_id = p.id
             LEFT JOIN bandi_person bp ON pl.bandi_id = bp.id
             LEFT JOIN ranked_mudda bmd ON pl.bandi_id = bmd.bandi_id AND bmd.rn = 1
             LEFT JOIN muddas m ON bmd.mudda_id = m.id
