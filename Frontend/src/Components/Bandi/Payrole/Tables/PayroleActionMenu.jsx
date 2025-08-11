@@ -182,10 +182,11 @@ const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose } ) => {
       {
         authState.role_name === "office_admin" ? ( <>
           <MenuItem onClick={handleForward}>Forward</MenuItem>
-          <MenuItem onClick={handleApproval}>
+          {oldStatus === 'under_parole' && ( <MenuItem onClick={handleApproval}>
             <Button variant="outlined" color="success">
-              Approve {oldStatus}
-            </Button></MenuItem>
+              Approve
+            </Button></MenuItem> )}
+
           {( data.status_id == 10 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 11 ) ? ( <>

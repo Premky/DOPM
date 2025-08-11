@@ -71,7 +71,7 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, oldStat
                 select
                 label="प्यारोल पास / फेल"
                 fullWidth
-                {...register( "pyarole_rakhan_upayukat", { required: true } )}
+                {...register( "pyarole_rakhan_upayukat", { required: false } )}
                 error={!!errors.pyarole_rakhan_upayukat}
                 helperText={errors.pyarole_rakhan_upayukat ? "चयन गर्नुहोस्" : ""}
               >
@@ -81,6 +81,7 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, oldStat
                 <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
                 <MenuItem value="पास">पास</MenuItem>
                 <MenuItem value="फेल">फेल</MenuItem>
+                <MenuItem value="">खाली</MenuItem>
               </TextField>
             </Grid>
             <Grid size={{ xs: 12 }}>
