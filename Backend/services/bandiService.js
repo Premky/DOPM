@@ -154,6 +154,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
     if ( !m.mudda_id ) continue;
     let is_life_time;
     if(!m.is_life_time){is_life_time=0}
+    if(m.is_life_time!=1){is_life_time=0}
     if ( m.is_life_time === null || m.is_life_time === undefined || m.is_life_time === '' ) {
       is_life_time = 0;
     } else {
