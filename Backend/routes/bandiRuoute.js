@@ -1528,7 +1528,7 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         hirasat_years,
         hirasat_months,
         hirasat_days,
-        thuna_date_bs,
+        thuna_date_bs,        
         release_date_bs,
         is_life_time = 0
     } = req.body;
@@ -1943,10 +1943,10 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
         const kaidDetailsSql = `
             UPDATE bandi_kaid_details
             SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
-            thuna_date_bs = ?, release_date_bs = ?, is_life_time = ?,
+            thuna_date_bs = ?, thuna_date_ad=?,  release_date_bs = ?, is_life_time = ?,
             updated_by = ?, updated_at=?, current_office_id = ? WHERE bandi_id=?`;
         const kaidDetailValue = [hirasat_years, hirasat_months, hirasat_days,
-            thuna_date_bs, release_date_bs, is_life_time, 1, new Date(), active_office, bandi_id];
+            thuna_date_bs, await bs2ad(thuna_date_bs), release_date_bs, is_life_time, 1, new Date(), active_office, bandi_id];
         if ( is_main_mudda ) {
             await connection.query( kaidDetailsSql, kaidDetailValue );
         }
@@ -4017,6 +4017,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
       reason_id,
       nirnay_miti,
       karnayan_miti,
+      karnayan_miti_ad,
       nirnay_officer,
       aafanta_id,
       remarks,
@@ -4025,7 +4026,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
       current_office_id
     ) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?)
   `;
-    const values = [bandi_id, reason_id, decision_date, apply_date, nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
+    const values = [bandi_id, reason_id, decision_date, apply_date, await bs2ad(apply_date),  nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
     let connection;
     try {
         connection = await pool.getConnection();
@@ -4169,18 +4170,18 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 async function convertDates() {
     try {
         const [rows] = await pool.query(`
-            SELECT id, thuna_date_bs 
-            FROM bandi_kaid_details
-            WHERE thuna_date_bs IS NOT NULL
+            SELECT id, karnayan_miti 
+            FROM bandi_release_details
+            WHERE karnayan_miti IS NOT NULL
         `);
 
         console.log(`Found ${rows.length} rows to convert.`);
 
         const updates = rows.map(async (row) => {
-            console.log("input Date", row.thuna_date_bs);
-            const adDate = await bs2ad(row.thuna_date_bs) || '1980-01-01';
+            console.log("input Date", row.karnayan_miti);
+            const adDate = await bs2ad(row.karnayan_miti) || '1980-01-01';
             return pool.query(
-                `UPDATE bandi_kaid_details SET thuna_date_ad = ? WHERE id = ?`,
+                `UPDATE bandi_release_details SET karnayan_miti_ad = ? WHERE id = ?`,
                 [adDate, row.id]
             );
         });
@@ -4195,7 +4196,7 @@ async function convertDates() {
     }
 }
 
-// convertDates();
+convertDates();
 
 
 router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res ) => {
@@ -4228,7 +4229,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
 
     filters.push( `bp.is_under_payrole IS NULL OR bp.is_under_payrole !=1 ` );
     filters.push( `bkd.thuna_date_ad <= ?` );
-    filters.push( `(brd.karnayan_miti IS NULL OR brd.karnayan_miti >= ?)` );
+    filters.push( `(brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)` );
 
     params.push( endDate, startDate );
 
@@ -4279,7 +4280,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
 
         FROM bandi_person bp
         LEFT JOIN (
-                SELECT bandi_id, MAX(karnayan_miti) AS karnayan_miti
+                SELECT bandi_id, MAX(karnayan_miti_ad) AS karnayan_miti_ad
                 FROM bandi_release_details
                 GROUP BY bandi_id
                 ) brd ON brd.bandi_id = bp.id
