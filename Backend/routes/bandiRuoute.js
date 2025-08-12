@@ -765,7 +765,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
         }
     }
-    baseWhere += ` AND (bp.is_under_payrole IS NULL OR bp.is_under_payrole != 1)`
+    baseWhere += ` AND (bp.is_under_payrole IS NULL OR bp.is_under_payrole != 1)`;
     if ( nationality ) {
         // console.log(nationality)
         if ( baseWhere ) {
@@ -4166,6 +4166,38 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     }
 } );
 
+async function convertDates() {
+    try {
+        const [rows] = await pool.query(`
+            SELECT id, thuna_date_bs 
+            FROM bandi_kaid_details
+            WHERE thuna_date_bs IS NOT NULL
+        `);
+
+        console.log(`Found ${rows.length} rows to convert.`);
+
+        const updates = rows.map(async (row) => {
+            console.log("input Date", row.thuna_date_bs);
+            const adDate = await bs2ad(row.thuna_date_bs) || '1980-01-01';
+            return pool.query(
+                `UPDATE bandi_kaid_details SET thuna_date_ad = ? WHERE id = ?`,
+                [adDate, row.id]
+            );
+        });
+
+        await Promise.all(updates);
+
+        console.log("✅ All dates converted to AD!");
+    } catch (err) {
+        console.error("❌ Error:", err);
+    } finally {
+        pool.end();
+    }
+}
+
+// convertDates();
+
+
 router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
@@ -4184,16 +4216,18 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
 
     // Default date logic
     if ( !startDate && !endDate ) {
-        startDate = '0000-00-00';
+        startDate = '1001-01-01';
         endDate = today_date_bs;
+        endDate= await bs2ad(today_date_bs);
     } else if ( !startDate ) {
-        startDate = '0000-00-00';
+        startDate = '1001-01-01';
     } else if ( !endDate ) {
         endDate = today_date_bs;
+        endDate= await bs2ad(today_date_bs)
     }
 
-    filters.push( `bp.is_under_payrole IS NULL OR bp.is_under_payrole!=1 ` );
-    filters.push( `bkd.thuna_date_bs <= ?` );
+    filters.push( `bp.is_under_payrole IS NULL OR bp.is_under_payrole !=1 ` );
+    filters.push( `bkd.thuna_date_ad <= ?` );
     filters.push( `(brd.karnayan_miti IS NULL OR brd.karnayan_miti >= ?)` );
 
     params.push( endDate, startDate );
@@ -4214,7 +4248,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         }
         // else no office filter (all offices for super admin)
     } else {
-        filters.push( `bp.current_office_id = ?` );
+        filters.push( ` bp.current_office_id = ?` );
         params.push( active_office );
     }
 
@@ -4265,7 +4299,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
         LEFT JOIN offices o ON bp.current_office_id = o.id
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-        ${ filters.length ? 'WHERE ' + filters.join( ' AND ' ) : '' }
+        ${ filters.length ? ' WHERE ' + filters.join( ' AND ' ) : '' }
         GROUP BY mg.id, mg.mudda_group_name
         HAVING Total > 0
         ORDER BY mg.mudda_group_name ASC

@@ -141,7 +141,7 @@ const ParoleLogForm = () => {
                         />
                     </Grid>
                 </Grid>
-                {hajir_status !== '3' && ( <>
+                {hajir_status !== 'कैद भुक्तान' && ( <>
                     <Grid size={{ sm: 6 }}>
                         <ReuseDateField
                             name="hajir_next_date"
@@ -162,7 +162,7 @@ const ParoleLogForm = () => {
 
 
 
-                {hajir_status === '2' && (
+                {hajir_status === 'अनुउपस्थित' && (
                     <>
                         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                             <ReuseSelect
@@ -262,7 +262,7 @@ const ParoleLogForm = () => {
                             </Grid>
                         )}
 
-                        {is_court_order === '1' && (
+                        {is_reported_to_court === 'गरेको' && (
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseInput
                                     required
