@@ -51,9 +51,9 @@ const ParoleLogForm = () => {
 
     // Destructure watched fields for clarity    
     const hajir_status = watch( 'hajir_status' );
-    const no_hajir_reason = watch( 'no_hajir_reason' );
-    const no_hajir_reason_office_type = watch( 'no_hajir_reason_office_type' );
-    const no_hajir_is_pratibedan = watch( 'no_hajir_is_pratibedan' );
+    const absent_reason = watch( 'absent_reason' );
+    const thuna_office_type = watch( 'thuna_office_type' );
+    const is_reported_to_court = watch( 'is_reported_to_court' );
     const bandi_id = watch( 'bandi_id' );
     const { records: logRecords, optrecords: optLogRecords, loading: logLoadig } = fetchPayroleLogs( bandi_id );
 
@@ -78,12 +78,6 @@ const ParoleLogForm = () => {
                 ? `${ BASE_URL }/payrole/update_payrole/${ currendData.id }`
                 : `${ BASE_URL }/payrole/create_payrole_log`;
             const method = editing ? 'PUT' : 'POST';
-
-            // const formData = new FormData();
-            // for ( const key in payload ) {
-            //     formData.append( key, payload[key] );
-            // }
-
             const response = await axios( {
                 method,
                 url,
@@ -91,7 +85,6 @@ const ParoleLogForm = () => {
                 // headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true,
             } );
-
 
             const { Status, Result, Error } = response.data;
             if ( Status ) {

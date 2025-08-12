@@ -713,7 +713,7 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
                     user_id, new Date(), active_office
                 ] );
 
-            await connection.query( `UPDATE bandi_person SET is_under_payrole=? WHERE id=?`, [1, bandi_id] );
+            await connection.query( `UPDATE bandi_person SET is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, bandi_id, user_id, new Date()] );
             await connection.commit();
             return res.json( {
                 Status: true,
