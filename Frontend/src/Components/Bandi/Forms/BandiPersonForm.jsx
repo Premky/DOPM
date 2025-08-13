@@ -32,6 +32,8 @@ import fetchDisabilities from '../../ReuseableComponents/fetchDisabilities';
 import AddSubMuddaModal from '../Dialogs/AddSubMuddaModal';
 import { useAuth } from '../../../Context/AuthContext';
 import { CheckBox } from '@mui/icons-material';
+import ReuseDatePickerBSsmV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
+import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -324,7 +326,7 @@ const BandiPersonForm = () => {
               error={errors.lagat_no} />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>            
             <ReuseSelect
               name="bandi_type"
               label="बन्दीको प्रकार"
@@ -360,7 +362,7 @@ const BandiPersonForm = () => {
           <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
             <Grid size={{ xs: 10, sm: 9, md: 8 }}>
               {/* <ReuseDatePickerBS */}
-              <ReuseDateField
+              <ReuseDatePickerBSsmV5
                 name="dob"
                 label="जन्म मिति (वि.सं.)"
                 placeholder={"YYYY-MM-DD"}
@@ -529,7 +531,8 @@ const BandiPersonForm = () => {
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 {/* <ReuseDatePickerBs */}
-                <ReuseDateField
+                {/* <ReuseDateField */}
+                <ReuseDatePickerSMV5
                   name={`thuna_date_bs_${ index + 1 }`}
                   label='थुना/कैद परेको मिती'
                   placeholder={'YYYY-MM-DD'}

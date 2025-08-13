@@ -15,6 +15,8 @@ import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseOffice from "../../ReuseableComponents/ReuseOffice";
 import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
+import ReuseDatePickerSMV5 from "../../ReuseableComponents/ReuseDatePickerSMV5";
+import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 
 
 const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
@@ -176,7 +178,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 </Grid>
                 <Grid container>
                     <Grid size={{ xs: 12, sm: 4 }}>
-                        <ReuseDateField
+                        <ReuseDatePickerBS
                             name="thuna_date_bs"
                             label="थुना परेको मिति"
                             placeholder='YYYY-MM-DD'

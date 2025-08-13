@@ -12,6 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
+import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 
 
 const KaidModal = ( { open, onClose, onSave, editingData } ) => {
@@ -119,7 +120,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                     </Grid>
                 </Grid>
 
-                <ReuseDateField
+                <ReuseDatePickerBS
                     name="thuna_date_bs"
                     label="थुना/कैद परेको मितिः"
                     control={control}

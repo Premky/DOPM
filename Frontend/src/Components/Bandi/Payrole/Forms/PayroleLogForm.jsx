@@ -103,7 +103,7 @@ const ParoleLogForm = () => {
 
     return (
         <Box component="form" onSubmit={handleSubmit( onSubmit )}>
-            <Grid container spacing={2} style={{color:'red'}}>
+            <Grid container spacing={2} style={{ color: 'red' }}>
                 अहिले यो फर्म काम नगरेकोले कृपया यसमा इन्ट्रि नगरिदिनुहोल ।
             </Grid>
 
@@ -144,7 +144,7 @@ const ParoleLogForm = () => {
                 {hajir_status !== 'कैद भुक्तान' && ( <>
                     <Grid size={{ sm: 6 }}>
                         <ReuseDateField
-                            name="hajir_next_date"
+                            name="next_hajir_date"
                             label="हाजिर हुने मिति"
                             placeholder="YYYY-MM-DD"
                             control={control}
@@ -186,7 +186,7 @@ const ParoleLogForm = () => {
                                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseMudda
                                         required
-                                        name="no_hajir_mudda_id"
+                                        name="absent_mudda_id"
                                         label="मुद्दा"
                                         control={control}
                                     />
@@ -251,7 +251,7 @@ const ParoleLogForm = () => {
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseSelect
                                     required
-                                    name="is_court_order"
+                                    name="is_court_ordered"
                                     label="सुरु अदालतबाट आदेश भए/नभएको"
                                     options={[
                                         { label: 'भएको', value: '1' },
@@ -262,7 +262,7 @@ const ParoleLogForm = () => {
                             </Grid>
                         )}
 
-                        {is_reported_to_court === 'गरेको' && (
+                        {is_court_ordered === '1' && (
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseInput
                                     required
@@ -291,7 +291,7 @@ const ParoleLogForm = () => {
             </Grid>
             <Grid container>
                 <PayroleLogTable records={logRecords} />
-
+                
             </Grid>
         </Box>
     );
