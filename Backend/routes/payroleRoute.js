@@ -637,6 +637,8 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
         payrole_result,
         payrole_decision_remark,
 
+        hajir_miti, 
+        recommended_office, 
         other_details,
 
         dopmremark
@@ -712,7 +714,7 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
                     payrole_granted_letter_date, payrole_result, payrole_decision_remark,
                     user_id, new Date(), active_office
                 ] );
-
+            // await connection.query(``)
             await connection.query( `UPDATE bandi_person SET is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, bandi_id, user_id, new Date()] );
             await connection.commit();
             return res.json( {

@@ -45,7 +45,7 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   let releaseAd;
   if ( hirasatBs ) {
     // thunaAd = data.hirasatBs;
-    thunaAd = data.hirasatBs && await bs2ad( data?.hirasat_date_bs );
+    thunaAd = hirasatBs && await bs2ad( hirasat_date_bs );
   }
   if ( releaseBs ) {
     releaseAd = data.releaseBs && await bs2ad( data?.release_date_bs );
@@ -73,7 +73,7 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   if ( releaseBs ) {
     values = [...baseValues, is_life_time, releaseBs, releaseAd, ...auditFields];
     sql = `INSERT INTO bandi_kaid_details (
-    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,  thuna_date_ad, is_life_time,
+    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thuna_date_ad, is_life_time,
     release_date_bs, release_date_ad,
     created_by, updated_by, current_office_id
   ) VALUES (?)`;
@@ -85,6 +85,7 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   ) VALUES (?)`;
   }
   // await queryAsync( sql, [values] );
+  console.log(values)
   const [result] = await connection.query( sql, [values] );
 }
 
