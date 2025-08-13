@@ -42,7 +42,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
     useEffect( () => {
         if ( editingData ) {
             console.log( editingData );
-            setValue( 'final_to_office_id', editingData.final_to_office_id || editingData.recommended_to_office_id);
+            setValue( 'final_to_office_id', editingData.final_to_office_id || editingData.recommended_to_office_id );
             reset( {
                 id: editingData.transfer_id || "", // ✅ Include this
                 transfer_id: editingData.transfer_id || "",
@@ -50,6 +50,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                 to_user: editingData.to_user || "",
                 to_role: editingData.to_role || "",
                 final_to_office_id: editingData.final_to_office_id || editingData.recommended_to_office_id,
+                remarks: editingData.remarks || ""
             } );
         } else {
             reset( {
@@ -58,7 +59,8 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                 decision_date: "",
                 to_user: "",
                 to_role: "",
-                final_to_office_id: ""
+                final_to_office_id: "",
+                remarks: ""
             } );
         }
     }, [editingData, reset] );
@@ -113,12 +115,22 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                 // disabled={true}
                 />
 
-                <ReuseInput
+                {/* <ReuseInput
                     name="remarks"
                     label="संक्षिप्त व्यहोरा"
                     control={control}
                     required={false}
-                />
+                /> */}
+                <Grid size={{ xs: 12 }}>
+                    <TextField
+                        {...register( "remarks" )}
+                        label="कैफियत"
+                        fullWidth
+                        multiline
+                        rows={3}
+                        error={!!errors.remarks}
+                    />
+                </Grid>
             </DialogContent>
 
             <DialogActions>

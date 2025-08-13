@@ -127,7 +127,7 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
                                 <TableCell align="center">पुनरावेदन नपरेको कार्यालय</TableCell>
-                                <TableCell align="center">पुनरावेदन नपरेको जिल्ला</TableCell>
+                                {/* <TableCell align="center">पुनरावेदन नपरेको जिल्ला</TableCell> */}
                                 <TableCell align="center">पुनरावेदन नपरेको प्रमाणको च.नं.</TableCell>
                                 <TableCell align="center">पुनरावेदनमा नपरेको प्रमाणको पत्र मिति</TableCell>
                                 <TableCell align="center">#</TableCell>
@@ -138,7 +138,7 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
                                     <TableCell align="center">{opt.office_name_with_letter_address || ''}</TableCell>
-                                    <TableCell align="center">{opt.district_name_np || ''}</TableCell>
+                                    {/* <TableCell align="center">{opt.district_name_np || ''}</TableCell> */}
                                     <TableCell align="center">{opt.punarabedan_office_ch_no || ''}</TableCell>
                                     <TableCell align="center">{opt.punarabedan_office_date || ''}</TableCell>
 
