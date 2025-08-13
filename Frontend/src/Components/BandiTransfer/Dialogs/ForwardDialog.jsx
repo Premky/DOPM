@@ -20,6 +20,8 @@ import { useAuth } from "../../../Context/AuthContext";
 import Swal from "sweetalert2";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import axios from "axios";
+import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
+import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
 
 
 const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
@@ -79,7 +81,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
             { value: "pending_admin", label: "पेश गर्नुहोस्(शा.अ.)" },
             { value: "pending_top_level", label: "पेश गर्नुहोस्(निर्देशक)" },
             { value: "rejected_office_admin", label: "रद्द गर्नुहोस्" }
-            
+
         ];
     }
     else if ( authState.role_name == 'pending_admin' ) {
@@ -95,7 +97,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
             { value: "pending_supervisor", label: "रद्द गर्नुहोस्" }
         ];
     }
-    
+
     const role_id = watch( "role_id" );
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -110,6 +112,25 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     value={`${ editingData?.office_bandi_id || "" } | ${ editingData?.bandi_type || "" } ${ editingData?.bandi_name || "" }, `}
                     InputProps={{ readOnly: true }}
                 />
+                {authState.role_id != 2 && (
+                    <>
+                        <ReuseDateField
+                            name="decision_date"
+                            label="निर्णय मिति"
+                            placeholder={"YYYY-MM-DD"}
+                            control={control}
+                            required={true}
+                        />
+                        <ReuseKaragarOffice
+                            name="recommended_to_office_id"
+                            label="सरुवा भएको कारागार"
+                            defaultValue={1}
+                            control={control}
+                            required={true}
+                        // disabled={true}
+                        />
+                    </>
+                )}
 
                 <ReuseSelect
                     name="to_status"
@@ -123,11 +144,10 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                         // )
 
                     }
-
-
                     control={control}
                     required={true}
                 />
+
 
                 {( role_id === 4 || role_id === 5 ) && (
                     <ReuseInput

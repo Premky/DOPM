@@ -171,7 +171,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             o.letter_address,
             bmd.mudda_id, m.mudda_name,
             bth.id AS transfer_id,
-            bth.role_id,
+            bth.role_id,            
             bth.status_id, bth.transfer_from_office_id, bth.recommended_to_office_id, bth.final_to_office_id,
             bth.transfer_reason_id, bth.transfer_reason,
             bth.decision_date, bth.transfer_from_date, bth.transfer_to_date,
@@ -221,6 +221,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                     recommended_to_office_name,
                     final_to_office_id,
                     final_to_office_name,
+                    decision_date,
                     dob,
                     role_id,
                     status_id,
@@ -420,7 +421,23 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
                 new Date(),
                 id
             ];
-        } else if ( metadata.transfer_date ) {
+        } else if ( metadata.recommended_to_office_id && metadata.decision_date) {
+            sql = `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id = ?,decision_date=?, remarks = ?, recommended_to_office_id=?, updated_by = ?, updated_at = ?
+                WHERE id = ?`;
+            values = [
+                to_role_id[0].id,
+                status_id[0].id,
+                metadata.decision_date,
+                metadata.remarks,
+                metadata.recommended_to_office_id,
+                user_id,
+                new Date(),
+                id
+            ];
+        }
+        else if ( metadata.transfer_date ) {
             sql = `
                 UPDATE bandi_transfer_history 
                 SET role_id=?, status_id = ?, remarks = ?,transfer_from_date=?, updated_by = ?, updated_at = ?

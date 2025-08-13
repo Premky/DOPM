@@ -124,7 +124,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
             <DialogActions>
                 <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
                 <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
-                    पेश गर्नुहोस्
+                    स्विकृत
                 </Button>
             </DialogActions>
         </Dialog>
