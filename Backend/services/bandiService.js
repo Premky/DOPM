@@ -45,7 +45,7 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   let releaseAd;
   if ( hirasatBs ) {
     // thunaAd = data.hirasatBs;
-    thunaAd = hirasatBs && await bs2ad( hirasat_date_bs );
+    thunaAd = hirasatBs && await bs2ad( hirasatBs );
   }
   if ( releaseBs ) {
     releaseAd = data.releaseBs && await bs2ad( data?.release_date_bs );
