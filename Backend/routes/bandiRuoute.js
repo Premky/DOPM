@@ -765,7 +765,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             baseWhere = `WHERE bp.current_office_id = ${ active_office }`;
         }
     }
-    baseWhere += ` AND (bp.is_under_payrole IS NULL OR bp.is_under_payrole != 1)`;
+    baseWhere += ` AND (bp.is_under_payrole != 1)`;
     if ( nationality ) {
         // console.log(nationality)
         if ( baseWhere ) {
@@ -3786,7 +3786,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id    
         WHERE
-        bp.is_under_payrole IS NULL OR bp.is_under_payrole!=1 AND
+        bp.is_under_payrole!=1 AND
         (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
         ${ extraSubqueryFilters }
         GROUP BY bp.id
@@ -4115,7 +4115,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
     // Only include main and last mudda to avoid duplicates
     filters.push( "bp.is_active = 1" );
-    filters.push( "bp.is_under_payrole IS NULL OR bp.is_under_payrole!=1" );
+    filters.push( "bp.is_under_payrole!=1" );
     // filters.push(
     //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
     // );
