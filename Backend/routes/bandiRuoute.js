@@ -4227,11 +4227,13 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         endDate= await bs2ad(today_date_bs)
     }
 
-    filters.push( `bp.is_under_payrole IS NULL OR bp.is_under_payrole !=1 ` );
-    filters.push( `bkd.thuna_date_ad <= ?` );
+    // filters.push( `bp.is_under_payrole IS NULL OR bp.is_under_payrole !=1 ` );
+    filters.push( `bp.is_under_payrole !=1 ` );
+    filters.push( `bkd.thuna_date_ad >= ?` );
     filters.push( `(brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)` );
 
-    params.push( endDate, startDate );
+    params.push( startDate, endDate  );
+    // params.push( endDate, startDate );
 
     if ( nationality && nationality.trim() !== '' ) {
         filters.push( `bp.nationality = ?` );
