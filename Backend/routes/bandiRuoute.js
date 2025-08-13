@@ -4024,7 +4024,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
       created_by,
       created_at,
       current_office_id
-    ) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?)
   `;
     const values = [bandi_id, reason_id, decision_date, apply_date, await bs2ad(apply_date),  nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
     let connection;

@@ -17,6 +17,7 @@ import useFetchPayroleConditions from '../useApi/useFetchPayroleConditions';
 import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
 import ReuseMunicipality from '../../../ReuseableComponents/ReuseMunicipality';
 import ReuseCourt from '../../../ReuseableComponents/ReuseCourt';
+import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
 
 const PreviousParoleForm = ( { status } ) => {
   const BASE_URL = useBaseURL();
@@ -142,6 +143,7 @@ const PreviousParoleForm = ( { status } ) => {
               <ReuseDateField
                 name='payrole_entry_date'
                 label='प्यारोल दाखिला मिति'
+                placeholder={'YYYY-MM-DD'}
                 required={true}
                 control={control}
                 error={errors.payrole_entry_date}
@@ -151,7 +153,7 @@ const PreviousParoleForm = ( { status } ) => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDistrict
                 name='recommended_district'
-                label='प्यारोल बस्ने इच्छुक जिल्ला'
+                label='हाल प्यारोलमा रहेको जिल्ला'
                 required={true}
                 control={control}
                 error={errors.recommended_district}
@@ -160,7 +162,7 @@ const PreviousParoleForm = ( { status } ) => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseMunicipality
                 name='recommended_city'
-                label='प्यारोल बस्ने इच्छुक स्थानिय तह'
+                label='हाल प्यारोलमा रहेको स्थानिय तह'
                 required={true}
                 control={control}
                 error={errors.recommended_city}
@@ -191,7 +193,7 @@ const PreviousParoleForm = ( { status } ) => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseCourt
                 name='recommended_court_id'
-                label='पेश गर्ने अदालत'
+                label='पेश गरेको अदालत'
                 required={true}
                 control={control}
                 office_categories_id={3}
@@ -201,6 +203,7 @@ const PreviousParoleForm = ( { status } ) => {
               <ReuseDateField
                 name='payrole_granted_aadesh_date'
                 label='आदेश (मिति)'
+                placeholder={'YYYY-MM-DD'}
                 required={true}
                 control={control}
               />
@@ -217,6 +220,7 @@ const PreviousParoleForm = ( { status } ) => {
               <ReuseInput
                 name='payrole_granted_letter_date'
                 label='मिति'
+                placeholder={'YYYY-MM-DD'}
                 required={true}
                 control={control}
                 office_categories_id={3}
@@ -232,6 +236,24 @@ const PreviousParoleForm = ( { status } ) => {
                 options={[{ label: 'पास', value: 'पास' }, { label: 'फेल', value: 'फेल' }]}
               />
             </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDateField
+                name='hajir_miti'
+                label='शुरु हाजिर मिति'
+                placeholder={'YYYY-MM-DD'}
+                required={true}
+                control={control}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseKaragarOffice
+                required
+                name="recommended_office"
+                label="सम्पर्कमा रहने कार्यालय(प्यारोल अधिकृत)"
+                control={control}
+                selectedDistrict={selectedDistrictId}
+              />
+            </Grid>
           </Grid>
           <Grid container spacing={2}>
             {bandi?.payrole_id ?
@@ -242,6 +264,7 @@ const PreviousParoleForm = ( { status } ) => {
               </> : <></>
             }
           </Grid>
+
           <Grid container spacing={2}>
             {bandi_id ?
               <>
