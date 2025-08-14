@@ -27,7 +27,7 @@ const BandiReleaseForm = () => {
     const [loading, setLoading] = useState( false );
     const [editing, setEditing] = useState( false );
 
-    const bandi_id = watch( 'bandi_id' );
+    const bandi_id = watch( 'bandi_id' );    
     const reason_id = watch( 'reason_id' );
     const { records: releaseReasons, optrecords: releaseRecordsOptions, loading: realeseReasonsLoading } = useFetchBandiReleaseReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
@@ -146,7 +146,7 @@ const BandiReleaseForm = () => {
                                     label='बुझ्ने मान्छे छान्नुहोस्'
                                     options={relativeOptions}
                                     control={control}
-                                    required={true}
+                                    required={reason_id!=2}
                                     errors={errors.aafanta_id}
                                 />
                             </Grid>

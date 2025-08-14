@@ -27,6 +27,7 @@ export default function isValidDate( dateString ) {
 }
 
 export async function bs2ad( bsDateStr ) {
+    let dateUTCStr
     try {
         const [year, month, day] = bsDateStr.split( "-" ).map( Number );
 
@@ -48,10 +49,10 @@ export async function bs2ad( bsDateStr ) {
 
         adDate.setHours( 0, 0, 0, 0 );
         const dateStr = `${ adDate.getFullYear() }-${ String( adDate.getMonth() + 1 ).padStart( 2, '0' ) }-${ String( adDate.getDate() ).padStart( 2, '0' ) }`;
-        const dateUTCStr = `${ adDate.getUTCFullYear() }-${ String( adDate.getUTCMonth() + 1 ).padStart( 2, '0' ) }-${ String( adDate.getUTCDate() ).padStart( 2, '0' ) }`;        
+        dateUTCStr = `${ adDate.getUTCFullYear() }-${ String( adDate.getUTCMonth() + 1 ).padStart( 2, '0' ) }-${ String( adDate.getUTCDate() ).padStart( 2, '0' ) }`;        
         return dateUTCStr;
     } catch ( err ) {
-        console.warn( `⚠️ Skipping invalid BS date: ${ bsDateStr } (${ err.message })` );
+        console.warn( `⚠️ Skipping invalid BS date: ${ bsDateStr } -> ${ dateUTCStr } (${ err.message })` );
         return null;
     }
 }

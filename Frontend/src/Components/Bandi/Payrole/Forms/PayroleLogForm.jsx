@@ -283,7 +283,7 @@ const ParoleLogForm = () => {
                     />
                 </Grid>
 
-                <Grid xs={12}>
+                <Grid size={{xs:12}}>
                     <Button type="submit" variant="contained" color="primary">
                         सेभ गर्नुहोस्
                     </Button>

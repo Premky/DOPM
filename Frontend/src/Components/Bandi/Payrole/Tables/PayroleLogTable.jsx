@@ -17,7 +17,7 @@ const PayroleLogTable = ( { records } ) => {
   const [rows, setRows] = useState( [] );
 
   useEffect( () => {
-    setRows( records.map( rec => ( { ...rec, id: rec.payrole_id  } ) ) );
+    setRows( records.map( rec => ( { ...rec, id: rec.id  } ) ) );
   }, [records] );
 
   return (
@@ -27,9 +27,6 @@ const PayroleLogTable = ( { records } ) => {
           columns={columns}
           rows={rows}
         />
-
-
-
       </Grid>
     </div>
   );

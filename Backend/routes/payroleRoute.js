@@ -637,8 +637,8 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
         payrole_result,
         payrole_decision_remark,
 
-        hajir_miti, 
-        recommended_office, 
+        hajir_miti,
+        recommended_office,
         other_details,
 
         dopmremark
@@ -714,8 +714,11 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
                     payrole_granted_letter_date, payrole_result, payrole_decision_remark,
                     user_id, new Date(), active_office
                 ] );
-            // await connection.query(``)
-            await connection.query( `UPDATE bandi_person SET is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, bandi_id, user_id, new Date()] );
+            await connection.query( `INSERT INTO payrole_logs
+                    (payrole_id,bandi_id,  office_bandi_id, hajir_date, hajir_status, hajir_office_id)VALUES
+                    (?,?,  ?, ?, ?, ?)`,
+                [result.insertId, bandi_id, office_bandi_id, hajir_miti, 'उपस्थित', recommended_office] );
+            await connection.query( `UPDATE bandi_person SET is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, user_id, new Date(), bandi_id] );
             await connection.commit();
             return res.json( {
                 Status: true,
@@ -1027,22 +1030,21 @@ router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
     const user_id = req.user.username;
     const {
         payrol_id,
-        hajir_current_date,
+        hajir_date,
         hajir_status,
-        hajir_next_date,
-        hajir_office,
-        no_hajir_reason,
-        no_hajir_mudda,
-        no_hajir_mudda_district,
-        no_hajir_reason_office_type,
-        no_hajir_reason_office_id,
-        no_hajir_reason_office_name,
-        no_hajir_is_pratibedan,
-        no_hajir_is_aadesh,
+        next_hajir_date,
+        hajir_office_id,
+        absent_reason,
+        absent_mudda_id,
+        thuna_district,
+        thuna_office_type,
+        thuna_office_id,
+        thuna_office_name,
+        is_reported_to_court,
+        is_court_ordered,
+        court_order,
         hajir_remarks
     } = req.body;
-
-
 
     try {
         let sql = '';
@@ -1051,8 +1053,17 @@ router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
         if ( hajir_status == '2' ) {
             console.log( "अनुपस्थित" );
         }
-
-
+        sql = `INSERT INOT payrole_logs
+                (payrole_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason, 
+                absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id, 
+                thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks, 
+                created_by, created_at, updated_by, updated_at ) VALUES
+                (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        values = [payrole_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason,
+            absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id,
+            thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks,
+            user_id, new Date(), user_id, new Date()
+        ];
         const queryResult = await query( sql, values );
         return res.json( { Status: true, Result: queryResult } );
 
@@ -1120,34 +1131,40 @@ router.delete( '/delete_payrole_maskebari_count/:id', verifyToken, async ( req, 
 
 router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const active_user = req.user.username;
+    const user_id = req.user.id;
+
+    const {        
+        bandi_id, hajir_date, hajir_status,  next_hajir_date, hajir_office_id,
+        absent_reason, absent_mudda_id, thuna_district, thuna_office_type,
+        thuna_office_id, thuna_office_name, is_reported_to_court, is_court_ordered,
+        court_order, hajir_remarks
+    } = req.body;
+    const [payrole]=await pool.query(`SELECT id, office_bandi_id FROM payroles WHERE bandi_id=?`,[bandi_id])
+    const payrole_id=payrole[0]?.id;
+    const office_bandi_id=payrole[0]?.office_bandi_id;
 
     try {
-        req.body.created_by = active_user;
-        req.body.current_office_id = active_office;
+        let sql = '';
+        let values = [];
 
-        // ✅ Clean payload: convert '' to null for optional fields
-        const cleanedBody = {
-            ...req.body,
-            no_hajir_reason: req.body.no_hajir_reason || null,
-            no_hajir_mudda: req.body.no_hajir_mudda || null,
-            no_hajir_mudda_district: req.body.no_hajir_mudda_district || null,
-            no_hajir_reason_office_type: req.body.no_hajir_reason_office_type || null,
-            no_hajir_reason_office_id: req.body.no_hajir_reason_office_id || null,
-            no_hajir_reason_office_name: req.body.no_hajir_reason_office_name || null,
-            no_hajir_is_pratibedan: req.body.no_hajir_is_pratibedan || null,
-            no_hajir_is_aadesh: req.body.no_hajir_is_aadesh || null,
-        };
-        delete cleanedBody.office_bandi_id; // 🔴 Remove unknown field
-        delete cleanedBody.office_name; // 🔴 Remove unknown field
+        if ( hajir_status == '2' ) {
+            console.log( "अनुपस्थित" );
+        }
+        sql = `INSERT INTO payrole_logs
+                (payrole_id,bandi_id,office_bandi_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason, 
+                absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id, 
+                thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks, 
+                created_by, created_at, updated_by, updated_at ) VALUES
+                (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        values = [payrole_id, bandi_id,office_bandi_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason,
+            absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id,
+            thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks,
+            user_id, new Date(), user_id, new Date()
+        ];
+        const queryResult = await query( sql, values );
+        return res.json( { Status: true, Result: queryResult } );
 
-        const keys = Object.keys( cleanedBody );
-        const values = Object.values( cleanedBody );
-        const placeholders = keys.map( () => '?' ).join( ', ' );
-
-        const sql = `INSERT INTO payrole_logs (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
-        const result = await query( sql, values );
-
+        
         res.status( 201 ).json( { Status: true, Result: result.insertId } );
     } catch ( err ) {
         console.error( 'Error creating payrole log:', err );
@@ -1158,7 +1175,7 @@ router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
 
 router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;
-    const user_id = req.user.username;
+    const user_id = req.user.id;
     const id = req.params.id;
 
     try {
@@ -1176,6 +1193,7 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
             FROM bandi_mudda_details bmd
             )
             SELECT 
+            pl.id,
             pl.payrole_id, pl.hajir_date, pl.hajir_status, 
             pl.next_hajir_date, pl.hajir_office_id, pl.absent_reason, 
             pl.absent_mudda_id, pl.thuna_district, 
@@ -1195,16 +1213,14 @@ router.get( '/get_payrole_logs/:id', verifyToken, async ( req, res ) => {
         let finalQuery = baseQuery;
         let queryParams = [];
         finalQuery += ` WHERE bp.is_active=1`;
+        finalQuery +=  ` AND pl.bandi_id=?`;
+        queryParams=[...queryParams, id]
         // Restrict results for lower-level offices (office_id >= 2)
-        if ( user_office_id > 2 ) {
+        // console.log(queryParams)
+        if ( user_office_id >= 2 ) {
             finalQuery += ` AND (p.created_office = '?' OR p.updated_office = '?')`;
-            queryParams = [user_office_id, user_office_id];
+            queryParams = [...queryParams, user_office_id, user_office_id];
         }
-
-        // if()
-
-        // console.log(finalQuery)
-
         const [result] = await pool.query( finalQuery, queryParams );
         // console.log( 'acceptedpayrole', user_office_id );
         if ( !result.length ) {
