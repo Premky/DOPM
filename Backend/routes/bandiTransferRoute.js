@@ -311,6 +311,12 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
         } else {
             is_thunuwa_permission = data.is_thunuwa_permission;
         }
+        let recommended_to_office_id
+        if(data.recommended_to_office_id){
+            recommended_to_office_id= data.recommended_to_office_id
+        }else{
+            recommended_to_office_id=null
+        }
         let insertsql;
         let values;
         if ( data.is_thunuwa_permission ) {
@@ -323,7 +329,7 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
             values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
-                active_office, data.recommended_to_office_id,
+                active_office, recommended_to_office_id,
                 is_thunuwa_permission, data.bandi_character,
                 user_role_id, user_role_id,
                 user_id, user_id, new Date(), new Date(), active_office

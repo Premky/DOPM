@@ -37,8 +37,9 @@ import exportCharacterToExcel from "../Exports/ExcelPayroleCharacter";
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
 import useFetchAllBandiFines from "../../Apis_to_fetch/useFetchAllBandiFines";
+import { fontWeight } from "@mui/system";
 
-const PayroleTable = ({status}) => {
+const PayroleTable = ( { status } ) => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
     const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
@@ -120,6 +121,9 @@ const PayroleTable = ({status}) => {
         }
     };
 
+    // const thStickyStyle = '#7161cdff';
+    const thStickyStyle = { position: "sticky", left: 0, zIndex: 3, background: 'blue', color: 'white', fontSize: '1.3em', fontWeight: 'bold' };
+    const thStyle = { background: 'blue', color: 'white', fontSize: '1.3em', fontWeight: 'bold' };
 
     return (
         <>
@@ -127,7 +131,7 @@ const PayroleTable = ({status}) => {
                 एक्सेल निर्यात
             </Button>
             <Button onClick={() => exportCharacterToExcel( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
-                चालचलन फर्मेट 
+                चालचलन फर्मेट
             </Button>
 
             <Menu
@@ -150,190 +154,190 @@ const PayroleTable = ({status}) => {
             <PayroleTableFilters onChange={( newFilters ) => setFilters( newFilters )} />
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
-                    <TableHead >
-                        <TableRow sx={{ background: "blue" }}>
-                            <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }} >चेक</TableCell>
-                            <TableCell sx={{ position: "sticky", left: 0, zIndex: 3 }}>सि.नं.</TableCell>
-                            <TableCell sx={{ position: "sticky", left: 50, zIndex: 3 }}>बान्दी (id)</TableCell>
-                            <TableCell sx={{ position: "sticky", left: 50, zIndex: 3 }}>कारागार कार्यालय</TableCell>
-                            <TableCell sx={{ position: "sticky", left: 50, zIndex: 3 }}>कैदी नाम</TableCell>
-                            <TableCell>उमेर</TableCell>
-                            <TableCell>लिङ्ग</TableCell>
-                            <TableCell>राष्ट्रियता</TableCell>
-                            <TableCell>मुद्दा</TableCell>
-                            <TableCell>जाहेरवाला</TableCell>
-                            <TableCell>अन्तिम फैसला</TableCell>
-                            <TableCell>थुना मिति</TableCell>
-                            <TableCell>कैद अवधि</TableCell>
-                            <TableCell>छुट मिति</TableCell>
-                            <TableCell>भुक्तान कैद</TableCell>
-                            <TableCell>प्यारोलमा राख्नुपर्ने कैद</TableCell>
-                            <TableCell>पुनरावेदन प्रमाण</TableCell>
-                            <TableCell>जरिवाना प्रमाण</TableCell>
-                            <TableCell>कैफियत (कार्यालय)</TableCell>
-                            <TableCell>कैफियत (विभाग)</TableCell>
+                    <TableHead stickyHeader>
+                        <TableRow>
+                            <TableCell sx={thStickyStyle} >चेक</TableCell>
+                            <TableCell sx={thStickyStyle}>सि.नं.</TableCell>
+                            <TableCell sx={thStickyStyle}>बान्दी (id)</TableCell>
+                            <TableCell sx={thStickyStyle}>कारागार कार्यालय</TableCell>
+                            <TableCell sx={thStickyStyle}>कैदी नाम</TableCell>
+                            <TableCell sx={thStyle}>उमेर</TableCell>
+                            <TableCell sx={thStyle}>लिङ्ग</TableCell>
+                            <TableCell sx={thStyle}>राष्ट्रियता</TableCell>
+                            <TableCell sx={thStyle}>मुद्दा</TableCell>
+                            <TableCell sx={thStyle}>जाहेरवाला</TableCell>
+                            <TableCell sx={thStyle}>अन्तिम फैसला</TableCell>
+                            <TableCell sx={thStyle}>थुना मिति</TableCell>
+                            <TableCell sx={thStyle}>कैद अवधि</TableCell>
+                            <TableCell sx={thStyle}>छुट मिति</TableCell>
+                            <TableCell sx={thStyle}>भुक्तान कैद</TableCell>
+                            <TableCell sx={thStyle}>प्यारोलमा राख्नुपर्ने कैद</TableCell>
+                            <TableCell sx={thStyle}>पुनरावेदन प्रमाण</TableCell>
+                            <TableCell sx={thStyle}>जरिवाना प्रमाण</TableCell>
+                            <TableCell sx={thStyle}>कैफियत (कार्यालय)</TableCell>
+                            <TableCell sx={thStyle}>कैफियत (विभाग)</TableCell>
                             <TableCell>#</TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
-                        {filteredKaidi                            
+                        {filteredKaidi
                             .map( ( data, index ) => {
-                            const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
-                            const bandiFines = fetchedFines[data.bandi_id] || [];
-                            const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
-                            // console.log( bandiFines );
-                            const rowStyle = {
-                                backgroundColor:
-                                    getRowBackgroundColor( data.pyarole_rakhan_upayukat )
-                            };
-                            const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
-                            const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
-                            const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
+                                const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
+                                const bandiFines = fetchedFines[data.bandi_id] || [];
+                                const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
+                                // console.log( bandiFines );
+                                const rowStyle = {
+                                    backgroundColor:
+                                        getRowBackgroundColor( data.pyarole_rakhan_upayukat )
+                                };
+                                const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+                                const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
+                                const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
 
-                            const hirasatDays = data?.hirasat_days || 0;
-                            const hirasatMonths = data?.hirasat_months || 0;
-                            const hirasatYears = data?.hirasat_years || 0;
-                            let totalKaidDuration;
-                            let totalBhuktanDuration;
-                            let totalBakiDuration;
-                            if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
-                                totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
-                                totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
-                                totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
-                            }
-                            // console.log(kaidiMuddas)
-                            return (
-                                <Fragment key={data.id}>
-                                    <TableRow sx={rowStyle}>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            <Checkbox
-                                                checked={Boolean( data.is_checked )}
-                                                onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )}
-                                            />
+                                const hirasatDays = data?.hirasat_days || 0;
+                                const hirasatMonths = data?.hirasat_months || 0;
+                                const hirasatYears = data?.hirasat_years || 0;
+                                let totalKaidDuration;
+                                let totalBhuktanDuration;
+                                let totalBakiDuration;
+                                if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+                                    totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+                                    totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+                                    totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
+                                }
+                                // console.log(kaidiMuddas)
+                                return (
+                                    <Fragment key={data.id}>
+                                        <TableRow sx={rowStyle}>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
+                                                <Checkbox
+                                                    checked={Boolean( data.is_checked )}
+                                                    onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )}
+                                                />
 
-                                        </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {index + 1}  
-                                            {/* {data.payrole_status} */}
-                                        </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {data.office_bandi_id}
-                                        </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {data.letter_address}
-                                        </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 50, zIndex: 3, backgroundColor: rowStyle }}>
-                                            {data.bandi_name}
-                                            <br />
-                                            {data.nationality === "स्वदेशी"
-                                                ? `${ data.city_name_np }-${ data.wardno }, ${ data.district_name_np }`
-                                                : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }`}
-                                        </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.current_age}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === "Male" ? "पुरुष" : data.gender === "Female" ? "महिला" : "अन्य"}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np} ({data.nationality})</TableCell>
-                                        <TableCell>{kaidiMuddas[0]?.mudda_name}</TableCell>
-                                        <TableCell>{kaidiMuddas[0]?.vadi}</TableCell>
-                                        <TableCell>{kaidiMuddas[0]?.mudda_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {/* कैद अवधि */}
-                                            {/* {totalKaidDuration?.totalDays} दिन <br />
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
+                                                {index + 1}
+                                                {/* {data.payrole_status} */}
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
+                                                {data.office_bandi_id}
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
+                                                {data.letter_address}
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 50, zIndex: 3, backgroundColor: rowStyle }}>
+                                                {data.bandi_name}
+                                                <br />
+                                                {data.nationality === "स्वदेशी"
+                                                    ? `${ data.city_name_np }-${ data.wardno }, ${ data.district_name_np }`
+                                                    : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }`}
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.current_age}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === "Male" ? "पुरुष" : data.gender === "Female" ? "महिला" : "अन्य"}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np} ({data.nationality})</TableCell>
+                                            <TableCell>{kaidiMuddas[0]?.mudda_name}</TableCell>
+                                            <TableCell>{kaidiMuddas[0]?.vadi}</TableCell>
+                                            <TableCell>{kaidiMuddas[0]?.mudda_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {/* कैद अवधि */}
+                                                {/* {totalKaidDuration?.totalDays} दिन <br />
                                             {kaidDuration?.totalDays} din <br /> */}
-                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
-                                                <>
-                                                    जम्मा कैदः <br />
-                                                    {totalKaidDuration?.formattedDuration}
-                                                    <hr />
-                                                    हिरासत/थुना अवधीः <br />
-                                                    {data?.hirasat_years || 0} | {data?.hirasat_months || 0} | {data?.hirasat_days || 0}
-                                                    <hr />
-                                                    बेरुजु कैदः <br />
-                                                </>
-                                            ) : null}
-                                            {kaidDuration?.formattedDuration}
-                                        </TableCell>
+                                                {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
+                                                    <>
+                                                        जम्मा कैदः <br />
+                                                        {totalKaidDuration?.formattedDuration}
+                                                        <hr />
+                                                        हिरासत/थुना अवधीः <br />
+                                                        {data?.hirasat_years || 0} | {data?.hirasat_months || 0} | {data?.hirasat_days || 0}
+                                                        <hr />
+                                                        बेरुजु कैदः <br />
+                                                    </>
+                                                ) : null}
+                                                {kaidDuration?.formattedDuration}
+                                            </TableCell>
 
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {/*भुक्तान अवधी*/}
-                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
-                                                {totalBhuktanDuration?.formattedDuration}
-                                                <hr />
-                                                {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
-                                            </> ) : (
-                                                <>
-                                                    {bhuktanDuration?.formattedDuration} <hr />
-                                                    {bhuktanDuration?.percentage}%
-                                                </>
-                                            )}
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.release_date_bs}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {/*भुक्तान अवधी*/}
+                                                {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
+                                                    {totalBhuktanDuration?.formattedDuration}
+                                                    <hr />
+                                                    {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
+                                                </> ) : (
+                                                    <>
+                                                        {bhuktanDuration?.formattedDuration} <hr />
+                                                        {bhuktanDuration?.percentage}%
+                                                    </>
+                                                )}
 
-                                        </TableCell>
-                                        {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                            </TableCell>
+                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                     {bhuktanDuration.formattedDuration}
                                             <br />  {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
                                         </TableCell> */}
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
-                                                {totalBakiDuration?.formattedDuration}
-                                                <hr />
-                                                {totalBakiDuration?.percentage != null ? `${ totalBakiDuration.percentage }%` : '–'}
-                                            </> ) : (
-                                                <>
-                                                    {bakiDuration?.formattedDuration} <hr />
-                                                    {bakiDuration?.percentage}%
-                                                </>
-                                            )}
-                                        </TableCell>
-                                        <TableCell
-                                            rowSpan={kaidiMuddas.length || 1}
-                                            style={bandiNoPunarabedan.length === 0 ? { background: 'red' } : {}}
-                                        >
-                                            {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
-                                                <>
-                                                    <Fragment key={`noPunrabedan-${ data.id }-${ i }`}>
-                                                        {i + 1}. {noPunrabedan.punarabedan_office}को च.नं. {noPunrabedan.punarabedan_office_ch_no}, मिति {noPunrabedan.punarabedan_office_date} गतेको पत्र ।
-                                                        <hr />
-                                                    </Fragment>
-                                                </>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
+                                                    {totalBakiDuration?.formattedDuration}
+                                                    <hr />
+                                                    {totalBakiDuration?.percentage != null ? `${ totalBakiDuration.percentage }%` : '–'}
+                                                </> ) : (
+                                                    <>
+                                                        {bakiDuration?.formattedDuration} <hr />
+                                                        {bakiDuration?.percentage}%
+                                                    </>
+                                                )}
+                                            </TableCell>
+                                            <TableCell
+                                                rowSpan={kaidiMuddas.length || 1}
+                                                style={bandiNoPunarabedan.length === 0 ? { background: 'red' } : {}}
+                                            >
+                                                {bandiNoPunarabedan.map( ( noPunrabedan, i ) => (
+                                                    <>
+                                                        <Fragment key={`noPunrabedan-${ data.id }-${ i }`}>
+                                                            {i + 1}. {noPunrabedan.punarabedan_office}को च.नं. {noPunrabedan.punarabedan_office_ch_no}, मिति {noPunrabedan.punarabedan_office_date} गतेको पत्र ।
+                                                            <hr />
+                                                        </Fragment>
+                                                    </>
 
-                                            ) )}
-                                        </TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            {bandiFines
-                                                .filter( ( fine ) => fine.deposit_ch_no && fine.deposit_ch_no !== '' )
-                                                .map( ( fine, i ) => (
-                                                    <div key={`fine-${ data.id }-${ i }`}>
-                                                        {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.
-                                                        {fine.deposit_amount} {fine.fine_name_np}{" "}
-                                                        {fine.amount_deposited===1 ? 'बुझाएको' :
-                                                            <span style={{ color: 'red' }}>नबुझाएको</span>
-                                                        } ।
-                                                        <hr />
-                                                    </div>
                                                 ) )}
-                                        </TableCell>
+                                            </TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                {bandiFines
+                                                    .filter( ( fine ) => fine.deposit_ch_no && fine.deposit_ch_no !== '' )
+                                                    .map( ( fine, i ) => (
+                                                        <div key={`fine-${ data.id }-${ i }`}>
+                                                            {i + 1}. {fine.deposit_office}को च.नं. {fine.deposit_ch_no}, मिति {fine.deposit_date} गतेको पत्रबाट रु.
+                                                            {fine.deposit_amount} {fine.fine_name_np}{" "}
+                                                            {fine.amount_deposited === 1 ? 'बुझाएको' :
+                                                                <span style={{ color: 'red' }}>नबुझाएको</span>
+                                                            } ।
+                                                            <hr />
+                                                        </div>
+                                                    ) )}
+                                            </TableCell>
 
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
-                                        <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                            <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
-                                                <MoreVertIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-
-                                    {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (
-                                        <TableRow key={`mudda-${ data.id }-${ i }`} sx={rowStyle}>
-                                            <TableCell>{mudda.mudda_name}</TableCell>
-                                            <TableCell>{mudda.vadi}</TableCell>
-                                            <TableCell>{mudda.mudda_office}<br />{mudda.mudda_phesala_antim_office_date}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
+                                            <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
+                                                    <MoreVertIcon />
+                                                </IconButton>
+                                            </TableCell>
                                         </TableRow>
-                                    ) )}
-                                </Fragment>
-                            );
-                        } )}
+
+                                        {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (
+                                            <TableRow key={`mudda-${ data.id }-${ i }`} sx={rowStyle}>
+                                                <TableCell>{mudda.mudda_name}</TableCell>
+                                                <TableCell>{mudda.vadi}</TableCell>
+                                                <TableCell>{mudda.mudda_office}<br />{mudda.mudda_phesala_antim_office_date}</TableCell>
+                                            </TableRow>
+                                        ) )}
+                                    </Fragment>
+                                );
+                            } )}
                     </TableBody>
                 </Table>
             </TableContainer>

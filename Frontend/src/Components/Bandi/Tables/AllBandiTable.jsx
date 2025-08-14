@@ -88,7 +88,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                console.log( Result );
+                // console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -336,16 +336,12 @@ const AllBandiTable = () => {
                         />
                     </Grid>
 
-
                     <Grid size={{xs:6}} mt={3}>
                         <Button
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
                             onClick={fetchKaidi}>
                             Search
                         </Button>
-                        {/* <Button onClick={exportToExcel} variant="outlined" sx={{ mt: 2, ml: 2 }}>
-                            एक्सेल निर्यात
-                        </Button> */}
                     </Grid>
                 </Grid>
                 {/* </form> */}
@@ -379,7 +375,6 @@ const AllBandiTable = () => {
                     pageSizeOptions={pageSizeOptions}
                     page={page}
                 /> */}
-            {/* </Box> */}
         </>
     );
 };

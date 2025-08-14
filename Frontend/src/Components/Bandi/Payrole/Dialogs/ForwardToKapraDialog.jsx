@@ -147,13 +147,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
                 <ReuseSelect
                     name="to_role"
                     label="प्राप्तकर्ताको भुमिका"
-                    options={optUserActions
-                        // authState.role_id <= 2 ? (
-                        //     optUserRoles.filter( ( opt ) => opt.id === authState.role_id + 1 ) // Corrected the comparison
-                        // ) : (
-                        //     optUserRoles.filter( ( opt ) => opt.id > authState.role_id )
-                        // )
-                    }
+                    options={optUserActions}                    
                     control={control}
                     required={true}
                 />
@@ -173,11 +167,6 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
                         />
                     )}
                 />
-
-
-
-
-
             </DialogContent>
 
             <DialogActions>
