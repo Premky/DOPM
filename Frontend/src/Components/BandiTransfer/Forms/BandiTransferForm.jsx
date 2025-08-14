@@ -115,7 +115,7 @@ const BandiTransferForm = () => {
                                     name="recommended_to_office_id"
                                     label="चाहेको कार्यालय"
                                     control={control}
-                                    required={true}
+                                    required={false}
                                     error={!!errors.recommended_to_office_id}
                                 />
                             </Grid>

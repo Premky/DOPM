@@ -58,7 +58,7 @@ const ReusableBandiTable = ( {
             const muddaCount = muddaList.length;
 
             muddaList.forEach( ( mudda, idx ) => {
-                const rowData = [
+                let rowData = [
                     idx === 0 ? bandiIndex + 1 : '',
                     ...columns.filter( col => col.field !== 'photo_path' ).map( col => {
                         if ( col.field === 'bandi_address' ) {
@@ -74,6 +74,8 @@ const ReusableBandiTable = ( {
                     mudda?.vadi || '0',
                     ( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )
                 ];
+                
+                
                 worksheet.addRow( rowData );
             } );
 

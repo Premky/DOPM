@@ -88,7 +88,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                // console.log( Result );
+                console.log( Result );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -247,18 +247,7 @@ const AllBandiTable = () => {
                 }
             }
         },
-        // { field: "mudda_name", headerName: "मुद्दा", width: 100 },
-        // { field: "vadi", headerName: "जाहेरवाला", width: 100 },
-        // {
-        //     field: "phesala_office_n_date",
-        //     headerName: "फैसला कार्यालय/मिति",
-        //     width: 180,
-        //     renderCell: ( params ) => (
-        //         <div style={{ whiteSpace: "pre-line" }}>
-        //             {params.value || ""}
-        //         </div>
-        //     ),
-        // },
+        
     ];
 
     return (
