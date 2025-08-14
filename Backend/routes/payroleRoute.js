@@ -1147,9 +1147,6 @@ router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
         let sql = '';
         let values = [];
 
-        if ( hajir_status == '2' ) {
-            console.log( "अनुपस्थित" );
-        }
         sql = `INSERT INTO payrole_logs
                 (payrole_id,bandi_id,office_bandi_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason, 
                 absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id, 

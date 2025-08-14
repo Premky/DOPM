@@ -21,12 +21,14 @@ async function insertBandiPerson( data, connection ) {
     data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name,
     data.gender, data.dob, dob_ad, data.age, data.married_status, data.photo_path,
     data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
+    0,    
     data.bandi_remarks, data.user_id, data.user_id, data.office_id
   ];
 
   const sql = `INSERT INTO bandi_person (
     bandi_type, office_bandi_id,lagat_no, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path,
-    bandi_education, height, weight, bandi_huliya, remarks, created_by, updated_by, current_office_id
+    bandi_education, height, weight, bandi_huliya, is_under_payrole,
+     remarks, created_by, updated_by, current_office_id
   ) VALUES (?)`;
 
   // const result = await queryAsync( sql, [values] );

@@ -54,6 +54,7 @@ const ParoleLogForm = () => {
     const absent_reason = watch( 'absent_reason' );
     const thuna_office_type = watch( 'thuna_office_type' );
     const is_reported_to_court = watch( 'is_reported_to_court' );
+    const is_court_ordered = watch( 'is_court_ordered' );
     const bandi_id = watch( 'bandi_id' );
     const { records: logRecords, optrecords: optLogRecords, loading: logLoadig } = fetchPayroleLogs( bandi_id );
 
@@ -172,8 +173,8 @@ const ParoleLogForm = () => {
                                 options={[
                                     { label: 'फरार', value: 'फरार' },
                                     {
-                                        label: 'अन्य मुद्दामा थुना/हिरासतमा रहेको',
-                                        value: 'अन्य मुद्दामा थुना/हिरासतमा रहेको',
+                                        label: 'थुना/हिरासतमा रहेको',
+                                        value: 'थुना/हिरासतमा रहेको',
                                     },
                                     { label: 'मृत्यु', value: 'मृत्यु' },
                                 ]}
@@ -181,13 +182,13 @@ const ParoleLogForm = () => {
                             />
                         </Grid>
 
-                        {absent_reason === 'अन्य मुद्दामा थुना/हिरासतमा रहेको' && (
+                        {absent_reason === 'थुना/हिरासतमा रहेको' && (
                             <>
                                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                     <ReuseMudda
                                         required
                                         name="absent_mudda_id"
-                                        label="मुद्दा"
+                                        label="मुद्दा(अन्य मुद्दामा पक्राउ परेको भए सो जनाउने)"
                                         control={control}
                                     />
                                 </Grid>
@@ -234,18 +235,40 @@ const ParoleLogForm = () => {
                             </>
                         )}
 
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                            <ReuseSelect
-                                required
-                                name="is_reported_to_court"
-                                label="सुरु अदालतमा प्रतिवेदन पेश गरे/नगरेको"
-                                options={[
-                                    { label: 'गरेको', value: '1' },
-                                    { label: 'नगरेको', value: '0' },
-                                ]}
-                                control={control}
-                            />
-                        </Grid>
+                        {absent_reason != 'मृत्यु' && (
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <ReuseSelect
+                                    required
+                                    name="is_reported_to_court"
+                                    label="कारवाही तथा सजायका लागी प्रतिवेदन पेश गरे/नगरेको"
+                                    options={[
+                                        { label: 'गरेको', value: '1' },
+                                        { label: 'नगरेको', value: '0' },
+                                    ]}
+                                    control={control}
+                                />
+                            </Grid>
+                        )}
+                        {absent_reason == 'मृत्यु' && (<>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <ReuseDateField
+                                    required
+                                    name="death_date"
+                                    label="मृत्यु भएको मिति"
+                                    placeholder={"YYYY-MM-DD"}                                    
+                                    control={control}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <ReuseInput                                    
+                                    name="death_reason"
+                                    label="मृत्युको कारण"                                                                  
+                                    control={control}
+                                    required={true}
+                                />
+                            </Grid>
+                            </>
+                        )}
 
                         {is_reported_to_court === '1' && (
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -283,7 +306,7 @@ const ParoleLogForm = () => {
                     />
                 </Grid>
 
-                <Grid size={{xs:12}}>
+                <Grid size={{ xs: 12 }}>
                     <Button type="submit" variant="contained" color="primary">
                         सेभ गर्नुहोस्
                     </Button>
@@ -291,7 +314,7 @@ const ParoleLogForm = () => {
             </Grid>
             <Grid container>
                 <PayroleLogTable records={logRecords} />
-                
+
             </Grid>
         </Box>
     );
