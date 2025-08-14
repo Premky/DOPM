@@ -73,9 +73,7 @@ const ReusableBandiTable = ( {
                     mudda?.mudda_name || '',
                     mudda?.vadi || '0',
                     ( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )
-                ];
-                
-                
+                ];                              
                 worksheet.addRow( rowData );
             } );
 
@@ -90,7 +88,6 @@ const ReusableBandiTable = ( {
                     );
                 } );
             }
-
             excelRowIndex += muddaCount;
         } );
 

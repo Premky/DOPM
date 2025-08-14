@@ -80,21 +80,27 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
         customRoles = [
             { value: "pending_admin", label: "पेश गर्नुहोस्(शा.अ.)" },
             { value: "pending_top_level", label: "पेश गर्नुहोस्(निर्देशक)" },
-            { value: "rejected_office_admin", label: "रद्द गर्नुहोस्" }
+            { value: "rejected_by_supervisor", label: "रद्द गर्नुहोस्" }
 
         ];
     }
-    else if ( authState.role_name == 'pending_admin' ) {
+    else if ( authState.role_name == 'headoffice_approver' ) {
         customRoles = [
             { value: "pending_top_level", label: "पेश गर्नुहोस् (निर्देशक)" },
-            { value: "pending_supervisor", label: "पेश गर्नुहोस् (महानिर्देशक)" },
-            // { value: "", label: "रद्द गर्नुहोस्" }
+            { value: "pending_superadmin", label: "पेश गर्नुहोस् (महानिर्देशक)" },
+            { value: "rejected_by_admin", label: "रद्द गर्नुहोस्" }         
         ];
     }
-    else if ( authState.role_name == 'pending_top_level' ) {
+    else if ( authState.role_name == 'top_level' ) {
         customRoles = [
             { value: "pending_supervisor", label: "पेश गर्नुहोस् (महानिर्देशक)" },
-            { value: "pending_supervisor", label: "रद्द गर्नुहोस्" }
+            { value: "rejected_by_top_level", label: "रद्द गर्नुहोस्" }
+        ];
+    }
+    else if ( authState.role_name == 'superadmin' ) {
+        customRoles = [
+            { value: "pending_superadmin", label: "पेश गर्नुहोस् (महानिर्देशक)" },
+            { value: "rejected_superadmin", label: "रद्द गर्नुहोस्" }
         ];
     }
 

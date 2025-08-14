@@ -235,7 +235,7 @@ const AllBandiTable = () => {
         { field: "nationality", headerName: "राष्ट्रियता", width: 100 },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
         {
-            field: "release_date", headerName: "कैदमुक्त मिति", width: 100,
+            field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
                 if ( row.is_active === 0 ) {
