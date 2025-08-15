@@ -45,6 +45,8 @@ const BandiTransferTable = () => {
     const [formattedDateNp, setFormattedDateNp] = useState( "2081-03-01" );
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
+    const [refreshKey, setRefreshKey] = useState( 0 );
+
     // const [totalKaidi, setTotalKaidi] = useState( 0 );
 
     const handleChangePage = ( event, newPage ) => {
@@ -82,16 +84,14 @@ const BandiTransferTable = () => {
         setMenuRowData( null );
     };
 
-    const handleElClick = ( event ) => setAnchorEl( event.currentTarget );
-    const handleElClose = () => setAnchorEl( null );
-    const handleEdit = ( row ) => navigate( `/bandi/view_saved_record/${ row.id }` );
-    // const handleViewPayrole = ( row ) => <BandiFullReportPDF bandi_id=row.id};
-    const handleUpdatePayrole = ( row ) => navigate( `/bandi/view_saved_record/${ row.id }` );
-    const handleChangePayroleStatus = ( row, newStatus ) => console.log( "Change status", row, newStatus );
-    const handleReturn = ( row, returnToStatus ) => console.log( "Return", row, returnToStatus );
-    const handleForwardDialog = ( row, forwardToStatus ) => console.log( "Forward", row, forwardToStatus );
-    const handleResult = ( row, status ) => console.log( "Result", row, status );
-    const handleCheckboxChange = ( id, value ) => console.log( "Checkbox", id, value );
+    const refetchAll = async () => {
+        // setLoading( true );
+        await refetchTransferHisotry();
+        await refetchData();
+        await refetchMuddas();
+        // setLoading( false );
+    };
+
 
 
     const bgColor = ( status_id ) => {
@@ -133,7 +133,7 @@ const BandiTransferTable = () => {
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात
             </Button>
-            
+
             <Menu
                 anchorEl={menuAnchorEl}
                 open={Boolean( menuAnchorEl )}
@@ -146,7 +146,9 @@ const BandiTransferTable = () => {
                         onResultClick={() => {
                             console.log( "Result click for:", menuRowData );
                             handleMenuClose();
-                        }} />
+                        }}
+                        refetchAll={refetchAll}
+                    />
                 )}
             </Menu>
             <TableFilters onChange={( newFilters ) => setFilters( newFilters )} />
@@ -187,7 +189,7 @@ const BandiTransferTable = () => {
                             const rowSpan = Math.max( kaidiTransferHistory.length, 1 ); // ensure at least 1 row
 
                             return (
-                                <Fragment key={data.id}>
+                                <Fragment key={`${ data.id }-${ refreshKey }`}>
                                     {/* First row */}
                                     <TableRow sx={{ background: bgColor( data.status_id ) }}>
                                         <TableCell rowSpan={rowSpan}>{index + 1} {data.transfer_id}</TableCell>

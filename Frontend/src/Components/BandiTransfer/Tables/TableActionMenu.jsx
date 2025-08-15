@@ -13,7 +13,7 @@ import axios from "axios";
 import TransferDialog from "../Dialogs/TransferDialog";
 import AcceptRejectTransferDialog from "../Dialogs/AcceptRejectTransferDialog";
 
-const TableActionMenu = ( { data, onResultClick, onClose } ) => {
+const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
   const status = data?.payrole_status;
@@ -66,7 +66,7 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
         data,
         { withCredentials: true }
       );
-
+      refetchAll();
       await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
       // ✅ Now close after user sees the alert
       setOpenForwardDialog( false );
@@ -130,7 +130,7 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
   };
 
   const handleTransfer = async ( data ) => {
-    console.log( "Saving data:", data );
+    // console.log( "Saving data:", data );
     // console.log( "Saving data:" );
     try {
       await axios.put(
@@ -138,7 +138,7 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
         data,
         { withCredentials: true }
       );
-
+      refetchAll();
       await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
       // ✅ Now close after user sees the alert
       setOpenForwardDialog( false );
@@ -232,7 +232,7 @@ const TableActionMenu = ( { data, onResultClick, onClose } ) => {
       }
       {
         authState.role_name === "office_admin" && ( <>
-            {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
+          {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
           {( data.status_id == 12 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 13 ) ? ( <>

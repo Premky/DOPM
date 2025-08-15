@@ -2,14 +2,12 @@ import React, { useEffect, lazy, useMemo } from "react";
 import { Grid, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import ReuseKaragarOffice from "../../../ReuseableComponents/ReuseKaragarOffice";
-import ReuseMudda from "../../../ReuseableComponents/ReuseMudda";
 import ReuseSelect from "../../../ReuseableComponents/ReuseSelect";
 import ReuseInput from "../../../ReuseableComponents/ReuseInput";
 import ReusePayroleNos from "../../../ReuseableComponents/ReusePayroleNos";
 import { useAuth } from "../../../../Context/AuthContext";
 
 import useFetchPayroles from "../useApi/useFetchPayroles";
-import exportToExcel from "../../Exports/ExcelPayrole";
 import useFetchRoleBasedParoleStatus from "../useApi/useFetchRoleBasedParoleStatus";
 import ReuseMuddaGroup from "../../../ReuseableComponents/ReuseMuddaGroups";
 
@@ -108,6 +106,34 @@ const PayroleTableFilters = ( { onChange } ) => {
     const { optrecords: roleBasedStatus,
         refetchRoleBasedParoleStatus
     } = useFetchRoleBasedParoleStatus();
+
+    useEffect( () => {
+        if ( roleBasedStatus?.length > 0 && authState?.role_name ) {
+            const userDefault = {
+                clerk: 'initiate_parole',
+                office_admin: 'pending_office_admin',
+                supervisor: 'pending_supervisor',
+                headoffice_approver: 'pending_admin',
+                top_level: 'pending_top_level'        
+            };
+
+            const defaultStatus = userDefault[authState.role_name];
+            const defaultOption = roleBasedStatus.find( opt => opt.value === defaultStatus );
+
+            reset( {
+                searchOffice: '',
+                nationality: '',
+                searchpayroleStatus: defaultOption?.value || '',
+                searchpyarole_rakhan_upayukat: '',
+                searchpayrole_no_id: '',
+                searchmudda_id: '',
+                searchbandi_name: '',
+                searchchecked: false,
+                searchis_checked: false,
+            } );
+        }
+    }, [roleBasedStatus, authState.role_name, reset] );
+
 
     return (
         <form onSubmit={handleSubmit( onSubmit )}>

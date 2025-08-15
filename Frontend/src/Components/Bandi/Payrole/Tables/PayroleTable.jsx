@@ -147,7 +147,8 @@ const PayroleTable = ( { status } ) => {
                         onResultClick={() => {
                             // console.log( "Result click for:", menuRowData );
                             handleMenuClose();
-                        }} />
+                        }} 
+                        refetchPayrole={refetchPayrole} />
                 )}
             </Menu>
             <Box>जम्मा: {totalKaidi}</Box>

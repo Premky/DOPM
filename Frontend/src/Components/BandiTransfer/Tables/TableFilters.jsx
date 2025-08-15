@@ -25,6 +25,7 @@ const TableFilters = ( { onChange } ) => {
         control,
         reset,
         formState: { errors },
+        setValue
     } = useForm( {
         defaultValues: {
             searchOffice: "",
@@ -127,30 +128,48 @@ const TableFilters = ( { onChange } ) => {
     };
 
     const { optrecords: roleBasedStatus, refetchRoleBasedTransferStatus: fetchRoleBasedTransferStatus } = useFetchRoleBasedTransferStatus();
+    useEffect( () => {
+        if ( roleBasedStatus?.length > 0 && authState?.role_name ) {
+            const userDefault = {
+                clerk: 'initiate_transfer',
+                office_admin: 'pending_office_admin',
+                supervisor: 'pending_supervisor',
+                headoffice_approver: 'pending_admin',
+                top_level: 'pending_top_level',
+                superadmin: 'pending_superadmin'
+            };
+
+            const defaultStatus = userDefault[authState.role_name];
+            const defaultOption = roleBasedStatus.find( opt => opt.value === defaultStatus );
+            if ( defaultOption ) {
+                setValue( 'searchStatus', defaultOption.value );
+            }
+        }
+    }, [roleBasedStatus, authState.role_name, setValue] );
 
 
-
+    console.log( roleBasedStatus );
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
             <Grid container spacing={2} alignItems="flex-end">
-                
-                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                        <ReuseKaragarOffice
-                            name="searchOffice"
-                            label="कारागार कार्यालय (देखी)"
-                            control={control}
-                            error={errors.searchOffice}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                        <ReuseKaragarOffice
-                            name="searchToOffice"
-                            label="स्थानान्तरण भएको कारागार"
-                            control={control}
-                            error={errors?.searchToOffice}
-                        />
-                    </Grid>
-                
+
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <ReuseKaragarOffice
+                        name="searchOffice"
+                        label="कारागार कार्यालय (देखी)"
+                        control={control}
+                        error={errors.searchOffice}
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <ReuseKaragarOffice
+                        name="searchToOffice"
+                        label="स्थानान्तरण भएको कारागार"
+                        control={control}
+                        error={errors?.searchToOffice}
+                    />
+                </Grid>
+
                 {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseSelect
                         name="searchRole"
@@ -169,6 +188,7 @@ const TableFilters = ( { onChange } ) => {
                         options={roleBasedStatus}
                         control={control}
                         error={errors.searchStatus}
+                    // defaultValue={rol}
                     />
                 </Grid>
 
@@ -219,7 +239,7 @@ const TableFilters = ( { onChange } ) => {
                     </Button>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    {authState.office_id==2 &&(
+                    {authState.office_id == 2 && (
                         <TransferCommonLetterDocx data={filteredKaidi} />
                     )}
 

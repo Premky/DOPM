@@ -88,7 +88,7 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
         customRoles = [
             { value: "pending_top_level", label: "पेश गर्नुहोस् (निर्देशक)" },
             { value: "pending_superadmin", label: "पेश गर्नुहोस् (महानिर्देशक)" },
-            { value: "rejected_by_admin", label: "रद्द गर्नुहोस्" }         
+            { value: "rejected_by_admin", label: "रद्द गर्नुहोस्" }
         ];
     }
     else if ( authState.role_name == 'top_level' ) {
@@ -117,8 +117,8 @@ const ForwardDialog = ( { open, onClose, onSave, editingData } ) => {
                     label="कैदी नाम र ठेगाना"
                     value={`${ editingData?.office_bandi_id || "" } | ${ editingData?.bandi_type || "" } ${ editingData?.bandi_name || "" }, `}
                     InputProps={{ readOnly: true }}
-                />
-                {authState.role_id != 2 && (
+                />                
+                {( authState.role_id !== 2 && authState.role_id !== 1 ) && (
                     <>
                         <ReuseDateField
                             name="decision_date"
