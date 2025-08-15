@@ -1528,7 +1528,7 @@ router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) =>
         hirasat_years,
         hirasat_months,
         hirasat_days,
-        thuna_date_bs,        
+        thuna_date_bs,
         release_date_bs,
         is_life_time = 0
     } = req.body;
@@ -1946,7 +1946,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             thuna_date_bs = ?, thuna_date_ad=?,  release_date_bs = ?, is_life_time = ?,
             updated_by = ?, updated_at=?, current_office_id = ? WHERE bandi_id=?`;
         const kaidDetailValue = [hirasat_years, hirasat_months, hirasat_days,
-            thuna_date_bs, await bs2ad(thuna_date_bs), release_date_bs, is_life_time, 1, new Date(), active_office, bandi_id];
+            thuna_date_bs, await bs2ad( thuna_date_bs ), release_date_bs, is_life_time, 1, new Date(), active_office, bandi_id];
         if ( is_main_mudda ) {
             await connection.query( kaidDetailsSql, kaidDetailValue );
         }
@@ -4026,7 +4026,11 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
       current_office_id
     ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?)
   `;
-    const values = [bandi_id, reason_id, decision_date, apply_date, await bs2ad(apply_date),  nirnay_officer, aafanta_id, remarks, user_id, created_at, active_office];
+    let aafantaId = 0;
+    if ( aafanta_id === null || aafanta_id === '' ) {
+        aafantaId = 0;
+    } else { aafantaId = aafanta_id; }
+    const values = [bandi_id, reason_id, decision_date, apply_date, await bs2ad( apply_date ), nirnay_officer, aafantaId, remarks, user_id, created_at, active_office];
     let connection;
     try {
         connection = await pool.getConnection();
@@ -4169,28 +4173,28 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
 async function convertDates() {
     try {
-        const [rows] = await pool.query(`
+        const [rows] = await pool.query( `
             SELECT id, karnayan_miti 
             FROM bandi_release_details
             WHERE karnayan_miti IS NOT NULL
         `);
 
-        console.log(`Found ${rows.length} rows to convert.`);
+        console.log( `Found ${ rows.length } rows to convert.` );
 
-        const updates = rows.map(async (row) => {
-            console.log("input Date", row.karnayan_miti);
-            const adDate = await bs2ad(row.karnayan_miti) || '1980-01-01';
+        const updates = rows.map( async ( row ) => {
+            console.log( "input Date", row.karnayan_miti );
+            const adDate = await bs2ad( row.karnayan_miti ) || '1980-01-01';
             return pool.query(
                 `UPDATE bandi_release_details SET karnayan_miti_ad = ? WHERE id = ?`,
                 [adDate, row.id]
             );
-        });
+        } );
 
-        await Promise.all(updates);
+        await Promise.all( updates );
 
-        console.log("✅ All dates converted to AD!");
-    } catch (err) {
-        console.error("❌ Error:", err);
+        console.log( "✅ All dates converted to AD!" );
+    } catch ( err ) {
+        console.error( "❌ Error:", err );
     } finally {
         pool.end();
     }
@@ -4219,12 +4223,12 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     if ( !startDate && !endDate ) {
         startDate = '1001-01-01';
         endDate = today_date_bs;
-        endDate= await bs2ad(today_date_bs);
+        endDate = await bs2ad( today_date_bs );
     } else if ( !startDate ) {
         startDate = '1001-01-01';
     } else if ( !endDate ) {
         endDate = today_date_bs;
-        endDate= await bs2ad(today_date_bs)
+        endDate = await bs2ad( today_date_bs );
     }
 
     // filters.push( `bp.is_under_payrole IS NULL OR bp.is_under_payrole !=1 ` );
@@ -4232,7 +4236,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     filters.push( `bkd.thuna_date_ad >= ?` );
     filters.push( `(brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)` );
 
-    params.push( startDate, endDate  );
+    params.push( startDate, endDate );
     // params.push( endDate, startDate );
 
     if ( nationality && nationality.trim() !== '' ) {

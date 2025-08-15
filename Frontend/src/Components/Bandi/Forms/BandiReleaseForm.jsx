@@ -9,7 +9,7 @@ import { useAuth } from '../../../Context/AuthContext';
 import useFetchBandiReleaseReasons from '../Apis_to_fetch/useFetchBandiReleaseReasons';
 import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
 
-import BandiMuddaTable from '../Tables/For View/BandiMuddaTable'
+import BandiMuddaTable from '../Tables/For View/BandiMuddaTable';
 import BandiAddressTable from '../Tables/For View/BandiAddressTable';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
@@ -27,7 +27,7 @@ const BandiReleaseForm = () => {
     const [loading, setLoading] = useState( false );
     const [editing, setEditing] = useState( false );
 
-    const bandi_id = watch( 'bandi_id' );    
+    const bandi_id = watch( 'bandi_id' );
     const reason_id = watch( 'reason_id' );
     const { records: releaseReasons, optrecords: releaseRecordsOptions, loading: realeseReasonsLoading } = useFetchBandiReleaseReasons( bandi_id );
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
@@ -95,7 +95,7 @@ const BandiReleaseForm = () => {
                             <BandiMuddaTable bandi_id={bandi_id} />
                             <FamilyTable bandi_id={bandi_id} />
                         </Grid>
-                        
+
                         <hr />
                         <Grid container size={{ xs: 12 }}>
                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -140,18 +140,20 @@ const BandiReleaseForm = () => {
                             </Grid>
                         </Grid>
                         <Grid container size={{ xs: 12 }}>
-                            <Grid size={{ xs: 12, sm: 6}}>
-                                <ReuseSelect
-                                    name='aafanta_id'
-                                    label='बुझ्ने मान्छे छान्नुहोस्'
-                                    options={relativeOptions}
-                                    control={control}
-                                    required={reason_id!=2}
-                                    errors={errors.aafanta_id}
-                                />
-                            </Grid>
+                            {reason_id != 2 && (
+                                <Grid size={{ xs: 12, sm: 6 }}>
+                                    <ReuseSelect
+                                        name='aafanta_id'
+                                        label='बुझ्ने मान्छे छान्नुहोस्'
+                                        options={relativeOptions}
+                                        control={control}
+                                        required={reason_id != 2}
+                                        errors={errors.aafanta_id}
+                                    />
+                                </Grid>
+                            )}
 
-                            <Grid size={{ xs: 12, sm: 6}}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <ReuseInput
                                     name='remarks'
                                     label='कैफियत'
