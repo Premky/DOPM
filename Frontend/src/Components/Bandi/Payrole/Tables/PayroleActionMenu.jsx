@@ -22,7 +22,7 @@ const handleViewPayrole = async ( row ) => {
   saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
 };
 
-const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchPayrole } ) => {
+const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -74,7 +74,7 @@ const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchPa
         updatedData,
         { withCredentials: true } // ✅ Fix: put this inside an object
       );
-      refetchPayrole();
+      refetchAll();
       Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
     } catch ( err ) {
       console.error( err );
@@ -90,7 +90,7 @@ const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchPa
         updatedData,
         { withCredentials: true } // ✅ Fix: put this inside an object
       );
-      refetchPayrole();
+      refetchAll();
       Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
     } catch ( err ) {
       console.error( err );

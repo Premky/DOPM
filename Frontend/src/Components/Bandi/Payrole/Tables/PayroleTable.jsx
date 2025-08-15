@@ -70,6 +70,15 @@ const PayroleTable = ( { status } ) => {
         refetchNoPunarabedan, refetchFines, refetchPayrole, refetchMuddas } =
         useFetchPayroles( filters, page, rowsPerPage );
 
+    const refetchAll = async () => {
+        // setLoading( true );
+        await refetchNoPunarabedan();
+        await refetchFines();
+        await refetchPayrole();
+        await refetchMuddas();
+        // setLoading( false );
+    };
+
     const { bandiFinesMap, loading: bandiFineLoading, refetchBandiFine: fetchBandiFineRecords } = useFetchAllBandiFines();
     // console.log(data)
     useEffect( () => {
@@ -147,8 +156,8 @@ const PayroleTable = ( { status } ) => {
                         onResultClick={() => {
                             // console.log( "Result click for:", menuRowData );
                             handleMenuClose();
-                        }} 
-                        refetchPayrole={refetchPayrole} />
+                        }}
+                        refetchAll={refetchAll} />
                 )}
             </Menu>
             <Box>जम्मा: {totalKaidi}</Box>

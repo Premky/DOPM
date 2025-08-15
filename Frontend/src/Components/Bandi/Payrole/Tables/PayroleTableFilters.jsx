@@ -110,9 +110,9 @@ const PayroleTableFilters = ( { onChange } ) => {
     useEffect( () => {
         if ( roleBasedStatus?.length > 0 && authState?.role_name ) {
             const userDefault = {
-                clerk: 'initiate_parole',
+                clerk: 'initiate_payrole',
                 office_admin: 'pending_office_admin',
-                supervisor: 'pending_supervisor',
+                supervisor: 'pending_supervisior',
                 headoffice_approver: 'pending_admin',
                 top_level: 'pending_top_level'        
             };

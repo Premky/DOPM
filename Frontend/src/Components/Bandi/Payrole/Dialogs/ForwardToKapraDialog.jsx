@@ -17,67 +17,6 @@ import useFetchUserRolesUsedInProcess from "../../Apis_to_fetch/useFetchUserRole
 import { useAuth } from "../../../../Context/AuthContext";
 import useFetchAllowedActions from "../../Apis_to_fetch/useFetchAllowedActions";
 
-
-// const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
-//     const { state: authState } = useAuth();
-//     const {
-//         control,
-//         handleSubmit,
-//         reset,
-//         register,
-//         watch,
-//         formState: { errors },
-//     } = useForm( {
-//         defaultValues: {
-//             id: editingData?.id || '',
-//             payrole_id: editingData?.payrole_id || '',
-//             to_user: editingData?.to_user || '',
-//             to_role: editingData?.to_role || '',
-//             remarks: editingData?.remarks || '',
-//         }
-//     } );
-
-
-
-//     const isComposing = useRef( false );
-//     const [localValue, setLocalValue] = useState( "" );
-//     // console.log(editingData)
-//     useEffect( () => {
-//         if ( editingData ) {
-//             // console.log( editingData );
-//             reset( {
-//                 id: editingData.id || "", // ✅ Include this
-//                 payrole_id: editingData.payrole_id || "",
-//                 to_user: editingData.to_user || "",
-//                 to_role: editingData.to_role || "",
-//             } );
-//         } else {
-//             reset( {
-//                 id: "",
-//                 payrole_id: "",
-//                 to_user: "",
-//                 to_role: "",
-//             } );
-//         }
-//     }, [editingData, reset] );
-
-//     const onSubmit = ( data ) => {
-//         console.log( 'data:', data, 'id:', editingData?.id );
-//         onSave( data, editingData?.id );
-//         onClose();
-//     };
-
-//     useEffect( () => {
-//         reset( {
-//             id: editingData?.id || '',
-//             payrole_id: editingData?.payrole_id || '',
-//             to_user: editingData?.to_user || '',
-//             to_role: editingData?.to_role || '',
-//             remarks: editingData?.remarks || '',
-//         } );
-//         setLocalValue( editingData?.remarks || '' );
-//     }, [editingData, reset] );
-
 const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     const { state: authState } = useAuth();
     const {
@@ -152,12 +91,12 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
                     required={true}
                 />
 
-                <Controller
+                <Controller                    
                     name="remarks"
                     control={control}
                     defaultValue={editingData?.remarks || ""}
                     render={( { field } ) => (
-                        <TextField
+                        <TextField                            
                             {...field}
                             label={authState.role_name=='office_admin'?"कारागार प्रशासकको राय":"कैफियत"}
                             variant="outlined"
