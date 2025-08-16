@@ -31,7 +31,7 @@ const PayroleMakebari = () => {
             const { Status, Result } = response.data;
             if ( Status ) {
                 setRecords( Result );
-                calculateTotals( Result );
+                // calculateTotals( Result );
             }
         } catch ( err ) {
             console.error( err );
@@ -107,6 +107,7 @@ const PayroleMakebari = () => {
                 filtered = filtered.filter( a => a.month_bs == monthbs );
             }
             setFilteredRecords( filtered );
+            calculateTotals( filtered );
         } else {
             // Group and sum by office_id
             const grouped = {};
@@ -142,6 +143,7 @@ const PayroleMakebari = () => {
                             grouped[officeKey][key] += num;
                         }
                     } );
+                    
 
                     // Concatenate remarks
                     if ( record.remarks ) {
@@ -161,8 +163,9 @@ const PayroleMakebari = () => {
                 <Button onClick={() => {
                     setSelectedData( null );
                     setEditDialogOpen( true );
-                }} variant="contained" sx={{ mb: 2 }}>नयाँ थप्नुहोस्</Button>
-
+                    }} variant="contained" sx={{ mb: 2 }}>
+                    नयाँ थप्नुहोस्
+                </Button>
 
                 <Grid container>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -206,6 +209,9 @@ const PayroleMakebari = () => {
                             </Button>
                         </Grid>
                     </Grid>
+                </Grid>
+
+                <Grid>
                     <TableContainer>
                         <Table border='1'>
                             <TableHead>
@@ -359,7 +365,7 @@ const PayroleMakebari = () => {
 
 
                 </Box>
-            </Box>
+            </Box >
         </>
     );
 };

@@ -31,6 +31,7 @@ const PayroleTableFilters = ( { onChange } ) => {
             searchbandi_name: "",
             searchmudda_id: "",
             searchpyarole_rakhan_upayukat: "",
+            searchcourt_decision: "",
             searchpayrole_no_id: "",
             searchchecked: false,
             searchis_checked: false,
@@ -42,6 +43,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     const nationality = watch( 'nationality' );
     const searchpayroleStatus = watch( 'searchpayroleStatus' );
     const searchpyarole_rakhan_upayukat = watch( 'pyarole_rakhan_upayukat' );
+    const searchcourt_decision = watch( 'court_decision' );
     const searchpayrole_no_id = watch( 'payrole_no_id' );
     const searchmudda_id = watch( 'searchmudda_id' );
     const searchbandi_name = watch( 'searchbandi_name' );
@@ -55,6 +57,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         nationality,
         searchpayroleStatus,
         searchpyarole_rakhan_upayukat,
+        searchcourt_decision,
         searchpayrole_no_id,
         searchmudda_id,
         searchbandi_name,
@@ -67,6 +70,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         filters?.nationality,
         filters?.searchpayroleStatus,
         filters?.searchpyarole_rakhan_upayukat,
+        filters?.searchcourt_decision,
         filters?.searchpayrole_no_id,
         filters?.searchmudda_id,
         filters?.searchbandi_name,
@@ -84,6 +88,7 @@ const PayroleTableFilters = ( { onChange } ) => {
             nationality,
             searchpayroleStatus,
             searchpyarole_rakhan_upayukat,
+            searchcourt_decision,
             searchpayrole_no_id,
             searchmudda_id,
             searchbandi_name,
@@ -96,6 +101,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         nationality,
         searchpayroleStatus,
         searchpyarole_rakhan_upayukat,
+        searchcourt_decision,
         searchpayrole_no_id,
         searchmudda_id,
         // searchbandi_name,
@@ -114,7 +120,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                 office_admin: 'pending_office_admin',
                 supervisor: 'pending_supervisior',
                 headoffice_approver: 'pending_admin',
-                top_level: 'pending_top_level'        
+                top_level: 'pending_top_level'
             };
 
             const defaultStatus = userDefault[authState.role_name];
@@ -125,6 +131,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                 nationality: '',
                 searchpayroleStatus: defaultOption?.value || '',
                 searchpyarole_rakhan_upayukat: '',
+                searchcourt_decision: '',
                 searchpayrole_no_id: '',
                 searchmudda_id: '',
                 searchbandi_name: '',
@@ -137,7 +144,7 @@ const PayroleTableFilters = ( { onChange } ) => {
 
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
-            <Grid container spacing={2} alignItems="flex-end">
+            <Grid container spacing={1} alignItems="flex-end">
                 {authState.office_id == 1 || authState.office_id == 2 && (
                     <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <ReuseKaragarOffice
@@ -155,22 +162,6 @@ const PayroleTableFilters = ( { onChange } ) => {
                         options={roleBasedStatus}
                         control={control}
                         error={errors.searchpayroleStatus}
-                    />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 1 }}>
-                    <ReuseSelect
-                        name='pyarole_rakhan_upayukat'
-                        label='नतिजा'
-                        options={[
-                            { label: 'सबै', value: '' },
-                            { label: 'योग्य', value: 'योग्य' },
-                            { label: 'अयोग्य', value: 'अयोग्य' },
-                            { label: 'पास', value: 'पास' },
-                            { label: 'फेल', value: 'फेल' },
-                            { label: 'छलफल', value: 'छलफल' },
-                            { label: 'कागजात अपुग', value: 'कागजात अपुग' }
-                        ]}
-                        control={control}
                     />
                 </Grid>
 
@@ -209,6 +200,37 @@ const PayroleTableFilters = ( { onChange } ) => {
                         control={control}
                     />
                 </Grid>
+
+                <Grid size={{ xs: 12, sm: 2 }}>
+                    <ReuseSelect
+                        name='pyarole_rakhan_upayukat'
+                        label='प्यारोल बोर्डको निर्णय'
+                        options={[
+                            { label: 'सबै', value: '' },
+                            { label: 'योग्य', value: 'योग्य' },
+                            { label: 'अयोग्य', value: 'अयोग्य' },
+                            { label: 'पास', value: 'पास' },
+                            { label: 'फेल', value: 'फेल' },
+                            { label: 'छलफल', value: 'छलफल' },
+                            { label: 'कागजात अपुग', value: 'कागजात अपुग' }
+                        ]}
+                        control={control}
+                    />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 2 }}>
+                    <ReuseSelect
+                        name='court_decision'
+                        label='अदालतको निर्णय'
+                        options={[            
+                            { label: 'सबै', value: '' },               
+                            { label: 'पास', value: 'पास' },
+                            { label: 'फेल', value: 'फेल' },                          
+                        ]}
+                        control={control}
+                    />
+                </Grid>
+
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseInput
                         name="searchbandi_name"
