@@ -21,11 +21,12 @@ const BandiReleaseForm = lazy( () => import( './Components/Bandi/Forms/BandiRele
 // const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
 const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
-const PayroleMakebari = lazy( () => import( './Components/Bandi/Payrole/Tables/PayroleMakebari' ) );
-const PayroleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PayroleForm' ) );
-const PreviousParoleForm = lazy( () => import( './Components/Bandi/Payrole/Forms/PreviousParoleForm' ) );
-const PayroleTable = lazy( () => import( './Components/Bandi/Payrole/Tables/PayroleTable' ) );
-const PayroleLogForm = lazy( () => import( './Components/Bandi/Forms/PayroleLogForm' ) );
+const PayroleMakebari = lazy( () => import( './Components/Parole/Tables/PayroleMakebari' ) );
+const PayroleForm = lazy( () => import( './Components/Parole/Forms/PayroleForm' ) );
+const PreviousParoleForm = lazy( () => import( './Components/Parole/Forms/PreviousParoleForm' ) );
+const PayroleTable = lazy( () => import( './Components/Parole/Tables/PayroleTable' ) );
+const ParoleLogForm = lazy( () => import( './Components/Parole/Forms/PayroleLogForm' ) );
+// import ParoleLogForm from './Components/Bandi/Payrole/Forms/PayroleLogForm';
 
 const AantarikPrashasanForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/AantarikPrashasanForm' ) );
 const AantarikPrashasanTable = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Tables/AantarikPrashasanTable' ) );
@@ -54,8 +55,8 @@ axios.interceptors.response.use(
 );
 
 import { Outlet } from 'react-router-dom';
-import NepaliIME from './Components/Bandi/Payrole/Dialogs/NepaliIME';
-import ParoleLogForm from './Components/Bandi/Payrole/Forms/PayroleLogForm';
+// import NepaliIME from './Components/Bandi/Payrole/Dialogs/NepaliIME';
+
 
 
 // Layout component to wrap protected routes with navigation
@@ -74,15 +75,13 @@ function App() {
             {/* Public Route */}
             {/* <Route path="/" element={<Login />} /> */}
 
-
-
             {/* Protected Routes with Navigation */}
 
             {/* Admin routes wrapped with AdminCheck */}
 
             {/* Routes wrapped with LoggedIn middleware */}
             <Route path="/" element={<Login />} />
-            <Route path="/test" element={<NepaliIME />} />
+            {/* <Route path="/test" element={<NepaliIME />} /> */}
             <Route path="/login" element={<Login />} />
             <Route element={<LoggedIn />}>
 

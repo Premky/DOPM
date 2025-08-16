@@ -3,7 +3,6 @@ import { MenuItem } from "@mui/material";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
-import BandiFullReportPDF from "../../Bandi/Payrole/View/BandiFullReportPDF";
 import { useAuth } from "../../../Context/AuthContext";
 import ForwardDialog from "../Dialogs/ForwardDialog";
 import Swal from "sweetalert2";

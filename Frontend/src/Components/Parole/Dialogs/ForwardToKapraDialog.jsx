@@ -11,13 +11,12 @@ import {
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 
-import ReuseInput from "../../../ReuseableComponents/ReuseInput";
-import ReuseSelect from "../../../ReuseableComponents/ReuseSelect";
-import useFetchUserRolesUsedInProcess from "../../Apis_to_fetch/useFetchUserRolesUsedInProcess";
-import { useAuth } from "../../../../Context/AuthContext";
-import useFetchAllowedActions from "../../Apis_to_fetch/useFetchAllowedActions";
+import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
+import useFetchUserRolesUsedInProcess from "../../Bandi/Apis_to_fetch/useFetchUserRolesUsedInProcess";
+import { useAuth } from "../../../Context/AuthContext";
+import useFetchAllowedActions from "../../Bandi/Apis_to_fetch/useFetchAllowedActions"
 
-const ForwardDialog4Bibhag = ( { open, onClose, onSave, editingData } ) => {
+const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     const { state: authState } = useAuth();
     const {
         control,
@@ -30,7 +29,7 @@ const ForwardDialog4Bibhag = ( { open, onClose, onSave, editingData } ) => {
             payrole_id: '',
             to_user: '',
             to_role: '',
-            dopm_remarks: '',
+            remarks: '',
         },
     } );
 
@@ -43,9 +42,9 @@ const ForwardDialog4Bibhag = ( { open, onClose, onSave, editingData } ) => {
             payrole_id: editingData?.payrole_id || '',
             to_user: editingData?.to_user || '',
             to_role: editingData?.to_role || '',
-            dopm_remarks: editingData?.dopm_remarks || '',
+            remarks: editingData?.remarks || '',
         } );
-        setLocalValue( editingData?.dopm_remarks || '' );
+        setLocalValue( editingData?.remarks || '' );
     }, [editingData, reset] );
 
     const onSubmit = ( data ) => {
@@ -72,7 +71,7 @@ const ForwardDialog4Bibhag = ( { open, onClose, onSave, editingData } ) => {
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>स्विकृत/अस्विकृत फारम</DialogTitle>
+            <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
                 <input type='text' value={`${ editingData?.id || "" }`} hidden />
                 <input type='text' name="payrole_id" value={`${ editingData?.payrole_id || "" }`} hidden />
@@ -86,22 +85,22 @@ const ForwardDialog4Bibhag = ( { open, onClose, onSave, editingData } ) => {
                 <ReuseSelect
                     name="to_role"
                     label="प्राप्तकर्ताको भुमिका"
-                    options={optUserActions}
+                    options={optUserActions}                    
                     control={control}
                     required={true}
                 />
 
-                <Controller
-                    name="dopm_remarks"
+                <Controller                    
+                    name="remarks"
                     control={control}
-                    defaultValue={editingData?.dopm_remarks || ""}
+                    defaultValue={editingData?.remarks || ""}
                     render={( { field } ) => (
-                        <TextField
+                        <TextField                            
                             {...field}
-                            label="कैफियत"
+                            label={authState.role_name=='office_admin'?"कारागार प्रशासकको राय":"कैफियत"}
                             variant="outlined"
                             fullWidth
-                            defaultValue={editingData?.dopm_remarks || ""}
+                            defaultValue={editingData?.remarks || ""}
                             onChange={field.onChange}
                         />
                     )}
@@ -118,4 +117,4 @@ const ForwardDialog4Bibhag = ( { open, onClose, onSave, editingData } ) => {
     );
 };
 
-export default ForwardDialog4Bibhag;
+export default ForwardToKapraDialog;

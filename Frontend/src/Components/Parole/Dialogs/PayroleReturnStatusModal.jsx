@@ -10,9 +10,9 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
-import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
+import ReuseBandi from "../../ReuseableComponents/ReuseBandi";
 import axios from "axios";
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
 import Swal from "sweetalert2";
 
 const PayroleReturnStatusModal = ( { open, onClose, data, kaidimuddas, onSave, payrole_status } ) => {

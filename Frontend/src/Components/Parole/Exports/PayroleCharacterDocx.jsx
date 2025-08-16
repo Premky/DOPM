@@ -3,11 +3,11 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, 
 import { Button } from "@mui/material";
 import { saveAs } from "file-saver";
 import NepaliDate from "nepali-datetime";
-import { calculateBSDate } from "../../../../../Utils/dateCalculator";
+import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
-export default function PayroleNoPunrabedanDocx( props ) {
+export default function PayroleCharacterDocx( props ) {
     const { data } = props;
 
     // Handle address
@@ -30,15 +30,14 @@ export default function PayroleNoPunrabedanDocx( props ) {
         const headerRow = new TableRow( {
             children: [
                 "सि.नं.",
-                "मुद्दाको नाम",
-                "मुद्दा नं.",
-                "जाहेरवाला(वादी)",
-                // "ठेकिएको कैद",
-                "फैसला गर्ने निकाय",
-                "फैसला मिति",
-                "कैद परेको मिति",
-                "कैद भुक्तान हुने मिति",
-                "कैफियत",
+                "कैदीको नाम थर ठेगाना",
+                "कैदीको उमेर",
+                "गरेको कसूर",
+                "भएको सजाय",
+                "कैद भुक्तान गरेको अवधि",
+                "कैदमा कुनै किसिमको अनुचित काम गरे/नगरेको",
+                "अनुचित काम गरेको भए त्यसको विवरण",
+                "कारागार प्रमुखको राय",
             ].map(
                 ( headerText ) => new TableCell( {
                     children: [
@@ -50,21 +49,34 @@ export default function PayroleNoPunrabedanDocx( props ) {
                 } ),
             ),
         } );
-        console.log(data)
+        // console.log( data );
+        const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+        const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
+        const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
+
+        const hirasatDays = data?.hirasat_days || 0;
+        const hirasatMonths = data?.hirasat_months || 0;
+        const hirasatYears = data?.hirasat_years || 0;
+        let totalKaidDuration = kaidDuration;
+        let totalBhuktanDuration = bhuktanDuration;
+        let totalBakiDuration = bakiDuration;
+        if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+            totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+            totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+            totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
+        }
         const dataRows = data.muddas.map( ( item, index ) => {
             return new TableRow( {
                 children: [
                     index + 1,
+                    `${ data?.bandi_name }\n  ${ address }`,
+                    `${ data?.current_age } वर्ष`,
                     item?.mudda_name,
-                    item?.mudda_no,
-                    item?.vadi,
-                    // item?.kaid_duration,
-                    item?.mudda_phesala_antim_office,
-                    item?.mudda_phesala_antim_office_date,
-                    item?.bmd_thuna_date,
-                    item?.bmd_release_date,
+                    totalKaidDuration.formattedDuration,
+                    `${ totalBhuktanDuration.formattedDuration }\n (${ totalBhuktanDuration.percentage })%`,
+                    'नगरेको',
                     '',
-                    // item?.remarks,
+                    ''
                 ].map(
                     ( text ) =>
                         new TableCell( {
@@ -120,7 +132,7 @@ export default function PayroleNoPunrabedanDocx( props ) {
                     properties: {
                         page: {
                             size: {
-                                orientation: "portrait",
+                                orientation: "landscape",
                                 width: 11906, // A4 width in twips
                                 height: 16838, // A4 height in twips
                             },
@@ -134,38 +146,18 @@ export default function PayroleNoPunrabedanDocx( props ) {
                     },
                     children: [
                         new Paragraph( {
-                            alignment: AlignmentType.RIGHT,
-                            children: [
-                                new TextRun( { text: "मितिः" } ),
-                                new TextRun( { text: current_date } ),
-                                new TextRun( { break: 1 } ),
-                            ],
-                        } ),
-                        new Paragraph( {
-                            children: [
-                                new TextRun( { text: "मितिः" } ),
-                                new TextRun( { break: 1 } ),
-                                new TextRun( { text: `श्रीमान् कारागार प्रशासक/प्यारोल अधिकृतज्यू,` } ),
-                                new TextRun( { break: 1 } ),
-                                new TextRun( { text: `कारागार कार्यालय ${ data?.letter_address || "" }`, bold: true } ),
-                            ],
-                        } ),
-                        new Paragraph( {
                             alignment: AlignmentType.CENTER,
                             children: [
-                                new TextRun(
-                                    { text: "विषयः पुनरावेदनको काम कारबाही नगरेको सम्बन्धमा ।", bold: true }
-                                ),
+                                new TextRun( { text: "अनुसूची १", size: 24 } ),
+                                new TextRun( { break: 1 } ),
+                                new TextRun( { text: "(नियम ३ को उपनियम (१) सँग सम्बन्धित)", size: 24 } ),
+                                new TextRun( { break: 1 } ),
+                                new TextRun( { text: "कैदीको चालचलन सम्बन्धि अभिलेख", bold: true, size: 24 } ),
+                                new TextRun( { break: 1 } ),
+                                new TextRun( { text: `कारागार कार्यालय ${ data?.letter_address }`, bold: true, size: 32 } ),
                             ],
                         } ),
-                        new Paragraph( {
-                            alignment: AlignmentType.JUSTIFIED,
-                            children: [
-                                new TextRun(
-                                    { text: `उपर्युक्त सम्बन्धमा जिल्ला ${ data?.district_name_np || "" } ${ data?.city_name_np || "" } वडा नं. ${ data?.wardno } घर भई हाल कारागार कार्यालय ${ data?.letter_address }मा कैद भुक्तान गरीरहेको म निवेदक ${ data?.bandi_name } को हकमा सम्मानित अदालतबाट फैसला भएका देहायका मुद्दाहरुमा म निवेदकको तर्फबाट पुनरावेदनको काम कारवाही अन्तिम भएको व्यहोरा निवेदन गर्दछु । उक्त व्यहोरा साँचो हो, झुट्ठा ठहरेमा कानून बमोजिम सहुँला बुझाउँला ।` }
-                                ),
-                            ],
-                        } ),
+
 
                         //For Table:
                         new Table( {
@@ -174,20 +166,51 @@ export default function PayroleNoPunrabedanDocx( props ) {
                                 type: WidthType.PERCENTAGE,
                             },
                             rows: [headerRow, ...dataRows],
-                        } )
+                        } ),
+
+                        new Paragraph( {
+                            alignment: AlignmentType.LEFT,
+                            children: [
+                                new TextRun( { text: `चालचलन प्रमाणित गर्ने कारागारको प्रमुखकोः-`, bold: true, size: 24 } ),
+                            ],
+                        } ),
+                        new Paragraph( {
+                            alignment: AlignmentType.LEFT,
+                            children: [
+                                new TextRun( { text: `नाम थरः` } ),
+                            ],
+                        } ),
+                        new Paragraph( {
+                            alignment: AlignmentType.LEFT,
+                            children: [
+                                new TextRun( { text: `दस्थखतः` } ),
+                            ],
+                        } ),
+                        new Paragraph( {
+                            alignment: AlignmentType.LEFT,
+                            children: [
+                                new TextRun( { text: `पदः` } ),
+                            ],
+                        } ),
+                        new Paragraph( {
+                            alignment: AlignmentType.LEFT,
+                            children: [
+                                new TextRun( { text: `मितिः` } ),
+                            ],
+                        } ),
                     ],
                 },
             ],
         } );
 
         const blob = await Packer.toBlob( doc );
-        saveAs( blob, `${ data.bandi_name }को_पुनरावेदन नगरेको निवेदन.docx` );
+        saveAs( blob, `${ data.bandi_name }को_चालचलन.docx` );
     };
 
     return (
         <div>
             <Button onClick={generateDocument} variant="outlined">
-                पुनरावेदन नगरेको निवेदन
+                चालचलन
             </Button>
         </div>
     );

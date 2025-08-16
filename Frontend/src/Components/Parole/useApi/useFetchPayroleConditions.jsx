@@ -1,7 +1,8 @@
 // hooks/useInternalAdmins.js
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
+
 
 const useFetchPayroleConditions = ( bandi_id ) => {
     const BASE_URL = useBaseURL();

@@ -1,26 +1,28 @@
 import { Box, Button, Grid } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useBaseURL } from '../../../../Context/BaseURLProvider';
-import { useAuth } from '../../../../Context/AuthContext';
-
-import ReuseInput from '../../../ReuseableComponents/ReuseInput';
-import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
-import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
-import ReuseMudda from '../../../ReuseableComponents/ReuseMudda';
-import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
-import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
-import ReusePayroleBandi from '../../../ReuseableComponents/ReusePayroleBandi';
-import ReusableTable from '../../../ReuseableComponents/ReuseTable';
-import PayroleLogTable from '../Tables/PayroleLogTable';
-import fetchPayroleLogs from '../../../ReuseableComponents/fetchPayroleLog';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useForm } from 'react-hook-form';
+import { useBaseURL } from "../../../Context/BaseURLProvider";
+import { useAuth } from '../../../Context/AuthContext';
+
+import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
+import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
+import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import ReusePayroleBandi from '../../ReuseableComponents/ReusePayroleBandi';
+import PayroleLogTable from '../Tables/PayroleLogTable';
+import fetchPayroleLogs from '../../ReuseableComponents/fetchPayroleLog';
+import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
+
 
 
 const ParoleLogForm = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
+
 
     const {
         handleSubmit,
@@ -101,7 +103,7 @@ const ParoleLogForm = () => {
             Swal.fire( 'त्रुटि!', 'डेटा बुझाउँदा समस्या आयो ।', 'error' );
         }
     };
-
+    const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
     return (
         <Box component="form" onSubmit={handleSubmit( onSubmit )}>
             <Grid container spacing={2} style={{ color: 'red' }}>
@@ -122,7 +124,7 @@ const ParoleLogForm = () => {
                     <Grid size={{ sm: 6 }}>
                         <ReuseDateField
                             name="hajir_date"
-                            label="हाजिर मिति"
+                            label={hajir_status == 'कैद भुक्तान' ? `हाजिर मिति/छुट्ने मिति`:`हाजिर मिति`}
                             placeholder="YYYY-MM-DD"
                             control={control}
                             required={true}
@@ -136,14 +138,27 @@ const ParoleLogForm = () => {
                                 { label: 'उपस्थित', value: 'उपस्थित' },
                                 { label: 'अनुउपस्थित', value: 'अनुउपस्थित' },
                                 { label: 'कैद भुक्तान', value: 'कैद भुक्तान' },
+                                { label: 'मृत्यु', value: 'मृत्यु' },
                             ]}
                             control={control}
                             required={true}
                         />
                     </Grid>
                 </Grid>
-                {hajir_status !== 'कैद भुक्तान' && ( <>
-                    <Grid size={{ sm: 6 }}>
+                {( hajir_status == 'कैद भुक्तान' ) && ( <>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <ReuseSelect
+                            name='aafanta_id'
+                            label='बुझ्ने मान्छे छान्नुहोस् (नदेखाएमा पारिवारिक विवरण चेक गर्नुहोला)'
+                            options={relativeOptions}
+                            control={control}                            
+                            errors={errors.aafanta_id}
+                        />
+                    </Grid>
+                </> )}
+
+                {( hajir_status !== 'कैद भुक्तान' && hajir_status !== 'मृत्यु' ) && ( <>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <ReuseDateField
                             name="next_hajir_date"
                             label="हाजिर हुने मिति"
@@ -152,7 +167,7 @@ const ParoleLogForm = () => {
                         />
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <ReuseKaragarOffice
                             name="hajir_office_id"
                             label="हाजिर हुने कार्यालय"
@@ -162,10 +177,30 @@ const ParoleLogForm = () => {
                 </> )}
 
 
+                {hajir_status == 'मृत्यु' && ( <>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <ReuseDateField
+                            required
+                            name="death_date"
+                            label="मृत्यु भएको मिति"
+                            placeholder={"YYYY-MM-DD"}
+                            control={control}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <ReuseInput
+                            name="death_reason"
+                            label="मृत्युको कारण"
+                            control={control}
+                            required={true}
+                        />
+                    </Grid>
+                </>
+                )}
 
                 {hajir_status === 'अनुउपस्थित' && (
                     <>
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <ReuseSelect
                                 required
                                 name="absent_reason"
@@ -176,7 +211,7 @@ const ParoleLogForm = () => {
                                         label: 'थुना/हिरासतमा रहेको',
                                         value: 'थुना/हिरासतमा रहेको',
                                     },
-                                    { label: 'मृत्यु', value: 'मृत्यु' },
+
                                 ]}
                                 control={control}
                             />
@@ -184,7 +219,7 @@ const ParoleLogForm = () => {
 
                         {absent_reason === 'थुना/हिरासतमा रहेको' && (
                             <>
-                                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseMudda
                                         required
                                         name="absent_mudda_id"
@@ -192,7 +227,7 @@ const ParoleLogForm = () => {
                                         control={control}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseDistrict
                                         required
                                         name="thuna_district"
@@ -200,7 +235,7 @@ const ParoleLogForm = () => {
                                         control={control}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                     <ReuseSelect
                                         required
                                         name="thuna_office_type"
@@ -214,7 +249,7 @@ const ParoleLogForm = () => {
                                 </Grid>
 
                                 {thuna_office_type === 'कारागार' ? (
-                                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                         <ReuseKaragarOffice
                                             required
                                             name="thuna_office_id"
@@ -223,7 +258,7 @@ const ParoleLogForm = () => {
                                         />
                                     </Grid>
                                 ) : (
-                                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                         <ReuseInput
                                             required
                                             name="thuna_office_name"
@@ -235,43 +270,22 @@ const ParoleLogForm = () => {
                             </>
                         )}
 
-                        {absent_reason != 'मृत्यु' && (
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <ReuseSelect
-                                    required
-                                    name="is_reported_to_court"
-                                    label="कारवाही तथा सजायका लागी प्रतिवेदन पेश गरे/नगरेको"
-                                    options={[
-                                        { label: 'गरेको', value: '1' },
-                                        { label: 'नगरेको', value: '0' },
-                                    ]}
-                                    control={control}
-                                />
-                            </Grid>
-                        )}
-                        {absent_reason == 'मृत्यु' && (<>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <ReuseDateField
-                                    required
-                                    name="death_date"
-                                    label="मृत्यु भएको मिति"
-                                    placeholder={"YYYY-MM-DD"}                                    
-                                    control={control}
-                                />
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <ReuseInput                                    
-                                    name="death_reason"
-                                    label="मृत्युको कारण"                                                                  
-                                    control={control}
-                                    required={true}
-                                />
-                            </Grid>
-                            </>
-                        )}
+
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseSelect
+                                required
+                                name="is_reported_to_court"
+                                label="कारवाही तथा सजायका लागी प्रतिवेदन पेश गरे/नगरेको"
+                                options={[
+                                    { label: 'गरेको', value: '1' },
+                                    { label: 'नगरेको', value: '0' },
+                                ]}
+                                control={control}
+                            />
+                        </Grid>
 
                         {is_reported_to_court === '1' && (
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseSelect
                                     required
                                     name="is_court_ordered"
@@ -286,7 +300,7 @@ const ParoleLogForm = () => {
                         )}
 
                         {is_court_ordered === '1' && (
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseInput
                                     required
                                     name="court_order"

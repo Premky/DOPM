@@ -1,7 +1,7 @@
 // hooks/useInternalAdmins.js
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
 
 
 const useFetchRoleBasedParoleStatus = ( bandi_id ) => {

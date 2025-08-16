@@ -4,15 +4,15 @@ import axios from 'axios';
 
 import Swal from 'sweetalert2';
 import { useForm } from 'react-hook-form';
-import nepaliYearsMonths from "../../../../../Utils/nepaliYearsMonths.js";
+import nepaliYearsMonths from "../../../../Utils/nepaliYearsMonths.js";
 
 
 // import ReuseOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import PayroleMaskebariCountDialog from '../Dialogs/PayroleMaskebariCountDialog.jsx';
-import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice.jsx';
-import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
-import { useBaseURL } from '../../../../Context/BaseURLProvider';
-import { useAuth } from '../../../../Context/AuthContext';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice.jsx';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect.jsx';
+import { useBaseURL } from '../../../Context/BaseURLProvider.jsx';
+import { useAuth } from '../../../Context/AuthContext.jsx';
 
 const PayroleMakebari = () => {
     const BASE_URL = useBaseURL();

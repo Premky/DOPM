@@ -1,6 +1,6 @@
 import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import ReusableTable from '../../../ReuseableComponents/ReuseTable';
+import ReusableTable from '../../ReuseableComponents/ReuseTable';
 
 const PayroleLogTable = ( { records } ) => {
   // console.log( "Records received in PayroleLogTable:", records );

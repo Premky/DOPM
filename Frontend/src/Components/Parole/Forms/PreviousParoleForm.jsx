@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import ReusePayroleNos from '../../../ReuseableComponents/ReusePayroleNos';
+import ReusePayroleNos from '../../ReuseableComponents/ReusePayroleNos';
 import { useForm } from 'react-hook-form';
 import { Box, Button, FormControlLabel, Grid, useScrollTrigger } from '@mui/material';
-import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
-import ReuseBandi from '../../../ReuseableComponents/ReuseBandi';
-import ViewBandi from '../../ViewBandi';
-import ReuseInput from '../../../ReuseableComponents/ReuseInput';
-import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
+import ViewBandi from '../../Bandi/ViewBandi';
+import ReuseInput from '../../ReuseableComponents/ReuseInput';
+import { useBaseURL } from '../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { useAuth } from '../../../../Context/AuthContext';
+import { useAuth } from '../../../Context/AuthContext';
 import useFetchBandi from '../useApi/useFetchBandi';
-import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import { CheckBox } from '@mui/icons-material';
-import ReuseCheckboxGroup from '../../ReusableComponents/ReuseCharactersCheckbox';
+import ReuseCheckboxGroup from '../../Bandi/ReusableComponents/ReuseCharactersCheckbox';
 import useFetchPayroleConditions from '../useApi/useFetchPayroleConditions';
-import ReuseDistrict from '../../../ReuseableComponents/ReuseDistrict';
-import ReuseMunicipality from '../../../ReuseableComponents/ReuseMunicipality';
-import ReuseOffice from '../../../ReuseableComponents/ReuseOffice';
-import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
-import ReuseCourt from '../../../ReuseableComponents/ReuseCourt';
+import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
+import ReuseMunicipality from '../../ReuseableComponents/ReuseMunicipality';
+import ReuseCourt from '../../ReuseableComponents/ReuseCourt';
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 
-const PayroleForm = ({status})=> {
+const PreviousParoleForm = ( { status } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -72,7 +70,7 @@ const PayroleForm = ({status})=> {
     setLoading( true );
     try {
       // console.log( data );
-      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/payrole/create_payrole`;
+      const url = editing ? `${ BASE_URL }/bandi/update_office/${ editableData.id }` : `${ BASE_URL }/payrole/create_previous_payrole`;
       const method = editing ? 'PUT' : 'POST';
       const response = await axios( {
         method, url, data: data,
@@ -95,9 +93,7 @@ const PayroleForm = ({status})=> {
           icon: 'error',
           draggable: true
         } );
-
       }
-
     } catch ( err ) {
       console.error( err );
 
@@ -112,7 +108,7 @@ const PayroleForm = ({status})=> {
       setLoading( false );
     }
   };
-  const selectedDistrictId=watch('recommended_district');
+  const selectedDistrictId = watch( 'recommended_district' );
   const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
   const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
@@ -142,20 +138,12 @@ const PayroleForm = ({status})=> {
                 error={errors._no}
               />
             </Grid>
-            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <ReuseDateField
-                name='payrole_count_date'
-                label='प्यारोल गणना मिति'
-                required={true}
-                control={control}
-                error={errors.payrole_count_date}
-              />
-            </Grid> */}
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDateField
                 name='payrole_entry_date'
                 label='प्यारोल दाखिला मिति'
+                placeholder={'YYYY-MM-DD'}
                 required={true}
                 control={control}
                 error={errors.payrole_entry_date}
@@ -165,7 +153,7 @@ const PayroleForm = ({status})=> {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseDistrict
                 name='recommended_district'
-                label='प्यारोल बस्ने इच्छुक जिल्ला'
+                label='हाल प्यारोलमा रहेको जिल्ला'
                 required={true}
                 control={control}
                 error={errors.recommended_district}
@@ -174,7 +162,7 @@ const PayroleForm = ({status})=> {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseMunicipality
                 name='recommended_city'
-                label='प्यारोल बस्ने इच्छुक स्थानिय तह'
+                label='हाल प्यारोलमा रहेको स्थानिय तह'
                 required={true}
                 control={control}
                 error={errors.recommended_city}
@@ -193,25 +181,79 @@ const PayroleForm = ({status})=> {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseSelect
+                name='payrole_rakhan_upayukat'
+                label='प्यारोल बोर्डको निर्णय'
+                required={true}
+                control={control}
+                options={[{ label: 'पास', value: 'पास' }, { label: 'फेल', value: 'फेल' }]}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseCourt
                 name='recommended_court_id'
-                label='पेश गर्ने अदालत'
+                label='पेश गरेको अदालत'
+                required={true}
+                control={control}
+                office_categories_id={3}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDateField
+                name='payrole_granted_aadesh_date'
+                label='आदेश (मिति)'
+                placeholder={'YYYY-MM-DD'}
+                required={true}
+                control={control}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name='payrole_granted_letter_no'
+                label='अदालतको पत्रको च.नं.'
+                required={true}
+                control={control}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name='payrole_granted_letter_date'
+                label='मिति'
+                placeholder={'YYYY-MM-DD'}
                 required={true}
                 control={control}
                 office_categories_id={3}
               />
             </Grid>
 
-            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }} >
-              <ReuseMudda
-                name='mudda_id'
-                label='मुददा'
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseSelect
+                name='payrole_result'
+                label='अदालतको निर्णय'
                 required={true}
                 control={control}
-                error={errors.mudda_id}
+                options={[{ label: 'पास', value: 'पास' }, { label: 'फेल', value: 'फेल' }]}
               />
-            </Grid> */}
-
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDateField
+                name='hajir_miti'
+                label='शुरु हाजिर मिति'
+                placeholder={'YYYY-MM-DD'}
+                required={true}
+                control={control}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseKaragarOffice
+                required
+                name="recommended_office"
+                label="सम्पर्कमा रहने कार्यालय(प्यारोल अधिकृत)"
+                control={control}
+                selectedDistrict={selectedDistrictId}
+              />
+            </Grid>
           </Grid>
           <Grid container spacing={2}>
             {bandi?.payrole_id ?
@@ -222,6 +264,7 @@ const PayroleForm = ({status})=> {
               </> : <></>
             }
           </Grid>
+
           <Grid container spacing={2}>
             {bandi_id ?
               <>
@@ -231,23 +274,23 @@ const PayroleForm = ({status})=> {
           </Grid>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12 }}>
-              <ReuseCheckboxGroup
+              {/* <ReuseCheckboxGroup
                 name="character_conditions"
                 label="चरित्र सर्तहरू"
                 control={control}
                 options={conditions} // [{ id: 1, name: "शुद्ध आचरण" }, ...]
                 required={true}
                 error={errors.character_conditions}
-              />
+              /> */}
             </Grid>
             <Grid size={{ xs: 12 }}>
               <ReuseInput
-                name='payrole_remarks'
+                name='payrole_decision_remark'
                 label="कैफियत"
                 // defaultValue={band_rand_id}
                 required={false}
                 control={control}
-                error={errors.payrole_remarks} />
+                error={errors.payrole_decision_remark} />
             </Grid>
           </Grid>
           <Grid container spacing={2}>
@@ -262,5 +305,4 @@ const PayroleForm = ({status})=> {
     </>
   );
 };
-
-export default PayroleForm;
+export default PreviousParoleForm;

@@ -22,21 +22,21 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import axios from "axios";
 import Swal from "sweetalert2";
-import { calculateBSDate } from "../../../../../Utils/dateCalculator";
+import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
 import PayroleResultModal from "../Dialogs/PayroleResultModal";
 import PayroleTableFilters from "./PayroleTableFilters";
 // import PayroleExportButton from "./PayroleExportButton";
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
-import { useAuth } from "../../../../Context/AuthContext";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
+import { useAuth } from "../../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import BandiFullReportPDF from "../View/BandiFullReportPDF";
+// import BandiFullReportPDF from "../../Bandi/Payrole/View/BandiFullReportPDF";
 import PayroleActionMenu from "./PayroleActionMenu";
 // import exportToExcel from "../../Exports/ExcelPayrole";
 import exportToExcel from "../Exports/ExcelPayrole";
 import exportCharacterToExcel from "../Exports/ExcelPayroleCharacter";
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
-import useFetchAllBandiFines from "../../Apis_to_fetch/useFetchAllBandiFines";
+import useFetchAllBandiFines from "../../Bandi/Apis_to_fetch/useFetchAllBandiFines";
 import { fontWeight } from "@mui/system";
 
 const PayroleTable = ( { status } ) => {

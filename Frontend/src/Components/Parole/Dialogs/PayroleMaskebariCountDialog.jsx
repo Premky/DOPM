@@ -19,14 +19,14 @@ import {
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import ReuseInput from '../../../ReuseableComponents/ReuseInput';
+import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useBaseURL } from '../../../../Context/BaseURLProvider';
-import nepaliYearsMonths from '../../../../../Utils/nepaliYearsMonths';
-import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import { useBaseURL } from '../../../Context/BaseURLProvider';
+import nepaliYearsMonths from '../../../../Utils/nepaliYearsMonths';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import NepaliDate from 'nepali-datetime';
-import { useAuth } from '../../../../Context/AuthContext';
+import { useAuth } from '../../../Context/AuthContext';
 
 const PayroleMaskebariCountDialog = ({ open, onClose, data, onSave }) => {
   const BASE_URL = useBaseURL();
