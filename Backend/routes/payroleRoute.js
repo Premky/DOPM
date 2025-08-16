@@ -183,6 +183,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         searchbandi_name = '',
         searchchecked = 0,
         searchis_checked = '',
+        searchcourt_decision = '',
     } = req.query;
     const mudda_group_id = searchmudda_id;
 
@@ -281,6 +282,12 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         params.push( searchpyarole_rakhan_upayukat );
     }
 
+    // ✅ Pyarole Rakhan Upayukat
+    if ( searchcourt_decision ) {
+        baseWhere += ` AND pd.payrole_result = ? `;
+        params.push( searchcourt_decision );
+    }
+
     // ✅ is_checked (boolean filter)
     if ( searchis_checked ) {
         baseWhere += ` AND p.is_checked = ? `;
@@ -298,6 +305,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         const idQuery = `
             SELECT bp.id FROM bandi_person bp 
             LEFT JOIN payroles p ON bp.id = p.bandi_id
+            LEFT JOIN payrole_decisions pd ON p.id=pd.id         
             ${ baseWhere }
             ORDER BY bp.id DESC
             LIMIT ? OFFSET ?
@@ -313,6 +321,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         const countSQL = `
             SELECT COUNT(*) AS total FROM bandi_person bp
             LEFT JOIN payroles p ON bp.id = p.bandi_id
+            LEFT JOIN payrole_decisions pd ON p.id=pd.id    
             ${ baseWhere }
         `;
         const [countResult] = await pool.query( countSQL, params );
@@ -361,6 +370,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 ro.office_name_with_letter_address AS recommended_court,
                 pm.mudda_name AS payrole_mudda_name,
                 o.letter_address,
+                pd.payrole_result,
                 
                 bpdOffice.office_name_with_letter_address AS punarabedan_office_name,                
                 bpd.punarabedan_office_ch_no,
@@ -384,7 +394,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN offices o ON bp.current_office_id = o.id
             LEFT JOIN bandi_punarabedan_details bpd ON bp.id=bpd.bandi_id
             LEFT JOIN offices bpdOffice ON bpd.punarabedan_office_id = bpdOffice.id            
-            LEFT JOIN bandi_fine_details bfd ON bp.id=bfd.bandi_id            
+            LEFT JOIN bandi_fine_details bfd ON bp.id=bfd.bandi_id 
+            LEFT JOIN payrole_decisions pd ON p.id=pd.id           
 
             LEFT JOIN (
                     SELECT *
@@ -683,7 +694,7 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
                 payrole_reason,
                 other_details,
                 payrole_remarks,
-                15, // status
+                17, // till court decision
                 payrole_no,
                 0,
                 payrole_rakhan_upayukat,
@@ -867,11 +878,12 @@ router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
         p.*, 
         bp.bandi_name, 
         bp.id AS bandi_id,
-        m.mudda_name
+        m.mudda_name        
       FROM payroles p
       LEFT JOIN bandi_person bp ON p.bandi_id = bp.id
-      LEFT JOIN muddas m ON p.payrole_mudda_id = m.id
-      WHERE p.status = 15
+      LEFT JOIN muddas m ON p.payrole_mudda_id = m.id 
+      LEFT JOIN payrole_decisions pd ON p.id= pd.id
+      WHERE p.status = 17 AND pd.payrole_result='पास'
     `;
 
         let finalQuery = baseQuery;
@@ -955,7 +967,7 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
 
     let sql;
     let values;
-    
+
     if ( reqData.remarks ) {
         sql = `UPDATE payroles SET user_role_id=?, status=?, remark=?, updated_by=?, updated_at=? WHERE id=?`;
         values = [role_id, status_id, remarks, active_user_id, new Date(), reqData.payrole_id];
@@ -1141,13 +1153,24 @@ router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
         bandi_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id,
         absent_reason, absent_mudda_id, thuna_district, thuna_office_type,
         thuna_office_id, thuna_office_name, is_reported_to_court, is_court_ordered,
-        court_order, hajir_remarks
+        court_order, hajir_remarks, aafanta_id
     } = req.body;
     const [payrole] = await pool.query( `SELECT id, office_bandi_id FROM payroles WHERE bandi_id=?`, [bandi_id] );
     const payrole_id = payrole[0]?.id;
     const office_bandi_id = payrole[0]?.office_bandi_id;
 
+    let hajirOfficeId;
+    if(hajir_office_id){
+        hajirOfficeId=hajir_office_id
+    }else{
+        hajirOfficeId=active_office
+    }
+
+    let connection;
     try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
         let sql = '';
         let values = [];
 
@@ -1155,14 +1178,32 @@ router.post( '/create_payrole_log', verifyToken, async ( req, res ) => {
                 (payrole_id,bandi_id,office_bandi_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason, 
                 absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id, 
                 thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks, 
-                created_by, created_at, updated_by, updated_at ) VALUES
-                (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-        values = [payrole_id, bandi_id, office_bandi_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason,
+                created_by, created_at, updated_by, updated_at, current_office_id ) VALUES
+                (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        values = [payrole_id, bandi_id, office_bandi_id, hajir_date, hajir_status, next_hajir_date, hajirOfficeId, absent_reason,
             absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id,
             thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks,
-            user_id, new Date(), user_id, new Date()
+            user_id, new Date(), user_id, new Date(), active_office
         ];
-        const queryResult = await query( sql, values );
+        let status_id
+        if(hajir_status==='उपस्थित'){
+            status_id=18 //under_payrole
+        }else if(hajir_status==='मृत्यु'){
+            status_id=19  // death     
+        }else if(hajir_status==='अनुउपस्थित'){
+            status_id=20 //brach_of_contract
+        }else if(hajir_status==='कैद भुक्तान'){
+            status_id=21 //released
+            await connection.query(`UPDATE bandi_person SET is_active=?, updated_by=?, updated_at=? WHERE id=?`, [0, user_id, new Date(), bandi_id])
+            await connection.query(`
+                INSERT INTO bandi_release_details(bandi_id, reason_id, nirnay_miti, karnayan_miti, karnayan_miti_ad, 
+                nirnay_officer, aafanta_id, remarks, created_by, created_at)
+                VALUES(?,?,?,?,?,?,?,?,?,?)`, 
+                [bandi_id,3, hajir_date, hajir_date, await bs2ad(hajir_date), 'प्यारोल बोर्डको निर्णय', aafanta_id, hajir_remarks, user_id, new Date()])
+        }
+
+        await connection.query( `UPDATE payroles SET user_role_id=?, status=? WHERE id=?`, [req.user.role_id, status_id, payrole_id] );
+        const queryResult = await connection.query( sql, values );
         return res.json( { Status: true, Result: queryResult } );
 
 
@@ -1282,7 +1323,7 @@ const getMaskebariQuery = `SELECT
                     FROM payrole_maskebari pm
                     LEFT JOIN offices oo ON pm.office_id = oo.id
                     LEFT JOIN offices os ON pm.created_office = os.id
-`;
+                    `;
 
 router.get( '/payrole_maskebari_count', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
