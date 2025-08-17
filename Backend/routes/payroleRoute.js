@@ -970,7 +970,7 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
 
     if ( reqData.remarks ) {
         sql = `UPDATE payroles SET user_role_id=?, status=?, remark=?, updated_by=?, updated_at=? WHERE id=?`;
-        values = [role_id, status_id, remarks, active_user_id, new Date(), reqData.payrole_id];
+        values = [role_id, status_id, reqData.remarks, active_user_id, new Date(), reqData.payrole_id];
     } else if ( reqData.dopm_remarks ) {
         sql = `UPDATE payroles SET user_role_id=?, status=?, dopm_remarks=?, updated_by=?, updated_at=? WHERE id=?`;
         values = [role_id, status_id, reqData.dopm_remarks, active_user_id, new Date(), reqData.payrole_id];
