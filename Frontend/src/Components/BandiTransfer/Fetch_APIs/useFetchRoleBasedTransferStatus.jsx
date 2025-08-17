@@ -9,17 +9,16 @@ const useFetchRoleBasedTransferStatus = ( bandi_id ) => {
     const [optrecords, setOptRecords] = useState( [] );
     const [loading, setLoading] = useState( true );
 
-    const fetchRoleBasedTransferStatus= async () => {
+    const fetchRoleBasedTransferStatus = async () => {
         try {
-            setLoading(true);
+            setLoading( true );
             const response = await axios.get( `${ BASE_URL }/bandiTransfer/get_allowed_statuses`,
                 { withCredentials: true } );
-                const { Status, Result, Error } = response.data;
-                console.log( Result );
+            const { Status, Result, Error } = response.data;
+            console.log( Result );
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
-
                     const formatted = resultArray.map( ( opt, index ) => ( {
                         label: opt.status_label,
                         value: opt.status_key || index  // fallback for value if id is missing
@@ -41,11 +40,11 @@ const useFetchRoleBasedTransferStatus = ( bandi_id ) => {
         }
     };
 
-    useEffect( () => {        
+    useEffect( () => {
         fetchRoleBasedTransferStatus();
     }, [BASE_URL, bandi_id] );
 
-    return { records, optrecords, loading, refetchRoleBasedTransferStatus:fetchRoleBasedTransferStatus };
+    return { records, optrecords, loading, refetchRoleBasedTransferStatus: fetchRoleBasedTransferStatus };
 };
 
 export default useFetchRoleBasedTransferStatus;

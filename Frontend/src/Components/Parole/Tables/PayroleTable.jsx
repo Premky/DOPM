@@ -22,7 +22,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import axios from "axios";
 import Swal from "sweetalert2";
-import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
+import { calculateBSDate } from "../../../../Utils/dateCalculator";
 import PayroleResultModal from "../Dialogs/PayroleResultModal";
 import PayroleTableFilters from "./PayroleTableFilters";
 // import PayroleExportButton from "./PayroleExportButton";
@@ -38,6 +38,7 @@ import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
 import useFetchAllBandiFines from "../../Bandi/Apis_to_fetch/useFetchAllBandiFines";
 import { fontWeight } from "@mui/system";
+
 
 const PayroleTable = ( { status } ) => {
     const BASE_URL = useBaseURL();

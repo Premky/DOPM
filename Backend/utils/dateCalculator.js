@@ -1,7 +1,7 @@
 import NepaliDate from 'nepali-datetime';
 
 export const calculateBSDate = (startDate, endDate, referenceDuration = null) => {
-  const MAX_VALID_BS = "2099-12-30";
+  const MAX_VALID_BS = "2199-12-30";
   const MS_IN_DAY = 1000 * 60 * 60 * 24;
 
   try {

@@ -1,5 +1,98 @@
 import NepaliDate from 'nepali-datetime';
 
+export const calculateBSDate0 = (
+  startDate,
+  endDate,
+  referenceDuration = null,
+  hirasat_years = 0,
+  hirasat_months = 0,
+  hirasat_days = 0
+) => {
+  try {
+    let startAD, endAD;
+
+    try {
+      const startDate1 = new NepaliDate(startDate);
+      const endDate1 = new NepaliDate(endDate);
+
+      startAD = startDate1.getDateObject();
+      endAD = endDate1.getDateObject();
+    } catch (err) {
+      // Fallback: use regular Date objects
+      startAD = new Date(startDate);
+      endAD = new Date(endDate);
+    }
+
+    // Ensure valid dates
+    if (isNaN(startAD.getTime()) || isNaN(endAD.getTime())) {
+      throw new Error("Invalid dates");
+    }
+
+    // Calculate total days difference
+    let baseTotalDays = Math.floor((endAD - startAD) / (1000 * 60 * 60 * 24));
+    if (baseTotalDays < 0) baseTotalDays = 0;
+
+    // Add Hirasat duration (in days)
+    const hirasatTotalDays = (hirasat_years * 365) + (hirasat_months * 30) + hirasat_days;
+    const totalDays = baseTotalDays + hirasatTotalDays;
+
+    // Convert total days into years, months, days assuming 30-day months
+    const years = Math.floor(totalDays / 365);
+    const remainingDaysAfterYears = totalDays % 365;
+    const months = Math.floor(remainingDaysAfterYears / 30);
+    const days = remainingDaysAfterYears % 30;
+
+    let percentage = null;
+    if (referenceDuration && referenceDuration.totalDays > 0) {
+      percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
+    }
+
+    return {
+      years,
+      months,
+      days,
+      totalDays,
+      percentage: percentage ? parseFloat(percentage) : undefined,
+      formattedDuration: `${years}|${months}|${days}`,
+      usedFallback: false
+    };
+  } catch (err) {
+    console.error("❌ Error in calculateBSDate:", err);
+    return {
+      years: 0,
+      months: 0,
+      days: 0,
+      totalDays: 0,
+      percentage: 0,
+      formattedDuration: '0|0|0',
+      usedFallback: true
+    };
+  }
+};
+
+
+function diffToYMD(startDate, endDate) {
+  let start = new Date(startDate);
+  let end = new Date(endDate);
+
+  let years = end.getFullYear() - start.getFullYear();
+  let months = end.getMonth() - start.getMonth();
+  let days = end.getDate() - start.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+    days += prevMonth.getDate(); // Actual days in previous month
+  }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  return { years, months, days };
+}
+//last one
 export const calculateBSDate = ( startDate, endDate, referenceDuration = null, hirasat_years = 0, hirasat_months = 0, hirasat_days = 0 ) => {
   try {
     let startDate1, endDate1;
@@ -69,11 +162,6 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
       // days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
       days += 30;
     }
-
-    // if ( days >= NepaliDate.getDaysOfMonth( endYear, endMonth ) ) {
-    //   months++;
-    //   days -= NepaliDate.getDaysOfMonth( endYear, endMonth );
-    // }
 
     if ( days >= 30 ) {
       months++;
