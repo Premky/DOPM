@@ -45,6 +45,7 @@ export const AuthProvider = ( { children } ) => {
                     user: response.data.user.username,
                     office_np: response.data.user.office_np,
                     office_id: response.data.user.office_id,
+                    office_district: response.data.user.office_district,
                     usertype_en: response.data.user.usertype_en,
                     usertype_np: response.data.user.usertype_np,
                     is_online: response.data.user.is_online,

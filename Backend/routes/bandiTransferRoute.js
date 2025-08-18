@@ -168,6 +168,8 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             SELECT 
             bp.id AS bandi_id,
             bp.office_bandi_id, bp.bandi_type, bp.bandi_name, bp.dob,
+             TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
+            vbad.country_name_np, vbad.bidesh_nagarik_address_details, vbad.nepali_address,
             o.letter_address,
             bmd.mudda_id, m.mudda_name,
             bth.id AS transfer_id,
@@ -183,6 +185,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             btr.transfer_reason_np
             FROM bandi_transfer_history bth
             LEFT JOIN bandi_person bp ON bth.bandi_id = bp.id
+            LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
             LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
             LEFT JOIN offices o ON bp.current_office_id = o.id
             LEFT JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
@@ -201,12 +204,13 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             const {
                 bandi_id, mudda_id, mudda_name,
                 transfer_id, office_bandi_id, bandi_type, bandi_name,
-                letter_address, role_id, status_id, dob, transfer_from_office_id,
+                letter_address, role_id, status_id, dob,current_age, transfer_from_office_id,
                 recommended_to_office_id, recommended_to_office_name,
                 final_to_office_id, final_to_office_name,
                 transfer_reason_id, transfer_reason_np, transfer_reason,
                 decision_date, transfer_from_date, transfer_to_date, remarks,
-                thuna_date_bs, release_date_bs
+                thuna_date_bs, release_date_bs,
+                country_name_np, bidesh_nagarik_address_details, nepali_address,
             } = row;
 
             if ( !grouped[bandi_id] ) {
@@ -222,7 +226,8 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                     final_to_office_id,
                     final_to_office_name,
                     decision_date,
-                    dob,
+                    dob,current_age,
+                    country_name_np, bidesh_nagarik_address_details, nepali_address,
                     role_id,
                     status_id,
                     transfer_reason_np,

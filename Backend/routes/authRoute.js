@@ -251,10 +251,11 @@ router.post( '/login', async ( req, res ) => {
 
     const fetchUserQuery = `
     SELECT DISTINCT u.*,
-      o.office_name_with_letter_address AS office_np, o.letter_address AS office_en,
+      o.office_name_with_letter_address AS office_np, o.letter_address AS office_en, nd.district_name_np, 
       o.id AS office_id, ut.usertype_en, ut.usertype_np, ur.id AS role_id, ur.role_name, b.branch_np
     FROM users u
     LEFT JOIN offices o ON u.office_id = o.id
+    LEFT JOIN np_district nd ON o.district_Id = nd.did
     LEFT JOIN branch b ON u.branch_id = b.id
     LEFT JOIN usertypes ut ON u.usertype = ut.id
     LEFT JOIN user_roles ur ON u.role_id = ur.id
@@ -280,21 +281,19 @@ router.post( '/login', async ( req, res ) => {
             username: user.user_login_id,
             email: user.email,
             user_permission: user.user_permission,
-            is_staff: user.is_staff,
             is_active: user.is_active,
             is_online: 1,
-            is_superuser: user.issuperuser,
-            last_login: user.last_login,
-            join_date: user.join_date,
             office_id: user.office_id,
             office_np: user.office_np,
             office_en: user.office_en,
+            office_district : user.district_name_np,
             branch_name: user.branch_name,
             usertype_en: user.usertype_en,
             usertype_np: user.usertype_np,
             role_id: user.role_id,
             role_name: user.role_name
         };
+        // console.log(userdetails)
 
         const token = jwt.sign( userdetails, process.env.JWT_SECRET, { expiresIn: '1h' } );
 
@@ -309,7 +308,7 @@ router.post( '/login', async ( req, res ) => {
 
         // Update online status
         // await promiseCon.query("UPDATE users SET is_online = 1 WHERE id = ?", [user.id]);
-        await pool.query( "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?", [user.id] );
+        await pool.query( "UPDATE users SET is_online = ?, last_seen = ? WHERE id = ?", [1, NOW(),user.id] );
 
         return res.json( {
             loginStatus: true,
@@ -324,13 +323,9 @@ router.post( '/login', async ( req, res ) => {
 } );
 
 
-
-
-
-
 // Logout Route
 // Include this middleware if you're using JWT to extract req.user
-router.post( '/logout', verifyToken, async ( req, res ) => {
+router.post( '/logout',verifyToken, async ( req, res ) => {
     if ( !req.user || !req.user.id ) {
         return res.status( 401 ).json( { success: false, message: 'Unauthorized' } );
     }
@@ -349,36 +344,6 @@ router.post( '/logout', verifyToken, async ( req, res ) => {
         return res.status( 200 ).json( { success: true, message: 'Logout successful' } );
     } catch ( error ) {
         console.error( 'Logout error:', error );
-        return res.status( 500 ).json( { success: false, message: 'Logout failed' } );
-    }
-} );
-
-
-
-router.post( '/logout1', verifyToken, async ( req, res ) => {
-    const user_id = req.user.id;
-    console.log( `User ${ req.user.user_name } Logged Out.` );
-
-    try {
-        // Update is_online status
-        await con.query( "UPDATE users SET is_online = 0 WHERE id = ?", [user_id] );
-        console.log( 'is_online_test' );
-
-        // Destroy session if using express-session
-        // req.session.destroy((err) => {
-        //     if (err) console.error("Session destroy error:", err);
-        // });
-
-        // Clear JWT cookie
-        res.clearCookie( 'token', {
-            httpOnly: true,
-            sameSite: 'Lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 0,
-        } );
-
-        return res.status( 200 ).json( { success: true, message: 'Logout successful' } );
-    } catch ( error ) {
         return res.status( 500 ).json( { success: false, message: 'Logout failed' } );
     }
 } );
@@ -423,9 +388,9 @@ router.post( '/login_ping', verifyToken, async ( req, res ) => {
 router.get( '/session', verifyToken, ( req, res ) => {
     // console.log('session', req.user)
     if ( !req.user ) return res.status( 401 ).json( { loggedIn: false } );
-    // console.log( 'session', req.user );
+
     const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date,
-        office_id, office_np, office_en, usertype_en, usertype_np, role_id, role_name } = req.user;
+        office_id, office_np, office_en, office_district, usertype_en, usertype_np, role_id, role_name } = req.user;
 
     return res.json( {
         loggedIn: true,
@@ -438,7 +403,7 @@ router.get( '/session', verifyToken, ( req, res ) => {
             is_online,
             last_login,
             join_date,
-            office_id, office_np, office_en,
+            office_id, office_np, office_en, office_district,
             usertype_en, usertype_np, role_id, role_name
         }
     } );

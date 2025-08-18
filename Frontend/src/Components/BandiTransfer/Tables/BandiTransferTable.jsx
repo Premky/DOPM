@@ -17,10 +17,8 @@ import {
     Button,
     Checkbox
 } from "@mui/material";
+import NepaliDate from 'nepali-datetime';
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-
-import axios from "axios";
-import Swal from "sweetalert2";
 
 import TableFilters from "./TableFilters";
 // import PayroleExportButton from "./PayroleExportButton";
@@ -37,12 +35,13 @@ import exportToExcel from "../Exports/ExportBandiTransferTable";
 const BandiTransferTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
+    const npToday = new NepaliDate();
+    const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const navigate = useNavigate();
 
     const [filters, setFilters] = useState( {} );
     const [openEl, setOpenEl] = useState( null );
     const [anchorEl, setAnchorEl] = useState( null );
-    const [formattedDateNp, setFormattedDateNp] = useState( "2081-03-01" );
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
     const [refreshKey, setRefreshKey] = useState( 0 );
@@ -127,11 +126,11 @@ const BandiTransferTable = () => {
         background: '#1976d2',
         textAlign: 'center',
     };
-
+    console.log( filteredKaidi );
     return (
         <>
-            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
-                एक्सेल निर्यात
+            <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL, authState )} variant="outlined" color="primary" sx={{ m: 1 }}>
+                एक्सेल निर्यात (पत्र)
             </Button>
 
             <Menu
@@ -162,7 +161,7 @@ const BandiTransferTable = () => {
                             <TableCell rowSpan={3} sx={stickyTableHeadStyle}>कारागार कार्यालय</TableCell>
                             <TableCell rowSpan={3} sx={stickyTableHeadStyle}>बन्दीको नामथर र स्थायी ठेगाना</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle} >मुद्दा</TableCell>
-                            <TableCell rowSpan={3} sx={tableHeadStyle}>जन्म मिति उमेर</TableCell>
+                            <TableCell rowSpan={3} sx={tableHeadStyle}>जन्म मिति/उमेर</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>थुनामा परेको मिति</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>छुट्ने मिति जरिवाना वापत समेत</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>बन्दीको किसिम (थुनुवा भएमा सम्बन्धित न्यायिक निकायको स्वीकृती)</TableCell>
@@ -204,7 +203,7 @@ const BandiTransferTable = () => {
                                                 </span>
                                             ) )}
                                         </TableCell>
-                                        <TableCell rowSpan={rowSpan}>{data.dob}</TableCell>
+                                        <TableCell rowSpan={rowSpan}>{data.dob} <hr /> {data.current_age} वर्ष</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.thuna_date_bs}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.release_date_bs}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.bandi_type}</TableCell>

@@ -3,7 +3,9 @@ import { saveAs } from 'file-saver';
 import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 
-const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL ) => {
+
+const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL, authState ) => {
+
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
@@ -28,14 +30,14 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
         footer: 0.3
     };
 
-    const imagePath = `/nepal_gov_logo.png`
-    const imageBuffer = await fetch(imagePath).then(res=>res.blob());
-    
+    const imagePath = `/nepal_gov_logo.png`;
+    const imageBuffer = await fetch( imagePath ).then( res => res.blob() );
 
-    const imageId = workbook.addImage({
-        buffer:imageBuffer, 
-        extension:'png'
-    })
+
+    const imageId = workbook.addImage( {
+        buffer: imageBuffer,
+        extension: 'png'
+    } );
 
     function applyFontToWholeSheet( worksheet ) {
         worksheet.eachRow( ( row ) => {
@@ -52,12 +54,10 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
         } );
     }
 
-    applyFontToWholeSheet(worksheet)
-
     function letterHeadStyleRow( row ) {
         row.eachCell( ( cell ) => {
-            cell.font = { bold: true };
-            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.font = { bold: true, name: 'Kalimati', };
+            cell.alignment = { textRotation: 0, vertical: 'middle', horizontal: 'center', wrapText: true };
         } );
     }
 
@@ -76,20 +76,21 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
     // Add headers
     // 'रोगी/अशक्त',
     // 'सिफारिसको आधार',
-    worksheet.addImage(imageId, {tl:{col:0, row:0},ext:{width:150, height:100},})
+    const logoRow = worksheet.addImage( imageId, { tl: { col: 0, row: 0 }, ext: { width: 130, height: 100 }, } );
+    // worksheet.mergeCells( logoRow.number, 1, logoRow.number, 15 );
     const nepalGovRow = worksheet.addRow( ['नेपाल सरकार'] );
     worksheet.mergeCells( nepalGovRow.number, 1, nepalGovRow.number, 15 );
     const homeMinistryRow = worksheet.addRow( ['गृह मन्त्रालय'] );
     worksheet.mergeCells( homeMinistryRow.number, 1, homeMinistryRow.number, 15 );
     const dopmRow = worksheet.addRow( ['कारागार व्यवस्थापन विभाग'] );
     worksheet.mergeCells( dopmRow.number, 1, dopmRow.number, 15 );
-    const officeRow = worksheet.addRow( ['कारागार कार्यालय ..........'] );
+    const officeRow = worksheet.addRow( [`${ authState.office_np }`] );
     worksheet.mergeCells( officeRow.number, 1, officeRow.number, 15 );
-    const officeAddressRow = worksheet.addRow( ['(..........)'] );
+    const officeAddressRow = worksheet.addRow( [`${ authState.office_district }`] );
     worksheet.mergeCells( officeAddressRow.number, 1, officeAddressRow.number, 15 );
     const subRow = worksheet.addRow( ['विषयः बन्दीको स्थानान्तरण सम्बन्धमा'] );
     worksheet.mergeCells( subRow.number, 1, subRow.number, 15 );
-    const sn_dobRow = worksheet.addRow( ['पत्र सङ्ख्याः', '', '', '', '', '', '', '', '', '', '', 'मिति'] );
+    const sn_dobRow = worksheet.addRow( ['पत्र सङ्ख्याः', '', '', '', '', '', '', '', '', '', '', 'मितिः', formattedDateNp] );
     worksheet.mergeCells( sn_dobRow.number, 1, sn_dobRow.number, 2 );
     worksheet.mergeCells( sn_dobRow.number, 13, sn_dobRow.number, 15 );
     const cnRow = worksheet.addRow( ['चलानी नम्बरः'] );
@@ -101,21 +102,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
     const rowDetails = worksheet.addRow( ['देहाय बमोजिमका बन्दीलाई यस कारागारबाट अन्य कारागारमा स्थानान्तरण गरिदिनुहुन सिफारिस साथ अनुरोध छ।'] );
     worksheet.mergeCells( rowDetails.number, 1, rowDetails.number, 15 );
 
-    letterHeadStyleRow( nepalGovRow );
-    letterHeadStyleRow( homeMinistryRow );
-    letterHeadStyleRow( dopmRow );
-    letterHeadStyleRow( officeRow );
-    letterHeadStyleRow( officeAddressRow );
-    letterHeadStyleRow( subRow );
-    officeRow.eachCell( ( cell ) => {
-        cell.font = {
-            name: 'Kalimati', // Set the font family
-            // family: 4,     // Optional: set font family (e.g., 4 is for 'Arial')
-            size: 16,      // Font size (optional)
-            bold: false,   // Font weight (optional)
-            italic: false  // Font style (optional)
-        };
-    } );
+
 
     const row = worksheet.addRow( [
         'सि.नं.', 'बन्दी आई.डी.', 'बन्दीको नामथर र स्थायी ठेगाना', 'मुद्दाको किसिम', 'जन्म मिति/उमेर',
@@ -152,22 +139,31 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
     basicStyleRow( headerrow3 );
 
     let currentRow = 16; // Start from row 2 (row 1 = header)
-
+    console.log( filteredKaidi );
     filteredKaidi.forEach( ( data, index ) => {
+        const kaidiMuddas = fetchedMuddas[data.bandi_id] || [{}];
         const transferHistories = fetchedTransferHistory[data.bandi_id] || [{}];
         const transferCount = transferHistories.length;
+
         transferHistories.forEach( ( t, mIndex ) => {
 
             const row = worksheet.addRow( [
                 mIndex === 0 ? index + 1 : '',
                 mIndex === 0 ? data.office_bandi_id : '',
                 mIndex === 0
-                    ? `${ data.bandi_name }\n${ data.nationality === 'स्वदेशी'
-                        ? `${ data.city_name_np }-${ data.wardno },\n ${ data.district_name_np }, ${ data.state_name_np }, ${ data.country_name_np }`
+                    ? `${ data.bandi_name }\n\n${ data.country_name_np === 'नेपाल'
+                        ? `${ data.nepali_address }`
                         : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }` }`
                     : '',
-                `${ t.mudda_name }\n${ t.mudda_no }` || '',
-                mIndex === 0 ? `${ data.dob } \n${ data.current_age }` : '',
+                mIndex === 0
+                    ? kaidiMuddas
+                        .filter( mudda => Boolean( mudda.mudda_name ) ) // ✅ Only keep valid ones
+                        .map( ( mudda, i ) =>
+                            `${ i + 1 }. ${ mudda?.mudda_name }\n${ mudda?.mudda_no }`
+                        )
+                        .join( '\n' )
+                    : '',
+                mIndex === 0 ? `${ data.dob } \n${ data.current_age } वर्ष` : '',
 
                 mIndex === 0 ? data.thuna_date_bs : '',
                 mIndex === 0 ? data.release_date_bs : '',
@@ -185,19 +181,47 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
                 mIndex === 0 ? data.remark || '' : '',
 
             ] );
+            // row.eachCell( ( cell ) => {
+            //     cell.border = {
+            //         top: { style: 'thin' },
+            //         left: { style: 'thin' },
+            //         bottom: { style: 'thin' },
+            //         right: { style: 'thin' }
+            //     };
+            // } );
+            applyFontToWholeSheet( worksheet );
+
             row.eachCell( ( cell ) => {
                 cell.border = {
                     top: { style: 'thin' },
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
-                    right: { style: 'thin' }
+                    right: { style: 'thin' },
                 };
+                cell.alignment = { textRotation: 0, vertical: 'middle', horizontal: 'center', wrapText: true };
             } );
+            officeRow.eachCell( ( cell ) => {
+                cell.font = {
+                    name: 'Kalimati', // Set the font family
+                    // family: 4,     // Optional: set font family (e.g., 4 is for 'Arial')
+                    size: 16,      // Font size (optional)
+                    bold: false,   // Font weight (optional)
+                    italic: false  // Font style (optional)
+                };
+                cell.alignment = { textRotation: 0, vertical: 'middle', horizontal: 'center', wrapText: true };
+            } );
+
+            letterHeadStyleRow( nepalGovRow );
+            letterHeadStyleRow( homeMinistryRow );
+            letterHeadStyleRow( dopmRow );
+            letterHeadStyleRow( officeRow );
+            letterHeadStyleRow( officeAddressRow );
+            letterHeadStyleRow( subRow );
+
         } );
 
         // 🔄 Merge cells for कैदी info
         const mergeCols = [1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19];
-        // const mergeCols = [2, 3, 4, 5, 6,7, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
         mergeCols.forEach( ( colIndex ) => {
             worksheet.mergeCells( currentRow, colIndex, currentRow + transferCount - 1, colIndex );
@@ -205,6 +229,22 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
             const cell = worksheet.getCell( currentRow, colIndex );
             cell.alignment = { wrapText: true, vertical: 'top' };
         } );
+
+        // ✅ Rotate ONLY the DOB/age merged cell (column 5) for this prisoner
+        const dobMergedCell = worksheet.getCell( currentRow, 5 );
+        dobMergedCell.alignment = {
+            wrapText: true,
+            textRotation: 90,
+            vertical: 'middle',
+            horizontal: 'center',
+        };
+        const dobBandiCell = worksheet.getCell( currentRow, 2 );
+        dobBandiCell.alignment = {
+            wrapText: true,
+            textRotation: 90,
+            vertical: 'middle',
+            horizontal: 'center',
+        };
 
         currentRow += transferCount;
     } );
@@ -221,6 +261,6 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedTransferHisto
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob( [buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' } );
-    saveAs( blob, 'payrole_export.xlsx' );
+    saveAs( blob, 'transfer_export.xlsx' );
 };
 export default exportToExcel;

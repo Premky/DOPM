@@ -85,8 +85,8 @@ const useFetchBandiForTransfer = (filters, page, rowsPerPage) => {
     try {
       const url = `${BASE_URL}/bandiTransfer/get_bandi_transfer_history`;
       const response = await axios.get(url, { withCredentials: true });
-      const { Status, Result, Error } = response.data;
-
+      const { Status, Result, Error } = response.data;    
+        
       if (Status) {
         const grouped = {};
         Result.forEach((row) => {

@@ -1,203 +1,199 @@
 import * as React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
 import {
-  Box, Toolbar, List, CssBaseline, Typography, Divider,
-  IconButton, ListItemButton, ListItemIcon, ListItemText,
-  Menu, MenuItem, Avatar, Tooltip, AppBar as MuiAppBar, Drawer as MuiDrawer
+  Box, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItemButton,
+  ListItemIcon, ListItemText, Menu, MenuItem, Avatar, Tooltip, AppBar as MuiAppBar,
+  Drawer as MuiDrawer
 } from '@mui/material';
 import {
   Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon,
-  Home as HomeIcon, Logout as LogoutIcon
+  Logout as LogoutIcon, Lock as LockIcon, Home as HomeIcon
 } from '@mui/icons-material';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+
+import { styled, useTheme } from '@mui/material/styles';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
-import DriverMenu from './DriverMenu';
+import { useBaseURL } from '../../Context/BaseURLProvider';
 import axios from 'axios';
-import VehicleAccidentMenu from './Menues/VehicleAccidentMenu';
-import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
-import SuperUserMenu from './Menues/SuperUserMenu';
+import Swal from 'sweetalert2';
+import ResetPasswordDialog from '../Auth/ResetPasswordDialog';
+import { menuAccess } from './Menues/menuAccess';
 
 const drawerWidth = 240;
 
-const openedMixin = (theme) => ({
-  width: drawerWidth,
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: 'hidden',
-});
+// Drawer styling
+const openedMixin = ( theme ) => ( { width: drawerWidth, transition: theme.transitions.create( 'width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen } ), overflowX: 'hidden' } );
+const closedMixin = ( theme ) => ( { transition: theme.transitions.create( 'width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.leavingScreen } ), overflowX: 'hidden', width: `calc(${ theme.spacing( 7 ) } + 1px)`, [theme.breakpoints.up( 'sm' )]: { width: `calc(${ theme.spacing( 8 ) } + 1px)` } } );
 
-const closedMixin = (theme) => ({
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: 'hidden',
-  width: `calc(${theme.spacing(7)} + 1px)`,
-  [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(8)} + 1px)`,
-  },
-});
-
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  padding: theme.spacing(0, 1),
-  ...theme.mixins.toolbar,
-}));
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
+const AppBar = styled( MuiAppBar, { shouldForwardProp: ( prop ) => prop !== 'open' } )( ( { theme, open } ) => ( {
   zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(['width', 'margin'], {
+  transition: theme.transitions.create( ['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
+    duration: theme.transitions.duration.leavingScreen
+  } ),
+  ...( open && {
     marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
+    width: `calc(100% - ${ drawerWidth }px)`,
+    transition: theme.transitions.create( ['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
+      duration: theme.transitions.duration.enteringScreen
+    } )
+  } )
+} ) );
 
-const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
-  width: drawerWidth,
-  flexShrink: 0,
-  whiteSpace: 'nowrap',
-  boxSizing: 'border-box',
-  ...(open && {
-    ...openedMixin(theme),
-    '& .MuiDrawer-paper': openedMixin(theme),
-  }),
-  ...(!open && {
-    ...closedMixin(theme),
-    '& .MuiDrawer-paper': closedMixin(theme),
-  }),
-}));
+const DrawerHeader = styled( 'div' )( ( { theme } ) => ( {
+  display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+  padding: theme.spacing( 0, 1 ), ...theme.mixins.toolbar
+} ) );
 
-export default function CombinedNavBar() {
+const Drawer = styled( MuiDrawer, { shouldForwardProp: ( prop ) => prop !== 'open' } )( ( { theme, open } ) => ( {
+  width: drawerWidth, flexShrink: 0, whiteSpace: 'nowrap', boxSizing: 'border-box',
+  ...( open && { ...openedMixin( theme ), '& .MuiDrawer-paper': openedMixin( theme ) } ),
+  ...( !open && { ...closedMixin( theme ), '& .MuiDrawer-paper': closedMixin( theme ) } )
+} ) );
+
+// Main Component
+export default function CombinedNavBarMUI() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { dispatch, state, fetchSession } = useAuth();
-
-  
-  const [open, setOpen] = React.useState(false);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-
-  // const BASE_URL = localStorage.getItem('BASE_URL') || '';
+  const location = useLocation();
   const BASE_URL = useBaseURL();
+  const { dispatch, state: authState } = useAuth();
+
+  const [open, setOpen] = React.useState( true );
+  const [anchorElUser, setAnchorElUser] = React.useState( null );
+  const [resetPasswordOpen, setResetPasswordOpen] = React.useState( false );
+  const [sidebarMenu, setSidebarMenu] = React.useState( '' );
+
+  // Menu definitions
+  const topMenu = [
+    {
+      name: 'बन्दी',
+      defaultPath: '/bandi',
+      submenu: [
+        { name: 'बन्दी ड्यासबोर्ड', path: '/bandi/dashboard' },
+        { name: 'नयाँ बन्दी विवरण', path: '/bandi/create_bandi' },
+        { name: 'बन्दी विवरण', path: '/bandi/bandi_details' },
+        { name: 'कार्यालयगत संख्या', path: '/bandi/count_ac_office' },
+        { name: 'मास्केवारी', path: '/bandi/maskebari' },
+        { name: 'कैदमुक्त/लगत कट्टा', path: '/bandi/bandi_release' },
+      ],
+    },
+    {
+      name: 'प्यारोल',
+      defaultPath: '/payrole',
+      submenu: [
+        { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/payrole/create_payrole' },
+        { name: 'प्यारोल विवरण', path: '/payrole/payrole_user_check' },
+        { name: 'प्यारोल रुजु(कार्यालय)', path: '/payrole/payrole_client_check' },
+        { name: 'प्यारोल रुजु', path: '/payrole/payrole_jr_check' },
+        { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
+        { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
+        { name: 'पुरानो प्यारोल', path: '/payrole/create_previous_parole' },
+        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
+      ],
+    },
+    {
+      name: 'कामदारी सुविधा',
+      defaultPath: '/kaamdari_subidha',
+      submenu: [
+        { name: 'आन्तिरक प्रशासन', path: '/kaamdari_subidha/aantarik_prashasan_table' },
+      ],
+    },
+    {
+      name: 'स्थानान्तरण',
+      defaultPath: '/bandi_transfer',
+      submenu: [
+        { name: 'नयाँ थप', path: '/bandi_transfer/new_bandi_transfer' },
+        { name: 'स्थानान्तरण(स्विकृती)', path: '/bandi_transfer/approve_bandi_final_transfer' },
+      ],
+    },
+    {
+      name: 'कर्मचारी',
+      defaultPath: '/emp',
+      submenu: [
+        { name: 'नयाँ थप', path: '/emp/create_employee' },
+        { name: 'कर्मचारी विवरण', path: '/emp/view_employee' },
+      ],
+    },
+  ];
+
+
+  // Extract submenu from current menu
+  const selectedMenu = topMenu.find( menu => menu.name === sidebarMenu );
+
+
+
+  const filterSubmenuByRole = ( menuKey, submenu ) => {
+    const role = authState.role_name;
+    const access = menuAccess[menuKey]?.[role];
+    if ( !access ) return [];
+    if ( access === 'all' ) return submenu;
+    return submenu.filter( sub => access.includes( sub.path ) );
+  };
+
+  const handleDrawerToggle = () => setOpen( !open );
+  const handleOpenUserMenu = ( e ) => setAnchorElUser( e.currentTarget );
+  const handleCloseUserMenu = () => setAnchorElUser( null );
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(`${BASE_URL}/auth/logout`, {}, { withCredentials: true });
-      if (response.data.success) {
-        dispatch({ type: 'LOGOUT' });
-        navigate('/login');
-      }
-    } catch (err) {
-      console.error("Logout failed:", err);
+      await axios.post( `${ BASE_URL }/auth/logout`, {}, { withCredentials: true } );
+      dispatch( { type: 'LOGOUT' } );
+      localStorage.removeItem( 'token' );
+      navigate( '/login' );
+      Swal.fire( { title: 'Logged Out', icon: 'success', timer: 1000, showConfirmButton: false } );
+    } catch ( error ) {
+      Swal.fire( { title: 'Logout Failed', text: error?.response?.data?.message || 'Something went wrong', icon: 'error' } );
     }
   };
 
-  React.useEffect(()=>{
-    fetchSession();
-  },[])
-
-  const location = useLocation();
-  const appCurrType = React.useMemo(() => {
-    if (location.pathname.includes('/admin/driver')) return 'dv';
-    if (location.pathname.includes('/av')) return 'av';
-    if (location.pathname.includes('/va')) return 'va';
-    if (location.pathname.includes('/su')) return 'su';
-    return '';
-  }, [location.pathname]);
-  const [appType, setAppType] = React.useState(appCurrType);
-
-  const changeAppOptions = (val) => {
-    setAppType(val);
-    if (val === 'dv') {
-      navigate('/admin/driver');
-    } else if (val === 'av') {
-      navigate('/av');
-    } else if (val === 'su') {
-      navigate('/su');
-    } else {
-      navigate('/');
+  const handlePasswordChange = async ( formData ) => {
+    try {
+      await axios.put( `${ BASE_URL }/auth/reset_password`, formData, { withCredentials: true } );
+      Swal.fire( { title: 'Password Changed', icon: 'success' } );
+      setResetPasswordOpen( false );
+      handleLogout();
+    } catch ( err ) {
+      Swal.fire( { title: 'Password Change Failed', text: err.response?.data?.message || 'Something went wrong', icon: 'error' } );
     }
-    setAnchorElUser(null);
   };
 
-  const handleDrawerToggle = () => setOpen(!open);
-
-  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
-
-  const handleCloseUserMenu = () => setAnchorElUser(null);
-
-  const renderSideMenu = () => {
-    const type = appType?.toLowerCase();
-    if (type === 'dv') return <DriverMenu />;
-    if (type === 'av') {
-      return (
-        <List>
-          <ListItemButton onClick={() => navigate('/av')}>
-            <ListItemIcon><HomeIcon /></ListItemIcon>
-            <ListItemText primary="AV Dashboard" />
-          </ListItemButton>
-        </List>
-      );
+  React.useEffect( () => {
+    const activeMenu = topMenu.find( menu => menu.submenu.some( sub => location.pathname.startsWith( sub.path ) ) );
+    if ( activeMenu ) {
+      setSidebarMenu( activeMenu.name );
     }
-    if (type === 'va') return <VehicleAccidentMenu />;
-    if (type === 'su') return <SuperUserMenu/>;
-    return null;
-  };
+  }, [location.pathname] );
 
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
+      <ResetPasswordDialog
+        editingData={{ user_id: authState?.id || '' }}
+        open={resetPasswordOpen}
+        onClose={() => setResetPasswordOpen( false )}
+        onSave={handlePasswordChange}
+      />
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box display="flex" alignItems="center">
-            <IconButton color="inherit" onClick={handleDrawerToggle} edge="start" sx={{ mr: 2 }}>
+            <IconButton onClick={handleDrawerToggle} color="inherit" edge="start" sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap>
-              {state?.office_np}, {state?.branch_np}
+              {authState.office_np} - {sidebarMenu}
             </Typography>
           </Box>
-
           <Box>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }} aria-label="user avatar">
+            <Tooltip title="User Menu">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="User Avatar" src="/icons/male_icon-1.png" />
               </IconButton>
             </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              anchorEl={anchorElUser}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              <MenuItem disabled>
-                {state?.user} ({state?.role})
-              </MenuItem>
-
-              {state?.allowed_apps?.map((app) => (
-                <MenuItem key={app.app_id} onClick={() => changeAppOptions(app.app_short_name)}>
-                  {app.app_name_np}, {app.app_short_name}
-                </MenuItem>
-              ))}
-
-              <MenuItem onClick={handleLogout}>
-                Logout &nbsp;<LogoutIcon fontSize="small" />
-              </MenuItem>
+            <Menu anchorEl={anchorElUser} open={Boolean( anchorElUser )} onClose={handleCloseUserMenu}>
+              <MenuItem disabled>{authState.user} ({authState.role_name})</MenuItem>
+              <MenuItem onClick={() => setResetPasswordOpen( true )}><LockIcon fontSize="small" /> &nbsp; Change Password</MenuItem>
+              <MenuItem onClick={handleLogout}><LogoutIcon fontSize="small" /> &nbsp; Logout</MenuItem>
             </Menu>
           </Box>
         </Toolbar>
@@ -210,10 +206,30 @@ export default function CombinedNavBar() {
           </IconButton>
         </DrawerHeader>
         <Divider />
-        {renderSideMenu()}
+        <List>
+          {topMenu.map( menu => (
+            <ListItemButton
+              key={menu.name}
+              selected={sidebarMenu === menu.name}
+              onClick={() => {
+                setSidebarMenu( menu.name );
+                navigate( menu.defaultPath );
+              }}
+            >
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary={menu.name} />
+            </ListItemButton>
+          ) )}
+        </List>
+        <Divider />
+        {selectedMenu && filterSubmenuByRole( selectedMenu.defaultPath.replace( '/', '' ), selectedMenu.submenu ).map( sub => (
+          <ListItemButton key={sub.path} onClick={() => navigate( sub.path )}>
+            <ListItemText inset primary={sub.name} />
+          </ListItemButton>
+        ) )}
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, paddingLeft: 2 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
         <Outlet />
       </Box>

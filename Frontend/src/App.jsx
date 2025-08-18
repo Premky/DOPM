@@ -6,6 +6,7 @@ import axios from 'axios';
 // Lazy-loaded components
 const Login = lazy( () => import( './Components/Auth/Login' ) );
 const CombinedNav = lazy( () => import( './Components/Nav/CombinedNav' ) );
+const CombinedNavBar = lazy( () => import( './Components/Nav/CombinedNavBar' ) );
 const CreateUser = lazy( () => import( './Components/AdminPanel/User/CreateUser' ) );
 const OfficeBranchPage = lazy( () => import( './Components/AdminPanel/Office/OfficeBranchPage' ) );
 const Office = lazy( () => import( './Components/AdminPanel/Office/OfficeForm' ) );
@@ -61,6 +62,7 @@ import { Outlet } from 'react-router-dom';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
+// const ProtectedLayout = () => <CombinedNavBar />;
 
 // Layout component that just renders child routes
 const OutletLayout = () => <Outlet />;

@@ -66,6 +66,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     worksheet.getCell( 'I1' ).value = mudda;
     worksheet.getCell( 'Q1' ).value = 'संख्या';
     worksheet.getCell( 'R1' ).value = filteredKaidi.length;
+
+    const colsToRotate = [3, 5, 6, 7];
     const tableHeader = worksheet.addRow( [
         'सि.नं.', 'कारागार कार्यालय', 'बन्दी आई.डी.', 'कैदीको नामथर स्थायी ठेगाना', 'उमेर (वर्ष)', 'लिङ्ग', 'राष्ट्रियता',
         'मुद्दा', 'जाहेरवाला', 'मुद्दाको अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति', 'पुनरावेदन नपरेको प्रमाण', 'कैद परेको मिति',
@@ -83,6 +85,18 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         };
         cell.font = { bold: true }; // Optional: bold for header
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    } );
+
+    [tableHeader].forEach( row => {
+        colsToRotate.forEach( col => {
+            const cell = row.getCell( col );
+            cell.alignment = {
+                wrapText: true,
+                textRotation: 90,
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+        } );
     } );
 
     let currentRow = 3; // Start from row 2 (row 1 = header)
@@ -123,7 +137,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                 mIndex === 0 ? data.current_age : '',
                 mIndex === 0 ? ( data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य' ) : '',
 
-                mIndex === 0 ? data.country_name_np : '',
+                mIndex === 0 ? data.country_name_np==='नेपाल' ? 'नेपाली':data.country_name_np : '',
 
                 `${ mudda.mudda_name }\n${ mudda.mudda_no }` || '',
                 mudda.vadi || '',
@@ -139,7 +153,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                     ? [
                         ( data.hirasat_days || data.hirasat_months || data.hirasat_years )
                             ? `जम्मा कैदः \n ${ totalKaidDuration.formattedDuration }\n` +
-                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः \n ${ kaidDuration.formattedDuration }`:`${ kaidDuration.formattedDuration }`
+                            `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः \n ${ kaidDuration.formattedDuration }` : `${ kaidDuration.formattedDuration }`
                     ].filter( Boolean ).join( '\n\n' )
                     : '',
                 mIndex === 0 ? data.release_date_bs : '',
@@ -182,13 +196,30 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
         // 🔄 Merge cells for कैदी info
         const mergeCols = [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18];
-        // const mergeCols = [2, 3, 4, 5, 6,7, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
         mergeCols.forEach( ( colIndex ) => {
             worksheet.mergeCells( currentRow, colIndex, currentRow + muddaCount - 1, colIndex );
             // Apply wrapText to merged cell
             const cell = worksheet.getCell( currentRow, colIndex );
             cell.alignment = { wrapText: true, vertical: 'top' };
+        } );
+
+        // After merging cells for this prisoner
+        const cellsToRotate = [
+            { col: 3, name: 'bandiCell' },
+            { col: 5, name: 'ageCell' },
+            { col: 6, name: 'ageGender' },
+            { col: 7, name: 'ageNationality' }
+        ];
+
+        cellsToRotate.forEach( ( { col } ) => {
+            const cell = worksheet.getCell( currentRow, col );
+            cell.alignment = {
+                wrapText: true,
+                textRotation: 90,
+                vertical: 'middle',
+                horizontal: 'center'
+            };
         } );
 
         currentRow += muddaCount;
