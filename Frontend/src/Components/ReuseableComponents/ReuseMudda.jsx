@@ -1,64 +1,66 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Autocomplete,  Grid,  InputLabel, TextField } from '@mui/material'
+import { Autocomplete, Grid, InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import { useBaseURL } from '../../Context/BaseURLProvider';
 
-const ReuseMudda = ({ name, label, required, control, error, defaultValue, setValue }) => {
+const ReuseMudda = ( { name, label, required, control, error, defaultValue, setValue, muddaGroupId } ) => {
     const BASE_URL = useBaseURL();
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem( 'token' );
 
-    const [formattedOptions, setFormattedOptions] = useState([]);
+    const [formattedOptions, setFormattedOptions] = useState( [] );
 
-    // console.log(value);
+    // console.log(muddaGroupId);
     const fetchMudda = async () => {
         try {
-            const url = `${BASE_URL}/public/get_mudda`;
-            const response = await axios.get(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const url1 = `${ BASE_URL }/public/get_mudda`;
+            const url = `${ BASE_URL }/public/get_mudda${ muddaGroupId ? `?mudda_group_id=${ muddaGroupId }` : '' }`;
+            const response = await axios.get( url, {
+                headers: { Authorization: `Bearer ${ token }` },
+                withCredentials: true,
+            } );
 
             const { Status, Result, Error } = response.data;
 
-            if (Status) {
-                if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result.map((opt) => ({
+            if ( Status ) {
+                if ( Array.isArray( Result ) && Result.length > 0 ) {
+                    const formatted = Result.map( ( opt ) => ( {
                         label: opt.mudda_name,
                         value: opt.id,
-                    }));
-                    setFormattedOptions(formatted);
+                    } ) );
+                    setFormattedOptions( formatted );
                 } else {
-                    console.log('No mudda records found.');
+                    console.log( 'No mudda records found.' );
                 }
             } else {
-                console.log(Error || 'Failed to fetch mudda.');
+                console.log( Error || 'Failed to fetch mudda.' );
             }
-        } catch (error) {
-            console.error('Error fetching muddas:', error);
+        } catch ( error ) {
+            console.error( 'Error fetching muddas:', error );
         }
     };
 
-    useEffect(() => {
+    useEffect( () => {
         fetchMudda();
-    }, []);
+    }, [muddaGroupId] );
 
-    useEffect(() => {
-        if (formattedOptions.length && defaultValue) {
-            const matched = formattedOptions.find(opt => String(opt.value) === String(defaultValue));
-            if (matched) {
-                setValue(name, matched.value); // 👈 this ensures UI shows correct default
+    useEffect( () => {
+        if ( formattedOptions.length && defaultValue ) {
+            const matched = formattedOptions.find( opt => String( opt.value ) === String( defaultValue ) );
+            if ( matched ) {
+                setValue( name, matched.value ); // 👈 this ensures UI shows correct default
             }
         }
-    }, [formattedOptions, defaultValue, name, setValue]);
+    }, [formattedOptions, defaultValue, name, setValue] );
 
     return (
         <>
             <InputLabel id={name}>
                 <Grid container alignItems="center">
-                    <Grid size={{xs:12, sm:6, md:6}}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6 }}>
                         {label}
                         {required && <span style={{ color: 'red' }}>*</span>}
-                    </Grid>                    
+                    </Grid>
                 </Grid>
             </InputLabel>
 
@@ -67,27 +69,27 @@ const ReuseMudda = ({ name, label, required, control, error, defaultValue, setVa
                 control={control}
                 defaultValue=""
                 rules={{
-                    ...(required && {
+                    ...( required && {
                         required: {
                             value: true,
                             message: 'यो फिल्ड अनिवार्य छ',
                         },
-                    }),
+                    } ),
                 }}
-                render={({ field: { onChange, value, ref } }) => (
+                render={( { field: { onChange, value, ref } } ) => (
                     <Autocomplete
                         id={name}
                         options={formattedOptions}
                         autoHighlight
-                        getOptionLabel={(option) => option.label || ''}
-                        isOptionEqualToValue={(option, val) => option.value === val}
+                        getOptionLabel={( option ) => option.label || ''}
+                        isOptionEqualToValue={( option, val ) => option.value === val}
                         value={
-                            formattedOptions.find((option) => String(option.value) === String(value)) || null
+                            formattedOptions.find( ( option ) => String( option.value ) === String( value ) ) || null
                         }
-                        onChange={(_, newValue) => {
-                            onChange(newValue ? newValue.value : '');
+                        onChange={( _, newValue ) => {
+                            onChange( newValue ? newValue.value : '' );
                         }}
-                        renderInput={(params) => (
+                        renderInput={( params ) => (
                             <TextField
                                 {...params}
                                 inputRef={ref}

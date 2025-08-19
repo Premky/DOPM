@@ -342,15 +342,27 @@ router.get( '/get_bandi_type', async ( req, res ) => {
 } );
 
 router.get( '/get_mudda', async ( req, res ) => {
-    const sql = `SELECT * from muddas ORDER BY mudda_name`;
     try {
-        const [result] = await pool.query( sql );
+        let sql = `SELECT * FROM muddas`;
+        const params = [];
+
+        // If mudda_group_id is provided, add WHERE clause
+        if ( req.query.mudda_group_id ) {
+            sql += ' WHERE muddas_group_id = ?';
+            params.push( req.query.mudda_group_id );
+        }
+
+        sql += ' ORDER BY mudda_name'; // Keep ordering
+
+        const [result] = await pool.query( sql, params );
+        // console.log('muddas:', result );  
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
+
 router.get( '/get_mudda_groups', async ( req, res ) => {
     const sql = `SELECT * from muddas_groups ORDER BY mudda_group_name`;
     try {

@@ -34,6 +34,7 @@ import { useAuth } from '../../../Context/AuthContext';
 import { CheckBox } from '@mui/icons-material';
 import ReuseDatePickerBSsmV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
+import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -191,7 +192,7 @@ const BandiPersonForm = () => {
     }
   };
 
-
+const { optrecords, loading } = fetchMuddaGroups();
   const onSubmit = async ( data ) => {
     // console.log( data );
     if ( !data.photo ) { alert( 'फोटो अनिवार्य छ ।' ); }
@@ -326,7 +327,7 @@ const BandiPersonForm = () => {
               error={errors.lagat_no} />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>            
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <ReuseSelect
               name="bandi_type"
               label="बन्दीको प्रकार"
@@ -466,14 +467,15 @@ const BandiPersonForm = () => {
       <Grid container spacing={0}>
         <Grid size={{ xs: 12 }} sx={{ mb: 0, ...formHeadStyle }}>
           बन्दीको मुद्दा विवरणः
-          {( authState.office_id === 1 ) || ( authState.office_id === 2 ) && (
-            <button onClick={() => handleAdd()}>Add</button>
-          )}
+          <button onClick={() => handleAdd()}>Add</button>
+          {/* {( authState.office_id === 1 ) || ( authState.office_id === 2 ) && (
+          )} */}
           <AddSubMuddaModal
             open={modalOpen}
             onClose={() => setModalOpen( false )}
             BASE_URL={BASE_URL}
-          // editingData={editingData}
+            setModalOpen={setModalOpen}
+            // refetch={refetch}          
           />
         </Grid>
 
@@ -482,6 +484,7 @@ const BandiPersonForm = () => {
           const is_life_time_arr = watch( `is_life_time_${ index + 1 }` );
           const release_date_bs_arr = watch( `release_date_bs_${ index + 1 }` );
           const thuna_date_bs_arr = watch( `thuna_date_bs_${ index + 1 }` );
+          const mudda_group_id_arr = watch( `mudda_group_id${ index + 1 }` );
           const kaidDuration = calculateBSDate( thuna_date_bs_arr, release_date_bs_arr );
           setValue( `total_kaid_duration_${ index + 1 }`, `${ kaidDuration.formattedDuration }` );
 
@@ -490,12 +493,23 @@ const BandiPersonForm = () => {
 
 
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <ReuseSelect
+                  name={`mudda_group_id${ index + 1 }`}
+                  label="मुद्दा समुह"
+                  options={optrecords}
+                  control={control}
+                  required={true}
+                  error={errors[`mudda_group_id_${ index + 1 }`]}                  
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <ReuseMudda
                   name={`mudda_id_${ index + 1 }`}
                   label="मुद्दा"
                   required={true}
                   control={control}
-                  error={errors[`mudda_${ index + 1 }`]}
+                  error={errors[`mudda__id_${ index + 1 }`]}
+                  muddaGroupId={mudda_group_id_arr}
                 />
               </Grid>
 

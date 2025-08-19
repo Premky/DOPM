@@ -37,11 +37,9 @@ const AddSubMuddaModal = ( { open, onClose, onSave, editingData, BASE_URL, refet
                 withCredentials: true,
             } );
 
-            console.log( '✅ Axios Response:', response.data );
-            console.log( '2', BASE_URL );
+            console.log( '✅ Axios Response:', response.data );           
 
-            alert( 'Saved!' );
-            await refetch();
+            alert( 'Saved!' );            
             setModalOpen( false );
             onClose();
         } catch ( error ) {
@@ -60,7 +58,7 @@ const AddSubMuddaModal = ( { open, onClose, onSave, editingData, BASE_URL, refet
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
+            <DialogTitle><span style={{color:'red'}}>कृपया मुद्दा थप्नु अगाडी त्यो मुद्दा पहिले नै अवस्थित छ/छैन एकिन गर्नुहोला ।</span></DialogTitle>
             <DialogContent>
                 <ReuseSelect
                     name="mudda_group_id"
