@@ -12,39 +12,39 @@ export const calculateBSDate0 = (
     let startAD, endAD;
 
     try {
-      const startDate1 = new NepaliDate(startDate);
-      const endDate1 = new NepaliDate(endDate);
+      const startDate1 = new NepaliDate( startDate );
+      const endDate1 = new NepaliDate( endDate );
 
       startAD = startDate1.getDateObject();
       endAD = endDate1.getDateObject();
-    } catch (err) {
+    } catch ( err ) {
       // Fallback: use regular Date objects
-      startAD = new Date(startDate);
-      endAD = new Date(endDate);
+      startAD = new Date( startDate );
+      endAD = new Date( endDate );
     }
 
     // Ensure valid dates
-    if (isNaN(startAD.getTime()) || isNaN(endAD.getTime())) {
-      throw new Error("Invalid dates");
+    if ( isNaN( startAD.getTime() ) || isNaN( endAD.getTime() ) ) {
+      throw new Error( "Invalid dates" );
     }
 
     // Calculate total days difference
-    let baseTotalDays = Math.floor((endAD - startAD) / (1000 * 60 * 60 * 24));
-    if (baseTotalDays < 0) baseTotalDays = 0;
+    let baseTotalDays = Math.floor( ( endAD - startAD ) / ( 1000 * 60 * 60 * 24 ) );
+    if ( baseTotalDays < 0 ) baseTotalDays = 0;
 
     // Add Hirasat duration (in days)
-    const hirasatTotalDays = (hirasat_years * 365) + (hirasat_months * 30) + hirasat_days;
+    const hirasatTotalDays = ( hirasat_years * 365 ) + ( hirasat_months * 30 ) + hirasat_days;
     const totalDays = baseTotalDays + hirasatTotalDays;
 
     // Convert total days into years, months, days assuming 30-day months
-    const years = Math.floor(totalDays / 365);
+    const years = Math.floor( totalDays / 365 );
     const remainingDaysAfterYears = totalDays % 365;
-    const months = Math.floor(remainingDaysAfterYears / 30);
+    const months = Math.floor( remainingDaysAfterYears / 30 );
     const days = remainingDaysAfterYears % 30;
 
     let percentage = null;
-    if (referenceDuration && referenceDuration.totalDays > 0) {
-      percentage = ((totalDays / referenceDuration.totalDays) * 100).toFixed(2);
+    if ( referenceDuration && referenceDuration.totalDays > 0 ) {
+      percentage = ( ( totalDays / referenceDuration.totalDays ) * 100 ).toFixed( 2 );
     }
 
     return {
@@ -52,12 +52,12 @@ export const calculateBSDate0 = (
       months,
       days,
       totalDays,
-      percentage: percentage ? parseFloat(percentage) : undefined,
-      formattedDuration: `${years}|${months}|${days}`,
+      percentage: percentage ? parseFloat( percentage ) : undefined,
+      formattedDuration: `${ years }|${ months }|${ days }`,
       usedFallback: false
     };
-  } catch (err) {
-    console.error("❌ Error in calculateBSDate:", err);
+  } catch ( err ) {
+    console.error( "❌ Error in calculateBSDate:", err );
     return {
       years: 0,
       months: 0,
@@ -71,21 +71,21 @@ export const calculateBSDate0 = (
 };
 
 
-function diffToYMD(startDate, endDate) {
-  let start = new Date(startDate);
-  let end = new Date(endDate);
+function diffToYMD( startDate, endDate ) {
+  let start = new Date( startDate );
+  let end = new Date( endDate );
 
   let years = end.getFullYear() - start.getFullYear();
   let months = end.getMonth() - start.getMonth();
   let days = end.getDate() - start.getDate();
 
-  if (days < 0) {
+  if ( days < 0 ) {
     months--;
-    const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+    const prevMonth = new Date( end.getFullYear(), end.getMonth(), 0 );
     days += prevMonth.getDate(); // Actual days in previous month
   }
 
-  if (months < 0) {
+  if ( months < 0 ) {
     years--;
     months += 12;
   }
@@ -156,22 +156,29 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
     let months = endMonth - startMonth + hirasat_months;
     let days = endDay - startDay + hirasat_days;
 
-    
+
     if ( days <= 0 ) {
-      months--;     
+      months--;
       // days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
       days += 30;
     }
 
     if ( days >= 30 ) {
       months++;
-      days -= 30;      
+      days -= 30;
     }
 
     if ( months < 0 ) {
       years--;
       months += 12;
     }
+
+    if(months === 12 && days === 0) {
+      years++;
+      months = 0;
+      days = 0;
+    }
+    
 
     let totalDays = Math.floor( ( endAD - startAD ) / ( 1000 * 60 * 60 * 24 ) );
     if ( totalDays < 0 ) totalDays = 0;

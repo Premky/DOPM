@@ -59,7 +59,6 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         }
     }
 
-
     worksheet.mergeCells( 'A1', 'I1' );
     worksheet.getCell( 'A1' ).value = `कार्यालय: ${ office }`;
     worksheet.mergeCells( 'J1', 'N1' );

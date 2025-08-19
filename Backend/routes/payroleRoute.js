@@ -1426,6 +1426,80 @@ router.get( '/get_bandi_mudda/', async ( req, res ) => {
     }
 } );
 
+router.put( '/update_bandi_parole_details/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const id = req.params.id;
+    console.log(req.body)
+    const { bandi_id, payrole_no_id, payrole_entry_date, 
+        recommended_district, recommended_city, recommended_tole_ward, recommended_court_id
+     } = req.body;
+
+    let connection; // ✅ Declare outside
+
+    try {
+        connection = await pool.getConnection(); // ✅ Initialize inside
+        await connection.beginTransaction();
+
+        const sql = `
+            UPDATE payroles 
+            SET payrole_no_id = ?, payrole_entry_date = ?, 
+            recommended_district = ?, recommended_city=?, recommended_tole_ward = ?, recommended_court_id=?,
+            updated_by = ?, updated_at=?, updated_office = ?
+            WHERE id = ?
+        `;
+        const values = [ payrole_no_id, payrole_entry_date, 
+                recommended_district, recommended_city, recommended_tole_ward, recommended_court_id,                
+                user_id, new Date(), active_office, id];
+
+        await connection.query( sql, values ); // ✅ Use await here
+
+        await connection.commit();
+        return res.json( {
+            Status: true,
+            message: "बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।"
+        } );
+
+    } catch ( error ) {
+        if ( connection ) await connection.rollback(); // ✅ Safely rollback if connection is defined
+
+        console.error( "Transaction failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+        } );
+
+    } finally {
+        if ( connection ) connection.release(); // ✅ Always release connection if obtained
+    }
+} );
+router.get( '/get_bandi_parole/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT p.*, 
+        nd.district_name_np AS recommended_district_name,
+        nm.city_name_np AS recommended_city_name  ,
+        o.office_name_with_letter_address AS recommended_court_name    
+        FROM payroles p
+        LEFT JOIN np_district nd ON p.recommended_district = nd.did
+        LEFT JOIN np_city nm ON p.recommended_city = nm.cid        
+        LEFT JOIN offices o ON p.recommended_court_id = o.id
+        WHERE p.bandi_id = ? AND p.STATUS IN(1,2,3)
+    `;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query        
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi Kaid Details not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+
 router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_role_id = req.user.role_id;

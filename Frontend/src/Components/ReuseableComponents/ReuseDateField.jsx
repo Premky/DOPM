@@ -82,11 +82,11 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder, on
                             error={!!error}
                             helperText={error?.message || ""}
                             required={required}
-                            placeholder={defaultValue||placeholder}
+                            placeholder={defaultValue||placeholder||"YYYY-MM-DD"}
                             value={defaultValue||formattedValue}
                             onChange={handleInputChange}
                             onBlur={onBlur}
-                            inputProps={{ maxLength: 10 }}
+                            inputProps={{ maxLength: 10 }}                            
                         />
                     );
                 }}

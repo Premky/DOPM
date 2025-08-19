@@ -17,6 +17,7 @@ import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
 import ReuseMunicipality from '../../ReuseableComponents/ReuseMunicipality';
 import ReuseCourt from '../../ReuseableComponents/ReuseCourt';
 import ViewBandi from '../../Bandi/ViewBandi';
+import PreviewBandi from '../View/PreviewBandi';
 
 const PayroleForm = ({status})=> {
   const BASE_URL = useBaseURL();
@@ -222,7 +223,7 @@ const PayroleForm = ({status})=> {
           <Grid container spacing={2}>
             {bandi_id ?
               <>
-                <ViewBandi bandi={bandi_id} /> <br />
+                <PreviewBandi bandi={bandi_id} /> <br />
               </> : <></>
             }
           </Grid>
