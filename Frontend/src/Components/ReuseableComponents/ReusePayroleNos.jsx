@@ -27,7 +27,7 @@ const ReusePayroleNos = ({ name, label, required, readonly, control, error, defa
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
                     const formatted = Result.map((opt) => ({
-                        label: opt.payrole_no_name, // Use Nepali name
+                        label: `${opt.payrole_no_name} (${opt.payrole_decision_date})`, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
                     setFormattedOptions(formatted);

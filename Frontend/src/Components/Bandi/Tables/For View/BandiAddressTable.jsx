@@ -57,29 +57,34 @@ const BandiAddressTable = ( { bandi_id } ) => {
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
-        const confirm = await Swal.fire( {
-            title: 'पक्का हुनुहुन्छ?',
-            text: 'यो विवरण मेटाइनेछ!',
+        const result = await Swal.fire( {
+            title: `Are You Sure?`,
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'मेटाउनुहोस्',
-            cancelButtonText: 'रद्द गर्नुहोस्',
+            confirmButtonText: 'Yes, delete it!',
         } );
 
-        if ( confirm.isConfirmed ) {
+        if ( result.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_address/${ id }` );
-                fetchBandies();
-                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
-            } catch ( error ) {
-                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_address/${ id }`, { withCredentials: true } );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    // fetchKaidi(); // Re-fetch updated data
+                    setFetchedBandies(prev => prev.filter(item => item.id !== id));
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
             }
         }
     };
-
+    
     const handleEdit = ( data, bandi_id ) => {
         // setEditingData(data, bandi_id);
-        console.log(data)
+        console.log( data );
         setEditingData( data );
         setModalOpen( true );
     };
@@ -89,7 +94,7 @@ const BandiAddressTable = ( { bandi_id } ) => {
     };
 
     const handleSave = async ( formData, id ) => {
-        console.log('formdata', formData)
+        console.log( 'formdata', formData );
         console.log( id );
         try {
             if ( id ) {
@@ -116,7 +121,7 @@ const BandiAddressTable = ( { bandi_id } ) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid container size={{xs:12}}>
+            <Grid container size={{ xs: 12 }}>
                 <Grid>
                     <h3>कैदीबन्दीको हालको ठेगानाः</h3>
                 </Grid>
@@ -124,7 +129,7 @@ const BandiAddressTable = ( { bandi_id } ) => {
                     {/* &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd(bandi_id)}>Add</Button> */}
                 </Grid>
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
                         <TableHead>

@@ -24,8 +24,9 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
     // ✅ Fetch data
     const fetchBandies = async () => {
         try {
+            setLoading( true );
             const url = `${ BASE_URL }/bandi/get_bandi_punrabedn/${ bandi_id }`;
-            const response = await axios.get( url );
+            const response = await axios.get( url, { withCredentials: true } );
 
             const { Status, Result, Error } = response.data;
 
@@ -54,22 +55,26 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
-        const confirm = await Swal.fire( {
-            title: 'पक्का हुनुहुन्छ?',
-            text: 'यो विवरण मेटाइनेछ!',
+        const result = await Swal.fire( {
+            title: `Are You Sure?`,
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'मेटाउनुहोस्',
-            cancelButtonText: 'रद्द गर्नुहोस्',
+            confirmButtonText: 'Yes, delete it!',
         } );
 
-        if ( confirm.isConfirmed ) {
+        if ( result.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_id_details/${ id }` );
-                fetchBandies();
-                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
-            } catch ( error ) {
-                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_punrabedan_details/${ id }`, { withCredentials: true } );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    setFetchedBandies(prev => prev.filter(item => item.id !== id));
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
             }
         }
     };
@@ -93,13 +98,11 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                     `${ BASE_URL }/bandi/update_bandi_punrabedn/${ id }`,
                     formData,
                     { withCredentials: true } // ✅ Fix: wrap inside object
-                );
-                fetchBandies();
+                );             
                 Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
             } else {
-                console.log("📦 Payload to server:", formData);
-                await axios.post( `${ BASE_URL }/bandi/create_bandi_punrabedn`, formData, { withCredentials: true } );
-
+                console.log( "📦 Payload to server:", formData );
+                await axios.post(`${BASE_URL}/bandi/create_bandi_punrabedn`, formData, { withCredentials: true });
                 Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
             }
             fetchBandies();
@@ -109,10 +112,12 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
             // Swal.fire( 'त्रुटि!', `${ error }`, 'error' );
         }
     };
-
+    if ( loading ) {
+        return <div>Loading...</div>;
+    }
     return (
         <Grid container spacing={2}>
-            <Grid container size={{xs:12}}>
+            <Grid container size={{ xs: 12 }}>
                 <Grid>
                     <h3>पुनरावेदनमा नपरेको प्रमाण विवरणः</h3>
                 </Grid>
@@ -120,7 +125,7 @@ const BandiPunrabednTable = ( { bandi_id } ) => {
                     &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
                 </Grid>
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
                         <TableHead>

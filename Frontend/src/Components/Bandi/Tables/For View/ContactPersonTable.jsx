@@ -31,22 +31,26 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
-        const confirm = await Swal.fire( {
-            title: 'पक्का हुनुहुन्छ?',
-            text: 'यो विवरण मेटाइनेछ!',
+        const result = await Swal.fire( {
+            title: `Are You Sure?`,
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'मेटाउनुहोस्',
-            cancelButtonText: 'रद्द गर्नुहोस्',
+            confirmButtonText: 'Yes, delete it!',
         } );
 
-        if ( confirm.isConfirmed ) {
+        if ( result.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_family/${ id }` );
-                fetchBandies();
-                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
-            } catch ( error ) {
-                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_contact_person/${ id }`, { withCredentials: true } );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    fetchBandies(id); // Re-fetch updated data
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
             }
         }
     };

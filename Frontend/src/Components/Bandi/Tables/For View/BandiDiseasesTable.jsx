@@ -26,25 +26,29 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-    const { records: bandiDiseases, loading: bandiDiseasesLoading, refetch } = fetchBandiDiseases(bandi_id);    
+    const { records: bandiDiseases, loading: bandiDiseasesLoading, refetch } = fetchBandiDiseases( bandi_id );
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
-        const confirm = await Swal.fire( {
-            title: 'पक्का हुनुहुन्छ?',
-            text: 'यो विवरण मेटाइनेछ!',
+        const result = await Swal.fire( {
+            title: `Are You Sure?`,
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'मेटाउनुहोस्',
-            cancelButtonText: 'रद्द गर्नुहोस्',
+            confirmButtonText: 'Yes, delete it!',
         } );
 
-        if ( confirm.isConfirmed ) {
+        if ( result.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_family/${ id }` );
-                fetchBandies();
-                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
-            } catch ( error ) {
-                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_diseases/${ id }`, { withCredentials: true } );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    refetch(id); // Re-fetch updated data
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
             }
         }
     };
@@ -54,7 +58,7 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
         // console.log(editingData)
         setModalOpen( true );
     };
-    
+
     const handleAdd = ( bandi_id ) => {
         setEditingData( { bandi_id } );
         setModalOpen( true );
@@ -62,7 +66,7 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
 
     const handleSave = async ( formData, id ) => {
         // const id = editingData?.id; // ✅ Get the ID if editing
-        console.log(id)
+        console.log( id );
         try {
 
             if ( id ) {
@@ -87,7 +91,7 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
             }
 
             await refetch();
-            setModalOpen(false);
+            setModalOpen( false );
 
         } catch ( error ) {
             console.error( "❌ Axios Error:", error ); // Helpful for debugging
@@ -97,7 +101,7 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid container size={{xs:12}}>
+            <Grid container size={{ xs: 12 }}>
                 <Grid>
                     <h3>रोगी विवरणः</h3>
                 </Grid>
@@ -105,13 +109,13 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
                     &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
                 </Grid>
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
                         <TableHead>
                             <TableRow>
                                 <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">रोग</TableCell>                              
+                                <TableCell align="center">रोग</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -119,7 +123,7 @@ const BandiDiseasesTable = ( { bandi_id } ) => {
                             {bandiDiseases.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.disease_id==100 ?<>{`(${opt.disease_name_np}) ${opt.disease_name_if_other}`} </> : opt.disease_name_np}</TableCell>                                   
+                                    <TableCell align="center">{opt.disease_id == 100 ? <>{`(${ opt.disease_name_np }) ${ opt.disease_name_if_other }`} </> : opt.disease_name_np}</TableCell>
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>

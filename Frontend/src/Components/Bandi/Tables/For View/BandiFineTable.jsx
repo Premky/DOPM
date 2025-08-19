@@ -15,6 +15,7 @@ import Swal from 'sweetalert2';
 import FineEditDialog from '../../Dialogs/FineDialog';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import { set } from 'react-hook-form';
 
 const BandiFineTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
@@ -24,8 +25,9 @@ const BandiFineTable = ( { bandi_id } ) => {
     // ✅ Fetch data
     const fetchBandies = async () => {
         try {
+            setLoading( true );
             const url = `${ BASE_URL }/bandi/get_bandi_fine/${ bandi_id }`;
-            const response = await axios.get( url );
+            const response = await axios.get( url, {withCredentials: true} );
 
             const { Status, Result, Error } = response.data;
 
@@ -54,22 +56,27 @@ const BandiFineTable = ( { bandi_id } ) => {
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
-        const confirm = await Swal.fire( {
-            title: 'पक्का हुनुहुन्छ?',
-            text: 'यो विवरण मेटाइनेछ!',
+        const result = await Swal.fire( {
+            title: `Are You Sure?`,
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'मेटाउनुहोस्',
-            cancelButtonText: 'रद्द गर्नुहोस्',
+            confirmButtonText: 'Yes, delete it!',
         } );
 
-        if ( confirm.isConfirmed ) {
+        if ( result.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_id_details/${ id }` );
-                fetchBandies();
-                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
-            } catch ( error ) {
-                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_fines/${ id }`, { withCredentials: true } );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    setFetchedBandies(prev => prev.filter(item => item.id !== id));
+                    // fetchBandies(); // Re-fetch updated data
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
             }
         }
     };
@@ -119,7 +126,7 @@ const BandiFineTable = ( { bandi_id } ) => {
     return (
         <Grid container spacing={2}>
 
-            <Grid container size={{xs:12}}>
+            <Grid container size={{ xs: 12 }}>
                 <Grid>
                     <h3>कैदीबन्दीको जरिवाना/क्षतिपुर्ती/बिगो विवरणः</h3>
                 </Grid>
@@ -127,7 +134,7 @@ const BandiFineTable = ( { bandi_id } ) => {
                     &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
                 </Grid>
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
                 <TableContainer component={Paper}>
                     <Table size='small' border={2}>
                         <TableHead>
@@ -151,11 +158,11 @@ const BandiFineTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.fine_name_np || ''}</TableCell>
                                     <TableCell align="center">{opt.amount_fixed ? 'छ' : 'छैन'}</TableCell>
                                     <TableCell align="center">{opt.amount_deposited ? 'तिरेको' : 'नतिरेको' || ''}</TableCell>
-                                    <TableCell align="center">{opt.office_name_nep||''}</TableCell>
+                                    <TableCell align="center">{opt.office_name_nep || ''}</TableCell>
                                     <TableCell align="center">{opt.district_name_np}</TableCell>
-                                    <TableCell align="center">{opt.deposit_ch_no||''}</TableCell>
-                                    <TableCell align="center">{opt.deposit_date||''}</TableCell>
-                                    <TableCell align="center">{opt.deposit_amount||''}</TableCell>
+                                    <TableCell align="center">{opt.deposit_ch_no || ''}</TableCell>
+                                    <TableCell align="center">{opt.deposit_date || ''}</TableCell>
+                                    <TableCell align="center">{opt.deposit_amount || ''}</TableCell>
 
                                     <TableCell align="center">
                                         <Grid container spacing={2}>

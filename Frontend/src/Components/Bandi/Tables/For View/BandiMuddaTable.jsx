@@ -34,7 +34,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
             if ( Status ) {
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
                     setFetchedBandies( Result );
-                    console.log(fetchedBandies)
+                    console.log( fetchedBandies );
                 } else {
                     console.log( 'No records found.' );
                     setFetchedBandies( [] );
@@ -74,22 +74,26 @@ const BandiMuddaTable = ( { bandi_id } ) => {
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
-        const confirm = await Swal.fire( {
-            title: 'पक्का हुनुहुन्छ?',
-            text: 'यो विवरण मेटाइनेछ!',
+        const result = await Swal.fire( {
+            title: `Are You Sure?`,
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'मेटाउनुहोस्',
-            cancelButtonText: 'रद्द गर्नुहोस्',
+            confirmButtonText: 'Yes, delete it!',
         } );
 
-        if ( confirm.isConfirmed ) {
+        if ( result.isConfirmed ) {
             try {
-                await axios.delete( `${ BASE_URL }/bandi/delete_bandi_id_details/${ id }` );
-                fetchBandies();
-                Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
-            } catch ( error ) {
-                Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_mudda_details/${ id }`, { withCredentials: true } );
+                if ( res.data.Status ) {
+                    Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
+                    setFetchedBandies(prev => prev.filter(item => item.id !== id));
+                } else {
+                    Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
+                }
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( 'Error!', 'Something went wrong.', 'error' );
             }
         }
     };
@@ -171,10 +175,10 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.mudda_phesala_antim_office_date}</TableCell>
                                     <TableCell align="center">{opt.thuna_date_bs}</TableCell>
                                     <TableCell align="center">{
-                                        opt.is_life_time==1?("आजिवन"):(opt.release_date_bs)
+                                        opt.is_life_time == 1 ? ( "आजिवन" ) : ( opt.release_date_bs )
                                     }</TableCell>
                                     <TableCell align="center">{
-                                        opt.is_life_time==1?("आजिवन"):(calculateBSDate(opt.thuna_date_bs, opt.release_date_bs,'',opt.hirasat_years,opt.hirasat_months,opt.hirasat_days).formattedDuration)
+                                        opt.is_life_time == 1 ? ( "आजिवन" ) : ( calculateBSDate( opt.thuna_date_bs, opt.release_date_bs, '', opt.hirasat_years, opt.hirasat_months, opt.hirasat_days ).formattedDuration )
                                     }</TableCell>
                                     <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
                                     <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
