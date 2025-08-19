@@ -66,7 +66,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     worksheet.getCell( 'J1' ).value = `मुद्दा: ${mudda}`;    
     worksheet.getCell( 'R1','S1' ).value = `संख्या: ${filteredKaidi.length}`;    
 
-    const colsToRotate = [1, 3, 5, 6, 7];
+    const colsToRotate = [1, 2, 3, 5, 6, 7];
     const tableHeader = worksheet.addRow( [
         'सि.नं.', 'कारागार कार्यालय', 'बन्दी आई.डी.', 'कैदीको नामथर स्थायी ठेगाना', 'उमेर (वर्ष)', 'लिङ्ग', 'राष्ट्रियता',
         'मुद्दा', 'जाहेरवाला', 'मुद्दाको अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति', 'पुनरावेदन नपरेको प्रमाण', 'कैद परेको मिति',
