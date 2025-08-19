@@ -248,7 +248,9 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
         forwardRoles.includes( authState.role_name ) && (
           <>
             {( data.status_id <= 13 ) && ( <>
-              <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
+              {( authState.role_id > 3 ) && ( <>
+                <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
+              </> )}
               <MenuItem onClick={handleForward}>Forward</MenuItem>
             </> )}
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
