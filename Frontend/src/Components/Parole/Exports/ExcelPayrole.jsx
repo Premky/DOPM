@@ -60,11 +60,12 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     }
 
 
-    worksheet.mergeCells( 'A1', 'I1' );    
-    worksheet.getCell( 'A1' ).value = `कार्यालय: ${office}`;
+    worksheet.mergeCells( 'A1', 'I1' );
+    worksheet.getCell( 'A1' ).value = `कार्यालय: ${ office }`;
     worksheet.mergeCells( 'J1', 'N1' );
-    worksheet.getCell( 'J1' ).value = `मुद्दा: ${mudda}`;    
-    worksheet.getCell( 'R1','S1' ).value = `संख्या: ${filteredKaidi.length}`;    
+    worksheet.getCell( 'J1' ).value = `मुद्दा: ${ mudda }`;
+    worksheet.mergeCells( 'R1', 'S1' );
+    worksheet.getCell( 'R1' ).value = `संख्या: ${ filteredKaidi.length }`;
 
     const colsToRotate = [1, 2, 3, 5, 6, 7];
     const tableHeader = worksheet.addRow( [
@@ -189,7 +190,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
                     right: { style: 'thin' }
-                };    
+                };
                 cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; // Center align and wrap text            
             } );
         } );
@@ -197,7 +198,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         // 🔄 Merge cells for कैदी info
         const mergeCols = [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18];
 
-        const manualWidth2Cols = [4,9, 11, 17, 10, 18, 19];
+        const manualWidth2Cols = [4, 9, 11, 17, 10, 18, 19];
         manualWidth2Cols.forEach( ( colIndex ) => {
             worksheet.getColumn( colIndex ).width = 21; // Set width for specific columns
         } );
@@ -247,8 +248,13 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         } );
     } );
 
-    worksheet.getCell('A1', 'I1').font = { name: 'Kalimati', size: 26, bold: true };
-    worksheet.getCell('A2', 'I2').font = { name: 'Kalimati', bold: true };
+    worksheet.getRow( 1 ).eachCell( cell => {
+        cell.font = { name: 'Kalimati', size: 22, bold: true };
+    } );
+    worksheet.getRow( 2 ).eachCell( cell => {
+        cell.font = { name: 'Kalimati', bold: true };
+    } );
+
 
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();
