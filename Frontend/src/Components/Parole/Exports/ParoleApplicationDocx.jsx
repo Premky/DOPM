@@ -1,7 +1,7 @@
 // MyDocGenerator.js
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle } from "docx";
 import { Button } from "@mui/material";
-import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
+import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 export default function ParoleApplicationDocx( props ) {

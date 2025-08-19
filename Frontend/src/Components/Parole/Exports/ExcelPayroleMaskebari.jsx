@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
+import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import { width } from '@mui/system';
 import axios from 'axios';

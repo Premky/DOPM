@@ -11,7 +11,7 @@ import {
 import { Button } from "@mui/material";
 import { saveAs } from "file-saver";
 import NepaliDate from "nepali-datetime";
-import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
+import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 

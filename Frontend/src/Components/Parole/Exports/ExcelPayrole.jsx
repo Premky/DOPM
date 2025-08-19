@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { calculateBSDate } from "../../../../../Backend/utils/dateCalculator";
+import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import axios from 'axios';
 
@@ -197,12 +197,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         // 🔄 Merge cells for कैदी info
         const mergeCols = [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18];
 
-        const manualWidth1Cols = [4,9, 11, 17];
-        manualWidth1Cols.forEach( ( colIndex ) => {
-            worksheet.getColumn( colIndex ).width = 30; // Set width for specific columns
-        } );
-
-        const manualWidth2Cols = [10, 18, 19];
+        const manualWidth2Cols = [4,9, 11, 17, 10, 18, 19];
         manualWidth2Cols.forEach( ( colIndex ) => {
             worksheet.getColumn( colIndex ).width = 21; // Set width for specific columns
         } );
