@@ -39,8 +39,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             const { data } = await axios.get( `${ BASE_URL }/payrole/get_selected_office/${ filters.searchOffice }`, {
                 withCredentials: true,
             } );
-            // console.log( data.Result[0] );
-            office = data?.Result[0].office_name || "अज्ञात कार्यालय";
+            // console.log( data);            
+            office = data?.Result[0].letter_address || "अज्ञात कार्यालय";
         } catch ( err ) {
             console.error( "Office fetch failed:", err );
         }

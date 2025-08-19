@@ -147,7 +147,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
             <Grid container spacing={1} alignItems="flex-end">
-                {authState.office_id == 1 || authState.office_id == 2 && (
+                {(authState.office_id == 1 || authState.office_id == 2) && (
                     <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
