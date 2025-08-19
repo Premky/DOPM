@@ -25,7 +25,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         left: 0.5,
         right: 0.5,
         top: 1,
-        bottom: 0.75,
+        bottom: 0.5,
         header: 0.3,
         footer: 0.3
     };
@@ -39,7 +39,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             const { data } = await axios.get( `${ BASE_URL }/payrole/get_selected_office/${ filters.searchOffice }`, {
                 withCredentials: true,
             } );
-            office = data?.[0]?.office_name || "अज्ञात कार्यालय";
+            // console.log( data.Result[0] );
+            office = data?.Result[0].office_name || "अज्ञात कार्यालय";
         } catch ( err ) {
             console.error( "Office fetch failed:", err );
         }
@@ -51,30 +52,28 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             const { data } = await axios.get( `${ BASE_URL }/payrole/get_selected_mudda_group/${ filters.searchmudda_id }`, {
                 withCredentials: true,
             } );
-            mudda = data?.[0]?.mudda_group_name || "अज्ञात मुद्दा समूह";
+            // console.log( data.Result[0] );
+            mudda = data?.Result[0].mudda_group_name || "अज्ञात मुद्दा समूह";
         } catch ( err ) {
             console.error( "Mudda fetch failed:", err );
         }
     }
 
 
-    worksheet.getCell( 'A1' ).value = 'कार्यालय';
-    worksheet.mergeCells( 'B1', 'G1' );
-    worksheet.getCell( 'B1' ).value = office;
-    worksheet.getCell( 'H1' ).value = 'मुद्दा';
-    worksheet.mergeCells( 'I1', 'L1' );
-    worksheet.getCell( 'I1' ).value = mudda;
-    worksheet.getCell( 'Q1' ).value = 'संख्या';
-    worksheet.getCell( 'R1' ).value = filteredKaidi.length;
+    worksheet.mergeCells( 'A1', 'I1' );    
+    worksheet.getCell( 'A1' ).value = `कार्यालय: ${office}`;
+    worksheet.mergeCells( 'J1', 'N1' );
+    worksheet.getCell( 'J1' ).value = `मुद्दा: ${mudda}`;    
+    worksheet.getCell( 'R1','S1' ).value = `संख्या: ${filteredKaidi.length}`;    
 
-    const colsToRotate = [3, 5, 6, 7];
+    const colsToRotate = [1, 3, 5, 6, 7];
     const tableHeader = worksheet.addRow( [
         'सि.नं.', 'कारागार कार्यालय', 'बन्दी आई.डी.', 'कैदीको नामथर स्थायी ठेगाना', 'उमेर (वर्ष)', 'लिङ्ग', 'राष्ट्रियता',
         'मुद्दा', 'जाहेरवाला', 'मुद्दाको अन्तिम कारवाही गर्ने निकाय र अन्तिम फैसला मिति', 'पुनरावेदन नपरेको प्रमाण', 'कैद परेको मिति',
         'तोकिएको कैद (वर्ष|महिना|दिन)', 'कैदी पुर्जीमा उल्लेखित छुटि जाने मिति', 'भुक्तान कैद (वर्ष|महिना|दिन) र प्रतिशत', 'प्यारोलमा राख्नुपर्ने कैद (वर्ष|महिना|दिन) र प्रतिशत',
         'तोकिएको जरिवाना/क्षतिपुर्ती/बिगो/पिडित राहत कोष तिरेको प्रमाण',
-        'कैफियत(कारागार)',
-        'कैफियत(विभाग)'
+        'कैफियत (कारागार)',
+        'कैफियत (विभाग)'
     ] );
     tableHeader.eachCell( ( cell ) => {
         cell.border = {
@@ -130,14 +129,14 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                 mIndex === 0 ? data.letter_address : '',
                 mIndex === 0 ? data.office_bandi_id : '',
                 mIndex === 0
-                    ? `${ data.bandi_name }\n${ data.nationality === 'स्वदेशी'
+                    ? `${ data.bandi_name }\n\n${ data.nationality === 'स्वदेशी'
                         ? `${ data.city_name_np }-${ data.wardno },\n ${ data.district_name_np }, ${ data.state_name_np }, ${ data.country_name_np }`
                         : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }` }`
                     : '',
                 mIndex === 0 ? data.current_age : '',
                 mIndex === 0 ? ( data.gender === 'Male' ? 'पुरुष' : data.gender === 'Female' ? 'महिला' : 'अन्य' ) : '',
 
-                mIndex === 0 ? data.country_name_np==='नेपाल' ? 'नेपाली':data.country_name_np : '',
+                mIndex === 0 ? data.country_name_np === 'नेपाल' ? 'नेपाली' : data.country_name_np : '',
 
                 `${ mudda.mudda_name }\n${ mudda.mudda_no }` || '',
                 mudda.vadi || '',
@@ -190,18 +189,33 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
                     right: { style: 'thin' }
-                };
+                };    
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; // Center align and wrap text            
             } );
         } );
 
         // 🔄 Merge cells for कैदी info
         const mergeCols = [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18];
 
+        const manualWidth1Cols = [4,9, 11, 17];
+        manualWidth1Cols.forEach( ( colIndex ) => {
+            worksheet.getColumn( colIndex ).width = 30; // Set width for specific columns
+        } );
+
+        const manualWidth2Cols = [10, 18, 19];
+        manualWidth2Cols.forEach( ( colIndex ) => {
+            worksheet.getColumn( colIndex ).width = 21; // Set width for specific columns
+        } );
+        const manualWidth3Cols = [8, 12, 13, 14, 15, 16];
+        manualWidth3Cols.forEach( ( colIndex ) => {
+            worksheet.getColumn( colIndex ).width = 15; // Set width for specific columns
+        } );
+
         mergeCols.forEach( ( colIndex ) => {
             worksheet.mergeCells( currentRow, colIndex, currentRow + muddaCount - 1, colIndex );
             // Apply wrapText to merged cell
             const cell = worksheet.getCell( currentRow, colIndex );
-            cell.alignment = { wrapText: true, vertical: 'top' };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; // Center align and wrap text
         } );
 
         // After merging cells for this prisoner
@@ -231,8 +245,12 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
     } );
 
-
-
+    // Set default font for entire worksheet
+    worksheet.eachRow( row => {
+        row.eachCell( cell => {
+            cell.font = { name: 'Kalimati', size: 14 }; // Set font for each cell            
+        } );
+    } );
 
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();

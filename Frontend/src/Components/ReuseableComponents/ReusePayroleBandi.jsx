@@ -45,7 +45,7 @@ const ReusePayroleBandi = ({ name, label, required, control, error, defaultvalue
                         .map((opt, index) => {
                             const bt = opt.bandi_type_id === 1 ? 'कैदी' : 'थुनुवा';
                             return {
-                                label: ` ${opt.bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index + 1} `,
+                                label: ` ${opt.office_bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name}|${index + 1} `,
                                 value: opt.bandi_id,
                             };
                         });

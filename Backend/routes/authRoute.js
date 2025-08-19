@@ -308,7 +308,7 @@ router.post( '/login', async ( req, res ) => {
 
         // Update online status
         // await promiseCon.query("UPDATE users SET is_online = 1 WHERE id = ?", [user.id]);
-        await pool.query( "UPDATE users SET is_online = ?, last_seen = ? WHERE id = ?", [1, NOW(),user.id] );
+        await pool.query( "UPDATE users SET is_online = ?, last_seen = NOW() WHERE id = ?", [1, user.id] );
 
         return res.json( {
             loginStatus: true,
