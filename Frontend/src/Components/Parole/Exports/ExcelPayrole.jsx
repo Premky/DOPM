@@ -247,6 +247,9 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         } );
     } );
 
+    worksheet.getCell('A1', 'I1').font = { name: 'Kalimati', size: 26, bold: true };
+    worksheet.getCell('A2', 'I2').font = { name: 'Kalimati', bold: true };
+
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob( [buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' } );
