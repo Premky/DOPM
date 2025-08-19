@@ -17,6 +17,7 @@ import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import FamilyModal from '../../Dialogs/FamilyModal';
 import AddressModal from '../../Dialogs/AddressModal';
 import KaidModal from '../../Dialogs/KaidModal';
+import { calculateBSDate } from '../../../../../Utils/dateCalculator';
 
 const BandiKaidTable = ({ bandi_id }) => {
     const BASE_URL = useBaseURL();
@@ -130,6 +131,7 @@ const BandiKaidTable = ({ bandi_id }) => {
                                 <TableCell align="center">हिरासत अवधी</TableCell>
                                 <TableCell align="center">थुना/कैद परेको मिति</TableCell>
                                 <TableCell align="center">छुट्ने मिति</TableCell>
+                                <TableCell align="center">कैद अवधी</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -141,9 +143,11 @@ const BandiKaidTable = ({ bandi_id }) => {
 
                                     <TableCell align="center">{opt.hirasat_years || '0'}|{opt.hirasat_months || '0'}|{opt.hirasat_days || '0'}</TableCell>
                                     <TableCell align="center">{opt.thuna_date_bs || ''}</TableCell>
-                                    <TableCell align="center">
-                                        
+                                    <TableCell align="center">                                        
                                         {opt.is_life_time == 1 ? 'आजिवन' : opt.bandi_type=="कैदी" ? opt.release_date_bs : ''}
+                                        </TableCell>
+                                    <TableCell align="center">                                        
+                                        {opt.is_life_time == 1 ? 'आजिवन' : opt.bandi_type=="कैदी" ? (calculateBSDate(opt.thuna_date_bs, opt.release_date_bs,'',opt.hirasat_years,opt.hirasat_months,opt.hirasat_days).formattedDuration) : ''}
                                         </TableCell>
                                     <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>

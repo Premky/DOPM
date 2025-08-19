@@ -15,6 +15,8 @@ import Swal from 'sweetalert2';
 import MuddaEditDialog from '../../Dialogs/MuddaDialog';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import { calculateBSDate } from '../../../../../Utils/dateCalculator';
+
 
 const BandiMuddaTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
@@ -32,7 +34,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
             if ( Status ) {
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
                     setFetchedBandies( Result );
-                    // console.log(fetchedBandies)
+                    console.log(fetchedBandies)
                 } else {
                     console.log( 'No records found.' );
                     setFetchedBandies( [] );
@@ -152,6 +154,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                 <TableCell align="center">मुद्दा फैसला मिती</TableCell>
                                 <TableCell align="center">थुना परेको मिति</TableCell>
                                 <TableCell align="center">छुट्ने मिति</TableCell>
+                                <TableCell align="center">कैद अवधी</TableCell>
                                 <TableCell align="center">मुख्य मुद्दा हो?</TableCell>
                                 <TableCell align="center">अन्तिम मुद्दा हो?</TableCell>
                                 <TableCell align="center">#</TableCell>
@@ -169,6 +172,9 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.thuna_date_bs}</TableCell>
                                     <TableCell align="center">{
                                         opt.is_life_time==1?("आजिवन"):(opt.release_date_bs)
+                                    }</TableCell>
+                                    <TableCell align="center">{
+                                        opt.is_life_time==1?("आजिवन"):(calculateBSDate(opt.thuna_date_bs, opt.release_date_bs,'',opt.hirasat_years,opt.hirasat_months,opt.hirasat_days).formattedDuration)
                                     }</TableCell>
                                     <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
                                     <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
