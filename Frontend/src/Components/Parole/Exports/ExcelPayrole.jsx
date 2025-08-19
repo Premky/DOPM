@@ -64,8 +64,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     worksheet.getCell( 'A1' ).value = `कार्यालय: ${ office }`;
     worksheet.mergeCells( 'J1', 'N1' );
     worksheet.getCell( 'J1' ).value = `मुद्दा: ${ mudda }`;
-    worksheet.mergeCells( 'R1', 'S1' );
-    worksheet.getCell( 'R1' ).value = `संख्या: ${ filteredKaidi.length }`;
+    worksheet.mergeCells( 'Q1', 'S1' );
+    worksheet.getCell( 'Q1' ).value = `संख्या: ${ filteredKaidi.length }`;
 
     const colsToRotate = [1, 2, 3, 5, 6, 7];
     const tableHeader = worksheet.addRow( [
