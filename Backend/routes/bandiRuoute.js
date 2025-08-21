@@ -1378,7 +1378,6 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
     const id = req.params.id;
-
     const {
         bandi_id,
         nationality_id,

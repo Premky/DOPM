@@ -15,8 +15,11 @@ export const menuAccess = {
       '/payrole/create_previous_parole',
       '/payrole/payrole_log',
     ],
-    sr_officer: [
-      '/payrole/payrole_client_pesh',
+    top_level: [
+      '/payrole/create_payrole',
+      '/payrole/payrole_user_check',
+      '/payrole/create_previous_parole',
+      '/payrole/payrole_log',
     ],
     headoffice_approver: [
       '/payrole/payrole_client_pesh',
