@@ -58,6 +58,79 @@ const upload = multer({
     limits: { fileSize: 1 * 1024 * 1024 },
 });
 
+//Route to create darbandi
+router.post('/create_current_darbandi', verifyToken, async (req, res) => {
+    const user_id = req.user.id;
+    const active_office = req.user.office_id;
+    const data = req.body;
+    const sql = `INSERT INTO emp_darbandies ( office_id, level_id, service_group_id, post_id, no_of_darbandi,
+                created_by, created_at, updated_by, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const values = [active_office, data.emp_level, data.emp_group, data.emp_post, data.no_of_darbandi, 
+                user_id, new Date(), user_id, new Date()];
+    try {
+        const [result] = await pool.query(sql, values);
+        if (result.affectedRows > 0) {
+            console.log('Current Darbandi created successfully:', result.insertId);
+            return res.json({ Status: true, Result: result.insertId, message: 'Current Darbandi created successfully.' });
+        } else {    
+            console.warn('No rows affected, check your data:', values);
+            return res.status(400).json({ Status: false, Error: 'Failed to create Current Darbandi.' });
+        }        
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+    }
+});
+
+//Get Darbandi:
+router.get("/get_darbandi", verifyToken, async (req, res) => {
+    const sql = `SELECT d.no_of_darbandi AS darbandi, d.id AS id,
+                p.post_name_Np, p.id AS post_id,
+                el.level_name_np, el.emp_rank_np, el.id AS level_id,
+                c.service_name_np, c.group_name_np, c.id AS service_group_id,
+                o.letter_address AS office_np
+            FROM 
+            emp_darbandies d
+            LEFT JOIN emp_level el ON d.level_id = el.id
+            LEFT JOIN emp_post p ON d.post_id = p.id
+            LEFT JOIN emp_service_groups c ON d.service_group_id = c.id
+            LEFT JOIN offices o ON d.office_id = o.id       
+            `;
+    try {
+        const [result] = await pool.query(sql);
+        return res.json({ Status: true, Result: result, message: 'Records fetched successfully.' });
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        res.status(500).json({ Status: false, Error: "Internal Server Error" });
+    }
+});
+
+router.put('/update_current_darbandi/:id', verifyToken, async (req, res) => {
+    const user_id = req.user.id;
+    const active_office = req.user.office_id;
+    const id = req.params.id;
+    const data = req.body;
+    const sql = `UPDATE emp_darbandies SET level_id=?, service_group_id=?, post_id=?, no_of_darbandi=?,
+                updated_by=?, updated_at=? WHERE id=?`;
+    const values = [data.emp_level, data.emp_group, data.emp_post, data.no_of_darbandi, 
+                user_id, new Date(), id];
+    try {
+        const [result] = await pool.query(sql, values);
+        if (result.affectedRows > 0) {
+            console.log('Current Darbandi created successfully:', result.insertId);
+            return res.json({ Status: true, Result: result.insertId, message: 'Current Darbandi created successfully.' });
+        } else {    
+            console.warn('No rows affected, check your data:', values);
+            return res.status(400).json({ Status: false, Error: 'Failed to create Current Darbandi.' });
+        }
+    } catch (err) {
+        console.error("Database Query Error:", err);
+        return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+    }
+});
+
+
 router.post('/create_employee', verifyToken, upload.single('photo'), async (req, res) => {
     const user_id = req.user.id;
     const active_office = req.user.office_id;
@@ -346,28 +419,6 @@ router.get("/get_employees1", verifyToken, async (req, res) => {
     }
 });
 
-//Get Darbandi:
-router.get("/get_darbandi", verifyToken, async (req, res) => {
-    const sql = `SELECT d.no_of_darbandi AS darbandi, 
-                p.post_name_Np, 
-                el.level_name_np, el.emp_rank_np,
-                c.service_name_np, c.group_name_np, 
-                o.letter_address AS office_np
-            FROM 
-            emp_darbandies d
-            LEFT JOIN emp_level el ON d.level_id = el.id
-            LEFT JOIN emp_post p ON d.post_id = p.id
-            LEFT JOIN emp_service_groups c ON d.service_group_id = c.id
-            LEFT JOIN offices o ON d.office_id = o.id       
-            `;
-    try {
-        const result = await pool.query(sql);
-        return res.json({ Status: true, Result: result, message: 'Records fetched successfully.' });
-    } catch (err) {
-        console.error("Database Query Error:", err);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" });
-    }
-});
 
 router.get("/get_posts", verifyToken, async (req, res) => {
     const sql = `SELECT * FROM emp_post`;

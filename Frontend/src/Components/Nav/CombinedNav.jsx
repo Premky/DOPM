@@ -87,7 +87,7 @@ const CombinedNav = ( { user } ) => {
 
     , {
       name: 'कर्मचारी',
-      defaultPath: '/bandi_transfer',
+      defaultPath: '/emp',
       submenu: [
         // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/bandi_transfer/create_aantarik_prashasan' },
         { name: 'नयाँ थप', path: '/emp/create_employee' },

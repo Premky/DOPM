@@ -68,7 +68,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
     } else if ( authState.role_name == 'office_admin' ) {
         customUserRoles = [{ value: 'supervisor', lable: 'विभागमा पेश गर्नुहोस्' }];
     }
-
+    // console.log('editing data',  editingData )
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>

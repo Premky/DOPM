@@ -1,7 +1,7 @@
 import React from 'react';
 import useAllEmployes from '../APIs/useAllEmp';
 import ReusableEmpTable from '../ReusableComponents/ReusableEmpTable';
-import Darbandi from './Darbandi';
+import Darbandi from './CurrentDarbandi';
 
 const AllEmpTable = () => {
   const columns = [

@@ -56,9 +56,8 @@ axios.interceptors.response.use(
 );
 
 import { Outlet } from 'react-router-dom';
-// import NepaliIME from './Components/Bandi/Payrole/Dialogs/NepaliIME';
-
-
+import CurrentDarbandi from './Components/Employee/Tables/CurrentDarbandi';
+import CurrentDarbandiForm from './Components/Employee/Forms/CurrentDarbandiForm';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -139,7 +138,7 @@ function App() {
 
                 {/* Payrole Routes */}
                 <Route path="emp" element={<OutletLayout />}>
-                  <Route index element={<PayroleMakebari />} />
+                  <Route index element={<CurrentDarbandi />} />
                   <Route path="create_employee" element={<EmployeeForm />} />
                   <Route path="view_employee" element={<AllEmpTable />} />
                 </Route>
