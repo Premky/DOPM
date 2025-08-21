@@ -126,7 +126,7 @@ const BandiTransferTable = () => {
         background: '#1976d2',
         textAlign: 'center',
     };
-    console.log( filteredKaidi );
+    // console.log( filteredKaidi );
     return (
         <>
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL, authState )} variant="outlined" color="primary" sx={{ m: 1 }}>
@@ -143,7 +143,7 @@ const BandiTransferTable = () => {
                         data={menuRowData}
                         onClose={handleMenuClose}
                         onResultClick={() => {
-                            console.log( "Result click for:", menuRowData );
+                            // console.log( "Result click for:", menuRowData );
                             handleMenuClose();
                         }}
                         refetchAll={refetchAll}
@@ -186,9 +186,9 @@ const BandiTransferTable = () => {
                             const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                             const kaidiTransferHistory = fetchedTransferHistory[data.bandi_id] || [];
                             const rowSpan = Math.max( kaidiTransferHistory.length, 1 ); // ensure at least 1 row
-
+                            
                             return (
-                                <Fragment key={`${ data.id }-${ refreshKey }`}>
+                                <Fragment key={`${ data.id }-${ index }`}>
                                     {/* First row */}
                                     <TableRow sx={{ background: bgColor( data.status_id ) }}>
                                         <TableCell rowSpan={rowSpan}>{index + 1} {data.transfer_id}</TableCell>

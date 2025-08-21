@@ -969,14 +969,14 @@ router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
     let values;
 
     if ( reqData.remarks ) {
-        sql = `UPDATE payroles SET user_role_id=?, status=?, remark=?, updated_by=?, updated_at=? WHERE id=?`;
-        values = [role_id, status_id, reqData.remarks, active_user_id, new Date(), reqData.payrole_id];
+        sql = `UPDATE payroles SET user_role_id=?, status=?, remark=?,is_checked=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, reqData.remarks, 0, active_user_id, new Date(), reqData.payrole_id];
     } else if ( reqData.dopm_remarks ) {
-        sql = `UPDATE payroles SET user_role_id=?, status=?, dopm_remarks=?, updated_by=?, updated_at=? WHERE id=?`;
-        values = [role_id, status_id, reqData.dopm_remarks, active_user_id, new Date(), reqData.payrole_id];
+        sql = `UPDATE payroles SET user_role_id=?, status=?, dopm_remarks=?,is_checked=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, reqData.dopm_remarks, 0, active_user_id, new Date(), reqData.payrole_id];
     } else {
-        sql = `UPDATE payroles SET user_role_id=?, status=?, updated_by=?, updated_at=? WHERE id=?`;
-        values = [role_id, status_id, active_user_id, new Date(), reqData.payrole_id];
+        sql = `UPDATE payroles SET user_role_id=?, status=?,is_checked=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, 0, active_user_id, new Date(), reqData.payrole_id];
     }
 
     try {
@@ -1032,7 +1032,7 @@ router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) =>
         is_checked, id
     ];
     try {
-        const result = await query( sql, values );
+        const result = await pool.query( sql, values );
         // console.log(result)
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {

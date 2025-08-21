@@ -82,7 +82,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             bottom: { style: 'thin' },
             right: { style: 'thin' }
         };
-        cell.font = { bold: true }; // Optional: bold for header
+        cell.font = { bold: true, size:14 }; // Optional: bold for header
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
     } );
 

@@ -15,7 +15,7 @@ const useFetchRoleBasedTransferStatus = ( bandi_id ) => {
             const response = await axios.get( `${ BASE_URL }/bandiTransfer/get_allowed_statuses`,
                 { withCredentials: true } );
             const { Status, Result, Error } = response.data;
-            console.log( Result );
+            // console.log( Result );
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
