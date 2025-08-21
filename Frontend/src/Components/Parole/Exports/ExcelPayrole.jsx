@@ -82,7 +82,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             bottom: { style: 'thin' },
             right: { style: 'thin' }
         };
-        cell.font = { bold: true, size:14 }; // Optional: bold for header
+        cell.font = { bold: true, size: 14 }; // Optional: bold for header
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
     } );
 
@@ -251,9 +251,10 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         cell.font = { name: 'Kalimati', size: 22, bold: true };
     } );
     worksheet.getRow( 2 ).eachCell( cell => {
-        cell.font = { name: 'Kalimati', bold: true };
+        cell.font = { name: 'Kalimati', size: 14, bold: true };
     } );
 
+    worksheet.views = [{ state: "frozen", ySplit: 2 }];
 
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();
