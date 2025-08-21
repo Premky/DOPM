@@ -324,10 +324,25 @@ const PayroleTable = ( { status } ) => {
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.remark}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.dopm_remarks}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
+                                                <IconButton
+                                                    onClick={( e ) =>
+                                                        handleMenuOpen( e, {
+                                                            ...data,
+                                                            bandiFines,
+                                                            kaidiMuddas,
+                                                            bandiNoPunarabedan
+                                                        } )
+                                                    }
+                                                >
+                                                    <MoreVertIcon />
+                                                </IconButton>
+
+                                            </TableCell>
+                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                 <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
                                                     <MoreVertIcon />
                                                 </IconButton>
-                                            </TableCell>
+                                            </TableCell> */}
                                         </TableRow>
 
                                         {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (

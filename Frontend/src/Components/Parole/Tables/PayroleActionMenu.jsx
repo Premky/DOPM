@@ -21,7 +21,7 @@ const handleViewPayrole = async ( row ) => {
   saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
 };
 
-const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchAll } ) => {
+const PayroleActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 

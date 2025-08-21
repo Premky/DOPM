@@ -47,7 +47,7 @@ export default function PayroleFileCoverDocx( props ) {
     if ( Array.isArray( data?.muddas ) ) {
         mudda_name = data.muddas.map( ( m ) => m.mudda_name ).join( ", " );
     }
-
+    console.log( data );
     const generateDocument = async () => {
         const numbering = {
             config: [
@@ -199,7 +199,7 @@ export default function PayroleFileCoverDocx( props ) {
                             },
                             children: [
                                 new TextRun( { text: `कैद भुक्तान अवधिः-`, bold: true } ),
-                                new TextRun( `${ totalKaidDuration.formattedDuration}` || "" ),
+                                new TextRun( `${ totalKaidDuration.formattedDuration }` || "" ),
                             ],
                         } ),
                         new Paragraph( {
@@ -209,7 +209,7 @@ export default function PayroleFileCoverDocx( props ) {
                             },
                             children: [
                                 new TextRun( { text: `कैद भुक्तान अवधि/प्रतिशत-`, bold: true } ),
-                                new TextRun( `${totalBhuktanDuration.formattedDuration} (${totalBhuktanDuration.percentage}%) ` || "" ),
+                                new TextRun( `${ totalBhuktanDuration.formattedDuration } (${ totalBhuktanDuration.percentage }%) ` || "" ),
                             ],
                         } ),
                         new Paragraph( {
@@ -232,26 +232,24 @@ export default function PayroleFileCoverDocx( props ) {
                                 new TextRun( `${ data.punarabedan_office_name }को च.नं. ${ data.punarabedan_office_ch_no }, मिति ${ data.punarabedan_office_date } गतेको पत्र संलग्न रहेको छ ।  ` || "" ),
                             ],
                         } ),
+                        
+
                         new Paragraph( {
-                            numbering: {
-                                reference: "my-cool-numbering",
-                                level: 0,
-                            },
-                            children: [
-                                new TextRun( { text: `तोकिएको जरिवाना र तिरेको प्रमाण-`, bold: true } ),
-                                // new TextRun( `${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ ।  ` || "" ),
+                            numbering: { reference: "my-cool-numbering", level: 0 },
+                            children: [     
+                                new TextRun( { text: `तोकिएको जरिवाना/बिगो/क्षतिपुर्ती र तिरेको प्रमाण-`, bold: true } ),                           
+                                new TextRun( { break: 1 } ),             
+                                ...( data?.bandiFines?.length > 0
+                                    ? data.bandiFines.map(
+                                        ( fine, index ) =>
+                                            new TextRun( {
+                                                text: `${index+1}. ${fine.deposit_office}को च.नं. ${fine.deposit_ch_no}, मिति ${fine.deposit_date} गतेको पत्रबाट रु. ${fine.deposit_amount} ${fine.fine_name_np} ${fine.amount_deposited === 1 ? 'बुझाएको' : 'नबुझाएको'} ।`,
+                                            } )
+                                    )
+                                    : [new TextRun( " कुनै जरिवाना/क्षतिपुर्ती/बिगो तोकिएको छैन।" )] ),
                             ],
                         } ),
-                        new Paragraph( {
-                            numbering: {
-                                reference: "my-cool-numbering",
-                                level: 0,
-                            },
-                            children: [
-                                new TextRun( { text: `फैसला अनुसार तोकिएको क्षतिपुर्ति तिरेको प्रमाणः-`, bold: true } ),
-                                // new TextRun( `${ data.punarabedan_office }को मिति ${ data.punarabedan_office_date }, च.नं. ${ data.punarabedan_office_ch_no }को पत्र संलग्न रहेको छ ।  ` || "" ),
-                            ],
-                        } ),
+
                         new Paragraph( {
                             numbering: {
                                 reference: "my-cool-numbering",
