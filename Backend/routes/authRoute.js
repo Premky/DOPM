@@ -300,9 +300,9 @@ router.post('/login_ping', verifyToken, async (req, res) => {
 
 // Session Validation
 router.get('/session', verifyToken, (req, res) => {
-  if (!req.user) return res.status(401).json({ loggedIn: false });
-  return res.json({ loggedIn: true, user: req.user });
+  res.json({ loggedIn: true, user: req.user });
 });
+
 
 // Health Check
 router.get('/health', async (req, res) => {

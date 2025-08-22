@@ -47,42 +47,49 @@ const loginLimiter = rateLimit( {
 // app.use("/auth/login", loginLimiter);
 
 // ------------------- 2️⃣ CORS -------------------
-const hardOrigins1 = [
+const hardOrigins = [
   'http://localhost:3003', 'http://localhost:5173',
   'http://202.45.146.226', 'http://202.45.146.226:5173',
   'http://10.5.60.151', 'http://10.5.60.151:5173',
   'http://192.168.18.211:5173', 'http://192.168.18.17:5173',
 ];
-const hardOrigins = [
+const hardOrigins1 = [
   'http://localhost:5173',
   'http://localhost:3003',
   'http://202.45.146.226',
   'http://202.45.146.226:5173',    
   'http://10.5.60.151',
   'http://10.5.60.151:5173',      
-  'https://10.5.60.151:5174',
   'http://192.168.18.211:5173',
   'http://192.168.18.17:5173',
   'https://kptpo.onrender.com'
 ];
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
 
-app.use( cors( {
-  origin: ( origin, callback ) => {
-    if ( !origin || allowedOrigins.includes( origin ) ) callback( null, true );
-    else callback( new Error( 'Not allowed by CORS' ) );
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,  // ensure OPTIONS request succeeds
-} ) );
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Cache-Control",
+    "Pragma",
+    "Expires"
+  ],
+  exposedHeaders: ["set-cookie"]
+}));
 
-// Handle OPTIONS requests globally to include custom headers
-app.options( '*', ( req, res ) => {
-  res.header( 'Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma, Expires' );
-  res.sendStatus( 204 );
-} );
+// Explicit OPTIONS handling to ensure custom headers are included
+app.options('*', (req, res) => {
+  res.header("Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Cache-Control, Pragma, Expires");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.sendStatus(204);
+});
 
 // ------------------- 3️⃣ Security Headers -------------------
 // HSTS: enforce HTTPS
