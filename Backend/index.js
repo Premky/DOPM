@@ -33,7 +33,7 @@ const __dirname = path.dirname(__filename);
 // Global limiter (protects against DDoS)
 const globalLimiter = rateLimit({
   windowMs: 2 * 60 * 1000, // 1 minutes
-  max: 100,
+  max: 500,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use(globalLimiter);
@@ -48,10 +48,9 @@ app.use("/auth/login", loginLimiter);
 
 // ------------------- 2️⃣ CORS -------------------
 const hardOrigins = [
-  'http://202.45.146.226', 'http://localhost:3003', 'http://202.45.146.226:5173',
-  'https://202.45.146.226', 'https://202.45.146.226:5173', 'http://10.5.60.151',
-  'http://10.5.60.151:5173', 'http://10.5.60.151:5174', 'https://10.5.60.151',
-  'https://10.5.60.151:5173', 'https://10.5.60.151:5174', 'http://localhost:5173',
+  'http://202.45.146.226', 'http://localhost:3003', 'http://localhost:5173',
+  'http://202.45.146.226:5173',  'https://202.45.146.226', 'https://202.45.146.226:5173', 'http://10.5.60.151',
+  'http://10.5.60.151:5173', 'http://10.5.60.151:5174', 'https://10.5.60.151',  'https://10.5.60.151:5173', 'https://10.5.60.151:5174',   
   'http://192.168.18.211:5173', 'http://192.168.18.17:5173',
 ];
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || hardOrigins;
