@@ -36,7 +36,7 @@ const globalLimiter = rateLimit({
   max: 500,
   message: 'Too many requests from this IP, please try again later.'
 });
-app.use(globalLimiter);
+// app.use(globalLimiter);
 
 // Login-specific limiter
 const loginLimiter = rateLimit({
@@ -44,7 +44,7 @@ const loginLimiter = rateLimit({
   max: 15,
   message: 'Too many login attempts. Try again later.'
 });
-app.use("/auth/login", loginLimiter);
+// app.use("/auth/login", loginLimiter);
 
 // ------------------- 2️⃣ CORS -------------------
 const hardOrigins = [
