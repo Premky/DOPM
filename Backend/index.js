@@ -32,7 +32,7 @@ const __dirname = path.dirname(__filename);
 // ------------------- 1️⃣ Rate Limiting -------------------
 // Global limiter (protects against DDoS)
 const globalLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
+  windowMs: 2 * 60 * 1000, // 1 minutes
   max: 100,
   message: 'Too many requests from this IP, please try again later.'
 });
