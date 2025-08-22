@@ -1,278 +1,205 @@
 import express from 'express';
-import con, { promiseCon } from '../utils/db.js';
 import pool from '../utils/db3.js';
-
-import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import session from 'express-session';
 import verifyToken from '../middlewares/verifyToken.js';
+import { promisify } from 'util';
+import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
-const queryAsync = promisify( con.query ).bind( con );
-const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
-const commitAsync = promisify( con.commit ).bind( con );
-const rollbackAsync = promisify( con.rollback ).bind( con );
-const query = promisify( con.query ).bind( con );
+// Rate limiter for login and password reset
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per window
+  message: { success: false, message: "Too many attempts, please try later." }
+});
 
-// Function to hash passwords
-const hashPassword = async ( password ) => {
-    const salt = await bcrypt.genSalt( 10 );
-    return await bcrypt.hash( password, salt );
+// Hash password
+const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
 };
 
-// Validate Login Input
-const validateLoginInput = ( username, password ) => {
-    if ( !username || !password ) {
-        return { isValid: false, message: "Username and Password are required." };
-    }
-    return { isValid: true };
+// Compare password
+const comparePassword = async (plain, hash) => await bcrypt.compare(plain, hash);
+
+
+// Validate user input for create/update/reset
+const validateUserFields = ({ username, password, repassword, name_np }) => {
+  if (!username || !password || !repassword || !name_np) return "सबै फिल्डहरू आवश्यक छन्।";
+  if (password !== repassword) return "पासवर्डहरू मिलेन।";
+
+  // Password Strength Check
+  const strongPassowrdCombination = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  if( !strongPassowrdCombination.test(password)) {
+    return "पासवर्ड कम्तिमा 8 अक्षर लामो, एक ठूलो अक्षर, एक सानो अक्षर र एक अंक समावेश गर्नुपर्छ।";
+  } 
+  return null;
 };
 
-// Create User Route
-router.post( "/create_user", verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const active_user = req.user.id;
-    let current_office;
-    try {
-        const { name_np, username, usertype, userrole, password, repassword, office, branch, is_active } = req.body;
-        if ( office == '' || office == null || office == undefined ) {
-            current_office = active_office;
-        } else {
-            current_office = office;
-        }
-        if ( !name_np || !username || !password || !repassword || !office ) {
-            return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
-        }
+// Create User
+router.post("/create_user", verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const active_user = req.user.id;
 
-        if ( password !== repassword ) {
-            return res.status( 400 ).json( { message: "पासवर्डहरू मिलेन।" } );
-        }
+  try {
+    const { name_np, username, userrole, password, repassword, office, branch, is_active } = req.body;
+    const errorMsg = validateUserFields({ username, password, repassword, name_np });
+    if (errorMsg) return res.status(400).json({ message: errorMsg });
 
-        const existingUser = await query( "SELECT id FROM users WHERE user_login_id = ?", [username] );
-        if ( existingUser.length > 0 ) {
-            return res.status( 400 ).json( { message: "यो प्रयोगकर्ता नाम पहिल्यै अवस्थित छ।" } );
-        }
+    const current_office = office || active_office;
 
-        const hashedPassword = await hashPassword( password );
-        const sql = `
-            INSERT INTO users (user_name, user_login_id, role_id,  password, office_id, branch_id, is_active,
-            created_by, updated_by, created_at, updated_at,created_office_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        try {
-            const result = await pool.query( sql, [name_np, username, userrole, hashedPassword, current_office, branch, is_active,
-                active_user, active_user, new Date(), new Date(), active_office
-            ] );
-            return res.json( { Status: true, Result: result } );
-        } catch ( err ) {
-            console.error( "Database Query Error:", err );
-            res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-        }
-    } catch ( error ) {
-        console.error( "User creation error:", error );
-        res.status( 500 ).json( { message: "सर्भर त्रुटि भयो।" } );
-    }
-} );
+    // Check existing user
+    const [existingUser] = await pool.query("SELECT id FROM users WHERE user_login_id = ?", [username]);
+    if (existingUser.length > 0) return res.status(400).json({ message: "यो प्रयोगकर्ता नाम पहिल्यै अवस्थित छ।" });
 
-// Get Users Route
-router.get( '/get_users', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const active_user = req.user.id;
-    const active_role = req.user.role_name;
+    const hashedPassword = await hashPassword(password);
 
-    if ( active_role !== 'superadmin' && active_role !== 'office_superadmin' ) {
-        return res.json( { Status: false, message: 'Access Denied!!!' } );
-    }
-
-    let filters = '';
-    let params = [];
-
-    if ( active_role === 'office_superadmin' ) {
-        filters = 'WHERE u.office_id = ?';
-        params.push( active_office );
-    }
     const sql = `
-        SELECT 
-            u.*, 
-            ur.role_name AS usertype_en, 
-            o.office_name_with_letter_address, 
-            b.branch_np,
-            e.mobile_no
-        FROM users u
-        LEFT JOIN user_roles ur ON u.role_id = ur.id
-        LEFT JOIN offices o ON u.office_id = o.id
-        LEFT JOIN branch b ON u.branch_id = b.id
-        LEFT JOIN employees e ON u.user_login_id = e.sanket_no
-        ${ filters }
-        ORDER BY u.id
+      INSERT INTO users
+      (user_name, user_login_id, role_id, password, office_id, branch_id, is_active,
+       created_by, updated_by, created_at, updated_at, created_office_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    try {
-        const result = await pool.query( sql, params );
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
+    const [result] = await pool.query(sql, [
+      name_np, username, userrole, hashedPassword, current_office, branch, is_active,
+      active_user, active_user, new Date(), new Date(), active_office
+    ]);
 
+    return res.json({ Status: true, Result: result });
+  } catch (error) {
+    console.error("User creation error:", error);
+    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
 
-// Update User Route
-router.put( '/update_user/:userid', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const active_user = req.user.id;
-    let current_office;
+// Get Users
+router.get("/get_users", verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const active_role = req.user.role_name;
 
-    const { userid } = req.params;
-    // console.log(req.body);
-    const { name_np, username, userrole, password, repassword, office, branch, is_active } = req.body;
-    if ( office == '' || office == null || office == undefined ) {
-        current_office = active_office;
-    } else {
-        current_office = office;
-    }
+  if (!['superadmin', 'office_superadmin'].includes(active_role)) {
+    return res.status(403).json({ Status: false, message: 'Access Denied' });
+  }
 
-    if ( !username || !name_np || !password || !repassword || !office ) {
-        return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
-    }
-
-    if ( password !== repassword ) {
-        return res.status( 400 ).json( { message: "पासवर्डहरू मिलेन।" } );
+  try {
+    let filters = '';
+    const params = [];
+    if (active_role === 'office_superadmin') {
+      filters = 'WHERE u.office_id = ?';
+      params.push(active_office);
     }
 
-    const existingUser = await query( "SELECT id FROM users WHERE user_login_id = ?", [userid] );
-    if ( existingUser.length === 0 ) {
-        return res.status( 400 ).json( { message: "यो प्रयोगकर्ता अवस्थित छैन।" } );
-    }
-
-    const hashedPassword = await hashPassword( password );
     const sql = `
-        UPDATE users SET user_name=?, user_login_id=?, role_id=?, password=?, office_id=?, branch_id=?, is_active=? WHERE user_login_id=?`;
+      SELECT u.*, ur.role_name AS usertype_en, o.office_name_with_letter_address, b.branch_np, e.mobile_no
+      FROM users u
+      LEFT JOIN user_roles ur ON u.role_id = ur.id
+      LEFT JOIN offices o ON u.office_id = o.id
+      LEFT JOIN branch b ON u.branch_id = b.id
+      LEFT JOIN employees e ON u.user_login_id = e.sanket_no
+      ${filters}
+      ORDER BY u.id
+    `;
 
-    try {
-        const result = await query( sql, [name_np, username, userrole, hashedPassword, current_office, branch, is_active, userid] );
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
+    const [result] = await pool.query(sql, params);
+    return res.json({ Status: true, Result: result });
+  } catch (error) {
+    console.error("Get users error:", error);
+    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
 
-router.put( '/reset_password', verifyToken, async ( req, res ) => {
-    const active_user = req.user.id;
-    const { old_password, password, repassword } = req.body;
+// Update User
+router.put("/update_user/:userid", verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const { userid } = req.params;
 
-    const fetchUserQuery = `
-    SELECT DISTINCT u.*,
-      o.office_name_with_letter_address AS office_np, o.letter_address AS office_en,
-      o.id AS office_id, ut.usertype_en, ut.usertype_np, ur.id AS role_id, ur.role_name, b.branch_np
-    FROM users u
-    LEFT JOIN offices o ON u.office_id = o.id
-    LEFT JOIN branch b ON u.branch_id = b.id
-    LEFT JOIN usertypes ut ON u.usertype = ut.id
-    LEFT JOIN user_roles ur ON u.role_id = ur.id
-    WHERE u.id = ?`;
+  try {
+    const { name_np, username, userrole, password, repassword, office, branch, is_active } = req.body;
+    const errorMsg = validateUserFields({ username, password, repassword, name_np });
+    if (errorMsg) return res.status(400).json({ message: errorMsg });
 
-    try {
-        // Fetch user data
-        const [userdb] = await pool.query( fetchUserQuery, [active_user] );
-        if ( userdb.length === 0 ) {
-            return res.status( 401 ).json( { loginStatus: false, message: "Invalid user" } );
-        }
+    const current_office = office || active_office;
 
-        const user = userdb[0];
+    // Check user exists
+    const [existingUser] = await pool.query("SELECT id FROM users WHERE user_login_id = ?", [userid]);
+    if (existingUser.length === 0) return res.status(400).json({ message: "यो प्रयोगकर्ता अवस्थित छैन।" });
 
-        // Verify old password matches
-        const isMatch = await bcrypt.compare( old_password, user.password );
-        if ( !isMatch ) {
-            return res.status( 401 ).json( { loginStatus: false, message: "पुरानो पासवर्ड मिलेन" } ); // Old password does not match
-        }
+    const hashedPassword = await hashPassword(password);
 
-        if ( old_password === password ) {
-            return res.status( 400 ).json( { message: "पुरानो र नयाँ पासवर्ड उस्तै छन्। कृपया नयाँ पासवर्ड दिनुहोस्।" } );
-        }
+    const sql = `
+      UPDATE users
+      SET user_name=?, role_id=?, password=?, office_id=?, branch_id=?, is_active=?
+      WHERE user_login_id=?
+    `;
+    const [result] = await pool.query(sql, [name_np, userrole, hashedPassword, current_office, branch, is_active, userid]);
 
-        // Check new password confirmation
-        if ( password !== repassword ) {
-            return res.status( 400 ).json( { message: "पासवर्डहरू मिलेन।" } ); // Passwords do not match
-        }
+    return res.json({ Status: true, Result: result });
+  } catch (error) {
+    console.error("Update user error:", error);
+    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
 
-        // Hash new password and update
-        const hashedPassword = await hashPassword( password );
-        const [result] = await pool.query(
-            `UPDATE users SET password = ?, must_change_password = ? WHERE id = ?`,
-            [hashedPassword, 0, active_user]
-        );
+// Reset Password
+router.put('/reset_password', verifyToken, authLimiter,  async (req, res) => {
+  const active_user = req.user.id;
+  const { old_password, password, repassword } = req.body;
 
-        return res.json( { Status: true, Result: result } );
-    } catch ( error ) {
-        console.error( "Database Query Error:", error );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
+  const errorMsg = validateUserFields({ username: 'dummy', password, repassword, name_np: 'dummy' });
+  if (!old_password) return res.status(400).json({ message: "पुरानो पासवर्ड आवश्यक छ।" });
+  if (errorMsg) return res.status(400).json({ message: errorMsg });
 
+  try {
+    const [userResult] = await pool.query("SELECT * FROM users WHERE id = ?", [active_user]);
+    if (userResult.length === 0) return res.status(401).json({ loginStatus: false, message: "Invalid user" });
 
-// Delete User Route
-router.delete( '/delete_user/:id', async ( req, res ) => {
-    const { id } = req.params;
+    const user = userResult[0];
+    const matchOld = await comparePassword(old_password, user.password);
+    if (!matchOld) return res.status(401).json({ loginStatus: false, message: "पुरानो पासवर्ड मिलेन" });
+    if (old_password === password) return res.status(400).json({ message: "पुरानो र नयाँ पासवर्ड उस्तै छन्।" });
 
-    if ( !Number.isInteger( parseInt( id ) ) ) {
-        return res.status( 400 ).json( { Status: false, Error: 'Invalid ID format' } );
-    }
+    const hashedPassword = await hashPassword(password);
+    const [result] = await pool.query("UPDATE users SET password=?, must_change_password=0 WHERE id=?", [hashedPassword, active_user]);
 
-    try {
-        const sql = "DELETE FROM users WHERE id = ?";
-        con.query( sql, id, ( err, result ) => {
-            if ( err ) {
-                console.error( 'Database query error:', err );
-                return res.status( 500 ).json( { Status: false, Error: 'Internal server error' } );
-            }
+    return res.json({ Status: true, Result: result });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
 
-            if ( result.affectedRows === 0 ) {
-                return res.status( 404 ).json( { Status: false, Error: 'Record not found' } );
-            }
-
-            return res.status( 200 ).json( { Status: true, Result: result } );
-        } );
-    } catch ( error ) {
-        console.error( 'Unexpected error:', error );
-        return res.status( 500 ).json( { Status: false, Error: 'Unexpected error occurred' } );
-    }
-} );
-
-router.post( '/login', async ( req, res ) => {
+// Login Route
+router.post('/login', authLimiter, async (req, res) => {
     const { username, password } = req.body;
-    const validation = validateLoginInput( username, password );
 
-    if ( !validation.isValid ) {
-        return res.status( 400 ).json( { loginStatus: false, Error: validation.message } );
+    if (!username || !password) {
+        return res.status(400).json({ loginStatus: false, Error: "Username and Password are required." });
     }
 
-    const fetchUserQuery = `
-    SELECT DISTINCT u.*,
-      o.office_name_with_letter_address AS office_np, o.letter_address AS office_en, nd.district_name_np, 
-      o.id AS office_id, ut.usertype_en, ut.usertype_np, ur.id AS role_id, ur.role_name, b.branch_np
-    FROM users u
-    LEFT JOIN offices o ON u.office_id = o.id
-    LEFT JOIN np_district nd ON o.district_Id = nd.did
-    LEFT JOIN branch b ON u.branch_id = b.id
-    LEFT JOIN usertypes ut ON u.usertype = ut.id
-    LEFT JOIN user_roles ur ON u.role_id = ur.id
-    WHERE u.user_login_id = ?`;
     try {
-        // Use promise-based query
-        const [result] = await pool.query( fetchUserQuery, [username] );
+        const [userResult] = await pool.query(`
+            SELECT u.*, o.office_name_with_letter_address AS office_np, o.letter_address AS office_en,
+                   nd.district_name_np, ur.id AS role_id, ur.role_name, b.branch_np,
+                   ut.usertype_en, ut.usertype_np
+            FROM users u
+            LEFT JOIN offices o ON u.office_id = o.id
+            LEFT JOIN np_district nd ON o.district_Id = nd.did
+            LEFT JOIN branch b ON u.branch_id = b.id
+            LEFT JOIN usertypes ut ON u.usertype = ut.id
+            LEFT JOIN user_roles ur ON u.role_id = ur.id
+            WHERE u.user_login_id = ?`, [username]);
 
-        if ( result.length === 0 ) {
-            return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
+        if (userResult.length === 0) {
+            return res.status(401).json({ loginStatus: false, Error: "Invalid username or password" });
         }
 
-        const user = result[0];
-        // console.log( user );
-        const isMatch = await bcrypt.compare( password, user.password );
-        if ( !isMatch ) {
-            return res.status( 401 ).json( { loginStatus: false, Error: "Invalid username or password" } );
+        const user = userResult[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ loginStatus: false, Error: "Invalid username or password" });
         }
 
         const userdetails = {
@@ -286,132 +213,104 @@ router.post( '/login', async ( req, res ) => {
             office_id: user.office_id,
             office_np: user.office_np,
             office_en: user.office_en,
-            office_district : user.district_name_np,
-            branch_name: user.branch_name,
+            office_district: user.district_name_np,
+            branch_name: user.branch_np,
             usertype_en: user.usertype_en,
             usertype_np: user.usertype_np,
             role_id: user.role_id,
             role_name: user.role_name
         };
-        // console.log(userdetails)
 
-        const token = jwt.sign( userdetails, process.env.JWT_SECRET, { expiresIn: '1h' } );
+        const token = jwt.sign(userdetails, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.cookie( 'token', token, {
+        res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
             maxAge: 60 * 60 * 1000,
-        } );
+        });
 
         req.session.user = { userdetails };
 
         // Update online status
-        // await promiseCon.query("UPDATE users SET is_online = 1 WHERE id = ?", [user.id]);
-        await pool.query( "UPDATE users SET is_online = ?, last_seen = NOW() WHERE id = ?", [1, user.id] );
+        await pool.query("UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?", [user.id]);
 
-        return res.json( {
+        return res.json({
             loginStatus: true,
             userdetails,
             must_change_password: user.must_change_password
-        } );
+        });
 
-    } catch ( err ) {
-        console.error( "Unexpected error:", err );
-        return res.status( 500 ).json( { loginStatus: false, Error: "Server error" } );
+    } catch (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ loginStatus: false, Error: "Server error" });
     }
-} );
+});
 
+// Logout
+router.post('/logout', verifyToken, async (req, res) => {
+  const user_id = req.user?.id;
+  if (!user_id) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-// Logout Route
-// Include this middleware if you're using JWT to extract req.user
-router.post( '/logout',verifyToken, async ( req, res ) => {
-    if ( !req.user || !req.user.id ) {
-        return res.status( 401 ).json( { success: false, message: 'Unauthorized' } );
-    }
+  try {
+    await pool.query("UPDATE users SET is_online=0 WHERE id=?", [user_id]);
 
-    const user_id = req.user.id;
+    res.clearCookie('token', { httpOnly: true, sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' });
 
-    try {
-        await pool.query( "UPDATE users SET is_online = 0 WHERE id = ?", [user_id] );
+    const destroyAsync = promisify(req.session.destroy).bind(req.session);
+    await destroyAsync();
 
-        res.clearCookie( 'token', {
-            httpOnly: true,
-            sameSite: 'Lax',
-            secure: process.env.NODE_ENV === 'production',
-        } );
+    return res.status(200).json({ success: true, message: 'Logout successful' });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({ success: false, message: 'Logout failed' });
+  }
+});
 
-        return res.status( 200 ).json( { success: true, message: 'Logout successful' } );
-    } catch ( error ) {
-        console.error( 'Logout error:', error );
-        return res.status( 500 ).json( { success: false, message: 'Logout failed' } );
-    }
-} );
-
-router.get( '/get_online_status', verifyToken, async ( req, res ) => {
-    try {
-        const sql = `
+// Online Status
+router.get('/get_online_status', verifyToken, async (req, res) => {
+  try {
+    const [result] = await pool.query(`
       SELECT o.id AS office_id, o.letter_address AS office_name, MAX(u.is_online) AS is_online
       FROM offices o
       LEFT JOIN users u ON o.id = u.office_id
-      WHERE o.office_categories_id= 2 OR office_categories_id=3
+      WHERE o.office_categories_id IN (2,3)
       GROUP BY o.id
-    `;
-        const [result] = await pool.query( sql );
+    `);
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    console.error("Online status fetch error:", error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch online status' });
+  }
+});
 
-        res.json( { success: true, data: result } );
-    } catch ( err ) {
-        console.error( 'Online status fetch error:', err );
-        res.status( 500 ).json( { success: false, message: 'Failed to fetch online status' } );
-    }
-} );
+// Login Ping
+router.post('/login_ping', verifyToken, async (req, res) => {
+  const user_id = req.user?.id;
+  if (!user_id) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-router.post( '/login_ping', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.id;
+  try {
+    await pool.query("UPDATE users SET is_online=1, last_seen=NOW() WHERE id=?", [user_id]);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Login ping error:", error);
+    return res.status(500).json({ success: false });
+  }
+});
 
-    // Corrected logic
-    // if (active_office !== 1 && active_office !== 2) return;
-    try {
-        await pool.query(
-            "UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?",
-            [user_id]
-        );
-        res.json( { success: true } );
-    } catch ( error ) {
-        console.error( "Ping error:", error );
-        res.status( 500 ).json( { success: false } );
-    }
-} );
+// Session Validation
+router.get('/session', verifyToken, (req, res) => {
+  if (!req.user) return res.status(401).json({ loggedIn: false });
+  return res.json({ loggedIn: true, user: req.user });
+});
 
-// Session Validation Route
-router.get( '/session', verifyToken, ( req, res ) => {
-    // console.log('session', req.user)
-    if ( !req.user ) return res.status( 401 ).json( { loggedIn: false } );
-
-    const { name_en, username, email, is_staff, is_active, is_online, last_login, join_date,
-        office_id, office_np, office_en, office_district, usertype_en, usertype_np, role_id, role_name } = req.user;
-
-    return res.json( {
-        loggedIn: true,
-        user: {
-            name_en,
-            username,
-            email,
-            is_staff,
-            is_active,
-            is_online,
-            last_login,
-            join_date,
-            office_id, office_np, office_en, office_district,
-            usertype_en, usertype_np, role_id, role_name
-        }
-    } );
-} );
-
-// Health Check Route
-router.get( '/health', ( req, res ) => {
-    res.status( 200 ).send( "OK" );
-} );
-
+// Health Check
+router.get('/health', async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    res.status(200).send("OK");
+  } catch (error) {
+    res.status(500).send("DB Connection Failed");
+  }
+});
 export { router as authRouter };

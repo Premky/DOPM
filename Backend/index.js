@@ -11,11 +11,12 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import crypto from "crypto";
 import errorHandler from './middlewares/errorHandler.js';
 import './services/markOffline.js';
 
 import { authRouter } from './routes/authRoute.js';
-import {adminRouter} from './routes/adminRoute.js';
+import { adminRouter } from './routes/adminRoute.js';
 import { publicRouter } from './routes/publicRoutes.js';
 import { employeRouter } from './routes/employeRoute.js';
 import { bandiRouter } from './routes/bandiRuoute.js';
@@ -25,128 +26,138 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3003;
-const __filename = fileURLToPath( import.meta.url );
-const __dirname = path.dirname( __filename );
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// ------------------- ✅ CORS FIRST -------------------
+// ------------------- 1️⃣ Rate Limiting -------------------
+// Global limiter (protects against DDoS)
+const globalLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use(globalLimiter);
+
+// Login-specific limiter
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  message: 'Too many login attempts. Try again later.'
+});
+app.use("/auth/login", loginLimiter);
+
+// ------------------- 2️⃣ CORS -------------------
 const hardOrigins = [
-    'http://202.45.146.226',
-    'http://localhost:3003',
-    'http://202.45.146.226:5173',
-    'https://202.45.146.226',
-    'https://202.45.146.226:5173',
-    'http://10.5.60.151',
-    'http://10.5.60.151:5173',
-    'http://10.5.60.151:5174',
-    'https://10.5.60.151',
-    'https://10.5.60.151:5173',
-    'https://10.5.60.151:5174',
-    'http://localhost:5173',
-    'http://192.168.18.211:5173',
-    'http://192.168.18.17:5173',
-    'https://kptpo.onrender.com'
+  'http://202.45.146.226', 'http://localhost:3003', 'http://202.45.146.226:5173',
+  'https://202.45.146.226', 'https://202.45.146.226:5173', 'http://10.5.60.151',
+  'http://10.5.60.151:5173', 'http://10.5.60.151:5174', 'https://10.5.60.151',
+  'https://10.5.60.151:5173', 'https://10.5.60.151:5174', 'http://localhost:5173',
+  'http://192.168.18.211:5173', 'http://192.168.18.17:5173',
 ];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || hardOrigins;
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split( ',' )
-    : hardOrigins;
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+}));
 
-app.use( cors( {
-    origin: ( origin, callback ) => {
-        if ( !origin || allowedOrigins.includes( origin ) ) {
-            callback( null, true );
-        } else {
-            callback( new Error( 'Not allowed by CORS' ) );
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-} ) );
+// ------------------- 3️⃣ Security Headers -------------------
+// HSTS: enforce HTTPS
+// app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true }));
 
-app.use(
-    '/uploads',
-    ( req, res, next ) => {
-        const origin = req.headers.origin;
-        if ( origin && allowedOrigins.includes( origin ) ) {
-            res.setHeader( 'Access-Control-Allow-Origin', origin );
-        } else {
-            // Allow direct browser access (no CORS header sent by <img> from same-origin)
-            res.setHeader( 'Access-Control-Allow-Origin', '*' );
-        }
-        // res.setHeader( 'Cross-Origin-Resource-Policy', 'cross-origin' ); // ✅ Required for image sharing
-        // res.setHeader( 'Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept' );
+// Other Helmet protections
+app.use(helmet.hidePoweredBy());
+app.use(helmet.noSniff());
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
+app.use(helmet.ieNoOpen());
+app.use(helmet.dnsPrefetchControl({ allow: false }));
+app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 
-        next();
-    },
-    express.static( path.join( __dirname, 'uploads' ) ) // ← make sure this path is correct
-);
+// CSP with nonce
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+app.use(helmet.contentSecurityPolicy({
+  useDefaults: true,
+  directives: {
+    "script-src": ["'self'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    "img-src": ["'self'", "data:", "https:"],
+    "style-src": ["'self'", "'unsafe-inline'"]
+  }
+}));
 
+// ------------------- 4️⃣ Body Parsing -------------------
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// ✅ Preflight support for CORS
-app.options( '*', cors() );
-
-// ------------------- ✅ Middleware -------------------
-app.use( helmet() );
-app.use( express.json() );
-app.use( cookieParser() );
-app.use( bodyParser.urlencoded( { extended: true } ) );
-
-// ------------------- ✅ Session AFTER CORS -------------------
-app.use( session( {
-    secret: process.env.JWT_SECRET || 'jwt_prem_ko_secret_key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // ✅ Secure only in production
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ safer fallback
-        maxAge: 24 * 60 * 60 * 1000
-    }
-} ) );
-
-// console.log(process.env.NODE_ENV === 'production')
-
-// ------------------- ✅ Logging & Compression -------------------
-if ( process.env.NODE_ENV !== 'production' ) {
-    app.use( morgan( 'dev' ) );
+// ------------------- 5️⃣ Compression & Logging -------------------
+app.use(compression());
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
 } else {
-    app.use( morgan( 'tiny' ) );
+  app.use(morgan('tiny'));
 }
-app.use( compression() );
 
-// ------------------- ✅ Rate Limiting (Optional) -------------------
-const limiter = rateLimit( {
-    windowMs: 10 * 60 * 1000,
-    max: 100,
-    message: 'Too many requests from this IP, please try again later.'
-} );
-// app.use(limiter);
+// ------------------- 6️⃣ Session -------------------
+const MySQLStore = connectMySQL(session);
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST || 'localhost',
+  ...(process.env.DB_PORT && { port: Number(process.env.DB_PORT) }),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  clearExpired: true,
+  checkExpirationInterval: 900000, // 15 min
+  expiration: 86400000 // 1 day
+});
 
-// ------------------- ✅ Static Files -------------------
-app.use( express.static( 'Public' ) );
-// app.use('/Uploads', express.static(path.join(__dirname, 'Public', 'Uploads')));
-// Best choice for your case
-app.use( '/uploads', express.static( 'uploads' ) );
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  name: 'dopm_app',
+  resave: false,
+  saveUninitialized: false,
+  rolling: true,
+  store: sessionStore,
+  unset: 'destroy',
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
 
-// ------------------- ✅ Routes -------------------
-app.use( '/admin', adminRouter );
-app.use( '/auth', authRouter );
-app.use( '/public', publicRouter );
-app.use( '/emp', employeRouter );
-app.use( '/bandi', bandiRouter );
-app.use( '/payrole', payroleRouter );
-app.use( '/bandiTransfer', bandiTransferRouter );
+// ------------------- 7️⃣ Static Files -------------------
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static('Public'));
 
-// ------------------- ✅ Error Handler -------------------
-app.use( errorHandler );
+// ------------------- 8️⃣ Routes -------------------
+app.use('/admin', adminRouter);
+app.use('/auth', authRouter);
+app.use('/public', publicRouter);
+app.use('/emp', employeRouter);
+app.use('/bandi', bandiRouter);
+app.use('/payrole', payroleRouter);
+app.use('/bandiTransfer', bandiTransferRouter);
 
-// ------------------- ✅ Server Start -------------------
-app.listen( port, () => {
-    console.log( `🚀 Server running on port ${ port }` );
-} );
+// ------------------- 9️⃣ Error Handler -------------------
+app.use(errorHandler);
 
-// ------------------- ✅ Graceful Shutdown -------------------
-process.on( 'SIGINT', () => {
-    console.log( '👋 Server shutting down...' );
-    process.exit();
-} );
+// ------------------- 🔟 Server Start -------------------
+app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
+
+// ------------------- 1️⃣1️⃣ Graceful Shutdown -------------------
+process.on('SIGINT', async () => {
+  console.log('👋 Server shutting down...');
+  // Close session store connections if needed
+  sessionStore.close();
+  process.exit();
+});
