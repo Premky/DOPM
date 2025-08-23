@@ -7,6 +7,7 @@ import {
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 
 const ReusableBandiTable = ( {
     rows = [],
@@ -27,17 +28,59 @@ const ReusableBandiTable = ( {
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
     const [photoToPreview, setPhotoToPreview] = useState( '' );
 
+    const rowsWithComputed = useMemo( () => {
+        return rows.map( row => ( {
+            ...row,
+            remaining_days_to_release: finalReleaseDateWithFine(
+                row.thuna_date_bs,
+                row.release_date_bs,
+                row.total_jariwana_amount
+            ) || 0
+        } ) );
+    }, [rows] );
+
+
     const filteredRows = useMemo( () => {
-        if ( !filterText ) return rows;
-        return rows.filter( bandi =>
+        if ( !filterText ) return rowsWithComputed;
+        return rowsWithComputed.filter( bandi =>
             bandi.bandi_name?.toLowerCase().includes( filterText.toLowerCase() ) ||
             bandi.office_bandi_id?.toString().includes( filterText.toLowerCase() )
         );
-    }, [rows, filterText] );
+    }, [rowsWithComputed, filterText] );
+
+    const [orderBy, setOrderBy] = useState( null );
+    const [order, setOrder] = useState( 'asc' );
+
+    const handleSort = ( field ) => {
+        if ( orderBy === field ) {
+            setOrder( order === 'asc' ? 'desc' : 'asc' );
+        } else {
+            setOrderBy( field );
+            setOrder( 'asc' );
+        }
+    };
+
+    const sortedRows = useMemo( () => {
+        if ( !orderBy ) return filteredRows;
+
+        return [...filteredRows].sort( ( a, b ) => {
+            const aValue = a[orderBy] ?? '';
+            const bValue = b[orderBy] ?? '';
+
+            if ( typeof aValue === 'number' && typeof bValue === 'number' ) {
+                return order === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+
+            return order === 'asc'
+                ? String( aValue ).localeCompare( String( bValue ) )
+                : String( bValue ).localeCompare( String( aValue ) );
+        } );
+    }, [filteredRows, orderBy, order] );
 
     const paginatedRows = useMemo( () => {
-        return filteredRows.slice( page * rowsPerPage, ( page + 1 ) * rowsPerPage );
-    }, [filteredRows, page, rowsPerPage] );
+        return sortedRows.slice( page * rowsPerPage, ( page + 1 ) * rowsPerPage );
+    }, [sortedRows, page, rowsPerPage] );
+
 
     const handleChangePage = ( event, newPage ) => setPage( newPage );
     const handleChangeRowsPerPage = ( event ) => {
@@ -73,7 +116,7 @@ const ReusableBandiTable = ( {
                     mudda?.mudda_name || '',
                     mudda?.vadi || '0',
                     ( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )
-                ];                              
+                ];
                 worksheet.addRow( rowData );
             } );
 
@@ -104,6 +147,7 @@ const ReusableBandiTable = ( {
         const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
         saveAs( blob, 'bandi_records.xlsx' );
     };
+
     // console.log(paginatedRows);
     return (
         <Box>
@@ -139,7 +183,12 @@ const ReusableBandiTable = ( {
                             <TableCell align="center">सि.नं.</TableCell>
                             {/* <TableCell align="center">कारागार कार्यालय</TableCell> */}
                             {columns.map( col => (
-                                <TableCell key={col.field} align="center">{col.headerName}</TableCell>
+                                <TableCell key={col.field} align="center"
+                                    onClick={() => handleSort( col.field )}
+                                    style={{ cursor: 'pointer', fontWeight: orderBy === col.field ? 'bold' : 'normal' }}
+                                >{col.headerName}
+                                    {orderBy === col.field ? ( order === 'asc' ? ' 🔼' : ' 🔽' ) : ''}
+                                </TableCell>
                             ) )}
                             <TableCell align="center">मुद्दा</TableCell>
                             <TableCell align="center">जाहेरवाला</TableCell>

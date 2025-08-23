@@ -14,6 +14,7 @@ const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInp
 const ReuseCountry = React.lazy( () => import( '../../ReuseableComponents/ReuseCountry' ) );
 const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
+import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 
 
 const AllBandiTable = () => {
@@ -90,7 +91,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                // console.log( Result );
+                console.log( Result[0] );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -234,7 +235,7 @@ const AllBandiTable = () => {
         },
         { field: "age", headerName: "उमेर", width: 100 },
         { field: "gender", headerName: "लिङ्ग", width: 100 },
-        { field: "nationality", headerName: "राष्ट्रियता", width: 100 },
+        { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
         {
             field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100,
@@ -249,7 +250,20 @@ const AllBandiTable = () => {
                 }
             }
         },
-        
+        {
+            field: "remaining_days_to_release",
+            headerName: "कैदमुक्त हुन बाँकी दिन (जरिवाना समेत)",
+            width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                return `${ finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0 }`;
+            },
+            sortValue: ( row ) => {
+                // sorting based on the computed numeric value
+                return finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0;
+            }
+        }
+
     ];
 
     return (
@@ -289,7 +303,7 @@ const AllBandiTable = () => {
                     <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseCountry
                             name="country"
-                            label='देश'                           
+                            label='देश'
                             control={control}
                         />
                     </Grid>
@@ -337,7 +351,7 @@ const AllBandiTable = () => {
                             options={[
                                 // { label: 'नभएको', value: '0' },
                                 { label: 'भएको', value: '1' }
-                            ]}                            
+                            ]}
                             control={control}
                         />
                     </Grid>
@@ -350,7 +364,7 @@ const AllBandiTable = () => {
                         />
                     </Grid>
 
-                    <Grid size={{xs:6}} mt={3}>
+                    <Grid size={{ xs: 6 }} mt={3}>
                         <Button
                             type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
                             onClick={fetchKaidi}>
