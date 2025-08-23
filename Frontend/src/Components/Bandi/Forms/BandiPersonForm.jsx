@@ -8,7 +8,7 @@ import { Grid } from '@mui/material';
 import NepaliDate from 'nepali-datetime';
 
 import { calculateAge } from '../../../../Utils/ageCalculator';
-import { calculateBSDate, calculateDateDetails, sumDates } from '../../../../Utils/dateCalculator';
+import { calculateBSDate,  sumDates } from '../../../../Utils/dateCalculator';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import ReuseCountry from '../../ReuseableComponents/ReuseCountry';
