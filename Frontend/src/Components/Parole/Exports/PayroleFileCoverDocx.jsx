@@ -232,23 +232,28 @@ export default function PayroleFileCoverDocx( props ) {
                                 new TextRun( `${ data.punarabedan_office_name }को च.नं. ${ data.punarabedan_office_ch_no }, मिति ${ data.punarabedan_office_date } गतेको पत्र संलग्न रहेको छ ।  ` || "" ),
                             ],
                         } ),
-                        
 
                         new Paragraph( {
                             numbering: { reference: "my-cool-numbering", level: 0 },
-                            children: [     
-                                new TextRun( { text: `तोकिएको जरिवाना/बिगो/क्षतिपुर्ती र तिरेको प्रमाण-`, bold: true } ),                           
-                                new TextRun( { break: 1 } ),             
-                                ...( data?.bandiFines?.length > 0
-                                    ? data.bandiFines.map(
-                                        ( fine, index ) =>
-                                            new TextRun( {
-                                                text: `${index+1}. ${fine.deposit_office}को च.नं. ${fine.deposit_ch_no}, मिति ${fine.deposit_date} गतेको पत्रबाट रु. ${fine.deposit_amount} ${fine.fine_name_np} ${fine.amount_deposited === 1 ? 'बुझाएको' : 'नबुझाएको'} ।`,
-                                            } )
-                                    )
-                                    : [new TextRun( " कुनै जरिवाना/क्षतिपुर्ती/बिगो तोकिएको छैन।" )] ),
+                            children: [
+                                new TextRun( { text: `तोकिएको जरिवाना/बिगो/क्षतिपुर्ती र तिरेको प्रमाण-`, bold: true } )
                             ],
                         } ),
+
+                        ...( data?.bandiFines?.length > 0
+                            ? data.bandiFines.map(
+                                ( fine, index ) =>
+                                    new Paragraph( {
+                                        numbering: { reference: "my-cool-numbering", level: 1 },
+                                        indent: { left: 720 },
+                                        children: [
+                                            new TextRun( {
+                                                text: `${ index + 1 }. ${ fine.deposit_office }को च.नं. ${ fine.deposit_ch_no }, मिति ${ fine.deposit_date } गतेको पत्रबाट रु. ${ fine.deposit_amount } ${ fine.fine_name_np } ${ fine.amount_deposited === 1 ? 'बुझाएको' : 'नबुझाएको' } ।`,
+                                            } ),                                            
+                                        ],
+                                    } ),
+                            )
+                            : [new TextRun( "कुनै जरिवाना/क्षतिपुर्ती/बिगो तोकिएको छैन।" )] ),
 
                         new Paragraph( {
                             numbering: {

@@ -775,7 +775,7 @@ router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
     oo.office_name_with_letter_address AS transfer_from_office_fn,
     btr.transfer_reason_np
     FROM bandi_transfer_history bth
-    LEFT JOIN offices o ON bth.transfer_office_id = o.id
+    LEFT JOIN offices o ON bth.transfer_from_office_id = o.id
     LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason_id=btr.id
     LEFT JOIN offices oo ON bth.created_office_id = oo.id
     WHERE bandi_id=?

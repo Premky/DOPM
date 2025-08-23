@@ -102,6 +102,10 @@ const PayroleTable = ( { status } ) => {
 
     const getRowBackgroundColor = ( status ) => {
         switch ( status ) {
+            case 3:
+                return "#f57272ff";
+            case 7:
+                return "#f57272ff";
             case "योग्य":
                 return "#bbeba4";
             case "फेल":
@@ -121,8 +125,8 @@ const PayroleTable = ( { status } ) => {
     };
 
     // const thStickyStyle = '#7161cdff';
-    const thStickyStyle = { position: "sticky", left: 0, zIndex: 3, background: 'blue', color: 'white', fontSize: '1.3em', fontWeight: 'bold' };
-    const thStyle = { background: 'blue', color: 'white', fontSize: '1.3em', fontWeight: 'bold' };
+    const thStickyStyle = { position: "sticky", left: 0, zIndex: 3, background: '#6765EC', color: 'white', fontSize: '1.3em', fontWeight: 'bold' };
+    const thStyle = { background: '#6765EC', color: 'white', fontSize: '1.3em', fontWeight: 'bold' };
 
     return (
         <>
@@ -186,11 +190,8 @@ const PayroleTable = ( { status } ) => {
                                 const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                                 const bandiFines = fetchedFines[data.bandi_id] || [];
                                 const bandiNoPunarabedan = fetchedNoPunarabedan[data.bandi_id] || [];
-                                // console.log( bandiFines );
-                                const rowStyle = {
-                                    backgroundColor:
-                                        getRowBackgroundColor( data.pyarole_rakhan_upayukat )
-                                };
+                                const statusColorCode = data?.pyarole_rakhan_upayukat || data?.payrole_status;
+                                const rowStyle = { backgroundColor: getRowBackgroundColor( statusColorCode ) };
                                 const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
                                 const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
                                 const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
@@ -215,7 +216,6 @@ const PayroleTable = ( { status } ) => {
                                                     checked={Boolean( data.is_checked )}
                                                     onChange={() => handleCheckboxChange( data.payrole_id, !data.is_checked )}
                                                 />
-
                                             </TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1} sx={{ position: "sticky", left: 0, zIndex: 3, backgroundColor: rowStyle }}>
                                                 {index + 1}
@@ -243,8 +243,6 @@ const PayroleTable = ( { status } ) => {
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                 {/* कैद अवधि */}
-                                                {/* {totalKaidDuration?.totalDays} दिन <br />
-                                            {kaidDuration?.totalDays} din <br /> */}
                                                 {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
                                                     <>
                                                         जम्मा कैदः <br />
@@ -272,12 +270,7 @@ const PayroleTable = ( { status } ) => {
                                                         {bhuktanDuration?.percentage}%
                                                     </>
                                                 )}
-
                                             </TableCell>
-                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                    {bhuktanDuration.formattedDuration}
-                                            <br />  {calculateBSDate( data.release_date_bs, current_date, calculateBSDate( data.thuna_date_bs, data.release_date_bs ).totalDays ).percentage}
-                                        </TableCell> */}
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>
                                                 {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
                                                     {totalBakiDuration?.formattedDuration}
@@ -336,11 +329,6 @@ const PayroleTable = ( { status } ) => {
                                                 </IconButton>
 
                                             </TableCell>
-                                            {/* <TableCell rowSpan={kaidiMuddas.length || 1}>
-                                                <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
-                                                    <MoreVertIcon />
-                                                </IconButton>
-                                            </TableCell> */}
                                         </TableRow>
 
                                         {kaidiMuddas.slice( 1 ).map( ( mudda, i ) => (

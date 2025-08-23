@@ -35,6 +35,7 @@ import { CheckBox } from '@mui/icons-material';
 import ReuseDatePickerBSsmV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
+import { fontSize } from '@mui/system';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -192,7 +193,7 @@ const BandiPersonForm = () => {
     }
   };
 
-const { optrecords, loading } = fetchMuddaGroups();
+  const { optrecords, loading } = fetchMuddaGroups();
   const onSubmit = async ( data ) => {
     // console.log( data );
     if ( !data.photo ) { alert( 'फोटो अनिवार्य छ ।' ); }
@@ -298,7 +299,7 @@ const { optrecords, loading } = fetchMuddaGroups();
   const { optrecords: diseasesOpt, loading: diseasesLoading } = fetchDiseases();
   const { optrecords: disabilitiesOpt, loading: disablilitiesLoading } = fetchDisabilities();
 
-  const formHeadStyle = { color: 'blue', fontWeight: 'bold' };
+  const formHeadStyle = { color: 'blue', fontWeight: 'bold', fontSize: '1.5rem' };
 
   return (
     <form onSubmit={handleSubmit( onSubmit )}>
@@ -369,6 +370,7 @@ const { optrecords, loading } = fetchMuddaGroups();
                 placeholder={"YYYY-MM-DD"}
                 readonly={true}
                 required={true}
+                maxDate={formattedDateNp}
                 control={control}
                 error={errors.dob}
               />
@@ -466,8 +468,8 @@ const { optrecords, loading } = fetchMuddaGroups();
 
       <Grid container spacing={0}>
         <Grid size={{ xs: 12 }} sx={{ mb: 0, ...formHeadStyle }}>
-          बन्दीको मुद्दा विवरणः
-          <button onClick={() => handleAdd()}>Add</button>
+          बन्दीको मुद्दा विवरणः &nbsp;
+          <button onClick={() => handleAdd()} style={{ color: 'red' }}> मुद्दा थप्नुहोस्</button>
           {/* {( authState.office_id === 1 ) || ( authState.office_id === 2 ) && (
           )} */}
           <AddSubMuddaModal
@@ -475,7 +477,7 @@ const { optrecords, loading } = fetchMuddaGroups();
             onClose={() => setModalOpen( false )}
             BASE_URL={BASE_URL}
             setModalOpen={setModalOpen}
-            // refetch={refetch}          
+          // refetch={refetch}          
           />
         </Grid>
 
@@ -489,244 +491,246 @@ const { optrecords, loading } = fetchMuddaGroups();
           setValue( `total_kaid_duration_${ index + 1 }`, `${ kaidDuration.formattedDuration }` );
 
           return (
-            <Grid container spacing={2} key={index} sx={{ mt: 2 }}>
-
-
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <ReuseSelect
-                  name={`mudda_group_id${ index + 1 }`}
-                  label="मुद्दा समुह"
-                  options={optrecords}
-                  control={control}
-                  required={true}
-                  error={errors[`mudda_group_id_${ index + 1 }`]}                  
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <ReuseMudda
-                  name={`mudda_id_${ index + 1 }`}
-                  label="मुद्दा"
-                  required={true}
-                  control={control}
-                  error={errors[`mudda__id_${ index + 1 }`]}
-                  muddaGroupId={mudda_group_id_arr}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <ReuseInput
-                  name={`mudda_no_${ index + 1 }`}
-                  label="मुद्दा नं."
-                  required={true}
-                  control={control}
-                  error={errors[`mudda_no_${ index + 1 }`]}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <ReuseInput
-                  name={`vadi_${ index + 1 }`}
-                  label="वादी वा जाहेरवालाको नाम"
-                  required={true}
-                  control={control}
-                  error={errors[`vadi_${ index + 1 }`]}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <ReuseOffice
-                  name={`mudda_office_${ index + 1 }`}
-                  label="मुद्दा रहेको निकाय"
-                  required={true}
-                  control={control}
-                  error={errors[`mudda_office_${ index + 1 }`]}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                {/* <ReuseDatePickerBs */}
-                {/* <ReuseDateField */}
-                <ReuseDatePickerSMV5
-                  name={`thuna_date_bs_${ index + 1 }`}
-                  label='थुना/कैद परेको मिती'
-                  placeholder={'YYYY-MM-DD'}
-                  // defaultValue={selectedBandi.hirasat_date_bs}
-                  required={true}
-                  control={control}
-                  error={errors.hirasat_date_bs}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <ReuseSelect
-                  name={`mudda_condition_${ index + 1 }`}
-                  label="मुद्दाको अवस्था?"
-                  required={true}
-                  control={control}
-                  options={[
-                    { label: 'चालु', value: 1 },
-                    { label: 'अन्तिम भएको', value: 0 },
-                  ]}
-                  error={errors[`mudda_condition_${ index + 1 }`]}
-                />
-              </Grid>
-              {muddaCondition === 0 && ( <>
-
-
-                <Grid size={{ xs: 3 }}>
+            <>
+              <Grid container spacing={2} key={index} sx={{ mt: 2 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <ReuseSelect
-                    name={`is_life_time_${ index + 1 }`}
-                    label="आजिवन कैद हो/होइन?"
-                    required={selectedbandi_type === 'कैदी'}
-                    options={[
-                      { value: '1', label: 'हो' },
-                      { value: '0', label: 'होइन' }
-                    ]}
+                    name={`mudda_group_id${ index + 1 }`}
+                    label="मुद्दा समुह"
+                    options={optrecords}
                     control={control}
-                    error={errors.is_life_time}
+                    required={true}
+                    error={errors[`mudda_group_id_${ index + 1 }`]}
                   />
                 </Grid>
-                {selectedbandi_type === 'कैदी' && ( <>
-                  {is_life_time_arr == 0 && ( <>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                      <ReuseDateField
-                        name={`release_date_bs_${ index + 1 }`}
-                        label="छुट्ने मिती"
-                        placeholder='YYYY-MM-DD'
-                        required={true}
-                        control={control}
-                        error={errors[`release_date_bs_${ index + 1 }`]}
-                      />
-                    </Grid>
-                  </>
-                  )}
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <ReuseDateField
-                      name={`mudda_phesala_date_${ index + 1 }`}
-                      label="मुद्दा फैसला मिति"
-                      placeholder="YYYY-MM-DD"
-                      required={true}
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ReuseMudda
+                    name={`mudda_id_${ index + 1 }`}
+                    label="मुद्दा"
+                    required={true}
+                    control={control}
+                    error={errors[`mudda__id_${ index + 1 }`]}
+                    muddaGroupId={mudda_group_id_arr}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ReuseInput
+                    name={`mudda_no_${ index + 1 }`}
+                    label="मुद्दा नं."
+                    required={true}
+                    control={control}
+                    error={errors[`mudda_no_${ index + 1 }`]}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ReuseInput
+                    name={`vadi_${ index + 1 }`}
+                    label="वादी वा जाहेरवालाको नाम"
+                    required={true}
+                    control={control}
+                    error={errors[`vadi_${ index + 1 }`]}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ReuseOffice
+                    name={`mudda_office_${ index + 1 }`}
+                    label="मुद्दा रहेको निकाय"
+                    required={true}
+                    control={control}
+                    error={errors[`mudda_office_${ index + 1 }`]}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  {/* <ReuseDatePickerBs */}
+                  {/* <ReuseDateField */}
+                  <ReuseDatePickerSMV5
+                    name={`thuna_date_bs_${ index + 1 }`}
+                    label='थुना/कैद परेको मिती'
+                    placeholder={'YYYY-MM-DD'}
+                    // defaultValue={selectedBandi.hirasat_date_bs}
+                    required={true}
+                    control={control}
+                    maxDate={formattedDateNp}
+                    error={errors.hirasat_date_bs}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ReuseSelect
+                    name={`mudda_condition_${ index + 1 }`}
+                    label="मुद्दाको अवस्था?"
+                    required={true}
+                    control={control}
+                    options={[
+                      { label: 'चालु', value: 1 },
+                      { label: 'अन्तिम भएको', value: 0 },
+                    ]}
+                    error={errors[`mudda_condition_${ index + 1 }`]}
+                  />
+                </Grid>
+                {muddaCondition === 0 && ( <>
+
+
+                  <Grid size={{ xs: 3 }}>
+                    <ReuseSelect
+                      name={`is_life_time_${ index + 1 }`}
+                      label="आजिवन कैद हो/होइन?"
+                      required={selectedbandi_type === 'कैदी'}
+                      options={[
+                        { value: '1', label: 'हो' },
+                        { value: '0', label: 'होइन' }
+                      ]}
                       control={control}
-                      error={errors[`mudda_phesala_date_${ index + 1 }`]}
+                      error={errors.is_life_time}
                     />
                   </Grid>
+                  {selectedbandi_type === 'कैदी' && ( <>
+                    {is_life_time_arr == 0 && ( <>
+                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <ReuseDateField
+                          name={`release_date_bs_${ index + 1 }`}
+                          label="छुट्ने मिती"
+                          placeholder='YYYY-MM-DD'
+                          required={true}
+                          control={control}
+                          error={errors[`release_date_bs_${ index + 1 }`]}
+                        />
+                      </Grid>
+                    </>
+                    )}
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <ReuseDateField
+                        name={`mudda_phesala_date_${ index + 1 }`}
+                        label="मुद्दा फैसला मिति"
+                        placeholder="YYYY-MM-DD"
+                        required={true}
+                        control={control}
+                        error={errors[`mudda_phesala_date_${ index + 1 }`]}
+                      />
+                    </Grid>
+                  </> )}
                 </> )}
-              </> )}
 
-              {/* <Grid container size={{ xs: 12}}> */}
-              <Grid container size={{ xs: 12 }}>
-                <Grid size={{ xs: 12 }}>यस मुद्दामा हिरासत/थुनामा बसेको अवधी(कारागार आउनुभन्दा अगाडीको अवधि)</Grid>
-                <Grid size={{ xs: 2 }}>
-                  <ReuseInput
-                    name={`hirasat_years_${ index + 1 }`}
-                    label="वर्ष"
-                    placeholder='वर्ष'
-                    type='number'
-                    // defaultValue={0}
-                    required={true}
-                    control={control}
-                    error={errors[`hirasat_years_${ index + 1 }`]}
-                  />
-                </Grid>
-                <Grid size={{ xs: 2 }}>
-                  <ReuseInput
-                    name={`hirasat_months_${ index + 1 }`}
-                    label="महिना "
-                    placeholder='महिना'
-                    type='number'
-                    // defaultValue={0}
-                    required={true}
-                    control={control}
-                    error={errors[`hirasat_months_${ index + 1 }`]}
-                  />
-                </Grid>
-                <Grid size={{ xs: 2 }}>
-                  <ReuseInput
-                    name={`hirasat_days_${ index + 1 }`}
-                    label="दिन"
-                    placeholder='दिन'
-                    // defaultValue={0}
-                    type='number'
-                    required={true}
-                    control={control}
-                    error={errors[`hirasat_days_${ index + 1 }`]}
-                  />
-                </Grid>
-                <Grid size={{ xs: 2 }}>
-                  <ReuseInput
-                    name={`total_kaid_duration_${ index + 1 }`}
-                    label="जम्मा कैद अवधी"
-                    required={false}
-                    control={control}
-                    error={errors[`total_kaid_duration_${ index + 1 }`]}
-                  />
-                </Grid>
-                <Grid size={{ xs: 11, sm: 5, md: 2 }}>
-                  <ReuseSelect
-                    name={`is_main_mudda_${ index + 1 }`}
-                    label="मुख्य मुददा हो/होइन?"
-                    required={true}
-                    control={control}
-                    options={[
-                      { label: 'होइन', value: 0 },
-                      { label: 'हो', value: 1 },
-                    ]}
-                    error={errors[`is_main_mudda_${ index + 1 }`]}
-                  />
-                </Grid>
-                <Grid size={{ xs: 11, sm: 5, md: 2 }}>
-                  <ReuseSelect
-                    name={`is_last_mudda_${ index + 1 }`}
-                    label="अन्तिम मुददा हो/होइन?"
-                    required={true}
-                    control={control}
-                    options={[
-                      { label: 'होइन', value: 0 },
-                      { label: 'हो', value: 1 },
-                    ]}
-                    error={errors[`is_last_mudda_${ index + 1 }`]}
-                  />
-                </Grid>
+                {/* <Grid container size={{ xs: 12}}> */}
+                <Grid container size={{ xs: 12 }}>
+                  <Grid size={{ xs: 12 }}>यस मुद्दामा हिरासत/थुनामा बसेको अवधी(कारागार आउनुभन्दा अगाडीको अवधि)</Grid>
+                  <Grid size={{ xs: 1 }}>
+                    <ReuseInput
+                      name={`hirasat_years_${ index + 1 }`}
+                      label="वर्ष"
+                      placeholder='वर्ष'
+                      type='number'
+                      defaultValue={0}
+                      required={true}
+                      control={control}
+                      error={errors[`hirasat_years_${ index + 1 }`]}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 1 }}>
+                    <ReuseInput
+                      name={`hirasat_months_${ index + 1 }`}
+                      label="महिना "
+                      placeholder='महिना'
+                      type='number'
+                      defaultValue={0}
+                      required={true}
+                      control={control}
+                      error={errors[`hirasat_months_${ index + 1 }`]}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 1 }}>
+                    <ReuseInput
+                      name={`hirasat_days_${ index + 1 }`}
+                      label="दिन"
+                      placeholder='दिन'
+                      defaultValue={0}
+                      type='number'
+                      required={true}
+                      control={control}
+                      error={errors[`hirasat_days_${ index + 1 }`]}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 2 }}>
+                    <ReuseInput
+                      name={`total_kaid_duration_${ index + 1 }`}
+                      label="जम्मा कैद अवधी"
+                      required={false}
+                      control={control}
+                      error={errors[`total_kaid_duration_${ index + 1 }`]}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 11, sm: 5, md: 2 }}>
+                    <ReuseSelect
+                      name={`is_main_mudda_${ index + 1 }`}
+                      label="मुख्य मुददा हो/होइन?"
+                      required={true}
+                      control={control}
+                      options={[
+                        { label: 'होइन', value: 0 },
+                        { label: 'हो', value: 1 },
+                      ]}
+                      error={errors[`is_main_mudda_${ index + 1 }`]}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 11, sm: 5, md: 2 }}>
+                    <ReuseSelect
+                      name={`is_last_mudda_${ index + 1 }`}
+                      label="अन्तिम मुददा हो/होइन?"
+                      required={true}
+                      control={control}
+                      options={[
+                        { label: 'होइन', value: 0 },
+                        { label: 'हो', value: 1 },
+                      ]}
+                      error={errors[`is_last_mudda_${ index + 1 }`]}
+                    />
+                  </Grid>
 
+
+                  {/* </Grid> */}
+
+                  <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      type="button"
+                      onClick={() => setMuddaCount( muddaCount + 1 )}
+                    >
+                      +
+                    </Button>
+                  </Grid>
+
+                  <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
+                    {muddaCount > 1 && (
+                      <Button
+                        variant="contained"
+                        color="warning"
+                        size="small"
+                        type="button"
+                        onClick={() => setMuddaCount( muddaCount - 1 )}
+                      >
+                        <RemoveIcon />
+                      </Button>
+                    )}
+                  </Grid>
+                  {muddaCount > 1 && (
+                    <Grid size={{ xs: 12 }} sx={{ borderBottom: '1px dashed brown', mb: 2, mt: 2 }}></Grid>
+                  )}
+                </Grid>
               </Grid>
-              {/* </Grid> */}
-
-
-
-              <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 3 }}>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  size="small"
-                  type="button"
-                  onClick={() => setMuddaCount( muddaCount + 1 )}
-                >
-                  +
-                </Button>
-              </Grid>
-
-              <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 3 }}>
-                {muddaCount > 1 && (
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    size="small"
-                    type="button"
-                    onClick={() => setMuddaCount( muddaCount - 1 )}
-                  >
-                    <RemoveIcon />
-                  </Button>
-                )}
-              </Grid>
-            </Grid>
+            </>
           );
         } )}
       </Grid>
-
       <hr />
+
       <Grid container spacing={2}>
         <Grid size={{ xs: 12 }} sx={formHeadStyle}>
-          पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरणः
+          पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरण(कैद हद भएको भए सोही अनुसार): &nbsp;
           <Button
             variant="outlined"
             size="small"
@@ -779,7 +783,7 @@ const { optrecords, loading } = fetchMuddaGroups();
 
         <Grid size={{ xs: 12, sm: 6, md: 2 }}>
           {/* <ReuseDatePickerBs */}
-          <ReuseDateField
+          <ReuseDatePickerBSsmV5
             name='hirasat_date_bs'
             label='थुना/कैद परेको मिती'
             placeholder={'YYYY-MM-DD'}
@@ -850,6 +854,7 @@ const { optrecords, loading } = fetchMuddaGroups();
         </> )}
       </Grid>
       <hr />
+      {/* बन्दीको परिचयपत्रको विवरणः */}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12 }} sx={formHeadStyle}>
           बन्दीको परिचयपत्रको विवरणः
@@ -911,11 +916,12 @@ const { optrecords, loading } = fetchMuddaGroups();
         </Grid>
       </Grid>
       <hr />
+      {/* बन्दीको ठेगानाः */}
       <Grid container spacing={2}>
-        <Grid size={{ xs: 2 }} sx={formHeadStyle}>
+        <Grid size={{ xs: 3 }} sx={formHeadStyle}>
           बन्दीको ठेगानाः
         </Grid>
-        <Grid size={{ xs: 10 }}>
+        <Grid size={{ xs: 9 }} sx={{ mt: 1 }}>
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <select name='nationality' {...register( 'nationality' )}>
               <option value='स्वदेशी'>स्वदेशी</option>
@@ -990,7 +996,9 @@ const { optrecords, loading } = fetchMuddaGroups();
           </Grid>
         </>}
       </Grid>
+
       <hr />
+      {/* पारिवारीक/आश्रित विवरणः */}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12 }} sx={formHeadStyle}>
           पारिवारीक/आश्रित विवरणः
@@ -1070,7 +1078,6 @@ const { optrecords, loading } = fetchMuddaGroups();
               <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
                 <Button
                   variant="contained"
-                  color="secondary"
                   size="small"
                   type="button"
                   onClick={() => setFamilyCount( familyCount + 1 )}
@@ -1098,6 +1105,7 @@ const { optrecords, loading } = fetchMuddaGroups();
 
       </Grid>
 
+      {/* सम्पर्क व्यक्ति */}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12 }} sx={formHeadStyle}>
           सम्पर्क व्यक्ति
@@ -1151,7 +1159,6 @@ const { optrecords, loading } = fetchMuddaGroups();
               <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
                 <Button
                   variant="contained"
-                  color="secondary"
                   size="small"
                   type="button"
                   onClick={() => setContactCount( contactCount + 1 )}
@@ -1179,397 +1186,144 @@ const { optrecords, loading } = fetchMuddaGroups();
 
       </Grid>
 
-      {selectedbandi_type == 'कैदी' && ( <>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12 }} sx={formHeadStyle}>
-            जरिवाना/क्षतिपुर्ती/विगो रकम तोकिएको छ वा छैं‍न
-          </Grid>
+      {/* धरौटी/जरिवाना/क्षतिपुर्ती/विगो रकम तोकिएको छ वा छैं‍न */}
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12 }} sx={formHeadStyle}>
+          धरौटी/जरिवाना/क्षतिपुर्ती/विगो रकम तोकिएको छ वा छैं‍न
+        </Grid>
 
-          {[...Array( fineCount )].map( ( _, index ) => {
-            // const currentRelation = watch( `contact[${ index }].bandi_relative_relation` );
-            const selectedIs_amount_fixed = watch( `fine[${ index }].is_fine_fixed` );
-            const is_fine_paid = watch( `fine[${ index }].is_fine_paid` );
-            const is_jariwana = watch( `fine[${ index }].is_jariwana` );
-            return (
-              <Grid container size={{ xs: 12 }} key={index}>
-                <>
+        {[...Array( fineCount )].map( ( _, index ) => {
+          // const currentRelation = watch( `contact[${ index }].bandi_relative_relation` );
+          const selectedIs_amount_fixed = watch( `fine[${ index }].is_fine_fixed` );
+          const is_fine_paid = watch( `fine[${ index }].is_fine_paid` );
+          const is_jariwana = watch( `fine[${ index }].is_jariwana` );
+          return (
+            <Grid container size={{ xs: 12 }} key={index}>
+              <>
 
-                  <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    <ReuseSelect
-                      name={`fine[${ index }].is_fine_fixed`}
-                      label='छ/छैन'
-                      options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                      defaultValue='0'
-                      required={true}
-                      control={control}
-                      error={errors?.fine?.[index]?.is_fine_fixed}
-                    />
-                  </Grid>
-                  {selectedIs_amount_fixed === 1 && (
-                    <>
-                      <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                        <ReuseSelect
-                          name={`fine[${ index }].fine_type`}
-                          label="प्रकार"
-                          options={fineTypesOpt}
-                          required={true}
-                          control={control}
-                          error={errors?.fine?.[index]?.fine_type}
-                        />
-                      </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                  <ReuseSelect
+                    name={`fine[${ index }].is_fine_fixed`}
+                    label='छ/छैन'
+                    options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                    defaultValue='0'
+                    required={true}
+                    control={control}
+                    error={errors?.fine?.[index]?.is_fine_fixed}
+                  />
+                </Grid>
+                {selectedIs_amount_fixed === 1 && (
+                  <>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <ReuseSelect
+                        name={`fine[${ index }].fine_type`}
+                        label="प्रकार"
+                        options={fineTypesOpt}
+                        required={true}
+                        control={control}
+                        error={errors?.fine?.[index]?.fine_type}
+                      />
+                    </Grid>
 
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseInput
-                          name={`fine[${ index }].fine_amt`}
-                          label='रकम'
-                          required={true}
-                          control={control}
-                          error={errors?.fine?.[index]?.fine_amt}
-                        />
-                      </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                      <ReuseInput
+                        name={`fine[${ index }].fine_amt`}
+                        label='रकम (English मा)'
+                        type='number'
+                        required={true}
+                        control={control}
+                        error={errors?.fine?.[index]?.fine_amt}
+                      />
+                    </Grid>
 
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseSelect
-                          name={`fine[${ index }].is_fine_paid`}
-                          label='तिरेको छ/छैन'
-                          options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                          required={true}
-                          control={control}
-                          error={errors?.fine?.[index]?.is_fine_paid}
-                        />
-                      </Grid>
-                      {is_fine_paid === 1 && (
-                        <>
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <ReuseOffice
-                              name={`fine[${ index }].fine_paid_office`}
-                              label="जरिवाना तिरेको निकाय"
-                              required={true}
-                              control={control}
-                              error={errors?.fine?.[index]?.fine_paid_office}
-                            />
-                          </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                      <ReuseSelect
+                        name={`fine[${ index }].is_fine_paid`}
+                        label='तिरेको छ/छैन'
+                        options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
+                        required={true}
+                        control={control}
+                        error={errors?.fine?.[index]?.is_fine_paid}
+                      />
+                    </Grid>
+                    {is_fine_paid === 1 && (
+                      <>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <ReuseOffice
+                            name={`fine[${ index }].fine_paid_office`}
+                            label="जरिवाना तिरेको निकाय"
+                            required={true}
+                            control={control}
+                            error={errors?.fine?.[index]?.fine_paid_office}
+                          />
+                        </Grid>
 
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <ReuseDistrict
-                              name={`fine[${ index }].fine_paid_office_district`}
-                              label="जरिवाना तिरेको जिल्ला"
-                              required={true}
-                              control={control}
-                              error={errors?.fine?.[index]?.fine_paid_office_district}
-                            />
-                          </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <ReuseDistrict
+                            name={`fine[${ index }].fine_paid_office_district`}
+                            label="जरिवाना तिरेको जिल्ला"
+                            required={true}
+                            control={control}
+                            error={errors?.fine?.[index]?.fine_paid_office_district}
+                          />
+                        </Grid>
 
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <ReuseInput
-                              name={`fine[${ index }].fine_paid_cn`}
-                              label="च.नं."
-                              required={true}
-                              control={control}
-                              error={errors?.fine?.[index]?.fine_paid_cn}
-                            />
-                          </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <ReuseInput
+                            name={`fine[${ index }].fine_paid_cn`}
+                            label="च.नं."
+                            required={true}
+                            control={control}
+                            error={errors?.fine?.[index]?.fine_paid_cn}
+                          />
+                        </Grid>
 
-                          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <ReuseDateField
-                              name={`fine[${ index }].fine_paid_date`}
-                              label="जरिवाना तिरेको मिति"
-                              placeholder="YYYY-MM-DD"
-                              required={true}
-                              control={control}
-                              error={errors?.fine?.[index]?.fine_paid_date}
-                            />
-                          </Grid>
-                        </>
-                      )}
-                    </>
-                  )}
-                </>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                          <ReuseDateField
+                            name={`fine[${ index }].fine_paid_date`}
+                            label="जरिवाना तिरेको मिति"
+                            placeholder="YYYY-MM-DD"
+                            required={true}
+                            control={control}
+                            error={errors?.fine?.[index]?.fine_paid_date}
+                          />
+                        </Grid>
+                      </>
+                    )}
+                  </>
+                )}
+              </>
 
-                <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
+              <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  type="button"
+                  onClick={() => setFineCount( fineCount + 1 )}
+                >
+                  +
+                </Button>
+              </Grid>
+
+              <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
+                {fineCount > 1 && (
                   <Button
                     variant="contained"
-                    color="secondary"
+                    color="warning"
                     size="small"
                     type="button"
-                    onClick={() => setFineCount( fineCount + 1 )}
+                    onClick={() => setFineCount( fineCount - 1 )}
                   >
-                    +
+                    <RemoveIcon />
                   </Button>
-                </Grid>
-
-                <Grid size={{ xs: 1, sm: 1, md: 1 }} sx={{ mt: 5 }}>
-                  {fineCount > 1 && (
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      size="small"
-                      type="button"
-                      onClick={() => setFineCount( fineCount - 1 )}
-                    >
-                      <RemoveIcon />
-                    </Button>
-                  )}
-                </Grid>
+                )}
               </Grid>
-            );
-          } )}
+            </Grid>
+          );
+        } )}
+      </Grid>
 
-          {/* <Grid size={{xs:12, sm:6, md:3}}>
-            <ReuseSelect
-              name='is_fine_fixed'
-              label='छ/छैन'
-              options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-              defaultValue='0'
-              required={true}
-              control={control}
-              error={errors.is_fine_fixed}
-            />
-          </Grid>
-          {selectedIs_amount_fixed === 1 && (
-            <>
-              <Grid size={{xs:12, sm:6, md:3}}>
-                <ReuseInput
-                  name='fine_amt'
-                  label='रकम'
-                  required={true}
-                  control={control}
-                  error={errors.fine_amt}
-                />
-              </Grid>
-
-              <Grid size={{xs:12, sm:6, md:3}}>
-                <ReuseSelect
-                  name='is_fine_paid'
-                  label='तिरेको छ/छैन'
-                  options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                  required={true}
-                  control={control}
-                  error={errors.is_fine_paid}
-                />
-              </Grid>
-              {is_fine_paid === 1 && (
-                <>
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseOffice
-                      name="fine_paid_office"
-                      label="जरिवाना तिरेको निकाय"
-                      required={true}
-                      control={control}
-                      error={errors.fine_paid_office}
-                    />
-                  </Grid>
-
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseDistrict
-                      name="fine_paid_office_district"
-                      label="जरिवाना तिरेको जिल्ला"
-                      required={true}
-                      control={control}
-                      error={errors.fine_paid_office_district}
-                    />
-                  </Grid>
-
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseInput
-                      name="fine_paid_cn"
-                      label="च.नं."
-                      required={true}
-                      control={control}
-                      error={errors.fine_paid_cn}
-                    />
-                  </Grid>
-
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseDateField
-                      name="fine_paid_date"
-                      label="जरिवाना तिरेको मिति"
-                      placeholder="YYYY-MM-DD"
-                      required={true}
-                      control={control}
-                      error={errors.fine_paid_date}
-                    />
-                  </Grid>
-                </>
-              )}
-
-
-            </>
-          )} */}
-        </Grid>
-
-        {/* <Grid container spacing={2}>
-          <Grid size={{xs:12}} sx={formHeadStyle}>
-            क्षतिपुर्ती रकम तोकिएको छ वा छैं‍न
-          </Grid>
-
-          <Grid size={{xs:12, sm:6, md:3}}>
-            <ReuseSelect
-              name='is_compensation'
-              label='छ/छैन'
-              options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-              defaultValue='0'
-              required={true}
-              control={control}
-              error={errors.is_compensation}
-            />
-          </Grid>
-
-          {selectedIs_compensation == 1 && (
-            <>
-              <Grid size={{xs:12, sm:6, md:3}}>
-                <ReuseInput
-                  name='compensation_amt'
-                  label='रकम'
-                  required={true}
-                  control={control}
-                  error={errors.compensation_amt}
-                />
-              </Grid>
-
-              <Grid size={{xs:12, sm:6, md:3}}>
-                <ReuseSelect
-                  name='is_compensation_paid'
-                  label='तिरेको छ/छैन'
-                  options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                  required={true}
-                  control={control}
-                  error={errors.is_compensation_paid}
-                />
-              </Grid>
-              {is_compensation_paid === 1 && (
-                <>
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseOffice
-                      name='compensation_paid_office'
-                      label='क्षतिपुर्ती तिरेको निकाय'
-                      required={true}
-                      control={control}
-                      error={errors.compensation_paid_office}
-                    />
-                  </Grid>
-
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseDistrict
-                      name='compensation_paid_office_district'
-                      label='क्षतिपुर्ती तिरेको जिल्ला'
-                      required={true}
-                      control={control}
-                      error={errors.compensation_paid_office_district}
-                    />
-                  </Grid>
-
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseInput
-                      name='compensation_paid_cn'
-                      label='च.नं.'
-                      required={true}
-                      control={control}
-                      error={errors.compensation_paid_cn}
-                    />
-                  </Grid>
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseDateField
-                      name='compensation_paid_date'
-                      label='क्षतिपुर्ती तिरेको मिति'
-                      placeholder='YYYY-MM-DD'
-                      required={true}
-                      control={control}
-                      error={errors.compensation_paid_date}
-                    />
-                  </Grid>
-                </>
-              )}
-            </>
-          )}
-
-        </Grid>
-
-        <Grid container spacing={2}>
-          <Grid size={{xs:12}} sx={formHeadStyle}>
-            बिगो रकम तोकिएको छ वा छैं‍न
-          </Grid>
-
-          <Grid size={{xs:12, sm:6, md:3}}>
-            <ReuseSelect
-              name='is_bigo'
-              label='छ/छैन'
-              options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-              defaultValue='0'
-              required={true}
-              control={control}
-              error={errors.is_bigo}
-            />
-          </Grid>
-
-          {selectedIs_bigo == 1 && (
-            <>
-              <Grid size={{xs:12, sm:6, md:3}}>
-                <ReuseInput
-                  name='bigo_amt'
-                  label='रकम'
-                  required={true}
-                  control={control}
-                  error={errors.compensation_amt}
-                />
-              </Grid>
-
-              <Grid size={{xs:12, sm:6, md:3}}>
-                <ReuseSelect
-                  name='is_bigo_paid'
-                  label='तिरेको छ/छैन'
-                  options={[{ label: 'छ', value: 1 }, { label: 'छैन', value: '0' }]}
-                  required={true}
-                  control={control}
-                  error={errors.is_bigo_paid}
-                />
-              </Grid>
-              {is_bigo_paid === 1 && (
-                <>
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseOffice
-                      name='bigo_paid_office'
-                      label='बिगो तिरेको निकाय'
-                      required={true}
-                      control={control}
-                      error={errors.bigo_paid_office}
-                    />
-                  </Grid>
-
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseDistrict
-                      name='bigo_paid_office_district'
-                      label='बिगो तिरेको जिल्ला'
-                      required={true}
-                      control={control}
-                      error={errors.bigo_paid_office_district}
-                    />
-                  </Grid>
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseInput
-                      name='bigo_paid_cn'
-                      label='च.नं.'
-                      required={true}
-                      control={control}
-                      error={errors.bigo_paid_cn}
-                    />
-                  </Grid>
-                  <Grid size={{xs:12, sm:6, md:3}}>
-                    <ReuseDateField
-                      name='bigo_paid_date'
-                      label='बिगो तिरेको मिति'
-                      placeholder='YYYY-MM-DD'
-                      required={true}
-                      control={control}
-                      error={errors.bigo_paid_date}
-                    />
-                  </Grid>
-                </>
-              )}
-            </>
-          )}
-        </Grid> */}
-
+      {selectedbandi_type == 'कैदी' && ( <>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }} sx={formHeadStyle}>
             पुनरावेदनमा नपरेको प्रमाणः
@@ -1583,16 +1337,6 @@ const { optrecords, loading } = fetchMuddaGroups();
               error={errors.punarabedan_office_id}
             />
           </Grid>
-
-          {/* <Grid size={{xs:12, sm:6, md:3}}>
-            <ReuseDistrict
-              name='punarabedan_office_district'
-              label='पुनरावेदनमा नपरेको कार्यालयको जिल्ला'
-              required={false}
-              control={control}
-              error={errors.punarabedan_office_district}
-            />
-          </Grid> */}
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <ReuseInput
@@ -1797,7 +1541,7 @@ const { optrecords, loading } = fetchMuddaGroups();
         {is_active == 1 && (
           <>
             <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <ReuseDatePickerBs
+              <ReuseDateField
                 name="insurance_from"
                 label="बिमा देखी"
                 required={true}
@@ -1807,7 +1551,8 @@ const { optrecords, loading } = fetchMuddaGroups();
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-              <ReuseDatePickerBs
+              {/* <ReuseDatePickerBs */}
+              <ReuseDateField
                 name="insurance_to"
                 label="बिमा देखी"
                 required={true}
@@ -1838,30 +1583,7 @@ const { optrecords, loading } = fetchMuddaGroups();
           <Button type="submit" variant="contained" color="primary">
             Submit
           </Button>
-          {/* {contactCount === 1 ? (
-              Save
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              color="warning"
-              onClick={() =>
-                Swal.fire( {
-                  icon: 'warning',
-                  title: 'सम्पर्क व्यक्ति अपुग',
-                  text: 'दुई जना सम्पर्क व्यक्ति अनिवार्य छ।',
-                  confirmButtonText: 'हुन्छ',
-                } )
-              }
-            >
-              Submit
-            </Button>
-
-
-          )} */}
-
         </Grid>
-
       </Grid>
     </form >
   );

@@ -11,7 +11,7 @@ const fetchBandiTransferHistory = ( bandi_id ) => {
     
     const fetchBandiRecords = async () => {
         try {
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_transfer_history/${bandi_id}`, { withCredentials: true } );
+            const response = await axios.get( `${ BASE_URL }/bandiTransfer/get_bandi_transfer_history/${bandi_id}`, { withCredentials: true } );
             // console.log( response );
             const { Status, Result, Error } = response.data;
             if ( Status ) {

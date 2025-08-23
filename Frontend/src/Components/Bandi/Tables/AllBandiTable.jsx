@@ -1,20 +1,20 @@
 import { Box, Button, Grid } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
-import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
-import Swal from 'sweetalert2';
-// import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
-import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
-import ReuseInput from '../../ReuseableComponents/ReuseInput';
-// import ReuseMudda from '../../ReuseableComponents/ReuseMudda';
+const ReuseKaragarOffice = React.lazy( () => import( '../../ReuseableComponents/ReuseKaragarOffice' ) );
+const ReuseSelect = React.lazy( () => import( '../../ReuseableComponents/ReuseSelect' ) );
+const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInput' ) );
+const ReuseCountry = React.lazy( () => import( '../../ReuseableComponents/ReuseCountry' ) );
 const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
+
 
 const AllBandiTable = () => {
     const BASE_URL = useBaseURL();
@@ -60,10 +60,12 @@ const AllBandiTable = () => {
     //Watch Variables:
     const searchOffice = watch( 'searchOffice' );
     const nationality = watch( 'nationality' );
+    const country = watch( 'country' );
     const search_name = watch( 'search_name' );
     const gender = watch( 'gender' );
     const bandi_type = watch( 'bandi_type' );
     const is_active = watch( 'is_active' );
+    const is_dependent = watch( 'is_dependent' );
     const mudda_group_id = watch( 'mudda_group_id' );
     //Watch Variables
 
@@ -76,9 +78,9 @@ const AllBandiTable = () => {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
                 // page, limit: rowsPerPage,
                 params: {
-                    searchOffice, nationality,
+                    searchOffice, nationality, country,
                     gender, bandi_type, search_name,
-                    is_active, mudda_group_id
+                    is_active, is_dependent, mudda_group_id
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
@@ -130,7 +132,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality, bandi_type, gender, is_active, mudda_group_id] );
+    }, [page, rowsPerPage, searchOffice, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -254,12 +256,6 @@ const AllBandiTable = () => {
         <>
 
             <Box sx={{ p: 2 }}>
-                {/* <Typography variant="h6" gutterBottom>
-                    Welcome {authState.user} from {authState.office_np}
-                </Typography> */}
-
-                {/* <form onSubmit={handleSubmit(onSubmit)}> */}
-                {/* <form> */}
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, sm: 3 }}>
                         <ReuseKaragarOffice
@@ -287,6 +283,13 @@ const AllBandiTable = () => {
                                 { label: 'स्वदेशी', value: 'स्वदेशी' },
                                 { label: 'विदेशी', value: 'विदेशी' }
                             ]}
+                            control={control}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseCountry
+                            name="country"
+                            label='देश'                           
                             control={control}
                         />
                     </Grid>
@@ -324,6 +327,17 @@ const AllBandiTable = () => {
                                 { label: 'छुटेर नगएको', value: '1' }
                             ]}
                             defaultValue='1'
+                            control={control}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="is_dependent"
+                            label='आश्रित भएको/नभएको'
+                            options={[
+                                // { label: 'नभएको', value: '0' },
+                                { label: 'भएको', value: '1' }
+                            ]}                            
                             control={control}
                         />
                     </Grid>
