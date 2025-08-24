@@ -17,7 +17,7 @@ import ReuseDistrict from "../../ReuseableComponents/ReuseDistrict";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseDatePickerSMV5 from "../../ReuseableComponents/ReuseDatePickerSMV5";
 import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
-
+import NepaliDate from 'nepali-datetime';
 
 const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
     const {
@@ -42,6 +42,8 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
         },
     } );
 
+    const npToday = new NepaliDate();
+    const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
 
     useEffect( () => {
         // console.log( editingData );
@@ -179,13 +181,17 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 <Grid container>
                     <Grid size={{ xs: 12, sm: 4 }}>
                         <ReuseDatePickerBS
+                        // <ReuseDateField
                             name="thuna_date_bs"
                             label="थुना परेको मिति"
                             placeholder='YYYY-MM-DD'
                             required={false}
                             control={control}
-                            error={errors.thuna_date_bs}
+                            error={errors.thuna_date_bs}   // 👈 you’re passing this
+                            open={open}
+                            maxDate={formattedDateNp}
                         />
+
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                         <ReuseSelect

@@ -13,6 +13,7 @@ import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
+import ReuseDatePickerSMV5 from "../../ReuseableComponents/ReuseDatePickerSMV5";
 
 
 const KaidModal = ( { open, onClose, onSave, editingData } ) => {
@@ -67,8 +68,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
             <DialogContent>
                 <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden />
 
-                <Grid size={{ xs: 12 }}>
-
+                <Grid mt={2} size={{ xs: 12 }}>
                     <ReuseSelect
                         name="bandi_type"
                         label="बन्दी प्रकार"
@@ -120,13 +120,6 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                     </Grid>
                 </Grid>
 
-                <ReuseDatePickerBS
-                    name="thuna_date_bs"
-                    label="थुना/कैद परेको मितिः"
-                    control={control}
-                    required={true}
-                    error={errors.thuna_date_bs}
-                />
                 <ReuseSelect
                     name="is_life_time"
                     label="आजिवन कैद हो/होइन?"
@@ -140,7 +133,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                 />
 
                 {bandi_type == 'कैदी' ? (
-                     is_life_time==0 && ( <ReuseDateField
+                    is_life_time == 0 && ( <ReuseDateField
                         name="release_date_bs"
                         label="छुटी जाने मिति"
                         control={control}
@@ -149,6 +142,13 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                     /> )
 
                 ) : ( <></> )}
+                <ReuseDatePickerBS
+                    name="thuna_date_bs"
+                    label="थुना/कैद परेको मितिः"
+                    control={control}
+                    required={true}
+                    error={errors.thuna_date_bs}
+                />
             </DialogContent>
 
             <DialogActions>
@@ -160,5 +160,4 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
         </Dialog>
     );
 };
-
 export default KaidModal;

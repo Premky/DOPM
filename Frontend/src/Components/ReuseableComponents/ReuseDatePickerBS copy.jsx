@@ -3,6 +3,7 @@ import { Controller } from "react-hook-form";
 import { NepaliDatePicker } from "nepali-datepicker-reactjs";
 import "nepali-datepicker-reactjs/dist/index.css";
 import { TextField, InputLabel, Box, Typography } from "@mui/material";
+import NepaliDate from 'nepali-datetime';
 
 const ReuseDatePickerBS = ( {
     control,
@@ -13,6 +14,8 @@ const ReuseDatePickerBS = ( {
 } ) => {
     const [dateValue, setDateValue] = useState( defaultValue );
 
+    const npToday = new NepaliDate();
+    const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     useEffect( () => {
         setDateValue( defaultValue );
     }, [defaultValue] );
@@ -37,7 +40,15 @@ const ReuseDatePickerBS = ( {
                     },
                 }}
                 render={( { field: { onChange, value }, fieldState: { error } } ) => (
-                    <Box sx={{ mb: 2, mt:2 }}>                       
+                    <Box sx={{ mb: 2, mt: 2 }}>
+                        {/* <Typography
+                            component="label"
+                            htmlFor={name}
+                            sx={{ display: "block", mb: 0.5, fontWeight: "500" }}
+                        >
+                            {label} {required && <span style={{ color: "red" }}>*</span>}
+                        </Typography> */}
+
                         <NepaliDatePicker
                             value={value || ""}
                             onChange={( val ) => {
@@ -45,7 +56,10 @@ const ReuseDatePickerBS = ( {
                                 onChange( val );
                             }}
                             inputClassName="nepali-datepicker-input"
-                            options={{ calenderLocale: "ne", valueLocale: "en" }}
+                            options={{ 
+                                calenderLocale: "ne", 
+                                valueLocale: "en", 
+                                maxDate:formattedDateNp.dateValue }}
                         />
 
                         {/* Custom styles for the datepicker input to match MUI TextField */}

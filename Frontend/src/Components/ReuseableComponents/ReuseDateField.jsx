@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
 
-const ReuseDateField = ({ name, label, required, control, error, placeholder, onChange: propsOnChange, defaultValue }) => {
+const ReuseDateField = ( { name, label, required, control, error, placeholder, onChange: propsOnChange, defaultValue, maxDate } ) => {
     // console.log(defaultValue)
     return (
         <>
@@ -17,57 +17,68 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder, on
                 defaultValue={defaultValue} // Provide a default value
 
                 rules={{
-                    ...(required && {
+                    ...( required && {
                         required: {
                             value: true,
                             message: 'यो फिल्ड अनिवार्य छ',
                         },
-                    }),
-                    validate: (value) => {
-                        if (!value) return true; // Skip pattern check if empty (and not required)
+                    } ),
+                    validate: ( value ) => {
+                        if ( !value ) return true; // Skip pattern check if empty (and not required)
                         const pattern = /^\d{4}-\d{2}-\d{2}$/;
-                        return pattern.test(value) || 'मिति YYYY-MM-DD ढाँचामा हुनुपर्छ';
+                        if ( !pattern.test( value ) ) {
+                            return pattern.test( value ) || 'मिति YYYY-MM-DD ढाँचामा हुनुपर्छ';
+                        }
+                        // check max date: 
+                        if(maxDate){
+                            const inputDate = new Date(value);
+                            const limitDate = new Date(maxDate);
+                            if(inputDate>limitDate){
+                                return `मिति आज(${maxDate}) भन्दा ठुलो हुनु हुँदैन ;`
+                            }
+                        }
+                        return true;
                     },
                 }}
 
-                render={({ field: { onChange, onBlur, value, ref } }) => {
-                    const [formattedValue, setFormattedValue] = useState(value || "");
+                render={( { field: { onChange, onBlur, value, ref } } ) => {
+                    const [formattedValue, setFormattedValue] = useState( value || "" );
 
-                    useEffect(() => {
-                        setFormattedValue(value || ""); // Sync with external changes
-                    }, [value]);
+                    useEffect( () => {
+                        setFormattedValue( value || "" ); // Sync with external changes
+                    }, [value] );
 
-                    const handleInputChange = (e) => {
-                        const inputValue = e.target.value.replace(/[^0-9]/g, ""); // Allow only numbers
+                    const handleInputChange = ( e ) => {
+                        const inputValue = e.target.value.replace( /[^0-9]/g, "" ); // Allow only numbers
                         let formatted = inputValue;
 
-                        if (inputValue.length > 4) {
-                            const year = inputValue.slice(0, 4);
-                            const month = inputValue.slice(4, 6);
-                            formatted = `${year}-${month}`;
+                        if ( inputValue.length > 4 ) {
+                            const year = inputValue.slice( 0, 4 );
+                            const month = inputValue.slice( 4, 6 );
+                            formatted = `${ year }-${ month }`;
                         }
-                        if (inputValue.length > 6) {
-                            const year = inputValue.slice(0, 4);
-                            let month = inputValue.slice(4, 6);
-                            let day = inputValue.slice(6, 8);
+                        if ( inputValue.length > 6 ) {
+                            const year = inputValue.slice( 0, 4 );
+                            let month = inputValue.slice( 4, 6 );
+                            let day = inputValue.slice( 6, 8 );
 
                             // Validate month
-                            if (parseInt(month, 10) > 12) {
+                            if ( parseInt( month, 10 ) > 12 ) {
                                 month = "12";
                             }
                             // Validate day
-                            if (parseInt(day, 10) > 32) {
+                            if ( parseInt( day, 10 ) > 32 ) {
                                 day = "32";
                             }
 
-                            formatted = `${year}-${month}-${day}`;
+                            formatted = `${ year }-${ month }-${ day }`;
                         }
 
-                        formatted = formatted.slice(0, 10); // Limit to yyyy-mm-dd
-                        setFormattedValue(formatted);
-                        onChange(formatted); // internal RHF update
-                        if (typeof propsOnChange === 'function') {
-                            propsOnChange(formatted); // external prop callback
+                        formatted = formatted.slice( 0, 10 ); // Limit to yyyy-mm-dd
+                        setFormattedValue( formatted );
+                        onChange( formatted ); // internal RHF update
+                        if ( typeof propsOnChange === 'function' ) {
+                            propsOnChange( formatted ); // external prop callback
                         }
                     };
 
@@ -82,11 +93,11 @@ const ReuseDateField = ({ name, label, required, control, error, placeholder, on
                             error={!!error}
                             helperText={error?.message || ""}
                             required={required}
-                            placeholder={defaultValue||placeholder||"YYYY-MM-DD"}
-                            value={defaultValue||formattedValue}
+                            placeholder={defaultValue || placeholder || "YYYY-MM-DD"}
+                            value={defaultValue || formattedValue}
                             onChange={handleInputChange}
                             onBlur={onBlur}
-                            inputProps={{ maxLength: 10 }}                            
+                            inputProps={{ maxLength: 10 }}
                         />
                     );
                 }}
