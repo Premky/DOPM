@@ -110,7 +110,7 @@ router.get( "/get_darbandi", verifyToken, async ( req, res ) => {
             LEFT JOIN emp_post p ON d.post_id = p.id
             LEFT JOIN emp_service_groups c ON d.service_group_id = c.id
             LEFT JOIN offices o ON d.office_id = o.id  
-            WHERE active_office=?     
+            WHERE office_id=?     
             `;
     try {
         const [result] = await pool.query( sql, [active_office] );
