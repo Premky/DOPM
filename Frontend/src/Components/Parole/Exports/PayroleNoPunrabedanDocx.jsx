@@ -50,7 +50,7 @@ export default async function PayroleNoPunrabedanDocx( props ) {
                 } ),
             ),
         } );
-        console.log( data );
+        // console.log( data );
         const dataRows = data.muddas.map( ( item, index ) => {
             return new TableRow( {
                 children: [

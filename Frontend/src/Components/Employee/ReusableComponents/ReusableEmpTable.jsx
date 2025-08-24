@@ -8,7 +8,7 @@ import ExcelJS from 'exceljs';
 // import { saveAs } from "file-saver";
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 
-const ReusableEmpTable = async ( {
+const ReusableEmpTable = ( {
     rows = [],
     columns = [],
     primaryMergeKey = 'bandi_id',
@@ -26,8 +26,7 @@ const ReusableEmpTable = async ( {
     const [filterText, setFilterText] = useState( '' );
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
     const [photoToPreview, setPhotoToPreview] = useState( '' );
-    const { saveAs } = await import( "file-saver" );
-
+    
     const filteredRows = useMemo( () => {
         if ( !filterText ) return rows;
         return rows.filter( bandi =>
@@ -48,6 +47,7 @@ const ReusableEmpTable = async ( {
     const handleExport = async () => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
+        const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
         worksheet.addRow( ['सि.नं.', ...bandiHeaders] );

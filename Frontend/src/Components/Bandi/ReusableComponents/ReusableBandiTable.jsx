@@ -8,7 +8,7 @@ import ExcelJS from 'exceljs';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 
-const ReusableBandiTable = async( {
+const ReusableBandiTable = ( {
     rows = [],
     columns = [],
     primaryMergeKey = 'bandi_id',
@@ -20,14 +20,13 @@ const ReusableBandiTable = async( {
     onEdit,
     onDelete,
 } ) => {
-    const { saveAs } = await import("file-saver");
     const BASE_URL = useBaseURL() || '';
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
     const [filterText, setFilterText] = useState( '' );
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
     const [photoToPreview, setPhotoToPreview] = useState( '' );
-    
+
     const rowsWithComputed = useMemo( () => {
         return rows.map( row => ( {
             ...row,
@@ -91,6 +90,7 @@ const ReusableBandiTable = async( {
     const handleExport = async () => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
+        const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
         worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'मुद्दा', 'जाहेरवाला', 'फैसला कार्यालय/मिति'] );
