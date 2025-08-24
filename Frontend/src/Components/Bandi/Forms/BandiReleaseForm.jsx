@@ -12,12 +12,12 @@ import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
 import BandiMuddaTable from '../Tables/For View/BandiMuddaTable';
 import BandiAddressTable from '../Tables/For View/BandiAddressTable';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
-import ReuseDatePickerBS from '../../ReuseableComponents/ReuseDatePickerBS';
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import FamilyTable from '../Tables/For View/FamilyTable';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
+import { Helmet } from 'react-helmet';
 
 const BandiReleaseForm = () => {
     const BASE_URL = useBaseURL();
@@ -75,6 +75,12 @@ const BandiReleaseForm = () => {
 
     return (
         <>
+        <Helmet>
+                <title>PMIS: बन्दी छुट्टी/लगत कट्टा फारम</title>
+                <meta name="description" content="बन्दी छुट्टी/लगत कट्टा सम्बन्धि फारम भर्नुहोस्" />
+                <meta name="keywords" content="बन्दी, बन्दी छुट्टी, लगत कट्टा, फारम, बन्दी विवरण, बन्दी रेकर्ड" />
+                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+        </Helmet>
             <Box>
                 <Grid container spacing={2}>
                     <form onSubmit={handleSubmit( onFormSubmit )}>

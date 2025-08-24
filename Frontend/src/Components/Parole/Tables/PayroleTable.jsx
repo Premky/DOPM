@@ -33,6 +33,7 @@ import exportCharacterToExcel from "../Exports/ExcelPayroleCharacter";
 import useFetchPayroles from "../useApi/useFetchPayroles";
 import NepaliDate from 'nepali-datetime';
 import useFetchAllBandiFines from "../../Bandi/Apis_to_fetch/useFetchAllBandiFines";
+import { Helmet } from "react-helmet";
 
 
 const PayroleTable = ( { status } ) => {
@@ -130,6 +131,9 @@ const PayroleTable = ( { status } ) => {
 
     return (
         <>
+            <Helmet>
+                <title>PMIS: प्यारोल सूची</title>
+            </Helmet>
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात
             </Button>

@@ -18,6 +18,7 @@ import ReuseDistrict from '../../ReuseableComponents/ReuseDistrict';
 import ReuseMunicipality from '../../ReuseableComponents/ReuseMunicipality';
 import ReuseCourt from '../../ReuseableComponents/ReuseCourt';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
+import { Helmet } from 'react-helmet';
 
 const PreviousParoleForm = ( { status } ) => {
   const BASE_URL = useBaseURL();
@@ -113,6 +114,12 @@ const PreviousParoleForm = ( { status } ) => {
   const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
     <>
+    <Helmet>
+                <title>PMIS: पूर्व प्यारोल फारम</title>
+                <meta name="description" content="पूर्व प्यारोल सम्बन्धि फारम भर्नुहोस्" />
+                <meta name="keywords" content="प्यारोल, पूर्व प्यारोल, फारम, कैदी, कैदी विवरण, कैदी रेकर्ड" />
+                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+    </Helmet>
       <Box sx={{ flexGrow: 1 }}>
         <form onSubmit={handleSubmit( onFormSubmit )}>
           <Grid container spacing={1}>

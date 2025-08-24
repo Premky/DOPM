@@ -16,6 +16,7 @@ import ReusePayroleBandi from '../../ReuseableComponents/ReusePayroleBandi';
 import PayroleLogTable from '../Tables/PayroleLogTable';
 import fetchPayroleLogs from '../../ReuseableComponents/fetchPayroleLog';
 import fetchBandiRelatives from '../../ReuseableComponents/fetchBandiRelatives';
+import { Helmet } from 'react-helmet';
 
 
 
@@ -105,232 +106,240 @@ const ParoleLogForm = () => {
     };
     const { records: relatives, optrecords: relativeOptions, loading: loadingRelatives } = fetchBandiRelatives( bandi_id );
     return (
-        <Box component="form" onSubmit={handleSubmit( onSubmit )}>
-            <Grid container spacing={2} style={{ color: 'red' }}>
-                अहिले यो फर्म काम नगरेकोले कृपया यसमा इन्ट्रि नगरिदिनुहोल ।
-            </Grid>
-
-            <Grid container spacing={2}>
-                <Grid size={{ xs: 12 }}>
-                    <ReusePayroleBandi
-                        name="bandi_id"
-                        label="कैदीको नामथर, ठेगाना, मुद्दा"
-                        control={control}
-                        required={true}
-                    />
+        <>
+            <Helmet>
+                <title>PMIS: प्यारोल लगत/हाजिर फर्म</title>
+                <meta name="description" content="प्यारोल लगत/हाजिर सम्बन्धि फारम भर्नुहोस्" />
+                <meta name="keywords" content="प्यारोल, लगत, हाजिर, फारम, कैदी, कैदी विवरण, कैदी रेकर्ड" />
+                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+            </Helmet>
+            <Box component="form" onSubmit={handleSubmit( onSubmit )}>
+                <Grid container spacing={2} style={{ color: 'red' }}>
+                    अहिले यो फर्म काम नगरेकोले कृपया यसमा इन्ट्रि नगरिदिनुहोल ।
                 </Grid>
 
-                <Grid container size={{ sm: 6 }} spacing={2}>
-                    <Grid size={{ sm: 6 }}>
-                        <ReuseDateField
-                            name="hajir_date"
-                            label={hajir_status == 'कैद भुक्तान' ? `हाजिर मिति/छुट्ने मिति`:`हाजिर मिति`}
-                            placeholder="YYYY-MM-DD"
+                <Grid container spacing={2}>
+                    <Grid size={{ xs: 12 }}>
+                        <ReusePayroleBandi
+                            name="bandi_id"
+                            label="कैदीको नामथर, ठेगाना, मुद्दा"
                             control={control}
                             required={true}
                         />
                     </Grid>
-                    <Grid size={{ sm: 6 }}>
-                        <ReuseSelect
-                            name="hajir_status"
-                            label="उपस्थित/अनुउपस्थित"
-                            options={[
-                                { label: 'उपस्थित', value: 'उपस्थित' },
-                                { label: 'अनुउपस्थित', value: 'अनुउपस्थित' },
-                                { label: 'कैद भुक्तान', value: 'कैद भुक्तान' },
-                                { label: 'मृत्यु', value: 'मृत्यु' },
-                            ]}
-                            control={control}
-                            required={true}
-                        />
-                    </Grid>
-                </Grid>
-                {( hajir_status == 'कैद भुक्तान' ) && ( <>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseSelect
-                            name='aafanta_id'
-                            label='बुझ्ने मान्छे छान्नुहोस् (नदेखाएमा पारिवारिक विवरण चेक गर्नुहोला)'
-                            options={relativeOptions}
-                            control={control}                            
-                            errors={errors.aafanta_id}
-                        />
-                    </Grid>
-                </> )}
 
-                {( hajir_status !== 'कैद भुक्तान' && hajir_status !== 'मृत्यु' ) && ( <>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseDateField
-                            name="next_hajir_date"
-                            label="हाजिर हुने मिति"
-                            placeholder="YYYY-MM-DD"
-                            control={control}
-                        />
+                    <Grid container size={{ sm: 6 }} spacing={2}>
+                        <Grid size={{ sm: 6 }}>
+                            <ReuseDateField
+                                name="hajir_date"
+                                label={hajir_status == 'कैद भुक्तान' ? `हाजिर मिति/छुट्ने मिति` : `हाजिर मिति`}
+                                placeholder="YYYY-MM-DD"
+                                control={control}
+                                required={true}
+                            />
+                        </Grid>
+                        <Grid size={{ sm: 6 }}>
+                            <ReuseSelect
+                                name="hajir_status"
+                                label="उपस्थित/अनुउपस्थित"
+                                options={[
+                                    { label: 'उपस्थित', value: 'उपस्थित' },
+                                    { label: 'अनुउपस्थित', value: 'अनुउपस्थित' },
+                                    { label: 'कैद भुक्तान', value: 'कैद भुक्तान' },
+                                    { label: 'मृत्यु', value: 'मृत्यु' },
+                                ]}
+                                control={control}
+                                required={true}
+                            />
+                        </Grid>
                     </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseKaragarOffice
-                            name="hajir_office_id"
-                            label="हाजिर हुने कार्यालय"
-                            control={control}
-                        />
-                    </Grid>
-                </> )}
-
-
-                {hajir_status == 'मृत्यु' && ( <>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseDateField
-                            required
-                            name="death_date"
-                            label="मृत्यु भएको मिति"
-                            placeholder={"YYYY-MM-DD"}
-                            control={control}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <ReuseInput
-                            name="death_reason"
-                            label="मृत्युको कारण"
-                            control={control}
-                            required={true}
-                        />
-                    </Grid>
-                </>
-                )}
-
-                {hajir_status === 'अनुउपस्थित' && (
-                    <>
+                    {( hajir_status == 'कैद भुक्तान' ) && ( <>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <ReuseSelect
-                                required
-                                name="absent_reason"
-                                label="अनुपश्थितिको कारण"
-                                options={[
-                                    { label: 'फरार', value: 'फरार' },
-                                    {
-                                        label: 'थुना/हिरासतमा रहेको',
-                                        value: 'थुना/हिरासतमा रहेको',
-                                    },
+                                name='aafanta_id'
+                                label='बुझ्ने मान्छे छान्नुहोस् (नदेखाएमा पारिवारिक विवरण चेक गर्नुहोला)'
+                                options={relativeOptions}
+                                control={control}
+                                errors={errors.aafanta_id}
+                            />
+                        </Grid>
+                    </> )}
 
-                                ]}
+                    {( hajir_status !== 'कैद भुक्तान' && hajir_status !== 'मृत्यु' ) && ( <>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseDateField
+                                name="next_hajir_date"
+                                label="हाजिर हुने मिति"
+                                placeholder="YYYY-MM-DD"
                                 control={control}
                             />
                         </Grid>
 
-                        {absent_reason === 'थुना/हिरासतमा रहेको' && (
-                            <>
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseMudda
-                                        required
-                                        name="absent_mudda_id"
-                                        label="मुद्दा(अन्य मुद्दामा पक्राउ परेको भए सो जनाउने)"
-                                        control={control}
-                                    />
-                                </Grid>
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseDistrict
-                                        required
-                                        name="thuna_district"
-                                        label="थुना/हिरासतमा रहेको जिल्ला"
-                                        control={control}
-                                    />
-                                </Grid>
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                    <ReuseSelect
-                                        required
-                                        name="thuna_office_type"
-                                        label="थुना/हिरासतमा रहेको कार्यालय"
-                                        options={[
-                                            { label: 'कारागार', value: 'कारागार' },
-                                            { label: 'अन्य', value: 'अन्य' },
-                                        ]}
-                                        control={control}
-                                    />
-                                </Grid>
-
-                                {thuna_office_type === 'कारागार' ? (
-                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                        <ReuseKaragarOffice
-                                            required
-                                            name="thuna_office_id"
-                                            label="कारागारको नाम"
-                                            control={control}
-                                        />
-                                    </Grid>
-                                ) : (
-                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                        <ReuseInput
-                                            required
-                                            name="thuna_office_name"
-                                            label="कार्यालयको नाम"
-                                            control={control}
-                                        />
-                                    </Grid>
-                                )}
-                            </>
-                        )}
-
-
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <ReuseSelect
-                                required
-                                name="is_reported_to_court"
-                                label="कारवाही तथा सजायका लागी प्रतिवेदन पेश गरे/नगरेको"
-                                options={[
-                                    { label: 'गरेको', value: '1' },
-                                    { label: 'नगरेको', value: '0' },
-                                ]}
+                            <ReuseKaragarOffice
+                                name="hajir_office_id"
+                                label="हाजिर हुने कार्यालय"
                                 control={control}
                             />
                         </Grid>
+                    </> )}
 
-                        {is_reported_to_court === '1' && (
+
+                    {hajir_status == 'मृत्यु' && ( <>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseDateField
+                                required
+                                name="death_date"
+                                label="मृत्यु भएको मिति"
+                                placeholder={"YYYY-MM-DD"}
+                                control={control}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <ReuseInput
+                                name="death_reason"
+                                label="मृत्युको कारण"
+                                control={control}
+                                required={true}
+                            />
+                        </Grid>
+                    </>
+                    )}
+
+                    {hajir_status === 'अनुउपस्थित' && (
+                        <>
                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                 <ReuseSelect
                                     required
-                                    name="is_court_ordered"
-                                    label="सुरु अदालतबाट आदेश भए/नभएको"
+                                    name="absent_reason"
+                                    label="अनुपश्थितिको कारण"
                                     options={[
-                                        { label: 'भएको', value: '1' },
-                                        { label: 'नभएको', value: '0' },
+                                        { label: 'फरार', value: 'फरार' },
+                                        {
+                                            label: 'थुना/हिरासतमा रहेको',
+                                            value: 'थुना/हिरासतमा रहेको',
+                                        },
+
                                     ]}
                                     control={control}
                                 />
                             </Grid>
-                        )}
 
-                        {is_court_ordered === '1' && (
+                            {absent_reason === 'थुना/हिरासतमा रहेको' && (
+                                <>
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                        <ReuseMudda
+                                            required
+                                            name="absent_mudda_id"
+                                            label="मुद्दा(अन्य मुद्दामा पक्राउ परेको भए सो जनाउने)"
+                                            control={control}
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                        <ReuseDistrict
+                                            required
+                                            name="thuna_district"
+                                            label="थुना/हिरासतमा रहेको जिल्ला"
+                                            control={control}
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                        <ReuseSelect
+                                            required
+                                            name="thuna_office_type"
+                                            label="थुना/हिरासतमा रहेको कार्यालय"
+                                            options={[
+                                                { label: 'कारागार', value: 'कारागार' },
+                                                { label: 'अन्य', value: 'अन्य' },
+                                            ]}
+                                            control={control}
+                                        />
+                                    </Grid>
+
+                                    {thuna_office_type === 'कारागार' ? (
+                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseKaragarOffice
+                                                required
+                                                name="thuna_office_id"
+                                                label="कारागारको नाम"
+                                                control={control}
+                                            />
+                                        </Grid>
+                                    ) : (
+                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                            <ReuseInput
+                                                required
+                                                name="thuna_office_name"
+                                                label="कार्यालयको नाम"
+                                                control={control}
+                                            />
+                                        </Grid>
+                                    )}
+                                </>
+                            )}
+
+
                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                <ReuseInput
+                                <ReuseSelect
                                     required
-                                    name="court_order"
-                                    label="अदालतको आदेश"
+                                    name="is_reported_to_court"
+                                    label="कारवाही तथा सजायका लागी प्रतिवेदन पेश गरे/नगरेको"
+                                    options={[
+                                        { label: 'गरेको', value: '1' },
+                                        { label: 'नगरेको', value: '0' },
+                                    ]}
                                     control={control}
                                 />
                             </Grid>
-                        )}
-                    </>
-                )}
 
-                <Grid size={{ xs: 12 }}>
-                    <ReuseInput
-                        name="hajir_remarks"
-                        label="कैफियत"
-                        control={control}
-                    />
+                            {is_reported_to_court === '1' && (
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseSelect
+                                        required
+                                        name="is_court_ordered"
+                                        label="सुरु अदालतबाट आदेश भए/नभएको"
+                                        options={[
+                                            { label: 'भएको', value: '1' },
+                                            { label: 'नभएको', value: '0' },
+                                        ]}
+                                        control={control}
+                                    />
+                                </Grid>
+                            )}
+
+                            {is_court_ordered === '1' && (
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                    <ReuseInput
+                                        required
+                                        name="court_order"
+                                        label="अदालतको आदेश"
+                                        control={control}
+                                    />
+                                </Grid>
+                            )}
+                        </>
+                    )}
+
+                    <Grid size={{ xs: 12 }}>
+                        <ReuseInput
+                            name="hajir_remarks"
+                            label="कैफियत"
+                            control={control}
+                        />
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                        <Button type="submit" variant="contained" color="primary">
+                            सेभ गर्नुहोस्
+                        </Button>
+                    </Grid>
                 </Grid>
+                <Grid container>
+                    <PayroleLogTable records={logRecords} />
 
-                <Grid size={{ xs: 12 }}>
-                    <Button type="submit" variant="contained" color="primary">
-                        सेभ गर्नुहोस्
-                    </Button>
                 </Grid>
-            </Grid>
-            <Grid container>
-                <PayroleLogTable records={logRecords} />
-
-            </Grid>
-        </Box>
+            </Box>
+        </>
     );
 };
 

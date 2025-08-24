@@ -22,6 +22,7 @@ import useChkEmpSanket from '../APIs/useChkEmpSanket';
 import useSanketNoGeneratorForKarar from '../APIs/useSanketNoGeneratorForKarar';
 import { bs2ad } from '../../../../Utils/bs2ad';
 import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
+import { Helmet } from 'react-helmet';
 
 const EmployeeForm = () => {
     const BASE_URL = useBaseURL();
@@ -131,6 +132,10 @@ const EmployeeForm = () => {
 
     return (
         <>
+        <Helmet>
+            <title>कर्मचारी फारम</title>
+            <meta name="description" content="कर्मचारी फारम" />            
+        </Helmet>
             <Box>
                 <Grid container spacing={0}>
                     <form onSubmit={handleSubmit( onFormSubmit )}>

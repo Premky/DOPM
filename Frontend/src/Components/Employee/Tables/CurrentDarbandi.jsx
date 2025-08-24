@@ -9,6 +9,7 @@ import axios from "axios";
 import { Grid } from '@mui/system';
 import CurrentDarbandiForm from '../Forms/CurrentDarbandiForm';
 import ReusableTable from '../../ReuseableComponents/ReuseTable';
+import { Helmet } from 'react-helmet';
 
 const CurrentDarbandi = () => {
     const BASE_URL = useBaseURL();
@@ -133,46 +134,52 @@ const CurrentDarbandi = () => {
         { field: "service_name_np", headerName: "सेवा" },
         { field: "group_name_np", headerName: "समुह" },
         { field: "darbandi", headerName: "दरबन्दी" },
-        { field: "kaaj_count", headerName: "काज" },        
+        { field: "kaaj_count", headerName: "काज" },
     ];
     return (
-        <Box sx={{ mt: 4 }}>
+        <>
+        <Helmet>
+            <title>हालको दरबन्दी</title>
+            <meta name="description" content="हालको दरबन्दी" />            
+        </Helmet>
+            <Box sx={{ mt: 4 }}>
 
-            {error ? (
-                <p style={{ color: 'red' }}>{error}</p>
-            ) : loading ? (
-                <CircularProgress />
-            ) : (
-                <>
+                {error ? (
+                    <p style={{ color: 'red' }}>{error}</p>
+                ) : loading ? (
+                    <CircularProgress />
+                ) : (
+                    <>
 
-                    <Grid container spacing={0}>
-                        <Grid size={{ xs: 12 }}>
-                            <Button variant="contained" color="primary" onClick={toggleCurrentDarbandiForm}>
-                                {showCurrentDarbandiForm ? 'Hide Form' : 'Show Form'}
-                            </Button>
+                        <Grid container spacing={0}>
+                            <Grid size={{ xs: 12 }}>
+                                <Button variant="contained" color="primary" onClick={toggleCurrentDarbandiForm}>
+                                    {showCurrentDarbandiForm ? 'Hide Form' : 'Show Form'}
+                                </Button>
+                            </Grid>
+
+                            <Grid>
+                                {showCurrentDarbandiForm && (
+                                    <CurrentDarbandiForm
+                                        editing={editing}
+                                        currentData={currentData}
+                                        onClose={() => { setShowCurrentDarbandiForm( false ); setEditing( false ); setCurrentData( null ); }}
+                                        onSuccess={fetchDarbandi}
+                                    /> )}
+                            </Grid>
                         </Grid>
 
-                        <Grid>
-                            {showCurrentDarbandiForm && (
-                                <CurrentDarbandiForm
-                                    editing={editing}
-                                    currentData={currentData}
-                                    onClose={() => { setShowCurrentDarbandiForm( false ); setEditing( false ); setCurrentData( null ); }}
-                                    onSuccess={fetchDarbandi}
-                                /> )}
-                        </Grid>
-                    </Grid>
-
-                    <ReusableTable
-                        columns={ columns}
-                        rows={sortedRecords}
-                        enableExport   
-                        showEdit={true}
-                        onEdit={onEdit}
-                    />
-                </>
-            )}
-        </Box>
+                        <ReusableTable
+                            columns={columns}
+                            rows={sortedRecords}
+                            enableExport
+                            showEdit={true}
+                            onEdit={onEdit}
+                        />
+                    </>
+                )}
+            </Box>
+        </>
     );
 };
 

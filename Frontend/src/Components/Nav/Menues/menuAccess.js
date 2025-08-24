@@ -73,5 +73,6 @@ export const menuAccess = {
       '/emp/view_employee',
     ],
     superadmin: 'all',
+    clerk:'all',
   }
 };

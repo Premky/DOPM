@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useAuth } from '../../../Context/AuthContext';
 import { useForm } from 'react-hook-form';
+
 import NepaliDate from 'nepali-datetime';
 import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
@@ -15,6 +16,7 @@ const ReuseCountry = React.lazy( () => import( '../../ReuseableComponents/ReuseC
 const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
+import { Helmet } from 'react-helmet';
 
 
 const AllBandiTable = () => {
@@ -268,6 +270,10 @@ const AllBandiTable = () => {
 
     return (
         <>
+        <Helmet>
+                <title>PMIS: बन्दीहरुको सूची</title>
+                <meta name="description" content="बन्दीहरुको सूची हेर्नुहोस् र व्यवस्थापन गर्नुहोस्" />
+        </Helmet>
 
             <Box sx={{ p: 2 }}>
                 <Grid container spacing={2}>

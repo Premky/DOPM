@@ -5,7 +5,7 @@ import { useController, useForm, Controller } from 'react-hook-form';
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import { useAuth } from '../../../../Context/AuthContext';
 import { Grid, Box, Typography, Button, TextField } from '@mui/material';
-import ReuseDateField from '../../../ReuseableComponents/ReuseDateField';
+import { Helmet } from 'react-helmet';
 import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice';
 import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 
@@ -121,7 +121,10 @@ const CountReport = () => {
 
     return (
         <>
-
+        <Helmet>
+                <title>PMIS: बन्दी संख्या रिपोर्ट</title>
+                <meta name="description" content="बन्दी संख्या सम्बन्धि रिपोर्ट हेर्नुहोस्" />
+        </Helmet>
             <Grid container >
                 <Box sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>

@@ -2,6 +2,7 @@ import React from 'react';
 import useAllEmployes from '../APIs/useAllEmp';
 import ReusableEmpTable from '../ReusableComponents/ReusableEmpTable';
 import Darbandi from './CurrentDarbandi';
+import { Helmet } from 'react-helmet';
 
 const AllEmpTable = () => {
   const columns = [
@@ -73,6 +74,10 @@ const AllEmpTable = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>सबै कर्मचारी</title>
+        <meta name="description" content="सबै कर्मचारी" />
+      </Helmet>
       <ReusableEmpTable
         columns={columns}
         rows={rows}

@@ -17,6 +17,7 @@ import { useAuth } from '../../../Context/AuthContext';
 import { exportToExcel } from '../Exports/ExcelMaskebariCount';
 import NepaliDate from 'nepali-datetime';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
+import { Helmet } from 'react-helmet';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
@@ -117,6 +118,12 @@ const KaragarMaskebari = () => {
 
     return (
         <div>
+            <Helmet>
+                <title>PMIS: कारागार मस्केबारी रिपोर्ट</title>
+                <meta name="description" content="कारागार मस्केबारी सम्बन्धि रिपोर्ट हेर्नुहोस्" />
+                <meta name="keywords" content="कारागार, मस्केबारी, रिपोर्ट, बन्दी, बन्दी संख्या, बन्दी विवरण" />
+                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+            </Helmet>
             <Grid container >
                 <Box sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>

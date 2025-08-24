@@ -18,8 +18,9 @@ import ReuseMunicipality from '../../ReuseableComponents/ReuseMunicipality';
 import ReuseCourt from '../../ReuseableComponents/ReuseCourt';
 import ViewBandi from '../../Bandi/ViewBandi';
 import PreviewBandi from '../View/PreviewBandi';
+import { Helmet } from 'react-helmet';
 
-const PayroleForm = ({status})=> {
+const PayroleForm = ( { status } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -110,11 +111,17 @@ const PayroleForm = ({status})=> {
       setLoading( false );
     }
   };
-  const selectedDistrictId=watch('recommended_district');
+  const selectedDistrictId = watch( 'recommended_district' );
   const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
   const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
     <>
+      <Helmet>
+        <title>PMIS: प्यारोल फारम</title>
+        <meta name="description" content="प्यारोल सम्बन्धि फारम भर्नुहोस्" />
+        <meta name="keywords" content="प्यारोल, फारम, कैदी, कैदी विवरण, कैदी रेकर्ड" />
+        <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+      </Helmet>
       <Box sx={{ flexGrow: 1 }}>
         <form onSubmit={handleSubmit( onFormSubmit )}>
           <Grid container spacing={1}>

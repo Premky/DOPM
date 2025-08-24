@@ -5,6 +5,7 @@ import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTot
 import fetchUserStatus from '../../../ReuseableComponents/fetchUserStatus';
 import { useAuth } from '../../../../Context/AuthContext';
 import exportOfficeWiseMaskebariExcel from '../../Exports/ExportOfficeWiseMaskebariExcel';
+import { Helmet } from 'react-helmet';
 // import exportCombinedGenderAndOfficeCountExcel from '../../Exports/ExportCombinedGenderAndOfficeCountExcel';
 const TotalCountOfficeWise = ( { filters } ) => {
     const { state } = useAuth();
@@ -32,6 +33,14 @@ const TotalCountOfficeWise = ( { filters } ) => {
     // console.log(loginStatus)
     return (
         <Box>
+            <Helmet>
+                <title>PMIS: कार्यालयगत संख्या</title>
+                <meta name="description" content="कार्यालय अनुसार कुल कैदीबन्दी संख्या हेर्नुहोस्" />
+                <meta name="keywords" content="कुल कैदीबन्दी, कार्यालय अनुसार, कैदी संख्या, थुनुवा संख्या, लिङ्ग अनुसार, ६५ वर्ष माथिका, आश्रित, विदेशी" />
+                <meta name="author" content="Your Name or Company" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="canonical" href={window.location.href} />
+            </Helmet>
             <Button variant="contained" 
                 onClick={hanldeExport} 
                 sx={{ mb: 2 }}

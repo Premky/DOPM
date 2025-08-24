@@ -24,6 +24,7 @@ import TableFilters from "./TableFilters";
 // import PayroleExportButton from "./PayroleExportButton";
 import { useAuth } from "../../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import {Helmet} from "react-helmet";
 
 import TableActionMenu from "./TableActionMenu";
 // import BandiFullReportPDF from "../../Bandi/Payrole/View/BandiFullReportPDF";
@@ -129,6 +130,13 @@ const BandiTransferTable = () => {
     // console.log( filteredKaidi );
     return (
         <>
+            <Helmet>
+                <title>बन्दी सरुवा तालिका</title>
+                <meta name="description" content="बन्दी सरुवा तालिका" />
+                <meta name="keywords" content="बन्दी सरुवा तालिका" />
+                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+            </Helmet>
+
             <Button onClick={() => exportToExcel( filteredKaidi, fetchedMuddas, fetchedTransferHistory, BASE_URL, authState )} variant="outlined" color="primary" sx={{ m: 1 }}>
                 एक्सेल निर्यात (पत्र)
             </Button>

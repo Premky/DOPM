@@ -107,6 +107,22 @@ function App() {
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                 </Route>
 
+                {/* Payrole Routes */}
+                <Route path="payrole" element={<OutletLayout />}>
+                  <Route index element={<PayroleMakebari />} />
+                  <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+                  <Route path="create_previous_parole" element={<PreviousParoleForm status='under_parole' />} />
+                  <Route path="create_payrole" element={<PayroleForm />} />
+                  <Route path="payrole_user_check" element={<PayroleTable status='user_not_submitted' />} />
+                  <Route path="payrole_client_check" element={<PayroleTable status='user_submitted' />} />
+                  <Route path="payrole_jr_check" element={<PayroleTable />} />
+                  <Route path="payrole_client_pesh" element={<PayroleTable />} />
+                  <Route path="payrole_table" element={<PayroleTable />} />
+                  <Route path="maskebari_table" element={<PayroleMakebari />} />
+                  <Route path="payrole_log" element={<ParoleLogForm />} />
+                </Route>
+
+                {/* Kaamdari Subidha Routes */}
                 <Route path="kaamdari_subidha" element={<OutletLayout />}>
                   <Route path="create_aantarik_prashasan" element={<AantarikPrashasanForm />} />
                   <Route path="kaamdari_subidha_form" element={<KaamdariSubidhaForm />} />
@@ -115,26 +131,13 @@ function App() {
                 </Route>
 
                 <Route path="bandi_transfer" element={<OutletLayout />}>
-                  <Route path="approve_bandi_final_transfer" element={<BandiTransferTable status='sent_by_clerk'/>} />
+                  <Route path="approve_bandi_final_transfer" element={<BandiTransferTable status='sent_by_clerk' />} />
                   {/* <Route path="bandi_final_transfer" element={<BandiFinalTransferForm />} /> */}
                   <Route path="new_bandi_transfer" element={<BandiTransferForm />} />
                   <Route path="view_details/:id" element={<KaamdariBhuktanDecision />} />
                 </Route>
 
-                {/* Payrole Routes */}
-                <Route path="payrole" element={<OutletLayout />}>
-                  <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
-                  <Route index element={<PayroleMakebari />} />                  
-                  <Route path="create_previous_parole" element={<PreviousParoleForm status='under_parole'/>} />                  
-                  <Route path="create_payrole" element={<PayroleForm />} />
-                  <Route path="payrole_user_check" element={<PayroleTable status='user_not_submitted'/>} />
-                  <Route path="payrole_client_check" element={<PayroleTable status='user_submitted'/>} />
-                  <Route path="payrole_jr_check" element={<PayroleTable/>} />
-                  <Route path="payrole_client_pesh" element={<PayroleTable />} />
-                  <Route path="payrole_table" element={<PayroleTable />} />
-                  <Route path="maskebari_table" element={<PayroleMakebari />} />
-                  <Route path="payrole_log" element={<ParoleLogForm />} />
-                </Route>
+
 
                 {/* Payrole Routes */}
                 <Route path="emp" element={<OutletLayout />}>

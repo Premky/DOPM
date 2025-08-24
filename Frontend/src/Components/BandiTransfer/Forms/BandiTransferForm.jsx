@@ -22,6 +22,7 @@ import BandiTransferHistoryTable from '../../Bandi/Tables/For View/BandiTransfer
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import fetchBandiTransferReasons from '../../ReuseableComponents/fetchBandiTransferReasons';
 import useFetchBandi from '../Fetch_APIs/useFetchBandi';
+import { Helmet } from 'react-helmet';
 
 const BandiTransferForm = () => {
     const BASE_URL = useBaseURL();
@@ -75,6 +76,12 @@ const BandiTransferForm = () => {
     // console.log(bandi)
     return (
         <>
+        <Helmet>
+                <title>बन्दी सरुवा फारम</title>
+                <meta name="description" content="बन्दी सरुवा फारम" />   
+                <meta name="keywords" content="बन्दी सरुवा फारम" />
+                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+        </Helmet>
             <Box>
                     <form onSubmit={handleSubmit( onFormSubmit )}>
                         <Grid size={{ xs: 12 }}>

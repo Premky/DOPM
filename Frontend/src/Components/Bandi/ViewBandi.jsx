@@ -14,6 +14,7 @@ import BandiDisabilityTable from './Tables/For View/BandiDisabilityTable.jsx';
 import { Grid } from '@mui/material';
 import BandiTransferHistoryTable from './Tables/For View/BandiTransferHistoryTable.jsx';
 import PayroleDetailsTable from '../Parole/View/PayroleDetailsTable.jsx';
+import {Helmet} from "react-helmet";
 
 const ViewBandi = ( { bandi } ) => {
     const params = useParams();
@@ -31,6 +32,14 @@ const ViewBandi = ( { bandi } ) => {
 
     return (
         <>
+        <Helmet>
+                <title>PMIS: बन्दी विस्तृत विवरण</title>
+                <meta name="description" content="बन्दी सम्बन्धि सबै विवरणहरु हेर्नुहोस्" />
+                <meta name="keywords" content="बन्दी, बन्दी विवरण, बन्दी जानकारी, बन्दी रेकर्ड, बन्दी डाटा" />
+                <meta name="author" content="Your Name or Company" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="canonical" href={window.location.href} />
+        </Helmet>
             <Grid container spacing={2} sx={{ marginBottom: '0px' }}>
                 {urlLocation === "parole" && (
                     <Grid size={{ xs: 12 }}>
