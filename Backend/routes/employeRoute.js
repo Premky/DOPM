@@ -87,6 +87,8 @@ router.post( '/create_current_darbandi', verifyToken, async ( req, res ) => {
 router.get( "/get_darbandi", verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
     const active_office = req.user.office_id;
+    const selectedOffice = req.query.selected_office || 0;
+    
     let office_id = [];
     if ( selectedOffice ) {
         office_id=selectedOffice
@@ -95,7 +97,7 @@ router.get( "/get_darbandi", verifyToken, async ( req, res ) => {
     } else if ( !( active_office == 1 || active_office == 2 ) ) {        
         office_id=active_office
     }
-    
+
     const sql = `SELECT d.no_of_darbandi AS darbandi, d.id AS id,
                 p.post_name_Np, p.id AS post_id,
                 el.level_name_np, el.emp_rank_np, el.id AS level_id,
