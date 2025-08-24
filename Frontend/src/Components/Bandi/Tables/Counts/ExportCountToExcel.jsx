@@ -1,14 +1,14 @@
 import { FmdBad } from "@mui/icons-material";
 import { tooltipClasses } from "@mui/material";
 import * as ExcelJS from "exceljs";
-const { saveAs } = await import("file-saver");
 
 
 const exportToExcel = async (start_Date, end_Date, records, totals, fy, fm, current_date) => {
     //Create a new workbook and worksheet
-
+    
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Counts');
+    const { saveAs } = await import("file-saver");
 
     //set Page layout
     worksheet.pageSetup = {

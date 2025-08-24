@@ -10,9 +10,6 @@ import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice'
 import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 
 import { exportToExcel } from './ExportCountToExcel';
-import ReuseDatePickerBS from '../../../ReuseableComponents/ReuseDatePickerBS';
-// import {NepaliDatePicker} from 'nepali-datepicker-reactjs'
-// import 'nepali-datepicker-reactjs/dist/index.css'
 
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 const fyy = new NepaliDate().format( 'YYYY' );
