@@ -31,7 +31,8 @@ const validateUserFields = ({ username, password, repassword, name_np }) => {
   if (password !== repassword) return "पासवर्डहरू मिलेन।";
 
   // Password Strength Check
-  const strongPassowrdCombination = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  // const strongPassowrdCombination = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  let strongPassowrdCombination = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   if( !strongPassowrdCombination.test(password)) {
     return "पासवर्ड कम्तिमा 8 अक्षर लामो, एक ठूलो अक्षर, एक सानो अक्षर र एक अंक समावेश गर्नुपर्छ।";
   } 
