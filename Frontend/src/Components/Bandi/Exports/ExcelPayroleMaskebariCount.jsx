@@ -1,8 +1,10 @@
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
+// import ExcelJS from 'exceljs';
+// import { saveAs } from 'file-saver';
 import NepaliDate from 'nepali-datetime';
 
 const exportMaskebariCountToExcel = async (filteredRecords, totals) => {
+    const ExcelJS = await import('exceljs')
+    const saveAs = await import('file-saver')
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format('YYYY-MM-DD');
     const workbook = new ExcelJS.Workbook();

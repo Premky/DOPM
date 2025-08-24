@@ -1,9 +1,8 @@
-import * as ExcelJS from "exceljs";
+// import * as ExcelJS from "exceljs";
 // import { saveAs } from "file-saver";
 
 
-const setupWorksheet = ( workbook ) => {
-
+const setupWorksheet = ( workbook ) => {  
   const worksheet = workbook.addWorksheet( "Prisoner Records" );
   worksheet.pageSetup = {
     paperSize: 9,
@@ -132,6 +131,7 @@ const addOfficeDetails = ( worksheet ) => {
 };
 
 export const exportToExcel = async ( releaseRecords, nativeRecords, nativeTotals, foreignRecords, foreignTotals, fy, fm ) => {
+  const ExcelJS = await import("exceljs")
   const workbook = new ExcelJS.Workbook();
   const worksheet = setupWorksheet( workbook );
   const { saveAs } = await import( "file-saver" );

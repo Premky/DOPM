@@ -1,10 +1,11 @@
-import ExcelJS from 'exceljs';
+// import ExcelJS from 'exceljs';
 // import { saveAs } from 'file-saver';
 
 
 // Inside your component file, e.g. TotalCountOfficeWise.jsx
 
 const exportOfficeWiseMaskebariExcel = async (count, onlineOfficeIds) => {
+  const ExcelJS= await import('exceljs')
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Total Count Office Wise');
   const { saveAs } = await import("file-saver");

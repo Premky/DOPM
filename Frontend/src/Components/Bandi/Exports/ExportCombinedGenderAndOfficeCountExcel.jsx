@@ -1,6 +1,7 @@
-import ExcelJS from 'exceljs';
+// import ExcelJS from 'exceljs';
 
 const exportCombinedGenderAndOfficeCountExcel = async (totals, count, onlineOfficeIds) => {
+  const ExcelJS = await import('exceljs')
   const { saveAs } = await import("file-saver");
   const workbook = new ExcelJS.Workbook();
 
