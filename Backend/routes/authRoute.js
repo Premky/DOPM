@@ -105,6 +105,7 @@ router.get("/get_users", verifyToken, async (req, res) => {
     `;
 
     const [result] = await pool.query(sql, params);
+    console.log(result)
     return res.json({ Status: true, Result: result });
   } catch (error) {
     console.error("Get users error:", error);

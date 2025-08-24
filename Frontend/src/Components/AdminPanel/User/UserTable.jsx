@@ -32,7 +32,7 @@ const UserTable = () => {
       });
 
       const { Status, Result, Error } = response.data;
-
+      // console.log(Result)
       if (Status) {
         if (Array.isArray(Result) && Result.length > 0) {
           const formatted = Result.map((opt, index) => ({

@@ -7,11 +7,8 @@ import NepaliDate from 'nepali-datetime';
 import sha256 from "crypto-js/sha256";
 
 import ReuseInput from '../../ReuseableComponents/ReuseInput';
-import ReuseOffice from '../../ReuseableComponents/ReuseOffice';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
-import UserTable from './UserTable';
 import ReusableTable from '../../ReuseableComponents/ReuseTable';
-import ReuseBranch from '../../ReuseableComponents/ReuseBranch';
 import { Navigate } from 'react-router-dom';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 // import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
@@ -91,30 +88,14 @@ const CreateUser = () => {
             } );
             const { Status, Result, Error } = response.data;
             if ( Status ) {
-                // Swal.fire( {
-                //     title: `User ${ editing ? 'updated' : 'created' } successfully!`,
-                //     icon: "success",
-                //     draggable: true
-                // } );
-
                 Swal.fire( {
                     title: 'आहा!',
                     text: 'रेकर्ड सफलतापूर्वक थपियो',
                     imageUrl: `/gif/piaboys-kaatraj.gif`,
-                    // imageUrl: `/gif/funnySuccesslogo.gif`,
-                    // imageUrl: `/gif/clap.gif`,
-                    // imageUrl: `${ BASE_URL }/gif/funnySuccesslogo.gif`, // Use your custom GIF here
                     imageWidth: 200, // optional
                     imageHeight: 200, // optional
                     imageAlt: 'Custom success image',
                 } );
-
-                // Swal.fire( {
-                //     // imageUrl: `http://localhost:5173/gif/funnySuccesslogo.gif`,
-                //     imageUrl: `/gif/funnySuccesslogo.gif`,
-                //     imageHeight: 800,
-                //     imageAlt: "A tall image"
-                // } );
 
                 reset();
                 setEditing( false );
@@ -148,34 +129,10 @@ const CreateUser = () => {
             const { Status, Result, Error } = response.data;
 
             if ( Status ) {
-                // console.log( "Result typeof:", typeof Result );
-                // console.log( "Result is array:", Array.isArray( Result ) );
-                // console.log( "Result content:", Result );
 
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
-                    // console.log( Result );
-                    // const formatted = Result.map( ( opt, index ) => {
-                    //     console.log( 'Mapping user:', opt );
-                    //     return {
-                    //         sn: `${ opt.id ?? `branch-${ index }` }`,
-                    //         id: index + 1,
-                    //         user_name: opt.user_name,
-                    //         user_login_id: opt.user_login_id,
-                    //         usertype: opt.usertype,
-                    //         usertype_en: opt.usertype_en,
-                    //         office_id: opt.office_id,
-                    //         office_np: opt.office_name_with_letter_address,
-                    //         branch_id: opt.branch_id,
-                    //         branch_np: opt.branch_np,
-                    //         is_active: opt.is_active ? 'छ' : 'छैन',
-                    //         lastpwchanged: opt.last_password_changed
-                    //             ? ( 90 - Math.ceil( Math.abs( new Date() - new Date( opt.last_password_changed ) ) / ( 1000 * 60 * 60 * 24 ) ) ) + ' days'
-                    //             : 'N/A',
-                    //     };
-                    // } );
-                    // // console.log(formatted)
 
-                    const formatted = Result[0].map( ( opt, index ) => ( {
+                    const formatted = Result.map( ( opt, index ) => ( {
                         id: opt.id ?? opt.user_id ?? opt.branch_id ?? opt.id ?? `user-${ index }`,
                         sn: index + 1,
                         user_name: opt.user_name,
@@ -193,8 +150,6 @@ const CreateUser = () => {
                             : "N/A",
                     } ) );
 
-                    // console.log( "Formatted:", formatted );
-                    // console.log(Result[0])
                     setFormattedOptions( formatted );
                 } else {
                     console.log( 'No records found.' );
