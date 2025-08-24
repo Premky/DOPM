@@ -8,8 +8,7 @@ import ExcelJS from 'exceljs';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 
-const { saveAs } = await import("file-saver");
-const ReusableBandiTable = ( {
+const ReusableBandiTable = async( {
     rows = [],
     columns = [],
     primaryMergeKey = 'bandi_id',
@@ -21,6 +20,7 @@ const ReusableBandiTable = ( {
     onEdit,
     onDelete,
 } ) => {
+    const { saveAs } = await import("file-saver");
     const BASE_URL = useBaseURL() || '';
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
