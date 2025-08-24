@@ -128,7 +128,7 @@ const CurrentDarbandi = () => {
     };
 
     const columns = [
-        // { field: "current_office_np", headerName: "कार्यालय" },                
+        { field: "office_np", headerName: "कार्यालय" },                
         { field: "post_name_Np", headerName: "पद" },
         { field: "emp_rank_np", headerName: "तह" },
         { field: "service_name_np", headerName: "सेवा" },
