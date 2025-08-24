@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-const { saveAs } = await import("file-saver");
+
 import NepaliDate from "nepali-datetime";
 
 const exportToExcel = async (
@@ -13,7 +13,7 @@ const exportToExcel = async (
     const formattedDateNp = npToday.format( "YYYY-MM-DD" );
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet( "Bandi Export" );
-
+    const { saveAs } = await import( "file-saver" );
     // --- Page setup ---
     worksheet.pageSetup = {
         fitToPage: true,
@@ -275,10 +275,10 @@ const exportToExcel = async (
     // Add signature section
     worksheet.addRow( [""] );
     worksheet.addRow( [""] );
-    worksheet.addRow( ["","", ".........................", "", "", "", "","", "", "", "", "........................."] );
-    worksheet.addRow( ["","","कारागार प्रशासक", "", "", "", "", "", "", "", "", "प्रमुख जिल्ला अधिकारी"] );
-    worksheet.addRow( ["","","(.......)", "", "", "", "", "", "", "", "", "(.........)"] );
-    worksheet.addRow( ["","",`${authState.office_np}`, "", "", "", "", "", "", "", "", `जिल्ला प्रशासन कार्यालय, ${authState.office_district}`] );
+    worksheet.addRow( ["", "", ".........................", "", "", "", "", "", "", "", "", "........................."] );
+    worksheet.addRow( ["", "", "कारागार प्रशासक", "", "", "", "", "", "", "", "", "प्रमुख जिल्ला अधिकारी"] );
+    worksheet.addRow( ["", "", "(.......)", "", "", "", "", "", "", "", "", "(.........)"] );
+    worksheet.addRow( ["", "", `${ authState.office_np }`, "", "", "", "", "", "", "", "", `जिल्ला प्रशासन कार्यालय, ${ authState.office_district }`] );
     worksheet.addRow( [""] );
     worksheet.addRow( [""] );
 

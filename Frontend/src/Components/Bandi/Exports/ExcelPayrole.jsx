@@ -1,10 +1,10 @@
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import { width } from '@mui/system';
 
 const exportToExcel = async ( filteredKaidi, fetchedMuddas ) => {
+    const { saveAs } = await import("file-saver");
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();

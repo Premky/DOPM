@@ -1,9 +1,9 @@
 import * as ExcelJS from "exceljs";
 // import { saveAs } from "file-saver";
-const { saveAs } = await import( "file-saver" );
 
 
 const setupWorksheet = ( workbook ) => {
+
   const worksheet = workbook.addWorksheet( "Prisoner Records" );
   worksheet.pageSetup = {
     paperSize: 9,
@@ -134,7 +134,7 @@ const addOfficeDetails = ( worksheet ) => {
 export const exportToExcel = async ( releaseRecords, nativeRecords, nativeTotals, foreignRecords, foreignTotals, fy, fm ) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = setupWorksheet( workbook );
-
+  const { saveAs } = await import( "file-saver" );
   // Conditional columns
   const conditionalAashrit = nativeTotals.TotalAashrit > 0 ? ['आश्रित'] : [];
   const conditionalNabalik = nativeTotals.TotalNabalkrNabalik > 0 ? ['नाबालक/नाबालिका'] : [];

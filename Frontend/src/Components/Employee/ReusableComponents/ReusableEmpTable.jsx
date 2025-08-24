@@ -5,10 +5,10 @@ import {
     Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import ExcelJS from 'exceljs';
-import { saveAs } from "file-saver";
+// import { saveAs } from "file-saver";
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 
-const ReusableEmpTable = ( {
+const ReusableEmpTable = async ( {
     rows = [],
     columns = [],
     primaryMergeKey = 'bandi_id',
@@ -26,6 +26,7 @@ const ReusableEmpTable = ( {
     const [filterText, setFilterText] = useState( '' );
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
     const [photoToPreview, setPhotoToPreview] = useState( '' );
+    const { saveAs } = await import( "file-saver" );
 
     const filteredRows = useMemo( () => {
         if ( !filterText ) return rows;

@@ -1,15 +1,15 @@
 // MyDocGenerator.js
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle, LevelFormat } from "docx";
 import { Button } from "@mui/material";
-import { saveAs } from "file-saver";
+// import { saveAs } from "file-saver";
 import NepaliDate from "nepali-datetime";
 import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
-export default function PayroleNoPunrabedanDocx( props ) {
+export default async function PayroleNoPunrabedanDocx( props ) {
     const { data } = props;
-
+    const { saveAs } = await import( "file-saver" );
     // Handle address
     let address = "";
     if ( data?.nationality === "विदेशी" ) {
@@ -50,7 +50,7 @@ export default function PayroleNoPunrabedanDocx( props ) {
                 } ),
             ),
         } );
-        console.log(data)
+        console.log( data );
         const dataRows = data.muddas.map( ( item, index ) => {
             return new TableRow( {
                 children: [

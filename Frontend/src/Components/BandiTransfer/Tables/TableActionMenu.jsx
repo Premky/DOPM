@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MenuItem } from "@mui/material";
 import { pdf } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+// import { saveAs } from "file-saver";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { useAuth } from "../../../Context/AuthContext";
 import ForwardDialog from "../Dialogs/ForwardDialog";
@@ -12,11 +12,12 @@ import axios from "axios";
 import TransferDialog from "../Dialogs/TransferDialog";
 import AcceptRejectTransferDialog from "../Dialogs/AcceptRejectTransferDialog";
 
-const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
+const TableActionMenu = async( { data, onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
   const status = data?.payrole_status;
   const officeId = data?.current_office_id;
+  const { saveAs } = await import("file-saver");
 
   const [openForwardDialog, setOpenForwardDialog] = useState( false );
   const [openApprovalDialog, setOpenApprovalDialog] = useState( false );
