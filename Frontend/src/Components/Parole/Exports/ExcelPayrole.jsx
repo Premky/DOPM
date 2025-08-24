@@ -1,5 +1,4 @@
 import ExcelJS from 'exceljs';
-const { saveAs } = await import("file-saver");
 import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import axios from 'axios';
@@ -8,6 +7,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
+    const { saveAs } = await import("file-saver");
 
 
     const worksheet = workbook.addWorksheet( 'Payrole Export' );

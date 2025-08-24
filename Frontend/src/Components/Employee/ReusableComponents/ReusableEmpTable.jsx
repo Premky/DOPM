@@ -5,7 +5,7 @@ import {
     Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import ExcelJS from 'exceljs';
-const { saveAs } = await import("file-saver");
+import { saveAs } from "file-saver";
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 
 const ReusableEmpTable = ( {

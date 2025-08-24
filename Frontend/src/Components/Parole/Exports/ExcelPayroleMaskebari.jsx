@@ -1,13 +1,10 @@
 import ExcelJS from 'exceljs';
-const { saveAs } = await import("file-saver");
-import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
+import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
-import { width } from '@mui/system';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { useBaseURL } from '../../../../Context/BaseURLProvider';
 
 const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, filters, BASE_URL ) => {
+    const { saveAs } = await import("file-saver");
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();

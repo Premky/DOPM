@@ -1,13 +1,13 @@
 // MyDocGenerator.js
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle, LevelFormat } from "docx";
 import { Button } from "@mui/material";
-const { saveAs } = await import("file-saver");
 import NepaliDate from "nepali-datetime";
 import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
-export default function PayroleCharacterDocx( props ) {
+export default async function PayroleCharacterDocx( props ) {
+    const { saveAs } = await import("file-saver");
     const { data } = props;
 
     // Handle address

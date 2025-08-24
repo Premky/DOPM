@@ -1,17 +1,13 @@
 import ExcelJS from 'exceljs';
-const { saveAs } = await import("file-saver");
 import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
-import { width } from '@mui/system';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { useBaseURL } from '../../../Context/BaseURLProvider';
 
 const exportCharacterToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL ) => {
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
-
+    const { saveAs } = await import("file-saver");
+    
 
     const worksheet = workbook.addWorksheet( 'Payrole Character Export' );
     // Set page setup

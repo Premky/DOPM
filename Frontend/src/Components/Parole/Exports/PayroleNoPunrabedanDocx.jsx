@@ -1,7 +1,7 @@
 // MyDocGenerator.js
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle, LevelFormat } from "docx";
 import { Button } from "@mui/material";
-const { saveAs } = await import("file-saver");
+import { saveAs } from "file-saver";
 import NepaliDate from "nepali-datetime";
 import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 
