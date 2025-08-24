@@ -5,10 +5,10 @@ import {
     Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 
+const { saveAs } = await import("file-saver");
 const ReusableBandiTable = ( {
     rows = [],
     columns = [],
@@ -27,7 +27,7 @@ const ReusableBandiTable = ( {
     const [filterText, setFilterText] = useState( '' );
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
     const [photoToPreview, setPhotoToPreview] = useState( '' );
-
+    
     const rowsWithComputed = useMemo( () => {
         return rows.map( row => ( {
             ...row,

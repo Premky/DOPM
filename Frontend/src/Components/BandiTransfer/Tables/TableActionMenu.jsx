@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MenuItem } from "@mui/material";
 import { pdf } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+const { saveAs } = await import("file-saver");
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { useAuth } from "../../../Context/AuthContext";
 import ForwardDialog from "../Dialogs/ForwardDialog";

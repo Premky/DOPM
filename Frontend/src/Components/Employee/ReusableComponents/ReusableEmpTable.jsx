@@ -4,9 +4,8 @@ import {
     Paper, Button, Box, TextField, TablePagination,
     Dialog, DialogTitle, DialogContent
 } from '@mui/material';
-import {FixedSizeList as List} from 'react-window';
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
+const { saveAs } = await import("file-saver");
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 
 const ReusableEmpTable = ( {

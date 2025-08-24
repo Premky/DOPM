@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+const { saveAs } = await import("file-saver");
 import NepaliDate from "nepali-datetime";
 
 const exportToExcel = async (

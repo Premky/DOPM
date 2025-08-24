@@ -1,7 +1,8 @@
 import { FmdBad } from "@mui/icons-material";
 import { tooltipClasses } from "@mui/material";
 import * as ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+const { saveAs } = await import("file-saver");
+
 
 const exportToExcel = async (start_Date, end_Date, records, totals, fy, fm, current_date) => {
     //Create a new workbook and worksheet

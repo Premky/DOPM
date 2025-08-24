@@ -1,5 +1,7 @@
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
+// import { saveAs } from 'file-saver';
+const { saveAs } = await import("file-saver");
+
 
 // Inside your component file, e.g. TotalCountOfficeWise.jsx
 
