@@ -1,6 +1,5 @@
 import ExcelJS from 'exceljs';
 // import { saveAs } from 'file-saver';
-const { saveAs } = await import("file-saver");
 
 
 // Inside your component file, e.g. TotalCountOfficeWise.jsx
@@ -8,6 +7,7 @@ const { saveAs } = await import("file-saver");
 const exportOfficeWiseMaskebariExcel = async (count, onlineOfficeIds) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Total Count Office Wise');
+  const { saveAs } = await import("file-saver");
 
   // Define header row (same as table headers)
   worksheet.addRow([

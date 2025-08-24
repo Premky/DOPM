@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 
 const exportCombinedGenderAndOfficeCountExcel = async (totals, count, onlineOfficeIds) => {
+  const { saveAs } = await import("file-saver");
   const workbook = new ExcelJS.Workbook();
 
   // =========== Sheet 1: Total Gender Wise Count ===========
