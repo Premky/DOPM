@@ -93,13 +93,13 @@ const ReusableBandiTable = ( {
         const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
-        worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'मुद्दा', 'जाहेरवाला', 'फैसला कार्यालय/मिति'] );
+        worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
 
         let excelRowIndex = 2;
         filteredRows.forEach( ( bandi, bandiIndex ) => {
             const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
             const muddaCount = muddaList.length;
-            console.log(muddaList)
+            console.log( muddaList );
             muddaList.forEach( ( mudda, idx ) => {
                 let rowData = [
                     idx === 0 ? bandiIndex + 1 : '',
@@ -115,7 +115,8 @@ const ReusableBandiTable = ( {
                     } ),
                     mudda?.mudda_name || '',
                     mudda?.vadi || '0',
-                    ( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )
+                    mudda?.mudda_phesala_antim_office || '',
+                    mudda?.mudda_phesala_antim_office_date || ''
                 ];
                 worksheet.addRow( rowData );
             } );
@@ -142,6 +143,20 @@ const ReusableBandiTable = ( {
             } );
             column.width = maxLength + 2;
         } );
+        worksheet.eachRow( row => {
+            row.eachCell( cell => {
+                cell.font = { name: 'Kalimati', size: 12 }; // Set font for each cell     
+                cell.alignment = {
+                    wrapText: true,                    
+                    vertical: 'middle',
+                    horizontal: 'center'
+                };
+            } );
+        } );
+        worksheet.getRow( 1 ).eachCell( cell => {
+            cell.font = { name: 'Kalimati', size: 14, bold: true };
+        } );
+        worksheet.views = [{ state: "frozen", ySplit: 1 }];
 
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
