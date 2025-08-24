@@ -88,12 +88,13 @@ router.get( "/get_darbandi", verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
-    
+    const searchOffice = req.query.searchOffice || 0;
+
     let office_id = [];
     if ( selectedOffice ) {
         office_id=selectedOffice
     } else if ( searchOffice ) {
-        office_id=active_office
+        office_id=searchOffice
     } else if ( !( active_office == 1 || active_office == 2 ) ) {        
         office_id=active_office
     }
