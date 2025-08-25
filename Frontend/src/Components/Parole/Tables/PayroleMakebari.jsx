@@ -144,12 +144,16 @@ const PayroleMakebari = () => {
                             grouped[officeKey][key] += num;
                         }
                     } );
-                    
+
 
                     // Concatenate remarks
                     if ( record.remarks ) {
                         grouped[officeKey].remarks += '; ' + record.remarks;
                     }
+
+                    const groupedArr = Object.values( grouped );
+                    setFilteredRecords( groupedArr );
+                    calculateTotals( groupedArr ); // ✅ ensure totals updated
                 }
             } );
 
@@ -160,17 +164,17 @@ const PayroleMakebari = () => {
 
     return (
         <>
-        <Helmet>
+            <Helmet>
                 <title>PMIS: प्यारोल मस्केबारी रिपोर्ट</title>
                 <meta name="description" content="प्यारोल मस्केबारी सम्बन्धि रिपोर्ट हेर्नुहोस्" />
                 <meta name="keywords" content="प्यारोल, मस्केबारी, रिपोर्ट, बन्दी, बन्दी संख्या, बन्दी विवरण" />
                 <meta name="author" content="कारागार व्यवस्थापन विभाग" />
-        </Helmet>
+            </Helmet>
             <Box>
                 <Button onClick={() => {
                     setSelectedData( null );
                     setEditDialogOpen( true );
-                    }} variant="contained" sx={{ mb: 2 }}>
+                }} variant="contained" sx={{ mb: 2 }}>
                     नयाँ थप्नुहोस्
                 </Button>
 
@@ -275,42 +279,42 @@ const PayroleMakebari = () => {
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>कुल जम्मा</TableCell>
-                                    <TableCell>{totals.total_decision_count_female}</TableCell>
-                                    <TableCell>{totals.total_decision_count_male}</TableCell>
-                                    <TableCell>{totals.total_decision_count_other}</TableCell>
-                                    <TableCell>{totals.total_decision_count}</TableCell>
-                                    <TableCell>{totals.total_payrole_count_female}</TableCell>
-                                    <TableCell>{totals.total_payrole_count_male}</TableCell>
-                                    <TableCell>{totals.total_payrole_count_other}</TableCell>
-                                    <TableCell>{totals.total_payrole_count}</TableCell>
-                                    <TableCell>{totals.total_no_from_court_count_female}</TableCell>
-                                    <TableCell>{totals.total_no_from_court_count_male}</TableCell>
-                                    <TableCell>{totals.total_no_from_court_count_other}</TableCell>
-                                    <TableCell>{totals.total_no_from_court_count}</TableCell>
-                                    <TableCell>{totals.total_bhuktan_count_female}</TableCell>
-                                    <TableCell>{totals.total_bhuktan_count_male}</TableCell>
-                                    <TableCell>{totals.total_bhuktan_count_other}</TableCell>
-                                    <TableCell>{totals.total_bhuktan_count}</TableCell>
-                                    <TableCell>{totals.total_current_payrole_count_female}</TableCell>
-                                    <TableCell>{totals.total_current_payrole_count_male}</TableCell>
+                                    <TableCell>{totals.total_decision_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_decision_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_decision_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_decision_count ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_count ||0}</TableCell>
+                                    <TableCell>{totals.total_no_from_court_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_no_from_court_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_no_from_court_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_no_from_court_count ||0}</TableCell>
+                                    <TableCell>{totals.total_bhuktan_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_bhuktan_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_bhuktan_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_bhuktan_count ||0}</TableCell>
+                                    <TableCell>{totals.total_current_payrole_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_current_payrole_count_male ||0}</TableCell>
                                     <TableCell>{totals.total_current_payrole_count_other}</TableCell>
-                                    <TableCell>{totals.total_current_payrole_count}</TableCell>
-                                    <TableCell>{totals.total_in_district_wise_count_female}</TableCell>
-                                    <TableCell>{totals.total_in_district_wise_count_male}</TableCell>
-                                    <TableCell>{totals.total_in_district_wise_count_other}</TableCell>
-                                    <TableCell>{totals.total_in_district_wise_count}</TableCell>
-                                    <TableCell>{totals.total_out_district_wise_count_female}</TableCell>
-                                    <TableCell>{totals.total_out_district_wise_count_male}</TableCell>
-                                    <TableCell>{totals.total_out_district_wise_count_other}</TableCell>
-                                    <TableCell>{totals.total_out_district_wise_count}</TableCell>
-                                    <TableCell>{totals.total_no_payrole_count_female}</TableCell>
-                                    <TableCell>{totals.total_no_payrole_count_male}</TableCell>
-                                    <TableCell>{totals.total_no_payrole_count_other}</TableCell>
-                                    <TableCell>{totals.total_no_payrole_count}</TableCell>
-                                    <TableCell>{totals.total_payrole_regulation_female}</TableCell>
-                                    <TableCell>{totals.total_payrole_regulation_male}</TableCell>
-                                    <TableCell>{totals.total_payrole_regulation_other}</TableCell>
-                                    <TableCell>{totals.total_payrole_regulation}</TableCell>
+                                    <TableCell>{totals.total_current_payrole_count ||0}</TableCell>
+                                    <TableCell>{totals.total_in_district_wise_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_in_district_wise_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_in_district_wise_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_in_district_wise_count ||0}</TableCell>
+                                    <TableCell>{totals.total_out_district_wise_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_out_district_wise_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_out_district_wise_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_out_district_wise_count ||0}</TableCell>
+                                    <TableCell>{totals.total_no_payrole_count_female ||0}</TableCell>
+                                    <TableCell>{totals.total_no_payrole_count_male ||0}</TableCell>
+                                    <TableCell>{totals.total_no_payrole_count_other ||0}</TableCell>
+                                    <TableCell>{totals.total_no_payrole_count ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_regulation_female ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_regulation_male ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_regulation_other ||0}</TableCell>
+                                    <TableCell>{totals.total_payrole_regulation ||0}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
