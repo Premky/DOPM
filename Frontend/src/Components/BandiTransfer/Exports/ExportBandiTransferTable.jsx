@@ -1,5 +1,3 @@
-import ExcelJS from "exceljs";
-
 import NepaliDate from "nepali-datetime";
 
 const exportToExcel = async (
@@ -9,6 +7,7 @@ const exportToExcel = async (
     BASE_URL,
     authState
 ) => {
+    const ExcelJS = await import("exceljs");
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( "YYYY-MM-DD" );
     const workbook = new ExcelJS.Workbook();

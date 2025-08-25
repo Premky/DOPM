@@ -4,7 +4,7 @@ import {
     Paper, Button, Box, TextField, TablePagination,
     Dialog, DialogTitle, DialogContent
 } from '@mui/material';
-import ExcelJS from 'exceljs';
+
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 
@@ -88,6 +88,7 @@ const ReusableBandiTable = ( {
     };
 
     const handleExport = async () => {
+        const ExcelJS= await import('exceljs');
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
         const { saveAs } = await import( "file-saver" );
