@@ -1485,7 +1485,7 @@ router.get( '/get_bandi_parole/:id', async ( req, res ) => {
         LEFT JOIN np_district nd ON p.recommended_district = nd.did
         LEFT JOIN np_city nm ON p.recommended_city = nm.cid        
         LEFT JOIN offices o ON p.recommended_court_id = o.id
-        WHERE p.bandi_id = ? AND p.STATUS IN(1,2,3)
+        WHERE p.bandi_id = ? AND p.STATUS IN(1,2,3,7)
     `;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query        

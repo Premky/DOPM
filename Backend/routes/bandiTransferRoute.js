@@ -204,7 +204,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             const {
                 bandi_id, mudda_id, mudda_name,
                 transfer_id, office_bandi_id, bandi_type, bandi_name,
-                letter_address, role_id, status_id, dob,current_age, transfer_from_office_id,
+                letter_address, role_id, status_id, dob, current_age, transfer_from_office_id,
                 recommended_to_office_id, recommended_to_office_name,
                 final_to_office_id, final_to_office_name,
                 transfer_reason_id, transfer_reason_np, transfer_reason,
@@ -226,7 +226,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                     final_to_office_id,
                     final_to_office_name,
                     decision_date,
-                    dob,current_age,
+                    dob, current_age,
                     country_name_np, bidesh_nagarik_address_details, nepali_address,
                     role_id,
                     status_id,
@@ -316,11 +316,11 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
         } else {
             is_thunuwa_permission = data.is_thunuwa_permission;
         }
-        let recommended_to_office_id
-        if(data.recommended_to_office_id){
-            recommended_to_office_id= data.recommended_to_office_id
-        }else{
-            recommended_to_office_id=null
+        let recommended_to_office_id;
+        if ( data.recommended_to_office_id ) {
+            recommended_to_office_id = data.recommended_to_office_id;
+        } else {
+            recommended_to_office_id = null;
         }
         let insertsql;
         let values;
@@ -432,7 +432,7 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
                 new Date(),
                 id
             ];
-        } else if ( metadata.recommended_to_office_id && metadata.decision_date) {
+        } else if ( metadata.recommended_to_office_id && metadata.decision_date ) {
             sql = `
                 UPDATE bandi_transfer_history 
                 SET role_id=?, status_id = ?,decision_date=?, remarks = ?, recommended_to_office_id=?, updated_by = ?, updated_at = ?
@@ -836,16 +836,16 @@ router.put( '/update_bandi_old_transfer_history/:id', verifyToken, async ( req, 
     const role_id = req.user.role_id;
     const id = req.params.id;
     const data = req.body.bandi_transfer_details[0];
-    console.log( "📝 Update contact request:", data );    
+    console.log( "📝 Update contact request:", data );
     const values = [
         data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
         data.transfer_from_date, data.transfer_to_date,
         data.transfer_reason_id, data.transfer_reason, role_id,
-        'Completed',  user_id, new Date(), id
+        'Completed', user_id, new Date(), id
     ];
 
     try {
-        
+
         const [result] = await pool.query( `UPDATE bandi_transfer_history SET
                         bandi_id=?, transfer_from_office_id=?, final_to_office_id=?, transfer_from_date=?, transfer_to_date=?,
                         transfer_reason_id=?, transfer_reason=?, role_id=?, 

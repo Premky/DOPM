@@ -25,7 +25,7 @@ const AllEmpTable = () => {
   ];
 
   const { records: empRecords, loading } = useAllEmployes();
-  console.log(empRecords)
+  // console.log(empRecords)
   const rows = empRecords.map((emp) => {
     const firstAppointment = emp.post_history?.find(
       (post) => post.jd_type === "नयाँ नियुक्ती"
@@ -82,7 +82,7 @@ const AllEmpTable = () => {
         rows={rows}
         loading={loading}
         // showView
-        // showEdit
+        showEdit
         enableExport
         includeSerial
         serialLabel="सि.नं."
