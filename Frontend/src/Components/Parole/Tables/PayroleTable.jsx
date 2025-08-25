@@ -241,7 +241,7 @@ const PayroleTable = ( { status } ) => {
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.current_age}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.gender === "Male" ? "पुरुष" : data.gender === "Female" ? "महिला" : "अन्य"}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.country_name_np} ({data.nationality})</TableCell>
-                                            <TableCell>{kaidiMuddas[0]?.mudda_name}</TableCell>
+                                            <TableCell>{kaidiMuddas[0]?.mudda_name} <br/> {kaidiMuddas[0]?.mudda_no}</TableCell>
                                             <TableCell>{kaidiMuddas[0]?.vadi}</TableCell>
                                             <TableCell>{kaidiMuddas[0]?.mudda_office}<br />{kaidiMuddas[0]?.mudda_phesala_antim_office_date}</TableCell>
                                             <TableCell rowSpan={kaidiMuddas.length || 1}>{data.thuna_date_bs}</TableCell>
