@@ -12,12 +12,12 @@ import axios from "axios";
 import TransferDialog from "../Dialogs/TransferDialog";
 import AcceptRejectTransferDialog from "../Dialogs/AcceptRejectTransferDialog";
 
-const TableActionMenu = async( { data, onResultClick, onClose, refetchAll } ) => {
+const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
   const status = data?.payrole_status;
   const officeId = data?.current_office_id;
-  const { saveAs } = await import("file-saver");
+  
 
   const [openForwardDialog, setOpenForwardDialog] = useState( false );
   const [openApprovalDialog, setOpenApprovalDialog] = useState( false );
@@ -25,6 +25,7 @@ const TableActionMenu = async( { data, onResultClick, onClose, refetchAll } ) =>
   const [acceptRejectDialog, setAcceptRejectDialog] = useState( false );
 
   const handleViewBandi = async () => {
+    const { saveAs } = await import( "file-saver" );
     const doc = <BandiFullReportPDF bandiData={data} />;
     const blob = await pdf( doc ).toBlob();
     saveAs( blob, `bandi_report_${ data.bandi_id }.pdf` );
