@@ -15,9 +15,9 @@ import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCal
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
-export default async function PayroleFileCoverDocx( props ) {
+export default function PayroleFileCoverDocx( props ) {
     const { data } = props;
-    const { saveAs } = await import("file-saver");
+    
     // console.log(data)
     const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
     const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
@@ -50,6 +50,7 @@ export default async function PayroleFileCoverDocx( props ) {
     }
     console.log( data );
     const generateDocument = async () => {
+        const { saveAs } = await import("file-saver");
         const numbering = {
             config: [
                 {

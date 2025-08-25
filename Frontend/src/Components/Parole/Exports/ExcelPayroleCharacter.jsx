@@ -1,13 +1,14 @@
-import ExcelJS from 'exceljs';
-import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
+
+import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 
 const exportCharacterToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL ) => {
+    const ExcelJS = await import( 'exceljs' ).then( m => m.default || m );
+    const { saveAs } = await import( 'file-saver' );
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
-    const { saveAs } = await import("file-saver");
-    
+
 
     const worksheet = workbook.addWorksheet( 'Payrole Character Export' );
     // Set page setup
@@ -32,7 +33,7 @@ const exportCharacterToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFine
     // 'रोगी/अशक्त',
     // 'सिफारिसको आधार',
 
-         
+
 
     // Add headers
     const anusuchHeader = worksheet.addRow( ['अनुसूची १'] );

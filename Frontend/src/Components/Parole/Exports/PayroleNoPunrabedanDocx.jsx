@@ -7,9 +7,9 @@ import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCal
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
-export default async function PayroleNoPunrabedanDocx( props ) {
+export default function PayroleNoPunrabedanDocx( props ) {
     const { data } = props;
-    const { saveAs } = await import( "file-saver" );
+
     // Handle address
     let address = "";
     if ( data?.nationality === "विदेशी" ) {
@@ -27,6 +27,7 @@ export default async function PayroleNoPunrabedanDocx( props ) {
 
 
     const generateDocument = async () => {
+        const { saveAs } = await import( "file-saver" );
         const headerRow = new TableRow( {
             children: [
                 "सि.नं.",

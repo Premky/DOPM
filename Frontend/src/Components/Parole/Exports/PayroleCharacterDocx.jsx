@@ -2,12 +2,12 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, BorderStyle, LevelFormat } from "docx";
 import { Button } from "@mui/material";
 import NepaliDate from "nepali-datetime";
-import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
+import { calculateBSDate } from '../../../../Utils/dateCalculator';
 
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
-export default async function PayroleCharacterDocx( props ) {
-    const { saveAs } = await import("file-saver");
+export default function PayroleCharacterDocx( props ) {
+    
     const { data } = props;
 
     // Handle address
@@ -27,6 +27,7 @@ export default async function PayroleCharacterDocx( props ) {
 
 
     const generateDocument = async () => {
+        const { saveAs } = await import("file-saver");
         const headerRow = new TableRow( {
             children: [
                 "सि.नं.",
