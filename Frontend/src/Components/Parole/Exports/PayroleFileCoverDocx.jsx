@@ -1,13 +1,13 @@
 // MyDocGenerator.js
-import {
-    Document,
-    Packer,
-    Paragraph,
-    TextRun,
-    AlignmentType,
-    Numbering,
-    LevelFormat
-} from "docx";
+// import {
+//     Document,
+//     Packer,
+//     Paragraph,
+//     TextRun,
+//     AlignmentType,
+//     Numbering,
+//     LevelFormat
+// } from "docx";
 import { Button } from "@mui/material";
 // import { saveAs } from "file-saver";
 import NepaliDate from "nepali-datetime";
@@ -50,6 +50,7 @@ export default function PayroleFileCoverDocx( props ) {
     }
     console.log( data );
     const generateDocument = async () => {
+        const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } = await import('docx');
         const { saveAs } = await import("file-saver");
         const numbering = {
             config: [

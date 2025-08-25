@@ -3,7 +3,7 @@ import NepaliDate from 'nepali-datetime';
 import axios from 'axios';
 
 const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL ) => {
-    const ExcelJS = import('exceljs');
+    const ExcelJS = await import('exceljs');
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();

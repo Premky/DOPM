@@ -1,9 +1,10 @@
-import ExcelJS from 'exceljs';
+// import ExcelJS from 'exceljs';
 import { calculateBSDate } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import axios from 'axios';
 
 const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, filters, BASE_URL ) => {
+    const ExcelJS = await import("exceljs");
     const { saveAs } = await import("file-saver");
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
