@@ -82,7 +82,7 @@ const AllEmpTable = () => {
         rows={rows}
         loading={loading}
         // showView
-        showEdit
+        // showEdit
         enableExport
         includeSerial
         serialLabel="सि.नं."

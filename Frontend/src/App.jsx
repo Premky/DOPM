@@ -58,6 +58,7 @@ axios.interceptors.response.use(
 import { Outlet } from 'react-router-dom';
 import CurrentDarbandi from './Components/Employee/Tables/CurrentDarbandi';
 import CurrentDarbandiForm from './Components/Employee/Forms/CurrentDarbandiForm';
+import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -144,6 +145,7 @@ function App() {
                   <Route index element={<CurrentDarbandi />} />
                   <Route path="create_employee" element={<EmployeeForm />} />
                   <Route path="view_employee" element={<AllEmpTable />} />
+                  <Route path="test_emp" element={<AllEmployeTable/>}/>
                 </Route>
 
               </Route>
