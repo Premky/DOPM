@@ -1032,7 +1032,7 @@ router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) =>
         is_checked, id
     ];
     try {
-        const result = await pool.query( sql, values );
+        const [result] = await pool.query( sql, values );
         // console.log(result)
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
@@ -1080,7 +1080,7 @@ router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
             thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks,
             user_id, new Date(), user_id, new Date()
         ];
-        const queryResult = await pool.query( sql, values );
+        const [queryResult] = await pool.query( sql, values );
         return res.json( { Status: true, Result: queryResult } );
 
     } catch ( err ) {
@@ -1100,7 +1100,7 @@ router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) 
         const values = Object.values( req.body );
         const placeholders = keys.map( () => '?' ).join( ', ' );
         const sql = `INSERT INTO payrole_maskebari (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
-        const result = await pool.query( sql, values );
+        const [result] = await pool.query( sql, values );
         // console.log( result );
         res.status( 201 ).json( { id: result.insertId } );
     } catch ( err ) {
@@ -1342,7 +1342,7 @@ router.get( '/payrole_maskebari_count', verifyToken, async ( req, res ) => {
                     ORDER BY year_bs DESC, month_bs; `;
             params = [active_office];
         }
-        const result = await pool.query( sql, params );
+        const [result] = await pool.query( sql, params );
         res.status( 200 ).json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( 'GET Error:', err );
@@ -1368,7 +1368,7 @@ router.put( '/create_payrole_maskebari_count/:id', verifyToken, async ( req, res
 
         values.push( id ); // Add ID at the end for WHERE clause
 
-        const result = await pool.query( sql, values );
+        const [result] = await pool.query( sql, values );
         res.status( 200 ).json( { message: 'Updated successfully', affectedRows: result.affectedRows } );
     } catch ( err ) {
         console.error( 'Update Error:', err );
