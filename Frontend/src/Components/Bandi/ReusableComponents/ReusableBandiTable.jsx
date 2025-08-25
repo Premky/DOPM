@@ -99,7 +99,7 @@ const ReusableBandiTable = ( {
         filteredRows.forEach( ( bandi, bandiIndex ) => {
             const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
             const muddaCount = muddaList.length;
-
+            console.log(muddaList)
             muddaList.forEach( ( mudda, idx ) => {
                 let rowData = [
                     idx === 0 ? bandiIndex + 1 : '',
