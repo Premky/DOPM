@@ -3387,7 +3387,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
 
     const baseSql = `
         SELECT 
-            m.mudda_name,
+            m.mudda_name, m.id AS mudda_id,
             COUNT(DISTINCT bp.id) AS Total,
 
             -- कैदी

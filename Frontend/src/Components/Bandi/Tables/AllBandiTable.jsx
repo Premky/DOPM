@@ -235,7 +235,7 @@ const AllBandiTable = () => {
                     "No Image"
                 ),
         },
-        { field: "age", headerName: "उमेर", width: 100 },
+        { field: "current_age", headerName: "उमेर", width: 100 },
         { field: "gender", headerName: "लिङ्ग", width: 100 },
         { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },

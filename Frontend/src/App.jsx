@@ -95,6 +95,7 @@ function App() {
                     <Route path="office" element={<Office />} />
                   </Route>
                 </Route>
+
                 {/* Bandis Routes */}
                 <Route path="bandi" element={<OutletLayout />}>
                   <Route index element={<CountReport />} />
@@ -106,8 +107,9 @@ function App() {
                   <Route path="bandi_release" element={<BandiReleaseForm />} />
                   {/* <Route path="create_bandi_family" element={<BandiFamilyForm />} /> */}
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+                  <Route path='details/:caseName' element={<AllBandiTable />} />
+                  <Route path='details/:caseName/:type' element={<AllBandiTable />} />
                 </Route>
-
                 {/* Payrole Routes */}
                 <Route path="payrole" element={<OutletLayout />}>
                   <Route index element={<PayroleMakebari />} />
@@ -145,7 +147,7 @@ function App() {
                   <Route index element={<CurrentDarbandi />} />
                   <Route path="create_employee" element={<EmployeeForm />} />
                   <Route path="view_employee" element={<AllEmpTable />} />
-                  <Route path="test_emp" element={<AllEmployeTable/>}/>
+                  <Route path="test_emp" element={<AllEmployeTable />} />
                 </Route>
 
               </Route>

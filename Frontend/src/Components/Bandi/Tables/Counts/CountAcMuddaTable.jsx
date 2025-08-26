@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import { Link } from 'react-router-dom';
 
 const CountAcMuddaTable = ({ records, totals, startDate, endDate }) => {
+    // console.log(records)
     return (
         <>
             <TableContainer component={Paper} sx={{ mt: 4 }}>
@@ -43,17 +44,17 @@ const CountAcMuddaTable = ({ records, totals, startDate, endDate }) => {
                                     </Link>
                                 </TableCell>
                                 <TableCell>
-                                    <Link to={`/bandi/details/${record.mudda_name}`}>
+                                    <Link to={`/bandi/details/${record.mudda_id}`}>
                                         {record.mudda_name}
                                     </Link>
                                 </TableCell>
                                 <TableCell align="center">
-                                    <Link to={`/bandi/details/${record.mudda_name}/कैदी`}>
+                                    <Link to={`/bandi/details/${record.mudda_id}/कैदी`}>
                                         {record.KaidiTotal}
                                     </Link>
                                 </TableCell>
                                 <TableCell align="center">
-                                    <Link to={`/bandi/details/${record.mudda_name}/थुनुवा`}>
+                                    <Link to={`/bandi/details/${record.mudda_id}/थुनुवा`}>
                                         {record.ThunuwaTotal}
                                     </Link>
                                 </TableCell>
