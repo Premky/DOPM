@@ -885,7 +885,7 @@ router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
         JOIN bandi_transfer_statuses s ON btrp.status_id=s.id
         WHERE btrp.role_id=? ORDER BY btrp.id`;
     try {
-        const [result] = await pool.query( sql, role_id );
+        const [result] = await pool.query( sql, [role_id] );
         // console.log(result)
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {

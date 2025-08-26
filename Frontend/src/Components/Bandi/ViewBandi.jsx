@@ -15,6 +15,7 @@ import { Grid } from '@mui/material';
 import BandiTransferHistoryTable from './Tables/For View/BandiTransferHistoryTable.jsx';
 import PayroleDetailsTable from '../Parole/View/PayroleDetailsTable.jsx';
 import {Helmet} from "react-helmet";
+import BandiReleaseTable from './Tables/For View/BandiReleaseTable.jsx';
 
 const ViewBandi = ( { bandi } ) => {
     const params = useParams();
@@ -81,6 +82,9 @@ const ViewBandi = ( { bandi } ) => {
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <BandiTransferHistoryTable bandi_id={bandi_id} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <BandiReleaseTable bandi_id={bandi_id}/>
                 </Grid>
             </Grid>
         </>

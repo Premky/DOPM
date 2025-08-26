@@ -2939,6 +2939,26 @@ router.get( '/get_bandi_contact_person/:id', async ( req, res ) => {
     }
 } );
 
+router.get( '/get_bandi_release/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT bkd.*, bp.bandi_type FROM bandi_kaid_details bkd 
+        LEFT JOIN bandi_person bp ON bkd.bandi_id=bp.id 
+        WHERE bandi_id = ?
+    `;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi Kaid Details not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
 router.put( '/update_bandi_contact_person/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
