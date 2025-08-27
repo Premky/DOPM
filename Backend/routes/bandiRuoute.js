@@ -1848,15 +1848,15 @@ router.put( '/update_bandi_address/:id', verifyToken, async ( req, res ) => {
         let values = [];
 
         if ( Number( nationality_id ) === 1 ) {
-            await connection.query( `UPDATE bandi_person SET nationality = 'स्वदेशी' WHERE id=?`, [id] );
+            await connection.query( `UPDATE bandi_person SET nationality = 'स्वदेशी' WHERE id=?`, [bandi_id] );
             sql = `
         UPDATE bandi_address
         SET nationality_id = ?, province_id = ?, district_id = ?, gapa_napa_id = ?, wardno = ?,
             updated_by = ?, current_office_id = ?
         WHERE id = ?`;
-            values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, user_id, active_office, id];
+            values = [nationality_id, province_id, district_id, gapa_napa_id, wardno, user_id, active_office, id];            
         } else {
-            await connection.query( `UPDATE bandi_person SET nationality = 'विदेशी' WHERE id=?`, [id] );
+            await connection.query( `UPDATE bandi_person SET nationality = 'विदेशी' WHERE id=?`, [bandi_id] );
             sql = `
         UPDATE bandi_address
         SET nationality_id = ?, bidesh_nagarik_address_details = ?,
