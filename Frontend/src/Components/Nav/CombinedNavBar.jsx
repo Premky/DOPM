@@ -121,8 +121,6 @@ export default function CombinedNavBarMUI() {
   // Extract submenu from current menu
   const selectedMenu = topMenu.find( menu => menu.name === sidebarMenu );
 
-
-
   const filterSubmenuByRole = ( menuKey, submenu ) => {
     const role = authState.role_name;
     const access = menuAccess[menuKey]?.[role];
@@ -174,20 +172,27 @@ export default function CombinedNavBarMUI() {
         onClose={() => setResetPasswordOpen( false )}
         onSave={handlePasswordChange}
       />
+      {/* Top Bar */}
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box display="flex" alignItems="center">
             <IconButton onClick={handleDrawerToggle} color="inherit" edge="start" sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
+            <IconButton sx={{ p: 0, spacing:2 }}>
+                <Avatar alt="User Avatar" src="/nepal_gov_logo.png" />
+              </IconButton>
             <Typography variant="h6" noWrap>
-              {authState.office_np} - {sidebarMenu}
+              कारागार व्यवस्थापन प्रणाली(PMIS)
+            </Typography>
+            <Typography variant="h6" noWrap>
+              &nbsp; | &nbsp; {authState.office_np} - {sidebarMenu} 
             </Typography>
           </Box>
           <Box>
             <Tooltip title="User Menu">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="User Avatar" src="/icons/male_icon-1.png" />
+                <Avatar alt="User Avatar" src="/icons/profile_male.png" />
               </IconButton>
             </Tooltip>
             <Menu anchorEl={anchorElUser} open={Boolean( anchorElUser )} onClose={handleCloseUserMenu}>
@@ -223,9 +228,13 @@ export default function CombinedNavBarMUI() {
         </List>
         <Divider />
         {selectedMenu && filterSubmenuByRole( selectedMenu.defaultPath.replace( '/', '' ), selectedMenu.submenu ).map( sub => (
-          <ListItemButton key={sub.path} onClick={() => navigate( sub.path )}>
-            <ListItemText inset primary={sub.name} />
+          <Box sx={{  maxHeight: 'calc(100vh - 200px)' }}>
+  
+
+          <ListItemButton sx={{ py: 0.5, my: 0.5 }} key={sub.path} onClick={() => navigate( sub.path )}>
+            <ListItemText inset primary={sub.name}  />
           </ListItemButton>
+          </Box>
         ) )}
       </Drawer>
 
