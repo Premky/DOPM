@@ -1120,6 +1120,7 @@ router.delete( '/delete_payrole_maskebari_count/:id', verifyToken, async ( req, 
     if (
         !(
             ( role_id === 2 && role_name === 'office_admin' ) ||
+            ( role_id === 3 && role_name === 'supervisor' ) ||
             ( role_id === 99 && role_name === 'superadmin' )
         )
     ) {
