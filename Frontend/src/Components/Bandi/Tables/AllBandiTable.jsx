@@ -308,9 +308,10 @@ const AllBandiTable = () => {
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseCountry
-                            name="country"
+                            name="country"                            
                             label='देश'
                             control={control}
+                            currentOfficeId={authState.office_id}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>

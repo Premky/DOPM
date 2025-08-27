@@ -296,6 +296,20 @@ router.get( '/get_countries', async ( req, res ) => {
     }
 } );
 
+router.get( '/get_countries_ac_to_bandi',verifyToken, async ( req, res ) => {
+    const sql = `SELECT nc.id, nc.country_name_np from np_country nc 
+                INNER JOIN bandi_address ba ON nc.id=ba.nationality_id
+                GROUP BY nc.id
+                ORDER BY nc.id`;
+    try {
+        const [result] = await pool.query( sql );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
 router.get( '/get_states', async ( req, res ) => {
     const sql = `SELECT * from np_state ORDER BY state_id`;
     try {

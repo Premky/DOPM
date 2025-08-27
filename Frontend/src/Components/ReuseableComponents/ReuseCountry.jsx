@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseCountry = ({ name, label, required, readonly, control, error, defaultvalue }) => {
+const ReuseCountry = ({ name, label, required, readonly, control, error, defaultvalue, currentOfficeId }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -17,16 +17,22 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
 
     const fetchCountry = async () => {
         try {
-            const url = `${BASE_URL}/public/get_countries`;
+            let url;
+            if(currentOfficeId){                
+                url = `${BASE_URL}/public/get_countries_ac_to_bandi`;
+            }else{
+                url = `${BASE_URL}/public/get_countries`;
+            }
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
+                withCredentials:true
             });
 
             const { Status, Result, Error } = response.data;
 
             if (Status) {
                 if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result.map((opt) => ({
+                    const formatted = Result.map((opt, index) => ({
                         label: opt.country_name_np, // Use Nepali name
                         value: opt.id, // Use ID as value
                     }));
