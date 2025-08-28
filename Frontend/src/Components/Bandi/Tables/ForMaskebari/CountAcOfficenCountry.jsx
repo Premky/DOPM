@@ -44,7 +44,7 @@ const CountAcOfficenCountry = () => {
                     <TableCell key={index}>{index+1}</TableCell>
                     <TableCell key={index}>{data.office_id} {data.office_name_np} </TableCell>
                     {countries.map( ( country, index ) => (
-                      <TableCell key={index}>{country.country_name_np==data.country_name? data.Total:0}</TableCell>
+                      <TableCell key={index}>{country.country_name_np==data.countries[0].country_name? data.Total:0}</TableCell>
                     ) )}
                   </TableRow>
                 ) )}
