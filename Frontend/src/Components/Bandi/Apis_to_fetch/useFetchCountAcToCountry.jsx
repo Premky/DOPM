@@ -3,19 +3,19 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const fetchBandiDiseases = ( bandi_id ) => {
+const useFetchCountAcToCountry = ( bandi_id ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
-    const [loading, setLoading] = useState( false );
+    const [loading, setLoading] = useState( true );
 
     const fetchBandiRecords = async () => {
         try {
             setLoading(true);
-            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_diseases/${ bandi_id }`,
+            const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_count_ac_to_country`,
                 { withCredentials: true } );
-            // console.log( response );
-            const { Status, Result, Error } = response.data;
+                const { Status, Result, Error } = response.data;
+                console.log( Result );
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
@@ -41,11 +41,11 @@ const fetchBandiDiseases = ( bandi_id ) => {
         }
     };
 
-    useEffect( () => {
+    useEffect( () => {        
         fetchBandiRecords();
     }, [BASE_URL, bandi_id] );
 
     return { records, optrecords, loading, refetch:fetchBandiRecords };
 };
 
-export default fetchBandiDiseases;
+export default useFetchCountAcToCountry;

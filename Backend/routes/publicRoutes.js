@@ -298,6 +298,7 @@ router.get( '/get_countries', async ( req, res ) => {
 
 router.get( '/get_countries_ac_to_office', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
+    const {office_id}=req.query;
     const filters = [];
     const params = [];
     if ( active_office === 1 || active_office === 2 ) {
