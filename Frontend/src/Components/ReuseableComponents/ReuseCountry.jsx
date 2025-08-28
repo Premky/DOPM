@@ -19,7 +19,7 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
         try {
             let url;
             if(currentOfficeId){                
-                url = `${BASE_URL}/public/get_countries_ac_to_bandi`;
+                url = `${BASE_URL}/public/get_countries_ac_to_office`;
             }else{
                 url = `${BASE_URL}/public/get_countries`;
             }

@@ -59,6 +59,7 @@ import { Outlet } from 'react-router-dom';
 import CurrentDarbandi from './Components/Employee/Tables/CurrentDarbandi';
 import CurrentDarbandiForm from './Components/Employee/Forms/CurrentDarbandiForm';
 import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
+import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -101,6 +102,7 @@ function App() {
                   <Route index element={<CountReport />} />
                   <Route path="dashboard" element={<CountReport />} />
                   <Route path="count_ac_office" element={<BandiMaskebari />} />
+                  <Route path = "count_ac_country" element={<CountAcOfficenCountry/>}/>
                   <Route path="maskebari" element={<KaragarMaskebari />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />

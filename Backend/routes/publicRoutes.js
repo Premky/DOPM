@@ -296,9 +296,27 @@ router.get( '/get_countries', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_countries_ac_to_bandi',verifyToken, async ( req, res ) => {
+router.get( '/get_countries_ac_to_office', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const filters = [];
+    const params = [];
+    if ( active_office === 1 || active_office === 2 ) {
+        if ( office_id && office_id.trim() !== '' ) {
+            const parsedOfficeId = parseInt( office_id, 10 );
+            if ( !isNaN( parsedOfficeId ) ) {
+                filters.push( `bp.current_office_id = ?` );
+                params.push( parsedOfficeId );
+            }
+        }
+        // else no office filter (all offices for super admin)
+    } else {
+        filters.push( ` bp.current_office_id = ?` );
+        params.push( active_office );
+    }
     const sql = `SELECT nc.id, nc.country_name_np from np_country nc 
                 INNER JOIN bandi_address ba ON nc.id=ba.nationality_id
+                INNER JOIN bandi_person bp ON ba.bandi_id=bp.id
+                ${ filters.length ? ' WHERE ' + filters.join( ' AND ' ) : '' }
                 GROUP BY nc.id
                 ORDER BY nc.id`;
     try {

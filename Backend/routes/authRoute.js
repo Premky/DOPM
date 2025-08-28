@@ -174,7 +174,7 @@ router.put('/reset_password', verifyToken, authLimiter,  async (req, res) => {
 });
 
 // Login Route
-router.post('/login', authLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
