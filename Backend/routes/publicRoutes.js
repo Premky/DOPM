@@ -298,7 +298,7 @@ router.get( '/get_countries', async ( req, res ) => {
 
 router.get( '/get_countries_ac_to_office', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const {office_id}=req.query;
+    const { office_id } = req.query;
     const filters = [];
     const params = [];
     if ( active_office === 1 || active_office === 2 ) {
@@ -320,6 +320,26 @@ router.get( '/get_countries_ac_to_office', verifyToken, async ( req, res ) => {
                 ${ filters.length ? ' WHERE ' + filters.join( ' AND ' ) : '' }
                 GROUP BY nc.id
                 ORDER BY nc.id`;
+    try {
+        const [result] = await pool.query( sql );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_mudda_groups', async ( req, res ) => {
+    const is_parole_applied_mudda_group_only = req.query.is_parole_applied_mudda_group_only;
+    let sql = `SELECT * from muddas_groups ORDER BY mudda_group_name`;
+    if ( is_parole_applied_mudda_group_only ) {
+        sql = `SELECT mg.* FROM 
+                muddas_groups mg
+                JOIN muddas m ON m.muddas_group_id=mg.id
+                INNER JOIN bandi_mudda_details bmd ON m.id=bmd.mudda_id
+                INNER JOIN payroles p ON bmd.bandi_id=p.bandi_id
+                GROUP BY mg.id`;
+    }
     try {
         const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
@@ -396,25 +416,15 @@ router.get( '/get_mudda', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_mudda_groups', async ( req, res ) => {
-    const sql = `SELECT * from muddas_groups ORDER BY mudda_group_name`;
-    try {
-        const [result] = await pool.query( sql );
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
 
 router.get( '/get_payrole_nos', async ( req, res ) => {
-    const {is_only_active} = req.query;
-    
+    const { is_only_active } = req.query;
+
     let sql = `SELECT * from payrole_nos `;
-    if(is_only_active === "true"){
-        sql +=` WHERE is_active = 1 `;
-    } 
-    sql +=` ORDER BY id DESC`;
+    if ( is_only_active === "true" ) {
+        sql += ` WHERE is_active = 1 `;
+    }
+    sql += ` ORDER BY id DESC`;
     try {
         const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );

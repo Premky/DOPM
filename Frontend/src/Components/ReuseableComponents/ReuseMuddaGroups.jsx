@@ -4,7 +4,7 @@ import { Autocomplete,  Grid,  InputLabel, TextField } from '@mui/material'
 import { Controller } from 'react-hook-form';
 import { useBaseURL } from '../../Context/BaseURLProvider';
 
-const ReuseMuddaGroup = ({ name, label, required, control, error, defaultValue, setValue }) => {
+const ReuseMuddaGroup = ({ name, label, required, control, error, defaultValue, setValue, is_parole_applied_mudda_group_only }) => {
     const BASE_URL = useBaseURL();
     const token = localStorage.getItem('token');
 
@@ -16,6 +16,7 @@ const ReuseMuddaGroup = ({ name, label, required, control, error, defaultValue, 
             const url = `${BASE_URL}/public/get_mudda_groups`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
+                params: {is_parole_applied_mudda_group_only}
             });
 
             const { Status, Result, Error } = response.data;

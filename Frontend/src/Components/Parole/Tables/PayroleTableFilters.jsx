@@ -185,6 +185,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                         label="मुद्दा"
                         control={control}
                         error={errors.searchmudda_id}
+                        is_parole_applied_mudda_group_only={true}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 1 }}>
