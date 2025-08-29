@@ -19,7 +19,7 @@ const TotalCountOfficeWise = ( { filters } ) => {
             ?.filter( ( user ) => user.is_online === 1 )
             .map( ( user ) => user.office_id )
     );
-
+    console.log(count)
     const hanldeExport = () => {
         exportOfficeWiseMaskebariExcel( count, onlineOfficeIds );
         // exportCombinedGenderAndOfficeCountExcel(count, onlineOfficeIds)

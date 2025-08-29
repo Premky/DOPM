@@ -2549,6 +2549,134 @@ const getMaskebariQuery = `SELECT
                     LEFT JOIN offices os ON pm.created_office = os.id
 `;
 
+router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
+  try {
+    const active_office = req.user.office_id;
+    const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
+    const defaultAge = 65;
+    const defaultOfficeCategory = 2;
+
+    let { nationality, ageFrom, ageTo, office_id, startDate, endDate } = req.query;
+
+    if (!startDate && !endDate) {
+      startDate = '1000-01-01';
+      endDate = today_date_bs;
+    } else {
+      if (!startDate) startDate = '1000-01-01';
+      if (!endDate) endDate = today_date_bs;
+    }
+
+    const params = [defaultAge, defaultAge, defaultAge, defaultAge];
+    params.push(startDate, endDate); // thuna_date_bs BETWEEN
+    params.push(endDate); // release_date_bs cutoff
+    params.push(defaultOfficeCategory);
+
+    let officeFilterSql = '';
+    if (active_office !== 1 && active_office !== 2) {
+      params.push(active_office);
+      officeFilterSql = 'AND o.id = ?';
+    } else if (office_id) {
+      params.push(office_id);
+      officeFilterSql = 'AND o.id = ?';
+    }
+
+    let extraSubqueryFilters = '';
+    if (nationality) {
+      extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape(nationality.trim());
+    }
+    if (ageFrom && ageTo) {
+      extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${Number(ageFrom)} AND ${Number(ageTo)}`;
+    }
+
+    const sql = `
+      SELECT
+        voad.state_name_np,
+        voad.district_order_id,
+        o.letter_address AS office_short_name,
+        o.id AS office_id,
+
+        COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male', 1, NULL)) AS kaidi_male,
+        COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female', 1, NULL)) AS kaidi_female,
+        COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender NOT IN ('male', 'female'), 1, NULL)) AS kaidi_other,
+        COUNT(IF(bp.bandi_type = 'कैदी', 1, NULL)) AS total_kaidi,
+
+        COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male', 1, NULL)) AS thunuwa_male,
+        COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female', 1, NULL)) AS thunuwa_female,
+        COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender NOT IN ('male', 'female'), 1, NULL)) AS thunuwa_other,
+        COUNT(IF(bp.bandi_type = 'थुनुवा', 1, NULL)) AS total_thunuwa,
+
+        COUNT(IF(bp.gender = 'male', 1, NULL)) AS total_male,
+        COUNT(IF(bp.gender = 'female', 1, NULL)) AS total_female,
+        COUNT(IF(bp.gender NOT IN ('male', 'female'), 1, NULL)) AS total_other,
+        COUNT(bp.id) AS total_kaidibandi,
+
+        COUNT(IF(bp.is_dependent = '1', 1, NULL)) AS total_aashrit,
+
+        COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male' AND bp.age >= ?, 1, NULL)) AS kaidi_male_65plus,
+        COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female' AND bp.age >= ?, 1, NULL)) AS kaidi_female_65plus,
+        COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male' AND bp.age >= ?, 1, NULL)) AS thunuwa_male_65plus,
+        COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female' AND bp.age >= ?, 1, NULL)) AS thunuwa_female_65plus,
+
+        COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
+
+        -- per-country totals for this office
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'country_name', bp.country_name_np,
+            'total', bp.country_count
+          )
+        ) AS countries
+
+      FROM offices o
+      LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
+
+      LEFT JOIN (
+        SELECT 
+          bp.id,
+          bp.gender,
+          bp.bandi_type,
+          bp.current_office_id,
+          TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
+          bp.nationality,
+          MAX(bri.is_dependent) AS is_dependent,
+          COALESCE(vbad.country_name_np,'नखुलेको') AS country_name_np,
+          COUNT(*) OVER (PARTITION BY vbad.country_name_np, bp.current_office_id) AS country_count
+        FROM bandi_person bp
+        LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
+        LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+        LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id    
+        WHERE
+          bp.is_under_payrole!=1
+          AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
+          ${extraSubqueryFilters}
+        GROUP BY bp.id, vbad.country_name_np, bp.current_office_id
+      ) bp ON bp.current_office_id = o.id
+
+      LEFT JOIN (
+        SELECT bandi_id, MAX(karnayan_miti) AS karnayan_miti
+        FROM bandi_release_details
+        GROUP BY bandi_id
+      ) brd ON brd.bandi_id = bp.id
+
+      WHERE 
+        (brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d'))
+        AND o.office_categories_id = ?
+        ${officeFilterSql}
+      GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
+      ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
+    `;
+
+    const [rows] = await pool.query(sql, params);
+    return res.json({ Status: true, Result: rows });
+  } catch (error) {
+    console.error("Error in /get_office_wise_count:", error);
+    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
+
+
+
+
 router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
     try {
         const active_office = req.user.office_id;
@@ -3774,10 +3902,20 @@ router.delete( '/delete_bandi_contact_person/:id', verifyToken, async ( req, res
 router.delete( '/delete_bandi_family/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_relative_info" ) ) );
 
 async function deleteRecord( req, res, tableName ) {
+    const allowedRoles = [
+        { id: 99, name: 'superadmin' },
+        { id: 2, name: 'office_admin' },
+        { id: 1, name: 'clerk' }
+    ];
     const { id } = req.params;
     const { role_id, role_name } = req.user;
 
-    if ( role_id !== 99 && role_name !== 'superadmin' ) {
+    // Check if current user is NOT in allowed roles
+    const isNotAllowed = !allowedRoles.some(
+        role => role.id === role_id && role.name === role_name
+    );
+
+    if ( isNotAllowed ) {
         return res.status( 403 ).json( { Status: false, message: "Unauthorized" } );
     }
 
