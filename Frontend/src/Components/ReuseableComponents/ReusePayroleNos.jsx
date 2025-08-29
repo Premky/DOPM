@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReusePayroleNos = ({ name, label, required, readonly, control, error, defaultvalue }) => {
+const ReusePayroleNos = ({ name, label, required, readonly, control, error, defaultvalue, is_only_active }) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
@@ -13,13 +13,15 @@ const ReusePayroleNos = ({ name, label, required, readonly, control, error, defa
 
     // State to store district options
     const [formattedOptions, setFormattedOptions] = useState([]);
-
+    
 
     const fetchOptions = async () => {
         try {
             const url = `${BASE_URL}/public/get_payrole_nos`;
             const response = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
+                withCredentials:true, 
+                params:{is_only_active}
             });
 
             const { Status, Result, Error } = response.data;

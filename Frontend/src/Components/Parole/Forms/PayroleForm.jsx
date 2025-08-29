@@ -144,7 +144,8 @@ const PayroleForm = ( { status } ) => {
                 label='प्यारोल बैठक नं.'
                 required={true}
                 control={control}
-                error={errors._no}
+                error={errors.payrole_no}
+                is_only_active={true}
               />
             </Grid>
             {/* <Grid size={{ xs: 12, sm: 6, md: 3 }}>

@@ -408,7 +408,13 @@ router.get( '/get_mudda_groups', async ( req, res ) => {
 } );
 
 router.get( '/get_payrole_nos', async ( req, res ) => {
-    const sql = `SELECT * from payrole_nos ORDER BY -id`;
+    const {is_only_active} = req.query;
+    
+    let sql = `SELECT * from payrole_nos `;
+    if(is_only_active === "true"){
+        sql +=` WHERE is_active = 1 `;
+    } 
+    sql +=` ORDER BY id DESC`;
     try {
         const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
