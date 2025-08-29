@@ -138,7 +138,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
                 mIndex === 0 ? data.country_name_np === 'नेपाल' ? 'नेपाली' : data.country_name_np : '',
 
-                `${ mudda.mudda_name }\n${ mudda.mudda_no }` || '',
+                // `${ mudda.mudda_name }\n${ mudda.mudda_no }` || '',
+                `${ mudda.mudda_name }` || '',
                 mudda.vadi || '',
                 `${ mudda.mudda_office || '' } \n ${ mudda.mudda_phesala_antim_office_date || '' }`,
                 mIndex === 0

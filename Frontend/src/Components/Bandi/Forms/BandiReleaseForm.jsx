@@ -146,14 +146,14 @@ const BandiReleaseForm = () => {
                             </Grid>
                         </Grid>
                         <Grid container size={{ xs: 12 }}>
-                            {(reason_id != 2 || reason_id != 6) && (
+                            {(reason_id != 2 && reason_id != 6) && (
                                 <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseSelect
                                         name='aafanta_id'
                                         label='बुझ्ने मान्छे छान्नुहोस्'
                                         options={relativeOptions}
                                         control={control}
-                                        required={reason_id != 2}
+                                        required={(reason_id != 2 && reason_id != 6)}
                                         errors={errors.aafanta_id}
                                     />
                                 </Grid>
