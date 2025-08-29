@@ -89,6 +89,7 @@ const fetchMuddaGroupWiseCount = ( { filters } ) => {
                         label: `${ opt.relative_name || '' }||${ opt.relative_address || '' }||${ opt.relative_contact_no || '' }`,
                         value: opt.id || index
                     } ) );
+                    // console.log(Result)
                     setRecords( resultArray );
                     setOptRecords( formatted );
                     calculateTotals( resultArray );

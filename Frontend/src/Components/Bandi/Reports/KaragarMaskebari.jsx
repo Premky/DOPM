@@ -1,17 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Grid, Box, Typography, Button } from '@mui/material';
-// import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
-// import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
-// import TotalReleaseDetails from '../Tables/ForMaskebari/TotalReleaseDetails';
-// import CountAcMuddaTable from '../Tables/Counts/CountAcMuddaTable';
 import TotalCountAc2Mudda from '../Tables/ForMaskebari/TotalCountAc2Mudda';
-// import TotalofAllFields from '../Tables/ForMaskebari/TotalofAllFields';
-
 import fetchAllReleaseCounts from '../../ReuseableComponents/fetchAllReleaseCounts';
-// import fetchMuddaWiseCount from '../../ReuseableComponents/fetchMuddaWiseCount';
 import fetchMuddaGroupWiseCount from '../Apis_to_fetch/fetchMuddaGroupWiseCount';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
-import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../../Context/AuthContext';
 import { exportToExcel } from '../Exports/ExcelMaskebariCount';
@@ -21,10 +13,11 @@ import { Helmet } from 'react-helmet';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
+    const office_np = authState.office_np    
     const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
     const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
     const fy_date = fy + '-04-01';
-
+    const monthNamesNp = ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पुष', 'माघ', 'फागुन', 'चैत्र'];
     const { records: releaseRecords, loading: releaseRecordsLoading } = fetchAllReleaseCounts();
 
 
@@ -43,6 +36,11 @@ const KaragarMaskebari = () => {
         selectedOffice: selectedOffice || ''
     } ), [startDate, endDate, nationality, selectedOffice, current_date] );
 
+    const validEndDate = endDate || current_date;
+    const to_year = validEndDate.split( "-" )[0];
+    const to_month_index = parseInt( validEndDate.split( "-" )[1], 10 ) - 1; // months are 0-indexed
+    const monthName = monthNamesNp[to_month_index];
+    console.log(to_month_index)
     const {
         records: muddawiseCount,
         muddawisetotal,
@@ -50,7 +48,7 @@ const KaragarMaskebari = () => {
     } = fetchMuddaGroupWiseCount( { filters } );
 
     const swadeshiFilters = useMemo( () => ( {
-        startDate: startDate ,
+        startDate: startDate,
         endDate: endDate,
         nationality: 'स्वदेशी',
         selectedOffice: selectedOffice || ''
@@ -213,8 +211,11 @@ const KaragarMaskebari = () => {
                                     swadeshiTotal,
                                     bideshiCount,
                                     bideshiTotal,
-                                    '2082/2083',
-                                    '<महिनाको>'
+                                    // '2082/2083',
+                                    to_year,
+                                    monthName || '<महिना>',
+                                    current_date,
+                                    office_np
                                 )}
                                     variant='contained'
                                     color='success'

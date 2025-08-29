@@ -45,7 +45,10 @@ const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
                                         <TableCell>{item.ThunuwaFemale}</TableCell>
                                         <TableCell>{item.KaidiAgeAbove65}</TableCell>
                                         <TableCell>{item.ThunuwaAgeAbove65}</TableCell>
-                                        <TableCell></TableCell>
+                                        <TableCell>
+                                            {item.country_name && !item.country_name.startsWith( "नेपाल" ) && item.country_name}
+                                        </TableCell>
+
                                     </TableRow>
                                 ) )}
                                 <TableRow>
@@ -59,7 +62,7 @@ const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
                                     <TableCell>{muddawisetotal.ThunuwaFemale}</TableCell>
                                     <TableCell>{muddawisetotal.KaidiAgeAbove65}</TableCell>
                                     <TableCell>{muddawisetotal.ThunuwaAgeAbove65}</TableCell>
-                                    
+
                                 </TableRow>
 
                             </TableBody>

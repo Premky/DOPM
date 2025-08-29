@@ -2625,7 +2625,9 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female' AND bp.age >= ?, 1, NULL)) AS thunuwa_female_65plus,
 
         COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
-        GROUP_CONCAT(DISTINCT IF(bp.country_name_np != 'नेपाल', bp.country_name_np, NULL)) AS foreign_countries
+        -- GROUP_CONCAT(DISTINCT IF(bp.country_name_np != 'नेपाल', bp.country_name_np, NULL)) AS foreign_countries
+        GROUP_CONCAT(DISTINCT CONCAT(bp.country_name_np, '-', bp.country_count) 
+             ORDER BY bp.country_name_np SEPARATOR ', ') AS foreign_countries
 
       FROM offices o
       LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
@@ -2639,7 +2641,8 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
           TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
           bp.nationality,
           MAX(bri.is_dependent) AS is_dependent,
-          MAX(vbad.country_name_np) AS country_name_np
+          MAX(vbad.country_name_np) AS country_name_np,
+          COUNT(*) OVER (PARTITION BY MAX(vbad.country_name_np)) AS country_count
         FROM bandi_person bp
         LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
         LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
@@ -3161,8 +3164,146 @@ async function convertDates() {
 }
 
 // convertDates();
-
 router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+
+    let { startDate, endDate, nationality, ageFrom, ageTo, office_id } = req.query;
+
+    const filters = ['bp.is_active = 1'];
+    const params = [];
+
+    // Default date logic
+    if ( !startDate && !endDate ) {
+        startDate = '1001-01-01';
+        endDate = today_date_bs;
+        endDate = await bs2ad( today_date_bs );
+    } else if ( !startDate ) {
+        startDate = '1001-01-01';
+    } else if ( !endDate ) {
+        endDate = today_date_bs;
+        endDate = await bs2ad( today_date_bs );
+    }
+
+    filters.push( `bp.is_under_payrole != 1` );
+    filters.push( `bkd.thuna_date_ad >= ?` );
+    filters.push( `(brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)` );
+    params.push( startDate, endDate );
+
+    if ( nationality && nationality.trim() !== '' ) {
+        filters.push( `bp.nationality = ?` );
+        params.push( nationality.trim() );
+    }
+
+    // Office filter
+    if ( active_office === 1 || active_office === 2 ) {
+        if ( office_id && office_id.trim() !== '' ) {
+            const parsedOfficeId = parseInt( office_id, 10 );
+            if ( !isNaN( parsedOfficeId ) ) {
+                filters.push( `bp.current_office_id = ?` );
+                params.push( parsedOfficeId );
+            }
+        }
+    } else {
+        filters.push( `bp.current_office_id = ?` );
+        params.push( active_office );
+    }
+
+    // Optional age filter
+    if ( ageFrom && ageTo ) {
+        filters.push( `TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?` );
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+
+    // Final SQL with dynamic country counts
+    const baseSql = `
+            WITH base AS (
+            SELECT 
+                bp.id AS bandi_id,
+                mg.id AS mg_id,
+                mg.mudda_group_name,
+                COALESCE(nc.country_name_np,'नखुलेको') AS country_name,
+                bp.bandi_type,
+                bp.gender,
+                bp.dob_ad
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN (
+                SELECT *
+                FROM (
+                    SELECT bmd.*, ROW_NUMBER() OVER (PARTITION BY bmd.bandi_id ORDER BY bmd.created_at DESC) AS rn
+                    FROM bandi_mudda_details bmd
+                ) ranked_mudda
+                WHERE ranked_mudda.rn = 1
+            ) bmd ON bp.id = bmd.bandi_id
+            LEFT JOIN muddas m ON bmd.mudda_id = m.id
+            LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
+            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+            LEFT JOIN (
+                SELECT bandi_id, MAX(karnayan_miti_ad) AS karnayan_miti_ad
+                FROM bandi_release_details
+                GROUP BY bandi_id
+            ) brd ON brd.bandi_id = bp.id
+            ${ filters.length ? 'WHERE ' + filters.join( ' AND ' ) : '' }
+        ),
+
+        country_agg AS (
+            SELECT 
+                mg_id,
+                mudda_group_name,
+                country_name,
+                COUNT(*) AS country_total
+            FROM base
+            GROUP BY mg_id, mudda_group_name, country_name
+        ),
+
+        final_agg AS (
+            SELECT 
+                mg_id,
+                mudda_group_name,
+                COUNT(DISTINCT bandi_id) AS Total,
+                SUM(CASE WHEN bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+                SUM(CASE WHEN bandi_type = 'कैदी' AND gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
+                SUM(CASE WHEN bandi_type = 'कैदी' AND gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+                SUM(CASE WHEN bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+                SUM(CASE WHEN bandi_type = 'थुनुवा' AND gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+                SUM(CASE WHEN bandi_type = 'थुनुवा' AND gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+                SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob_ad, CURDATE()) >= 65 AND bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+                SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob_ad, CURDATE()) >= 65 AND bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65
+            FROM base
+            GROUP BY mg_id, mudda_group_name
+        )
+
+        SELECT 
+            f.mudda_group_name AS mudda_name,
+            f.Total,
+            f.KaidiTotal,
+            f.KaidiMale,
+            f.KaidiFemale,
+            f.ThunuwaTotal,
+            f.ThunuwaMale,
+            f.ThunuwaFemale,
+            f.KaidiAgeAbove65,
+            f.ThunuwaAgeAbove65,
+            GROUP_CONCAT(CONCAT(c.country_name,'-',c.country_total) ORDER BY c.country_name SEPARATOR ', ') AS country_name
+        FROM final_agg f
+        LEFT JOIN country_agg c ON f.mg_id = c.mg_id
+        GROUP BY f.mg_id, f.mudda_group_name
+        ORDER BY f.mudda_group_name ASC;
+    `;
+
+    try {
+        const [result] = await pool.query( baseSql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+
+router.get( '/get_prisioners_count_for_maskebari1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
 
@@ -3227,6 +3368,8 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     const baseSql = `
         SELECT 
             mg.mudda_group_name AS mudda_name,
+            GROUP_CONCAT(DISTINCT COALESCE(nc.country_name_np, 'नखुलेको') ORDER BY nc.country_name_np SEPARATOR ', ') AS country_name,  
+           --  nc.country_name_np,     -- Added country_name
             COUNT(DISTINCT bp.id) AS Total,
 
             -- कैदी
@@ -3264,8 +3407,11 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         LEFT JOIN muddas m ON bmd.mudda_id = m.id
         LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
         LEFT JOIN offices o ON bp.current_office_id = o.id
+        LEFT JOIN bandi_address ba ON bp.id=ba.bandi_id
+        LEFT JOIN np_country nc ON ba.nationality_id = nc.id
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
         ${ filters.length ? ' WHERE ' + filters.join( ' AND ' ) : '' }
+        -- GROUP BY nc.country_name_np, mg.id, mg.mudda_group_name
         GROUP BY mg.id, mg.mudda_group_name
         HAVING Total > 0
         ORDER BY mg.mudda_group_name ASC
@@ -3279,8 +3425,6 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
-
-
 
 router.get( "/get_total_of_all_maskebari_fields", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

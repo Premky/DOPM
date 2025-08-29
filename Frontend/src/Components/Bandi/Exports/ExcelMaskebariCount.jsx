@@ -1,8 +1,10 @@
 // import * as ExcelJS from "exceljs";
 // import { saveAs } from "file-saver";
 
+import { AuthProvider } from "../../../Context/AuthContext";
 
-const setupWorksheet = ( workbook ) => {  
+
+const setupWorksheet = ( workbook ) => {
   const worksheet = workbook.addWorksheet( "Prisoner Records" );
   worksheet.pageSetup = {
     paperSize: 9,
@@ -29,6 +31,7 @@ const addStyledRow = ( worksheet, data, options = {} ) => {
 
 const addSummaryRows = ( worksheet, releaseRecords, totals ) => {
   const summaryRows = [
+    ['सि.नं.', 'विविरण', '', '', '', '', '', '', '', '', 'पुरुष', 'महिला', 'जम्मा', 'कैफियत', '', ''],
     ['१', 'अघिल्लो महिनाको संख्या', '', '', '', '', '', '', '', '', releaseRecords[8].this_month.Male, releaseRecords[8].this_month.Female, releaseRecords[8].this_month.Total, '', '', ''],
     ['२', 'यस महिनाको थप संख्या', '', '', '', '', '', '', '', '', releaseRecords[10].this_month.Male, releaseRecords[10].this_month.Female, releaseRecords[10].this_month.Total, '', '', ''],
     ['३', 'यस महिनामा छुटेको संख्या', '', '', '', '', '', '', '', '',
@@ -69,9 +72,27 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
     'कैदी', 'थुनुवा', '', ''
   ];
 
-  addStyledRow( worksheet, headerRow1, { center: true } );
-  addStyledRow( worksheet, headerRow2, { center: true } );
+  // Add headerRow1
+  const row1 = worksheet.addRow( headerRow1 );
+  row1.font = { name: "Kalimati", bold: true, size: 12 };
+  row1.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
 
+  // Add headerRow2
+  const row2 = worksheet.addRow( headerRow2 );
+  row2.font = { name: "Kalimati", bold: true, size: 12 };
+  row2.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+
+  // Apply merges for headerRow1 (grouping)
+  worksheet.mergeCells( `A${ row1.number }:A${ row2.number }` );
+  worksheet.mergeCells( `B${ row1.number }:D${ row2.number }` );
+  worksheet.mergeCells( `E${ row1.number }:F${ row1.number }` );
+  worksheet.mergeCells( `G${ row1.number }:H${ row1.number }` );
+  worksheet.mergeCells( `I${ row1.number }:J${ row1.number }` );
+  worksheet.mergeCells( `K${ row1.number }:L${ row1.number }` );
+  worksheet.mergeCells( `M${ row1.number }:P${ row2.number }` );
+  // addStyledRow( worksheet, headerRow1, { center: true } );
+  // addStyledRow( worksheet, headerRow2, { center: true } );
+  // item.country_name!='नेपाल' && item.country_name
   // Data rows
   records.forEach( ( record, i ) => {
     const row = [
@@ -83,13 +104,13 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
       ...( conditionalAashrit.length ? [record.Maashrit, record.Faashrit] : [] ),
       ...( conditionalNabalik.length ? [record.KaidiNabalak, record.ThunuwaNabalak] : [] ),
       record.KaidiAgeAbove65, record.ThunuwaAgeAbove65,
-      isForeign ? record.CountryName || "" : ( record.Remarks || "" ),
+      isForeign ? record.country_name && !record.country_name.startsWith( "नेपाल" ) && record.country_name || '' : ( record.Remarks || "" ),      
       ''
     ];
     const dataRow = worksheet.addRow( row );
     dataRow.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
     worksheet.mergeCells( `B${ dataRow.number }:D${ dataRow.number }` );
-    worksheet.mergeCells( `O${ dataRow.number }:P${ dataRow.number }` );
+    worksheet.mergeCells( `M${ dataRow.number }:P${ dataRow.number }` );
   } );
 
   // Totals row
@@ -107,18 +128,18 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
   totalRowAdded.font = { name: "Kalimati", bold: true };
   totalRowAdded.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
   worksheet.mergeCells( `A${ totalRowAdded.number }:D${ totalRowAdded.number }` );
-  worksheet.mergeCells( `O${ totalRowAdded.number }:P${ totalRowAdded.number }` );
+  worksheet.mergeCells( `M${ totalRowAdded.number }:P${ totalRowAdded.number }` );
 
   return totalRowAdded.number;
 };
 
-const addOfficeDetails = ( worksheet ) => {
+const addOfficeDetails = ( worksheet, office_np, current_date ) => {
   const officeDetails = [
-    ['कारागार कार्यालयः', ''],
+    ['कारागार कार्यालयः', `${office_np}`],
     ['दस्तखत:', ''],
     ['नामः', ''],
-    ['पदः', ''],
-    ['मितिः', ''],
+    ['पदः', 'कारागार प्रशासक'],
+    ['मितिः', `${current_date}`],
     ['कार्यालयको छापः', '']
   ];
 
@@ -126,12 +147,14 @@ const addOfficeDetails = ( worksheet ) => {
     const row = worksheet.addRow( rowData );
     row.font = { name: "Kalimati", bold: true, size: 12 };
     row.alignment = { vertical: "middle", wrapText: true };
-    worksheet.mergeCells( `A${ row.number }:P${ row.number }` );
+    worksheet.mergeCells( `A${ row.number }:B${ row.number }` );
+    worksheet.mergeCells( `C${ row.number }:P${ row.number }` );
   } );
 };
 
-export const exportToExcel = async ( releaseRecords, nativeRecords, nativeTotals, foreignRecords, foreignTotals, fy, fm ) => {
-  const ExcelJS = await import("exceljs")
+export const exportToExcel = async ( releaseRecords, nativeRecords, nativeTotals, foreignRecords, foreignTotals, fy, fm, current_date, office_np ) => {
+  
+  const ExcelJS = await import( "exceljs" );
   const workbook = new ExcelJS.Workbook();
   const worksheet = setupWorksheet( workbook );
   const { saveAs } = await import( "file-saver" );
@@ -161,11 +184,11 @@ export const exportToExcel = async ( releaseRecords, nativeRecords, nativeTotals
   const foreignEndRow = addPrisonerTable( worksheet, foreignRecords, foreignTotals, conditionalAashrit, conditionalNabalik, true );
 
   // Add office details at the bottom
-  addOfficeDetails( worksheet );
+  addOfficeDetails( worksheet, office_np, current_date );
 
   // Apply borders (from row 7 to last data row)
   worksheet.eachRow( { includeEmpty: true }, ( row, rowNumber ) => {
-    if ( rowNumber >= 7 && rowNumber <= foreignEndRow ) {
+    if ( rowNumber >= 6 && rowNumber <= foreignEndRow ) {
       row.eachCell( ( cell ) => {
         cell.border = {
           top: { style: "thin" },
@@ -174,6 +197,7 @@ export const exportToExcel = async ( releaseRecords, nativeRecords, nativeTotals
           right: { style: "thin" },
         };
       } );
+      row.font = { name: "Kalimati"};
     }
   } );
 
