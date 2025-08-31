@@ -25,7 +25,7 @@ import { bandiTransferRouter } from './routes/bandiTransferRoute.js';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3003;
+// const port = process.env.PORT || 3003;
 const __filename = fileURLToPath( import.meta.url );
 const __dirname = path.dirname( __filename );
 
@@ -176,7 +176,12 @@ app.use( '/bandiTransfer', bandiTransferRouter );
 app.use( errorHandler );
 
 // ------------------- 🔟 Server Start -------------------
-app.listen( port, () => console.log( `🚀 Server running on port ${ port }` ) );
+// app.listen( port, () => console.log( `🚀 Server running on port ${ port }` ) );
+const PORT = process.env.PORT || 3003;
+app.listen(PORT, '127.0.0.1', () =>
+  console.log(`🚀 Backend running on http://127.0.0.1:${PORT}`)
+);
+
 
 // ------------------- 1️⃣1️⃣ Graceful Shutdown -------------------
 process.on( 'SIGINT', async () => {
