@@ -68,22 +68,22 @@ const hardOrigins = [
 // const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
 const allowedOrigins = hardOrigins;
 
-app.use( cors( {
-  origin: ( origin, callback ) => {
-    if ( !origin || allowedOrigins.includes( origin ) ) callback( null, true );
-    else callback( new Error( 'Not allowed by CORS' ) );
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Cache-Control",
-    "Pragma",
-    "Expires"
-  ],
-  exposedHeaders: ["set-cookie"]
-} ) );
+// app.use( cors( {
+//   origin: ( origin, callback ) => {
+//     if ( !origin || allowedOrigins.includes( origin ) ) callback( null, true );
+//     else callback( new Error( 'Not allowed by CORS' ) );
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: [
+//     "Content-Type",
+//     "Authorization",
+//     "Cache-Control",
+//     "Pragma",
+//     "Expires"
+//   ],
+//   exposedHeaders: ["set-cookie"]
+// } ) );
 
 // Explicit OPTIONS handling to ensure custom headers are included
 // app.options( '*', ( req, res ) => {
@@ -92,6 +92,18 @@ app.use( cors( {
 //   res.header( "Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS" );
 //   res.sendStatus( 204 );
 // } );
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow server-to-server
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS: " + origin));
+  },
+  credentials: true
+}));
+
 
 app.options( '*', ( req, res ) => {
   const origin = req.headers.origin;
