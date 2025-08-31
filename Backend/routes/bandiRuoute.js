@@ -2549,7 +2549,7 @@ const getMaskebariQuery = `SELECT
                     LEFT JOIN offices os ON pm.created_office = os.id
 `;
 
-router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
+router.get('/get_office_wise_count', verifyToken, async (req, res) => {
   try {
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
@@ -2568,6 +2568,7 @@ router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
 
     const params = [defaultAge, defaultAge, defaultAge, defaultAge];
     params.push(startDate, endDate); // thuna_date_bs BETWEEN
+    params.push(startDate, endDate); // for country_stats subquery
     params.push(endDate); // release_date_bs cutoff
     params.push(defaultOfficeCategory);
 
@@ -2617,15 +2618,11 @@ router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
         COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male' AND bp.age >= ?, 1, NULL)) AS thunuwa_male_65plus,
         COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female' AND bp.age >= ?, 1, NULL)) AS thunuwa_female_65plus,
 
-        COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
+        -- Total foreign count (including Nepal)
+        COUNT(IF(bp.country_name_np IS NOT NULL, 1, NULL)) AS foreign_count,
 
-        -- per-country totals for this office
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'country_name', bp.country_name_np,
-            'total', bp.country_count
-          )
-        ) AS countries
+        -- JSON of countries per office
+        COALESCE(country_json.foreign_countries, JSON_ARRAY()) AS foreign_countries
 
       FROM offices o
       LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
@@ -2639,18 +2636,32 @@ router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
           TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
           bp.nationality,
           MAX(bri.is_dependent) AS is_dependent,
-          COALESCE(vbad.country_name_np,'नखुलेको') AS country_name_np,
-          COUNT(*) OVER (PARTITION BY vbad.country_name_np, bp.current_office_id) AS country_count
+          MAX(vbad.country_name_np) AS country_name_np
         FROM bandi_person bp
         LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
         LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id    
-        WHERE
-          bp.is_under_payrole!=1
+        WHERE bp.is_under_payrole != 1
           AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
           ${extraSubqueryFilters}
-        GROUP BY bp.id, vbad.country_name_np, bp.current_office_id
+        GROUP BY bp.id
       ) bp ON bp.current_office_id = o.id
+
+      LEFT JOIN (
+        -- Pre-aggregate country counts per office
+        SELECT current_office_id,
+               JSON_ARRAYAGG(JSON_OBJECT('country', country_name_np, 'count', country_count)) AS foreign_countries
+        FROM (
+          SELECT bp.current_office_id, vbad.country_name_np, COUNT(bp.id) AS country_count
+          FROM bandi_person bp
+          LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
+          LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+          WHERE bp.is_under_payrole != 1
+            AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
+          GROUP BY bp.current_office_id, vbad.country_name_np
+        ) AS country_counts
+        GROUP BY current_office_id
+      ) country_json ON country_json.current_office_id = o.id
 
       LEFT JOIN (
         SELECT bandi_id, MAX(karnayan_miti) AS karnayan_miti
@@ -2658,10 +2669,10 @@ router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
         GROUP BY bandi_id
       ) brd ON brd.bandi_id = bp.id
 
-      WHERE 
-        (brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d'))
+      WHERE (brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d'))
         AND o.office_categories_id = ?
         ${officeFilterSql}
+
       GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
       ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
     `;
@@ -2673,6 +2684,8 @@ router.get('/get_office_wise_count1', verifyToken, async (req, res) => {
     return res.status(500).json({ Status: false, Error: "Internal Server Error" });
   }
 });
+
+
 
 
 

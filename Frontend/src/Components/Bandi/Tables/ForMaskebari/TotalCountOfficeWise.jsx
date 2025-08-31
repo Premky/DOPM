@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box,Button, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
+import { Box, Button, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
 
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 import fetchUserStatus from '../../../ReuseableComponents/fetchUserStatus';
@@ -19,7 +19,7 @@ const TotalCountOfficeWise = ( { filters } ) => {
             ?.filter( ( user ) => user.is_online === 1 )
             .map( ( user ) => user.office_id )
     );
-    console.log(count)
+    console.log( count );
     const hanldeExport = () => {
         exportOfficeWiseMaskebariExcel( count, onlineOfficeIds );
         // exportCombinedGenderAndOfficeCountExcel(count, onlineOfficeIds)
@@ -41,8 +41,8 @@ const TotalCountOfficeWise = ( { filters } ) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <link rel="canonical" href={window.location.href} />
             </Helmet>
-            <Button variant="contained" 
-                onClick={hanldeExport} 
+            <Button variant="contained"
+                onClick={hanldeExport}
                 sx={{ mb: 2 }}
                 disabled={countLoading || !count || count.length === 0}>
                 Export to Excel
@@ -80,6 +80,7 @@ const TotalCountOfficeWise = ( { filters } ) => {
                         </TableHead>
                         <TableBody>
                             {count.map( ( data, index ) => (
+
                                 <TableRow key={index}>
                                     <>
                                         <TableCell>{data.state_name_np}</TableCell>
@@ -107,7 +108,11 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                         <TableCell>{data.thunuwa_male_65plus + data.thunuwa_female_65plus}</TableCell>
                                         <TableCell>{data.total_aashrit}</TableCell>
                                         <TableCell>{data.foreign_count}</TableCell>
-                                        <TableCell>{data.foreign_countries}</TableCell>
+                                        <TableCell>{
+                                            data.foreign_countries.map( ( c, i ) => (
+                                                `${ c.country }-${ c.count } `
+                                            ) )
+                                        }</TableCell>
                                     </>
                                 </TableRow>
                             ) )}
