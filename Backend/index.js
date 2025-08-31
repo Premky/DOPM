@@ -49,9 +49,10 @@ const loginLimiter = rateLimit( {
 // ------------------- 2️⃣ CORS -------------------
 const hardOrigins = [
   'http://localhost:3003', 'http://localhost:5173',
+  'http://pmis.dopm.gov.np/',  'https://pmis.dopm.gov.np/',
   'http://202.45.146.226', 'http://202.45.146.226:5173',
   'http://10.5.60.151', 'http://10.5.60.151:5173',
-  'http://192.168.18.211:5173', 'http://192.168.18.17:5173',
+  'http://192.168.18.211:5173', 'http://192.168.18.17:5173'
 ];
 const hardOrigins1 = [
   'http://localhost:5173',
@@ -62,8 +63,7 @@ const hardOrigins1 = [
   'http://10.5.60.151:5173',      
   'http://192.168.18.211:5173',
   'http://192.168.18.17:5173',
-  'http://pmis.dopm.gov.np/',
-  'https://pmis.dopm.gov.np/'
+  'http://pmis.dopm.gov.np/',  'https://pmis.dopm.gov.np/'
 ];
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
 
