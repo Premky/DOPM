@@ -43,6 +43,7 @@ const CombinedNav = ( { user } ) => {
         { name: 'नयाँ बन्दी विवरण', path: '/bandi/create_bandi' },
         { name: 'बन्दी विवरण', path: '/bandi/bandi_details' },
         { name: 'कार्यालयगत संख्या', path: '/bandi/count_ac_office' },
+        { name: 'देश अनुसारको संख्या', path: '/bandi/count_ac_country' },
         { name: 'मास्केवारी', path: '/bandi/maskebari' },
         { name: 'कैदमुक्त/लगत कट्टा', path: '/bandi/bandi_release' },
       ]

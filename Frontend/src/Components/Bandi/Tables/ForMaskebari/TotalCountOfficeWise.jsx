@@ -108,11 +108,12 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                         <TableCell>{data.thunuwa_male_65plus + data.thunuwa_female_65plus}</TableCell>
                                         <TableCell>{data.total_aashrit}</TableCell>
                                         <TableCell>{data.foreign_count}</TableCell>
-                                        <TableCell>{
-                                            data.foreign_countries.map( ( c, i ) => (
-                                                `${ c.country }-${ c.count } `
-                                            ) )
-                                        }</TableCell>
+                                        <TableCell>
+                                            {data.foreign_countries
+                                                .map( c => `${ c.country }-${ c.count }` )
+                                                .join( ', ' )}
+                                        </TableCell>
+
                                     </>
                                 </TableRow>
                             ) )}

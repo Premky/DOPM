@@ -2820,131 +2820,105 @@ router.get( '/get_office_wise_count_old_but_working', verifyToken, async ( req, 
     }
 } );
 
-router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+router.get('/get_bandi_count_ac_to_country', verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
 
-    let { startDate, endDate, ageFrom, ageTo, office_id } = req.query;
+  let { startDate, endDate, ageFrom, ageTo, office_id } = req.query;
+  const params = [];
 
-    const filters = ['bp.is_active = 1'];
-    const params = [];
+  if (!startDate) startDate = '1001-01-01';
+  if (!endDate) {
+    endDate = today_date_bs;
+    endDate = await bs2ad(today_date_bs);
+  }
 
-    // Default date logic
-    if ( !startDate && !endDate ) {
-        startDate = '1001-01-01';
-        endDate = today_date_bs;
-        endDate = await bs2ad( today_date_bs );
-    } else if ( !startDate ) {
-        startDate = '1001-01-01';
-    } else if ( !endDate ) {
-        endDate = today_date_bs;
-        endDate = await bs2ad( today_date_bs );
-    }
+  // Office filter
+  let officeFilter = '';
+  if (active_office !== 1 && active_office !== 2) {
+    officeFilter = 'AND bp.current_office_id = ?';
+    params.push(active_office);
+  } else if (office_id) {
+    officeFilter = 'AND bp.current_office_id = ?';
+    params.push(parseInt(office_id, 10));
+  }
 
-    filters.push( `bp.is_under_payrole != 1` );
-    filters.push( `bkd.thuna_date_ad >= ?` );
-    filters.push( `(brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)` );
+  // Age filter
+  let ageFilter = '';
+  if (ageFrom && ageTo) {
+    ageFilter = `AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?`;
+    params.push(Number(ageFrom), Number(ageTo));
+  }
 
-    params.push( startDate, endDate );
-
-    // Office filter logic
-    if ( active_office === 1 || active_office === 2 ) {
-        if ( office_id && office_id.trim() !== '' ) {
-            const parsedOfficeId = parseInt( office_id, 10 );
-            if ( !isNaN( parsedOfficeId ) ) {
-                filters.push( `bp.current_office_id = ?` );
-                params.push( parsedOfficeId );
-            }
-        }
-    } else {
-        filters.push( `bp.current_office_id = ?` );
-        params.push( active_office );
-    }
-    filters.push( `o.office_categories_id = ?` );
-    params.push( 2 );
-    // Optional: age filter
-    if ( ageFrom && ageTo ) {
-        filters.push( `TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?` );
-        params.push( Number( ageFrom ), Number( ageTo ) );
-    }
-
-    const baseSql = `
-                    SELECT 
-    o.id AS office_id,
-    o.letter_address AS office_name_np,
-    SUM(sub.country_total) AS Total,
-
-    JSON_ARRAYAGG(
-        JSON_OBJECT(
-            'country_id', sub.country_id,
-            'country_name', sub.country_name,
-            'total', sub.country_total
-        )
-    ) AS countries,
-
-    SUM(sub.KaidiTotal) AS KaidiTotal,
-    SUM(sub.KaidiMale) AS KaidiMale,
-    SUM(sub.KaidiFemale) AS KaidiFemale,
-    SUM(sub.ThunuwaTotal) AS ThunuwaTotal,
-    SUM(sub.ThunuwaMale) AS ThunuwaMale,
-    SUM(sub.ThunuwaFemale) AS ThunuwaFemale,
-    SUM(sub.KaidiAgeAbove65) AS KaidiAgeAbove65,
-    SUM(sub.ThunuwaAgeAbove65) AS ThunuwaAgeAbove65
-
-FROM (
+  const sql = `
     SELECT 
-        o.id AS office_id,
-        o.letter_address,
+      o.id AS office_id,
+      o.letter_address AS office_name_np,
+      SUM(sub.country_total) AS Total,
+      SUM(sub.KaidiTotal) AS KaidiTotal,
+      SUM(sub.KaidiMale) AS KaidiMale,
+      SUM(sub.KaidiFemale) AS KaidiFemale,
+      SUM(sub.ThunuwaTotal) AS ThunuwaTotal,
+      SUM(sub.ThunuwaMale) AS ThunuwaMale,
+      SUM(sub.ThunuwaFemale) AS ThunuwaFemale,
+      SUM(sub.KaidiAgeAbove65) AS KaidiAgeAbove65,
+      SUM(sub.ThunuwaAgeAbove65) AS ThunuwaAgeAbove65,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+          'country_id', sub.country_id,
+          'country_name', sub.country_name,
+          'total', sub.country_total
+        )
+      ) AS countries
+    FROM (
+      SELECT
+        bp.current_office_id AS office_id,
         nc.id AS country_id,
         nc.country_name_np AS country_name,
         COUNT(bp.id) AS country_total,
-
-        SUM(CASE WHEN bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
-        SUM(CASE WHEN bp.bandi_type = 'कैदी' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS KaidiMale,
-        SUM(CASE WHEN bp.bandi_type = 'कैदी' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS KaidiFemale,
-        SUM(CASE WHEN bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
-        SUM(CASE WHEN bp.bandi_type = 'थुनुवा' AND bp.gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
-        SUM(CASE WHEN bp.bandi_type = 'थुनुवा' AND bp.gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
-        SUM(CASE WHEN TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 
-                 AND bp.bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
-        SUM(CASE WHEN TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 
-                 AND bp.bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65
-
-    FROM bandi_person bp
-    LEFT JOIN offices o ON bp.current_office_id = o.id
-    LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-    LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-    LEFT JOIN (
+        SUM(CASE WHEN bp.bandi_type='कैदी' THEN 1 ELSE 0 END) AS KaidiTotal,
+        SUM(CASE WHEN bp.bandi_type='कैदी' AND bp.gender='Male' THEN 1 ELSE 0 END) AS KaidiMale,
+        SUM(CASE WHEN bp.bandi_type='कैदी' AND bp.gender='Female' THEN 1 ELSE 0 END) AS KaidiFemale,
+        SUM(CASE WHEN bp.bandi_type='थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
+        SUM(CASE WHEN bp.bandi_type='थुनुवा' AND bp.gender='Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
+        SUM(CASE WHEN bp.bandi_type='थुनुवा' AND bp.gender='Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+        SUM(CASE WHEN bp.bandi_type='कैदी' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
+        SUM(CASE WHEN bp.bandi_type='थुनुवा' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= 65 THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65
+      FROM bandi_person bp
+      LEFT JOIN offices o ON bp.current_office_id = o.id
+      LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+      LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+      LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+      LEFT JOIN (
         SELECT bandi_id, MAX(karnayan_miti_ad) AS karnayan_miti_ad
         FROM bandi_release_details
         GROUP BY bandi_id
-    ) brd ON brd.bandi_id = bp.id
-    LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+      ) brd ON brd.bandi_id = bp.id
+      WHERE bp.is_active=1
+        AND bp.is_under_payrole != 1
+        AND (bkd.thuna_date_ad >= ?)
+        AND (brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)
+        ${officeFilter}
+        ${ageFilter}
+      GROUP BY bp.current_office_id, nc.id, nc.country_name_np
+      HAVING country_total > 0
+    ) AS sub
+    JOIN offices o ON sub.office_id = o.id
+    GROUP BY o.id, o.letter_address
+    ORDER BY o.id ASC
+  `;
 
-    WHERE bp.is_active = 1 
-      AND bp.is_under_payrole != 1 
-      AND bkd.thuna_date_ad >= '1001-01-01' 
-      AND (brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= '2025-08-28') 
-      AND o.office_categories_id = 2
+  params.unshift(startDate, endDate);
 
-    GROUP BY o.id, o.letter_address, nc.id, nc.country_name_np
-) AS sub
-JOIN offices o ON sub.office_id = o.id
-GROUP BY o.id, o.letter_address
-ORDER BY o.id ASC;
+  try {
+    const [result] = await pool.query(sql, params);
+    res.json({ Status: true, Result: result });
+  } catch (err) {
+    console.error("❌ Database Query Error:", err);
+    res.status(500).json({ Status: false, Error: "Internal Server Error" });
+  }
+});
 
-
-
-    `;
-
-    try {
-        const [result] = await pool.query( baseSql, params );
-        res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "❌ Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
 
 function extractInternalAdminData( reqBody, is_active, user_id, active_office ) {
     const {

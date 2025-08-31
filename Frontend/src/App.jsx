@@ -83,8 +83,7 @@ function App() {
             {/* Admin routes wrapped with AdminCheck */}
 
             {/* Routes wrapped with LoggedIn middleware */}
-            <Route path="/" element={<Login />} />
-            {/* <Route path="/test" element={<NepaliIME />} /> */}
+            <Route path="/" element={<Login />} />            
             <Route path="/login" element={<Login />} />
             <Route element={<LoggedIn />}>
 
