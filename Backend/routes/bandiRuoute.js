@@ -2620,7 +2620,7 @@ router.get('/get_office_wise_count', verifyToken, async (req, res) => {
 
         -- Total foreign count (including Nepal)
         COUNT(IF(bp.country_name_np IS NOT NULL, 1, NULL)) AS foreign_count_including_nepal,
-        COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,,
+        COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
 
         -- JSON of countries per office
         COALESCE(country_json.foreign_countries, JSON_ARRAY()) AS foreign_countries
