@@ -54,6 +54,7 @@ const hardOrigins = [
   'http://10.5.60.151', 'http://10.5.60.151:5173',
   'http://192.168.18.211:5173', 'http://192.168.18.17:5173'
 ];
+
 const hardOrigins1 = [
   'http://localhost:5173',
   'http://localhost:3003',
@@ -65,7 +66,8 @@ const hardOrigins1 = [
   'http://192.168.18.17:5173',
   'http://pmis.dopm.gov.np/',  'https://pmis.dopm.gov.np/'
 ];
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
+// const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
+const allowedOrigins = hardOrigins;
 
 app.use(cors({
   origin: (origin, callback) => {
