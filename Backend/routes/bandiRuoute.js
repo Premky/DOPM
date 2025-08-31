@@ -2549,47 +2549,47 @@ const getMaskebariQuery = `SELECT
                     LEFT JOIN offices os ON pm.created_office = os.id
 `;
 
-router.get('/get_office_wise_count', verifyToken, async (req, res) => {
-  try {
-    const active_office = req.user.office_id;
-    const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
-    const defaultAge = 65;
-    const defaultOfficeCategory = 2;
+router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
+    try {
+        const active_office = req.user.office_id;
+        const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+        const defaultAge = 65;
+        const defaultOfficeCategory = 2;
 
-    let { nationality, ageFrom, ageTo, office_id, startDate, endDate } = req.query;
+        let { nationality, ageFrom, ageTo, office_id, startDate, endDate } = req.query;
 
-    if (!startDate && !endDate) {
-      startDate = '1000-01-01';
-      endDate = today_date_bs;
-    } else {
-      if (!startDate) startDate = '1000-01-01';
-      if (!endDate) endDate = today_date_bs;
-    }
+        if ( !startDate && !endDate ) {
+            startDate = '1000-01-01';
+            endDate = today_date_bs;
+        } else {
+            if ( !startDate ) startDate = '1000-01-01';
+            if ( !endDate ) endDate = today_date_bs;
+        }
 
-    const params = [defaultAge, defaultAge, defaultAge, defaultAge];
-    params.push(startDate, endDate); // thuna_date_bs BETWEEN
-    params.push(startDate, endDate); // for country_stats subquery
-    params.push(endDate); // release_date_bs cutoff
-    params.push(defaultOfficeCategory);
+        const params = [defaultAge, defaultAge, defaultAge, defaultAge];
+        params.push( startDate, endDate ); // thuna_date_bs BETWEEN
+        params.push( startDate, endDate ); // for country_stats subquery
+        params.push( endDate ); // release_date_bs cutoff
+        params.push( defaultOfficeCategory );
 
-    let officeFilterSql = '';
-    if (active_office !== 1 && active_office !== 2) {
-      params.push(active_office);
-      officeFilterSql = 'AND o.id = ?';
-    } else if (office_id) {
-      params.push(office_id);
-      officeFilterSql = 'AND o.id = ?';
-    }
+        let officeFilterSql = '';
+        if ( active_office !== 1 && active_office !== 2 ) {
+            params.push( active_office );
+            officeFilterSql = 'AND o.id = ?';
+        } else if ( office_id ) {
+            params.push( office_id );
+            officeFilterSql = 'AND o.id = ?';
+        }
 
-    let extraSubqueryFilters = '';
-    if (nationality) {
-      extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape(nationality.trim());
-    }
-    if (ageFrom && ageTo) {
-      extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${Number(ageFrom)} AND ${Number(ageTo)}`;
-    }
+        let extraSubqueryFilters = '';
+        if ( nationality ) {
+            extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape( nationality.trim() );
+        }
+        if ( ageFrom && ageTo ) {
+            extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${ Number( ageFrom ) } AND ${ Number( ageTo ) }`;
+        }
 
-    const sql = `
+        const sql = `
       SELECT
         voad.state_name_np,
         voad.district_order_id,
@@ -2644,7 +2644,7 @@ router.get('/get_office_wise_count', verifyToken, async (req, res) => {
         LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id    
         WHERE bp.is_under_payrole != 1
           AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
-          ${extraSubqueryFilters}
+          ${ extraSubqueryFilters }
         GROUP BY bp.id
       ) bp ON bp.current_office_id = o.id
 
@@ -2672,24 +2672,19 @@ router.get('/get_office_wise_count', verifyToken, async (req, res) => {
 
       WHERE (brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d'))
         AND o.office_categories_id = ?
-        ${officeFilterSql}
+        ${ officeFilterSql }
 
       GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
       ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
     `;
 
-    const [rows] = await pool.query(sql, params);
-    return res.json({ Status: true, Result: rows });
-  } catch (error) {
-    console.error("Error in /get_office_wise_count:", error);
-    return res.status(500).json({ Status: false, Error: "Internal Server Error" });
-  }
-});
-
-
-
-
-
+        const [rows] = await pool.query( sql, params );
+        return res.json( { Status: true, Result: rows } );
+    } catch ( error ) {
+        console.error( "Error in /get_office_wise_count:", error );
+        return res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
 
 router.get( '/get_office_wise_count_old_but_working', verifyToken, async ( req, res ) => {
     try {
@@ -2821,37 +2816,40 @@ router.get( '/get_office_wise_count_old_but_working', verifyToken, async ( req, 
     }
 } );
 
-router.get('/get_bandi_count_ac_to_country', verifyToken, async (req, res) => {
-  const active_office = req.user.office_id;
-  const today_date_bs = new NepaliDate().format('YYYY-MM-DD');
+router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
 
-  let { startDate, endDate, ageFrom, ageTo, office_id } = req.query;
-  const params = [];
+    let { startDate, endDate, ageFrom, ageTo, office_id } = req.query;
+    const params = [];
 
-  if (!startDate) startDate = '1001-01-01';
-  if (!endDate) {
-    endDate = today_date_bs;
-    endDate = await bs2ad(today_date_bs);
-  }
+    if ( !startDate ) startDate = '1001-01-01';
+    if ( !endDate ) {
+        endDate = today_date_bs;
+        endDate = await bs2ad( today_date_bs );
+    }
 
-  // Office filter
-  let officeFilter = '';
-  if (active_office !== 1 && active_office !== 2) {
-    officeFilter = 'AND bp.current_office_id = ?';
-    params.push(active_office);
-  } else if (office_id) {
-    officeFilter = 'AND bp.current_office_id = ?';
-    params.push(parseInt(office_id, 10));
-  }
+    // Office filter
+    let officeFilter = '';
+    if ( active_office !== 1 && active_office !== 2 ) {
+        officeFilter = 'AND bp.current_office_id = ?';
+        params.push( active_office );
+    } else if ( office_id ) {
+        officeFilter = 'AND bp.current_office_id = ?';
+        params.push( parseInt( office_id, 10 ) );
+    }
 
-  // Age filter
-  let ageFilter = '';
-  if (ageFrom && ageTo) {
-    ageFilter = `AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?`;
-    params.push(Number(ageFrom), Number(ageTo));
-  }
-
-  const sql = `
+    // Age filter
+    let ageFilter = '';
+    if ( ageFrom && ageTo ) {
+        ageFilter = `AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?`;
+        params.push( Number( ageFrom ), Number( ageTo ) );
+    }
+    const defaultOfficeCategory=2;
+    officeFilter += ' AND o.office_categories_id=? '
+    params.push( defaultOfficeCategory );
+    
+    const sql = `
     SELECT 
       o.id AS office_id,
       o.letter_address AS office_name_np,
@@ -2899,8 +2897,8 @@ router.get('/get_bandi_count_ac_to_country', verifyToken, async (req, res) => {
         AND bp.is_under_payrole != 1
         AND (bkd.thuna_date_ad >= ?)
         AND (brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)
-        ${officeFilter}
-        ${ageFilter}
+        ${ officeFilter }
+        ${ ageFilter }
       GROUP BY bp.current_office_id, nc.id, nc.country_name_np
       HAVING country_total > 0
     ) AS sub
@@ -2909,16 +2907,16 @@ router.get('/get_bandi_count_ac_to_country', verifyToken, async (req, res) => {
     ORDER BY o.id ASC
   `;
 
-  params.unshift(startDate, endDate);
+    params.unshift( startDate, endDate );
 
-  try {
-    const [result] = await pool.query(sql, params);
-    res.json({ Status: true, Result: result });
-  } catch (err) {
-    console.error("❌ Database Query Error:", err);
-    res.status(500).json({ Status: false, Error: "Internal Server Error" });
-  }
-});
+    try {
+        const [result] = await pool.query( sql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "❌ Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
 
 
 function extractInternalAdminData( reqBody, is_active, user_id, active_office ) {
