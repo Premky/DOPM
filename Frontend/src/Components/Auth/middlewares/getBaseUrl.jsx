@@ -10,7 +10,8 @@ const API_OPTIONS = [
   'http://localhost:5173',
   'http://192.168.18.211:5173',
   'http://192.168.18.17:5173',
-  'https://kptpo.onrender.com'
+  'http://pmis.dopm.gov.np',
+  'https://pmis.dopm.gov.np/'  
 ];
 
 const PORT = 3003;
