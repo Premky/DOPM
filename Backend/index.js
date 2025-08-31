@@ -47,7 +47,8 @@ const loginLimiter = rateLimit( {
 // app.use("/auth/login", loginLimiter);
 
 // ------------------- 2️⃣ CORS -------------------
-const hardOrigins = [
+
+const hardOrigins1 = [
   'http://localhost:3003', 'http://localhost:5173',
   'http://pmis.dopm.gov.np',  'https://pmis.dopm.gov.np',
   'http://202.45.146.226', 'http://202.45.146.226:5173',
@@ -55,17 +56,15 @@ const hardOrigins = [
   'http://192.168.18.211:5173', 'http://192.168.18.17:5173'
 ];
 
-const hardOrigins1 = [
-  'http://localhost:5173',
-  'http://localhost:3003',
-  'http://202.45.146.226',
-  'http://202.45.146.226:5173',    
-  'http://10.5.60.151',
-  'http://10.5.60.151:5173',      
-  'http://192.168.18.211:5173',
-  'http://192.168.18.17:5173',
-  'http://pmis.dopm.gov.np/',  'https://pmis.dopm.gov.np/'
+const hardOrigins = [
+  'http://localhost:3003', 'http://localhost:5173',
+  'http://pmis.dopm.gov.np', 'https://pmis.dopm.gov.np',
+  'http://202.45.146.226', 'http://202.45.146.226:5173',
+  'http://10.5.60.151', 'http://10.5.60.151:5173',
+  'http://192.168.18.211:5173', 'http://192.168.18.17:5173'
 ];
+
+
 // const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
 const allowedOrigins = hardOrigins;
 
@@ -90,6 +89,14 @@ app.use(cors({
 app.options('*', (req, res) => {
   res.header("Access-Control-Allow-Headers",
     "Content-Type, Authorization, Cache-Control, Pragma, Expires");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.sendStatus(204);
+});
+
+app.options('*', (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Cache-Control, Pragma, Expires");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   res.sendStatus(204);
 });
