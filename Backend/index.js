@@ -68,31 +68,6 @@ const hardOrigins = [
 // const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
 const allowedOrigins = hardOrigins;
 
-// app.use( cors( {
-//   origin: ( origin, callback ) => {
-//     if ( !origin || allowedOrigins.includes( origin ) ) callback( null, true );
-//     else callback( new Error( 'Not allowed by CORS' ) );
-//   },
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: [
-//     "Content-Type",
-//     "Authorization",
-//     "Cache-Control",
-//     "Pragma",
-//     "Expires"
-//   ],
-//   exposedHeaders: ["set-cookie"]
-// } ) );
-
-// Explicit OPTIONS handling to ensure custom headers are included
-// app.options( '*', ( req, res ) => {
-//   res.header( "Access-Control-Allow-Headers",
-//     "Content-Type, Authorization, Cache-Control, Pragma, Expires" );
-//   res.header( "Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS" );
-//   res.sendStatus( 204 );
-// } );
-
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow server-to-server
@@ -104,18 +79,16 @@ app.use(cors({
   credentials: true
 }));
 
-
-// app.options( '*', ( req, res ) => {
-//   const origin = req.headers.origin;
-//   if ( allowedOrigins.includes( origin ) ) {
-//     res.header( "Access-Control-Allow-Origin", origin );
-//     res.header( "Access-Control-Allow-Credentials", "true" );
-//   }
-//   res.header( "Access-Control-Allow-Headers", "Content-Type, Authorization, Cache-Control, Pragma, Expires" );
-//   res.header( "Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS" );
-//   res.sendStatus( 204 );
-// } );
-
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    console.log("CORS headers sent:", {
+      origin: req.headers.origin,
+      "Access-Control-Allow-Origin": res.getHeader("Access-Control-Allow-Origin"),
+      "Access-Control-Allow-Credentials": res.getHeader("Access-Control-Allow-Credentials")
+    });
+  });
+  next();
+});
 
 // ------------------- 3️⃣ Security Headers -------------------
 // HSTS: enforce HTTPS
