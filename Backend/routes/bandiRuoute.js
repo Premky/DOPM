@@ -2690,7 +2690,7 @@ router.get('/get_office_wise_count', verifyToken, async (req, res) => {
 
 
 
-router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
+router.get( '/get_office_wise_count_old_but_working', verifyToken, async ( req, res ) => {
     try {
         const active_office = req.user.office_id;
         const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
