@@ -9,6 +9,8 @@ export const menuAccess = {
     office_admin: [
       '/payrole/create_payrole',
       '/payrole/payrole_client_check',
+      '/payrole/create_previous_parole',
+      '/payrole/payrole_log',
     ],
     supervisor: [
       '/payrole/payrole_jr_check',
@@ -72,7 +74,8 @@ export const menuAccess = {
       '/emp/create_employee',
       '/emp/view_employee',
     ],
+    office_admin: 'all',
     superadmin: 'all',
-    clerk:'all',
+    clerk: 'all',
   }
 };
