@@ -2657,7 +2657,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
           FROM bandi_person bp
           LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
           LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-          WHERE bp.is_under_payrole != 1
+          WHERE bp.is_under_payrole != 1 AND bp.is_active=1
             AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
           GROUP BY bp.current_office_id, vbad.country_name_np
         ) AS country_counts
@@ -2837,6 +2837,7 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         officeFilter = 'AND bp.current_office_id = ?';
         params.push( parseInt( office_id, 10 ) );
     }
+
     // Age filter
     let ageFilter = '';
     if ( ageFrom && ageTo ) {
@@ -2891,10 +2892,10 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         FROM bandi_release_details
         GROUP BY bandi_id
       ) brd ON brd.bandi_id = bp.id
-      WHERE bp.is_under_payrole != 1
-        AND bp.is_active=1
-        AND (bkd.thuna_date_bs >= ?)
-        AND (brd.karnayan_miti_bs IS NULL OR brd.karnayan_miti >= ?)
+      WHERE bp.is_active=1
+        AND bp.is_under_payrole != 1
+        AND (bkd.thuna_date_ad >= ?)
+        AND (brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)
         ${ officeFilter }
         ${ ageFilter }
       GROUP BY bp.current_office_id, nc.id, nc.country_name_np
