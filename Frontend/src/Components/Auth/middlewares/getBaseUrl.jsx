@@ -17,6 +17,24 @@ export const getAvailableBaseUrl = async () => {
   const url = `${BASE_API_PATH}${HEALTH_CHECK_PATH}`;
 
   try {
+    const res = await fetchWithTimeout(url, { credentials: 'include' }, 3000);
+    if (res.ok) {
+      console.log(`✅ Backend reachable via proxy: ${url}`);
+      return BASE_API_PATH;
+    }
+  } catch (err) {
+    console.warn(`❌ Backend not reachable via proxy: ${url}`);
+  }
+
+  console.error("⚠️ Backend is not reachable!");
+  return null;
+};
+
+
+export const getAvailableBaseUrl1 = async () => {
+  const url = `${BASE_API_PATH}${HEALTH_CHECK_PATH}`;
+
+  try {
     const res = await fetchWithTimeout(url);
     if (res.ok) {
       console.log(`✅ Backend reachable via proxy: ${url}`);
