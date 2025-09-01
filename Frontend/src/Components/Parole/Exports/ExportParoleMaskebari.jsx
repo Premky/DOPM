@@ -1,7 +1,7 @@
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 
 export const exportMaskebariCountToExcel = async ( filteredRecords, totals ) => {
+    const ExcelJS = await import( 'exceljs' );
+    const { saveAs } = await import( "file-saver" );
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet( "Parole Maskebari" );
 
@@ -28,12 +28,12 @@ export const exportMaskebariCountToExcel = async ( filteredRecords, totals ) => 
         { title: "कैफियत", colspan: 1 }
     ];
     let mainHeader = [];
-        main_headers.forEach(h=>{
-            mainHeader.push(h.title);
-            for(let i=1; i<h.colspan; i++) mainHeader.push(""); //adds banks cells
-        });
-    const mainHeaderRow=worksheet.addRow(mainHeader);
-    
+    main_headers.forEach( h => {
+        mainHeader.push( h.title );
+        for ( let i = 1; i < h.colspan; i++ ) mainHeader.push( "" ); //adds banks cells
+    } );
+    const mainHeaderRow = worksheet.addRow( mainHeader );
+
     //Row 2 (heaers description)
 
     // Row 3 (sub-headers: महिला, पुरुष, अन्य, जम्मा)
@@ -47,13 +47,13 @@ export const exportMaskebariCountToExcel = async ( filteredRecords, totals ) => 
         "महिला", "पुरुष", "अन्य", "जम्मा",
         "महिला", "पुरुष", "अन्य", "जम्मा",
         "महिला", "पुरुष", "अन्य", "जम्मा",
-        "", "", "", "", "", "", "", "", "", ""
+        "महिला", "पुरुष", "अन्य", "जम्मा",
     ];
     const subHeaderRow = worksheet.addRow( sub_headers );
 
     // 4. Set column widths to make text visible
     const columnWidths = [
-        5, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 25
+        5, 40, 20, 20, 20, 20, 20, 20, 20, 20, 20, 25
     ];
     for ( let i = 1; i <= columnWidths.length; i++ ) {
         worksheet.getColumn( i ).width = columnWidths[i - 1];
@@ -61,7 +61,6 @@ export const exportMaskebariCountToExcel = async ( filteredRecords, totals ) => 
     for ( let i = 13; i <= 38; i++ ) {
         worksheet.getColumn( i ).width = 12; // placeholder columns
     }
-
     // --- Totals row ---
     const totalsRow = [
         "कुल जम्मा", "",
@@ -150,34 +149,24 @@ export const exportMaskebariCountToExcel = async ( filteredRecords, totals ) => 
         ] );
     } );
 
-    worksheet.addRow( totalsRow );
+    // worksheet.addRow( totalsRow );
     // --- Footer for signatures ---
     worksheet.addRow( [] );
     worksheet.addRow( [] );
     worksheet.addRow( ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "कारागार प्रशासक"] );
 
     // --- Merge cells ---
-
-    let colIndex = 1; 
-    main_headers.forEach(h=>{
-        if(h.colspan>1){
-            const start = colIndex; 
-            const end = colIndex+h.colspan-1;
-            worksheet.mergeCells(mainHeaderRow.number, start, mainHeaderRow.number, end);
+    worksheet.mergeCells( 'A1:A2' );
+    worksheet.mergeCells( 'B1:B2' );
+    let colIndex = 1;
+    main_headers.forEach( h => {
+        if ( h.colspan > 1 ) {
+            const start = colIndex;
+            const end = colIndex + h.colspan - 1;
+            worksheet.mergeCells( mainHeaderRow.number, start, mainHeaderRow.number, end );
         }
         colIndex += h.colspan;
-    });
-
-    // worksheet.mergeCells( `C${ mainHeaderRow.number }:F${ mainHeaderRow.number }` ); // प्यारोल बोर्डबाट प्यारोलमा राख्न सिफारिस
-    // worksheet.mergeCells( `G${ mainHeaderRow.number }:J${ mainHeaderRow.number }` ); // हाल सम्म प्यारोलमा रहेका
-    // worksheet.mergeCells( `K${ mainHeaderRow.number }:N${ mainHeaderRow.number }` ); // अदालतबाट प्यारोलमा नराख्ने
-    // worksheet.mergeCells( `O${ mainHeaderRow.number }:R${ mainHeaderRow.number }` ); // कैद भुक्तान
-    // worksheet.mergeCells( `S${ mainHeaderRow.number }:V${ mainHeaderRow.number }` ); // हाल प्यारोलमा रहेका जम्मा
-    // worksheet.mergeCells( `W${ mainHeaderRow.number }:Z${ mainHeaderRow.number }` ); // अन्य जिल्लाबाट
-    // worksheet.mergeCells( `AA${ mainHeaderRow.number }:AD${ mainHeaderRow.number }` ); // अन्य जिल्लामा गएका
-    // worksheet.mergeCells( `AE${ mainHeaderRow.number }:AH${ mainHeaderRow.number }` ); // शर्त पालना नगर्ने
-    // worksheet.mergeCells( `AI${ mainHeaderRow.number }:AL${ mainHeaderRow.number }` ); // शर्त पालना गर्ने
-
+    } );
 
     // --- Style header cells ---
     worksheet.getRow( 1 ).eachCell( ( cell ) => {
@@ -188,8 +177,7 @@ export const exportMaskebariCountToExcel = async ( filteredRecords, totals ) => 
         cell.alignment = { vertical: "middle", horizontal: "center" };
         cell.font = { bold: true };
     } );
-
-
+    
     // --- Export ---
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs( new Blob( [buffer] ), "payrole_maskebari.xlsx" );
