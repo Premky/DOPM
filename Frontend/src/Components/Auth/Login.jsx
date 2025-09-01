@@ -40,7 +40,7 @@ const Login = () => {
                 // dispatch( { type: "LOGIN", payload:{ ...response.data, justLoggedIn:true }} )                
 
                 if ( response.data.must_change_password === 1 ) {
-                    console.log( "Opening reset dialog" );
+                    // console.log( "Opening reset dialog" );
                     setResetPasswordOpen( true );
                 } else {
                     Swal.fire( {
@@ -50,7 +50,11 @@ const Login = () => {
                             Swal.showLoading();
                         },
                     } );
-                    Swal.fire( { title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false } );
+                    Swal.fire( { title: "Login Success", text: "Redirecting to Home", icon: "success", timer: 1000, showConfirmButton: false } ).then(
+                        ()=>{
+                            navigate('/bandi')
+                        }
+                    );
                 }
             } else {
                 Swal.fire( { title: "Login Failed", text: response.data.error, icon: "error" } );
