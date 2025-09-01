@@ -19,7 +19,6 @@ const BandiMaskebari = lazy( () => import( './Components/Bandi/Reports/BandiMask
 const AllBandiTable = lazy( () => import( './Components/Bandi/Tables/AllBandiTable' ) );
 const BandiPersonForm = lazy( () => import( './Components/Bandi/Forms/BandiPersonForm' ) );
 const BandiReleaseForm = lazy( () => import( './Components/Bandi/Forms/BandiReleaseForm' ) );
-// const BandiFamilyForm = lazy(() => import('./Components/Bandi/Forms/BandiFamilyForm'));
 const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
 const PayroleMakebari = lazy( () => import( './Components/Parole/Tables/PayroleMakebari' ) );

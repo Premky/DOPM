@@ -9,11 +9,11 @@ import { useAuth } from '../../../Context/AuthContext';
 import { exportToExcel } from '../Exports/ExcelMaskebariCount';
 import NepaliDate from 'nepali-datetime';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
-import { Helmet } from 'react-helmet';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
-    const office_np = authState.office_np    
+    const office_np = authState.office_np;
     const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
     const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
     const fy_date = fy + '-04-01';
@@ -40,7 +40,7 @@ const KaragarMaskebari = () => {
     const to_year = validEndDate.split( "-" )[0];
     const to_month_index = parseInt( validEndDate.split( "-" )[1], 10 ) - 1; // months are 0-indexed
     const monthName = monthNamesNp[to_month_index];
-    console.log(to_month_index)
+    // console.log( to_month_index );
     const {
         records: muddawiseCount,
         muddawisetotal,
@@ -116,12 +116,14 @@ const KaragarMaskebari = () => {
 
     return (
         <div>
-            <Helmet>
-                <title>PMIS: कारागार मस्केबारी रिपोर्ट</title>
-                <meta name="description" content="कारागार मस्केबारी सम्बन्धि रिपोर्ट हेर्नुहोस्" />
-                <meta name="keywords" content="कारागार, मस्केबारी, रिपोर्ट, बन्दी, बन्दी संख्या, बन्दी विवरण" />
-                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
-            </Helmet>
+            <HelmetProvider>
+                <Helmet>
+                    <title>PMIS: कारागार मस्केबारी रिपोर्ट</title>
+                    <meta name="description" content="कारागार मस्केबारी सम्बन्धि रिपोर्ट हेर्नुहोस्" />
+                    <meta name="keywords" content="कारागार, मस्केबारी, रिपोर्ट, बन्दी, बन्दी संख्या, बन्दी विवरण" />
+                    <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+                </Helmet>
+            </HelmetProvider>
             <Grid container >
                 <Box sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>

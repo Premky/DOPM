@@ -144,7 +144,7 @@ export const finalReleaseDateWithFine = ( thuna_date_bs, release_date_bs, fineAm
   const { years: fineYears, months: fineMonths, days: fineDays } = fineToDays( fineAmount, dailyFineRate );
 
   const { totalDays } = calculateBSDate( thuna_date_bs, release_date_bs, null, fineYears, fineMonths, fineDays );
-  console.log('totalDays', totalDays);
+  // console.log('totalDays', totalDays);
   return totalDays || 0;
 };
 

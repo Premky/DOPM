@@ -6,7 +6,7 @@ import { Box, Button } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Grid } from '@mui/material';
 import NepaliDate from 'nepali-datetime';
-import { Helmet } from 'react-helmet';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 import { calculateAge } from '../../../../Utils/ageCalculator';
 import { calculateBSDate, sumDates } from '../../../../Utils/dateCalculator';
@@ -301,9 +301,11 @@ const BandiPersonForm = () => {
 
   return (
     <>
-      <Helmet>
-        <title>PMIS: बन्दी विवरण फारम</title>
-      </Helmet>
+      <HelmetProvider>
+        <Helmet>
+          <title>PMIS: बन्दी विवरण फारम</title>
+        </Helmet>
+      </HelmetProvider>
       <form onSubmit={handleSubmit( onSubmit )}>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }} sx={formHeadStyle}>

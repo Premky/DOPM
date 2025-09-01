@@ -13,7 +13,8 @@ import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice.jsx
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect.jsx';
 import { useBaseURL } from '../../../Context/BaseURLProvider.jsx';
 import { useAuth } from '../../../Context/AuthContext.jsx';
-import { Helmet } from 'react-helmet';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { exportMaskebariCountToExcel } from '../Exports/ExportParoleMaskebari.jsx';
 
 const PayroleMakebari = () => {
     const BASE_URL = useBaseURL();
@@ -164,12 +165,14 @@ const PayroleMakebari = () => {
 
     return (
         <>
+        <HelmetProvider>
             <Helmet>
                 <title>PMIS: प्यारोल मस्केबारी रिपोर्ट</title>
                 <meta name="description" content="प्यारोल मस्केबारी सम्बन्धि रिपोर्ट हेर्नुहोस्" />
                 <meta name="keywords" content="प्यारोल, मस्केबारी, रिपोर्ट, बन्दी, बन्दी संख्या, बन्दी विवरण" />
                 <meta name="author" content="कारागार व्यवस्थापन विभाग" />
             </Helmet>
+        </HelmetProvider>
             <Box>
                 <Button onClick={() => {
                     setSelectedData( null );

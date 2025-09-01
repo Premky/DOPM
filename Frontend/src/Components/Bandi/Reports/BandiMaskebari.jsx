@@ -4,7 +4,7 @@ import {useDebounce} from 'use-debounce';
 import TotalGenderWiseCount from '../Tables/ForMaskebari/TotalGenderWiseCount';
 import TotalCountOfficeWise from '../Tables/ForMaskebari/TotalCountOfficeWise';
 
-import { MaskebariExport } from '../Exports/ExcelMaskebariCount';
+// import { MaskebariExport } from '../Exports/ExcelMaskebariCount';
 import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import { useForm } from 'react-hook-form';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';

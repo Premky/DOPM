@@ -16,7 +16,7 @@ const ReuseCountry = React.lazy( () => import( '../../ReuseableComponents/ReuseC
 const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
-import { Helmet } from 'react-helmet';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
 const AllBandiTable = () => {
@@ -270,10 +270,12 @@ const AllBandiTable = () => {
 
     return (
         <>
-        <Helmet>
-                <title>PMIS: बन्दीहरुको सूची</title>
-                <meta name="description" content="बन्दीहरुको सूची हेर्नुहोस् र व्यवस्थापन गर्नुहोस्" />
-        </Helmet>
+            <HelmetProvider>
+                <Helmet>
+                    <title>PMIS: बन्दीहरुको सूची</title>
+                    <meta name="description" content="बन्दीहरुको सूची हेर्नुहोस् र व्यवस्थापन गर्नुहोस्" />                    
+                </Helmet>
+            </HelmetProvider>
 
             <Box sx={{ p: 2 }}>
                 <Grid container spacing={2}>
@@ -308,7 +310,7 @@ const AllBandiTable = () => {
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseCountry
-                            name="country"                            
+                            name="country"
                             label='देश'
                             control={control}
                             currentOfficeId={authState.office_id}
