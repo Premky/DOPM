@@ -2828,7 +2828,6 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         endDate = today_date_bs;
         endDate = await bs2ad( today_date_bs );
     }
-
     // Office filter
     let officeFilter = '';
     if ( active_office !== 1 && active_office !== 2 ) {
@@ -2838,7 +2837,6 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         officeFilter = 'AND bp.current_office_id = ?';
         params.push( parseInt( office_id, 10 ) );
     }
-
     // Age filter
     let ageFilter = '';
     if ( ageFrom && ageTo ) {
@@ -2893,10 +2891,10 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         FROM bandi_release_details
         GROUP BY bandi_id
       ) brd ON brd.bandi_id = bp.id
-      WHERE bp.is_active=1
-        AND bp.is_under_payrole != 1
-        AND (bkd.thuna_date_ad >= ?)
-        AND (brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)
+      WHERE bp.is_under_payrole != 1
+        AND bp.is_active=1
+        AND (bkd.thuna_date_bs >= ?)
+        AND (brd.karnayan_miti_bs IS NULL OR brd.karnayan_miti >= ?)
         ${ officeFilter }
         ${ ageFilter }
       GROUP BY bp.current_office_id, nc.id, nc.country_name_np

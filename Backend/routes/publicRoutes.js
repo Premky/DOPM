@@ -321,7 +321,7 @@ router.get( '/get_countries_ac_to_office', verifyToken, async ( req, res ) => {
                 GROUP BY nc.id
                 ORDER BY nc.id`;
     try {
-        const [result] = await pool.query( sql );
+        const [result] = await pool.query( sql, params );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );

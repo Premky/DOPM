@@ -1,5 +1,8 @@
 const HEALTH_CHECK_PATH = "/auth/health";
-const BASE_API_PATH = "/api"; // relative path for proxy
+// const BASE_API_PATH = "/api"; // relative path for proxy
+const BASE_API_PATH = import.meta.env.MODE==="development"
+                    ? "http://localhost:3003" //backend port in development
+                    : "/api";  //relative proxy path in production
 
 const fetchWithTimeout = (url, options = {}, timeout = 3000) => {
   const controller = new AbortController();

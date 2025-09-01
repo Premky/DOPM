@@ -57,6 +57,7 @@ const hardOrigins1 = [
 ];
 
 const hardOrigins = [
+  'http://127.0.0.1:3003', 'http://127.0.0.1:5173',
   'http://localhost:3003', 'http://localhost:5173',
   'http://pmis.dopm.gov.np', 'https://pmis.dopm.gov.np',
   'http://202.45.146.226', 'http://202.45.146.226:5173',
@@ -68,27 +69,35 @@ const hardOrigins = [
 // const allowedOrigins = process.env.ALLOWED_ORIGINS?.split( ',' ) || hardOrigins;
 const allowedOrigins = hardOrigins;
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow server-to-server
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+app.use( cors( {
+  origin: ( origin, callback ) => {
+    if ( !origin ) return callback( null, true ); // allow server-to-server
+    if ( allowedOrigins.includes( origin ) ) {
+      return callback( null, true );
     }
-    return callback(new Error("Not allowed by CORS: " + origin));
+    return callback( new Error( "Not allowed by CORS: " + origin ) );
   },
   credentials: true
-}));
+} ) );
 
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    console.log("CORS headers sent:", {
-      origin: req.headers.origin,
-      "Access-Control-Allow-Origin": res.getHeader("Access-Control-Allow-Origin"),
-      "Access-Control-Allow-Credentials": res.getHeader("Access-Control-Allow-Credentials")
-    });
-  });
-  next();
-});
+// CORS logging middleware (dev only)
+if ( process.env.NODE_ENV !== 'production' ) {
+  app.use( ( req, res, next ) => {
+    res.on( 'finish', () => {
+      const corsOrigin = res.getHeader( "Access-Control-Allow-Origin" );
+      const corsCreds = res.getHeader( "Access-Control-Allow-Credentials" );
+      if ( corsOrigin || corsCreds ) {
+        console.log( "CORS headers sent:", {
+          origin: req.headers.origin,
+          "Access-Control-Allow-Origin": corsOrigin,
+          "Access-Control-Allow-Credentials": corsCreds
+        } );
+      }
+    } );
+    next();
+  } );
+}
+
 
 // ------------------- 3️⃣ Security Headers -------------------
 // HSTS: enforce HTTPS
@@ -133,7 +142,7 @@ if ( process.env.NODE_ENV !== 'production' ) {
 // ------------------- 6️⃣ Session -------------------
 const MySQLStore = connectMySQL( session );
 const sessionStore = new MySQLStore( {
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || '127.0.0.1',
   ...( process.env.DB_PORT && { port: Number( process.env.DB_PORT ) } ),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -142,6 +151,9 @@ const sessionStore = new MySQLStore( {
   checkExpirationInterval: 900000, // 15 min
   expiration: 86400000 // 1 day
 } );
+
+// Detect environment
+const isProd = process.env.NODE_ENV === 'production';
 
 app.use( session( {
   secret: process.env.SESSION_SECRET,
@@ -153,9 +165,10 @@ app.use( session( {
   unset: 'destroy',
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000
+    secure: isProd,                          // ✅ HTTPS only in prod
+    sameSite: isProd ? 'none' : 'lax',       // ✅ Allow cross-site only in prod
+    maxAge: 24 * 60 * 60 * 1000,
+    // domain: isProd ? '.dopm.gov.np' : undefined // ✅ prod: allow subdomains, dev: auto
   }
 } ) );
 
@@ -178,10 +191,17 @@ app.use( errorHandler );
 // ------------------- 🔟 Server Start -------------------
 // app.listen( port, () => console.log( `🚀 Server running on port ${ port }` ) );
 const PORT = process.env.PORT || 3003;
-app.listen(PORT, '127.0.0.1', () =>
-  console.log(`🚀 Backend running on http://127.0.0.1:${PORT}`)
-);
-
+if ( isProd ) {
+  // ✅ Production: bind to all interfaces (for reverse proxy / nginx)
+  app.listen( PORT, () => {
+    console.log( `🚀 Backend running on https://pmis.dopm.gov.np (port ${ PORT })` );
+  } );
+} else {
+  // ✅ Development: bind to localhost
+  app.listen( PORT, 'localhost', () => {
+    console.log( `🚀 Backend running on http://localhost:${ PORT }` );
+  } );
+}
 
 // ------------------- 1️⃣1️⃣ Graceful Shutdown -------------------
 process.on( 'SIGINT', async () => {
