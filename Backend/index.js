@@ -159,7 +159,7 @@ app.use( session( {
     secure: isProd,                          // ✅ HTTPS only in prod
     sameSite: isProd ? 'none' : 'lax',       // ✅ Allow cross-site only in prod
     // domain: isProd ? '.dopm.gov.np' : undefined,  // ✅ prod: allow subdomains, dev: auto
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 24 * 60 * 60 * 1000
   }
 } ) );
 
