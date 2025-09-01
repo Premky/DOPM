@@ -158,7 +158,7 @@ app.use( session( {
     httpOnly: true,
     secure: isProd,                          // ✅ HTTPS only in prod
     sameSite: isProd ? 'none' : 'lax',       // ✅ Allow cross-site only in prod
-    domain: isProd ? '.dopm.gov.np' : undefined,  // ✅ prod: allow subdomains, dev: auto
+    // domain: isProd ? '.dopm.gov.np' : undefined,  // ✅ prod: allow subdomains, dev: auto
     maxAge: 24 * 60 * 60 * 1000,
   }
 } ) );
@@ -184,7 +184,7 @@ app.use( errorHandler );
 const PORT = process.env.PORT || 3003;
 if ( isProd ) {
   // ✅ Production: bind to all interfaces (for reverse proxy / nginx)
-  app.listen( PORT, () => {
+  app.listen( PORT, '0.0.0.0', () => {
     console.log( `🚀 Backend running on https://pmis.dopm.gov.np (port ${ PORT })` );
   } );
 } else {
