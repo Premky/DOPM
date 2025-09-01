@@ -182,17 +182,17 @@ app.use( errorHandler );
 // ------------------- 🔟 Server Start -------------------
 // app.listen( port, () => console.log( `🚀 Server running on port ${ port }` ) );
 const PORT = process.env.PORT || 3003;
-if ( isProd ) {
-  // ✅ Production: bind to all interfaces (for reverse proxy / nginx)
-  app.listen( PORT, '0.0.0.0', () => {
-    console.log( `🚀 Backend running on https://pmis.dopm.gov.np (port ${ PORT })` );
-  } );
+
+if (isProd) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Backend running on https://pmis.dopm.gov.np:${PORT}`);
+  });
 } else {
-  // ✅ Development: bind to localhost
-  app.listen( PORT, 'localhost', () => {
-    console.log( `🚀 Backend running on http://localhost:${ PORT }` );
-  } );
+  app.listen(PORT, 'localhost', () => {
+    console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  });
 }
+
 
 // ------------------- 1️⃣1️⃣ Graceful Shutdown -------------------
 process.on( 'SIGINT', async () => {
