@@ -47,15 +47,6 @@ const loginLimiter = rateLimit( {
 // app.use("/auth/login", loginLimiter);
 
 // ------------------- 2️⃣ CORS -------------------
-
-const hardOrigins1 = [
-  'http://localhost:3003', 'http://localhost:5173',
-  'http://pmis.dopm.gov.np', 'https://pmis.dopm.gov.np',
-  'http://202.45.146.226', 'http://202.45.146.226:5173',
-  'http://10.5.60.151', 'http://10.5.60.151:5173',
-  'http://192.168.18.211:5173', 'http://192.168.18.17:5173'
-];
-
 const hardOrigins = [
   'http://127.0.0.1:3003', 'http://127.0.0.1:5173',
   'http://localhost:3003', 'http://localhost:5173',
