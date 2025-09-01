@@ -146,6 +146,9 @@ const sessionStore = new MySQLStore( {
 // Detect environment
 const isProd = process.env.NODE_ENV === 'production';
 
+// IMPORTANT: trust proxy if behind Nginx/HTTPS
+if (isProd) app.set('trust proxy', 1);
+
 app.use( session( {
   secret: process.env.SESSION_SECRET,
   name: 'dopm_app',
@@ -158,7 +161,7 @@ app.use( session( {
     httpOnly: true,
     secure: isProd,                          // ✅ HTTPS only in prod
     sameSite: isProd ? 'none' : 'lax',       // ✅ Allow cross-site only in prod
-    // domain: isProd ? '.dopm.gov.np' : undefined,  // ✅ prod: allow subdomains, dev: auto
+    domain: process.env.NODE_ENV === 'production' ? '.dopm.gov.np' : 'localhost',  // ✅ prod: allow subdomains, dev: auto
     maxAge: 24 * 60 * 60 * 1000
   }
 } ) );

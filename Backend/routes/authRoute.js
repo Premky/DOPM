@@ -302,7 +302,7 @@ router.post('/login_ping', verifyToken, async (req, res) => {
 });
 
 // Session Validation
-router.get('/session', async(req, res) => {
+router.get('/session', verifyToken, async(req, res) => {
   res.json({ loggedIn: true, user: req.user });
 });
 
