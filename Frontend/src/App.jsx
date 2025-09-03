@@ -111,7 +111,7 @@ function App() {
                   <Route path='details/:caseName/:type' element={<AllBandiTable />} />
                 </Route>
                 {/* Payrole Routes */}
-                <Route path="payrole" element={<OutletLayout />}>
+                <Route path="parole" element={<OutletLayout />}>
                   <Route index element={<PayroleMakebari />} />
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                   <Route path="create_previous_parole" element={<PreviousParoleForm status='under_parole' />} />
@@ -123,6 +123,7 @@ function App() {
                   <Route path="payrole_table" element={<PayroleTable />} />
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
                   <Route path="payrole_log" element={<ParoleLogForm />} />
+                  <Route path="parole_settings" element={<ParoleLogForm />} />
                 </Route>
 
                 {/* Kaamdari Subidha Routes */}

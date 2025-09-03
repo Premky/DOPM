@@ -50,17 +50,18 @@ const CombinedNav = ( { user } ) => {
     },
     {
       name: 'प्यारोल',
-      defaultPath: '/payrole',
+      defaultPath: '/parole',
       submenu: [
         // { name: 'प्यारोल थप(पुरानोको हकमा)', path: '/payrole/create_previous_payrole' },
-        { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/payrole/create_payrole' },
-        { name: 'प्यारोल विवरण', path: '/payrole/payrole_user_check' },
-        { name: 'प्यारोल रुजु(कार्यालय)', path: '/payrole/payrole_client_check' },
-        { name: 'प्यारोल रुजु', path: '/payrole/payrole_jr_check' },
-        { name: 'प्यारोल पेश', path: '/payrole/payrole_client_pesh' },
-        { name: 'प्यारोल विवरण', path: '/payrole/payrole_table' },
-        { name: 'पुरानो प्यारोल', path: '/payrole/create_previous_parole' },
-        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/payrole/payrole_log' },
+        { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/parole/parole_settings' },
+        { name: 'प्यारोलका लागी सिफारिस(नयाँ)', path: '/parole/create_payrole' },
+        { name: 'प्यारोल विवरण', path: '/parole/payrole_user_check' },
+        { name: 'प्यारोल रुजु(कार्यालय)', path: '/parole/payrole_client_check' },
+        { name: 'प्यारोल रुजु', path: '/parole/payrole_jr_check' },
+        { name: 'प्यारोल पेश', path: '/parole/payrole_client_pesh' },
+        { name: 'प्यारोल विवरण', path: '/parole/payrole_table' },
+        { name: 'पुरानो प्यारोल', path: '/parole/create_previous_parole' },
+        { name: 'प्यारोल अनुगमन मुल्याङकन फारम', path: '/parole/payrole_log' },
         // { name: 'पुरानो (स्विकृत)', path: '/payrole/accept_previous_parole' },
         // { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
       ]

@@ -1,30 +1,31 @@
 export const menuAccess = {
-  payrole: {
+  parole: {
     clerk: [
-      '/payrole/create_payrole',
-      '/payrole/payrole_user_check',
-      '/payrole/create_previous_parole',
-      '/payrole/payrole_log',
+      '/parole/create_payrole',
+      '/parole/payrole_user_check',
+      '/parole/create_previous_parole',
+      '/parole/payrole_log',
     ],
     office_admin: [
-      '/payrole/create_payrole',
-      '/payrole/payrole_client_check',
-      '/payrole/create_previous_parole',
-      '/payrole/payrole_log',
+      '/parole/create_payrole',
+      '/parole/payrole_client_check',
+      '/parole/create_previous_parole',
+      '/parole/payrole_log',
     ],
     supervisor: [
-      '/payrole/payrole_jr_check',
-      '/payrole/create_previous_parole',
-      '/payrole/payrole_log',
+      '/parole/parole_settings',
+      '/parole/payrole_jr_check',
+      '/parole/create_previous_parole',
+      '/parole/payrole_log',
     ],
     top_level: [
-      '/payrole/create_payrole',
-      '/payrole/payrole_user_check',
-      '/payrole/create_previous_parole',
-      '/payrole/payrole_log',
+      '/parole/create_payrole',
+      '/parole/payrole_user_check',
+      '/parole/create_previous_parole',
+      '/parole/payrole_log',
     ],
     headoffice_approver: [
-      '/payrole/payrole_client_pesh',
+      '/parole/payrole_client_pesh',
     ],
     branch_superadmin: 'all',
     office_superadmin: 'all',
