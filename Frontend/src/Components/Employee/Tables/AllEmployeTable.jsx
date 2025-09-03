@@ -208,7 +208,7 @@ const AllEmployeTable = ( { status } ) => {
                                             <TableCell sx={{ backgroundColor: rowStyle }}> {data?.working_count} </TableCell>
                                             <TableCell sx={{ backgroundColor: rowStyle }}> {data?.rikt} </TableCell>                                             
                                             <TableCell sx={{ backgroundColor: rowStyle }}> {data?.last_jd_entry?.is_office_chief} </TableCell>                                            
-                                        </TableRow>                                        
+                                        </TableRow>    
                                     </Fragment>
                                 );
                             } )}

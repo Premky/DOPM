@@ -27,8 +27,8 @@ export default function PayroleCharacterDocx( props ) {
 
 
     const generateDocument = async () => {
-        const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } = await import("docx");
         const { saveAs } = await import("file-saver");
+        const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } = await import("docx");
         const headerRow = new TableRow( {
             children: [
                 "सि.नं.",
@@ -67,6 +67,8 @@ export default function PayroleCharacterDocx( props ) {
             totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
             totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
         }
+
+        
         const dataRows = data.muddas.map( ( item, index ) => {
             return new TableRow( {
                 children: [
@@ -91,6 +93,8 @@ export default function PayroleCharacterDocx( props ) {
                 ),
             } );
         } );
+
+
         const numbering = {
             config: [
                 {

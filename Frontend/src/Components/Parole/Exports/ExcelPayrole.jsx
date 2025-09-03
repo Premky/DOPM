@@ -202,7 +202,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         manualWidth2Cols.forEach( ( colIndex ) => {
             worksheet.getColumn( colIndex ).width = 21; // Set width for specific columns
         } );
-        worksheet.getColumn(17).width=27;
+        worksheet.getColumn(11).width=27;
+        worksheet.getColumn(17).width=51;
         const manualWidth3Cols = [8, 12, 13, 14, 15, 16];
         manualWidth3Cols.forEach( ( colIndex ) => {
             worksheet.getColumn( colIndex ).width = 15; // Set width for specific columns
