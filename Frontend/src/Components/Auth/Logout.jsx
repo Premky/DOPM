@@ -17,6 +17,9 @@ const Logout = () => {
 
             // Clear authentication state
             dispatch({ type: 'LOGOUT' });
+            localStorage.clear();
+            sessionStorage.clear();
+            
 
             Swal.fire({
                 title: 'Logged Out',
