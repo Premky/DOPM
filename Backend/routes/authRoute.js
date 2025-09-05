@@ -259,7 +259,14 @@ router.post( '/logout', verifyToken, async ( req, res ) => {
   try {
     await pool.query( "UPDATE users SET is_online=0 WHERE id=?", [user_id] );
 
-    res.clearCookie( 'token', { httpOnly: true, sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' } );
+    // res.clearCookie( 'token', { httpOnly: true, sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' } );
+
+    res.clearCookie( 'token', {
+      httpOnly: true,
+      sameSite: isProd ? 'None' : 'Lax',
+      secure: isProd,
+      domain: isProd ? '.dopm.gov.np' : 'localhost'
+    } );
 
     const destroyAsync = promisify( req.session.destroy ).bind( req.session );
     await destroyAsync();
