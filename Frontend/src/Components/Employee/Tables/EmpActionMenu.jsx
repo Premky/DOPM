@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MenuItem, Button } from "@mui/material";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { useAuth } from "../../../Context/AuthContext";
-import ForwardToKapraDialog from "../Dialogs/ForwardToKapraDialog";
+// import ForwardToKapraDialog from "../Dialogs/ForwardToKapraDialog";
 import Swal from "sweetalert2";
 import axios from "axios";
 
@@ -94,13 +94,13 @@ const EmpActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchAll }
 
   return (
     <>
-      <ForwardToKapraDialog
+      {/* <ForwardToKapraDialog
         open={forwardModalOpen}
         onClose={() => setForwardModalOpen( false )}
         onSave={handleForwardSave}
         editingData={data}
-      />
-      <ForwardDialog4Bibhag
+      /> */}
+      {/* <ForwardDialog4Bibhag
         open={forwardModalOpen4dopm}
         onClose={() => setForwardModalOpen4dopm( false )}
         onSave={handleForwardSave}
@@ -112,7 +112,7 @@ const EmpActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchAll }
         onClose={() => setApprovalModalOpen( false )}
         onSave={handleApprovalSave}
         data={data}
-      />
+      /> */}
       {/* <Paro
         oldStatus={oldStatus}
         open={approvalModalOpen}
@@ -132,10 +132,10 @@ const EmpActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchAll }
 
       {
         authState.role_id <= 2 && ( <>
-          <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
+          {/* <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
           <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
           <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleCharacterDocx data={data} /> </MenuItem>
+          <MenuItem><PayroleCharacterDocx data={data} /> </MenuItem> */}
         </> )
 
       }
