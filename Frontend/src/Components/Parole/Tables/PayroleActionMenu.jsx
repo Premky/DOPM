@@ -127,7 +127,7 @@ const PayroleActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchA
         data={data}
       /> */}
       <a
-        href={`/payrole/view_saved_record/${ data?.bandi_id }`}
+        href={`/parole/view_saved_record/${ data?.bandi_id }`}
         target="_blank"
         rel="noopener noreferrer"
         style={{ textDecoration: "none", color: "inherit" }}
