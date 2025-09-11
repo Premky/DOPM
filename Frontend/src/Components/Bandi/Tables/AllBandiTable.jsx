@@ -271,7 +271,7 @@ const AllBandiTable = () => {
                             name="searchOffice"
                             label="Office"
                             control={control}
-                            disabled={authState.office_id >= 3}
+                            // disabled={authState.office_id >= 3}
                         />
                     </Grid>
 
