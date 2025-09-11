@@ -825,7 +825,9 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.vadi,
                 bmd_combined.mudda_phesala_antim_office_date,
                 bmd_combined.mudda_group_id,
-                bmd_combined.mudda_group_name
+                bmd_combined.mudda_group_name,
+                bicd.card_no,
+                git.govt_id_name_np
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
