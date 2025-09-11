@@ -806,7 +806,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bp.is_under_facility,
                 bp.gender,
                 bp.dob_ad,
-                bp.dob_bs,
+                bp.dob,
                 TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
                 ba.wardno,
                 ba.bidesh_nagarik_address_details,
