@@ -259,7 +259,7 @@ const { state: authState } = useAuth();
 
                                     {muddaIndex === 0 && (
                                         <TableCell rowSpan={rowSpan} align="center">                                                
-                                            {( bandi.current_office_id != authState.office_id ) && (
+                                            {( bandi.current_office_id == authState.office_id ) && (
                                                 ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
                                                     <a
                                                         href={`/bandi/view_saved_record/${ bandi.id }`}
@@ -267,7 +267,7 @@ const { state: authState } = useAuth();
                                                         rel="noopener noreferrer"
                                                         style={{ textDecoration: "none", color: "inherit" }}
                                                     >
-                                                        <Button variant="outlined" size="small" color="primary">VIEW {bandi.current_office_id}, {authState.office_id}</Button>
+                                                        <Button variant="outlined" size="small" color="primary">VIEW</Button>
                                                     </a>
                                                 )
                                             )}
