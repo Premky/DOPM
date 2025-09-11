@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Paper, Button, Box, TextField, TablePagination,
@@ -7,6 +7,7 @@ import {
 
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
+import { useAuth } from '../../../Context/AuthContext';
 
 const ReusableBandiTable = ( {
     rows = [],
@@ -38,7 +39,7 @@ const ReusableBandiTable = ( {
         } ) );
     }, [rows] );
 
-
+    const { state: authState } = useAuth();
     const filteredRows = useMemo( () => {
         if ( !filterText ) return rowsWithComputed;
         return rowsWithComputed.filter( bandi =>
@@ -88,13 +89,13 @@ const ReusableBandiTable = ( {
     };
 
     const handleExport = async () => {
-        const ExcelJS= await import('exceljs');
+        const ExcelJS = await import( 'exceljs' );
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
         const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
-        worksheet.addRow( ['सि.नं.', ...bandiHeaders,'देश','जन्म मिति(ई.सं.)','जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+        worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
 
         let excelRowIndex = 2;
         filteredRows.forEach( ( bandi, bandiIndex ) => {
@@ -151,7 +152,7 @@ const ReusableBandiTable = ( {
             row.eachCell( cell => {
                 cell.font = { name: 'Kalimati', size: 12 }; // Set font for each cell     
                 cell.alignment = {
-                    wrapText: true,                    
+                    wrapText: true,
                     vertical: 'middle',
                     horizontal: 'center'
                 };
@@ -258,15 +259,18 @@ const ReusableBandiTable = ( {
 
                                     {muddaIndex === 0 && (
                                         <TableCell rowSpan={rowSpan} align="center">
-                                            {( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
-                                                <a
-                                                    href={`/bandi/view_saved_record/${ bandi.id }`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    style={{ textDecoration: "none", color: "inherit" }}
-                                                >
-                                                    <Button variant="outlined" size="small" color="primary">VIEW</Button>
-                                                </a>
+
+                                            {( bandi.current_office_id != authState.office_id ) && (
+                                                ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
+                                                    <a
+                                                        href={`/bandi/view_saved_record/${ bandi.id }`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ textDecoration: "none", color: "inherit" }}
+                                                    >
+                                                        <Button variant="outlined" size="small" color="primary">VIEW</Button>
+                                                    </a>
+                                                )
                                             )}
 
 
