@@ -94,7 +94,7 @@ const ReusableBandiTable = ( {
         const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
-        worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+        worksheet.addRow( ['सि.नं.', ...bandiHeaders,'देश', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
 
         let excelRowIndex = 2;
         filteredRows.forEach( ( bandi, bandiIndex ) => {
@@ -114,6 +114,7 @@ const ReusableBandiTable = ( {
                         }
                         return idx === 0 ? bandi[col.field] || '' : '';
                     } ),
+                    bandi.country_name_np || '',
                     mudda?.mudda_name || '',
                     mudda?.vadi || '0',
                     mudda?.mudda_phesala_antim_office || '',
