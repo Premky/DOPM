@@ -116,7 +116,7 @@ const ReusableBandiTable = ( {
                     } ),
                     bandi.country_name_np || '',
                     bandi.dob_ad || '',
-                    bandi.dob_bs || '',
+                    bandi.dob || '',
                     mudda?.mudda_name || '',
                     mudda?.vadi || '0',
                     mudda?.mudda_phesala_antim_office || '',
