@@ -144,21 +144,6 @@ const AllBandiTable = () => {
         setEditDialogOpen( true );
     };
 
-    const handleSave = async ( updatedData ) => {
-        try {
-            await axios.put(
-                `${ BASE_URL }/bandi/update_payrole/${ updatedData.payrole_id }`,
-                updatedData,
-                { withCredentials: true } // ✅ Fix: put this inside an object
-            );
-            fetchKaidi();
-            Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
-        } catch ( err ) {
-            console.error( err );
-            Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
-        }
-    };
-
     const handleDelete = async ( bandi ) => {
         const result = await Swal.fire( {
             title: `Delete ${ bandi.bandi_name }?`,
@@ -235,6 +220,8 @@ const AllBandiTable = () => {
                     "No Image"
                 ),
         },
+        { field: "govt_id_name_np", headerName: "परिचयपत्र प्रकार", width: 100 },
+        { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },
         { field: "current_age", headerName: "उमेर", width: 100 },
         { field: "gender", headerName: "लिङ्ग", width: 100 },
         { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },

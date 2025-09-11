@@ -834,6 +834,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
             LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
             LEFT JOIN offices oo ON bp.current_office_id = oo.id
+            LEFT JOIN bandi_id_card_details bicd ON bp.id=bicd.bandi_id
+            LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id
 
             -- Join total_jariwana_amount first
             LEFT JOIN (
