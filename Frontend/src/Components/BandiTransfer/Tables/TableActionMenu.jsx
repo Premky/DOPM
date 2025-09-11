@@ -11,18 +11,20 @@ import ApprovalDialog from "../Dialogs/ApprovalDialog";
 import axios from "axios";
 import TransferDialog from "../Dialogs/TransferDialog";
 import AcceptRejectTransferDialog from "../Dialogs/AcceptRejectTransferDialog";
+import ForwardApprovedDialog from "../Dialogs/ForwardApprovedDialog";
 
 const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
   const status = data?.payrole_status;
   const officeId = data?.current_office_id;
-  
+
 
   const [openForwardDialog, setOpenForwardDialog] = useState( false );
   const [openApprovalDialog, setOpenApprovalDialog] = useState( false );
   const [openTransferDialog, setOpenTransferDialog] = useState( false );
   const [acceptRejectDialog, setAcceptRejectDialog] = useState( false );
+  const [openApprovedForwardDialog, setApprovedOpenForwardDialog] = useState( false );
 
   const handleViewBandi = async () => {
     const { saveAs } = await import( "file-saver" );
@@ -32,20 +34,17 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   };
 
   const handleSave = async ( data ) => {
-    console.log( "Saving data:", data );
-    // console.log( "Saving data:" );
+    console.log( "Saving data:", data );    
     try {
       await axios.put(
         `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
         data,
         { withCredentials: true }
       );
-
       await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
       // ✅ Now close after user sees the alert
       setOpenForwardDialog( false );
       setOpenApprovalDialog( false );
-
     } catch ( err ) {
       console.error( err );
 
@@ -58,6 +57,31 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
       setOpenApprovalDialog( false );
     }
   };
+  const handleApprovedSave = async ( data ) => {
+    console.log( "Saving data:", data );    
+    try {
+      await axios.put(
+        `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
+        data,
+        { withCredentials: true }
+      );
+      await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
+      // ✅ Now close after user sees the alert
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    } catch ( err ) {
+      console.error( err );
+
+      await Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+      // Close even on error after alert
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    } finally {
+      setOpenForwardDialog( false );
+      setOpenApprovalDialog( false );
+    }
+  };
+
   const handleApprove = async ( data ) => {
     console.log( "Saving data:", data );
     // console.log( "Saving data:" );
@@ -72,7 +96,6 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
       // ✅ Now close after user sees the alert
       setOpenForwardDialog( false );
       setOpenApprovalDialog( false );
-
     } catch ( err ) {
       console.error( err );
 
@@ -124,6 +147,10 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
     setOpenForwardDialog( true );
     // onClose();
   };
+
+  const handleApprovedForward=()=>{
+    setOpenApprovalDialog(true);
+  }
 
   const handleApproval = () => {
     setOpenApprovalDialog( true );
@@ -178,6 +205,12 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
         editingData={data} // 👈 you probably want to pass editing data here    
         onSave={handleSave}
       />
+      <ForwardApprovedDialog
+        open={openApprovedForwardDialog}
+        onClose={() => setApprovedOpenForwardDialog( false )}
+        editingData={data}
+        onSave={handleApprovedSave}
+      />
       <ApprovalDialog
         open={openApprovalDialog}
         onClose={() => setOpenApprovalDialog( false )}
@@ -224,6 +257,9 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
               <>
                 <MenuItem onClick={handleForward}>
                   कार्यालय प्रमुखमा पेश गर्नुहोस्
+                </MenuItem>
+                <MenuItem onClick={handleApprovedForward}>
+                  विभागाबाट स्विकृत भएका सरुवा गर्नुहोस् 
                 </MenuItem>
               </>
             )
