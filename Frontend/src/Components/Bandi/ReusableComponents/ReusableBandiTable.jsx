@@ -39,7 +39,7 @@ const ReusableBandiTable = ( {
         } ) );
     }, [rows] );
 
-    const { state: authState } = useAuth();
+const { state: authState } = useAuth();
     const filteredRows = useMemo( () => {
         if ( !filterText ) return rowsWithComputed;
         return rowsWithComputed.filter( bandi =>
@@ -260,7 +260,7 @@ const ReusableBandiTable = ( {
                                     {muddaIndex === 0 && (
                                         <TableCell rowSpan={rowSpan} align="center">
 
-                                            {( bandi.current_office_id != authState.office_id ) && (
+                                            {( bandi.current_office_id != authState ) && (
                                                 ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
                                                     <a
                                                         href={`/bandi/view_saved_record/${ bandi.id }`}
