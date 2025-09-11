@@ -432,6 +432,23 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
                 new Date(),
                 id
             ];
+        } else if ( metadata.decision_date && metadata.letter_cn && metadata.letter_date ) {
+            sql = `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id = ?,decision_date=?, letter_cn=?, letter_date=?, remarks = ?, recommended_to_office_id=?, updated_by = ?, updated_at = ?
+                WHERE id = ?`;
+            values = [
+                to_role_id[0].id,
+                status_id[0].id,
+                metadata.decision_date,
+                metadata.letter_cn,
+                metadata.letter_date,
+                metadata.remarks,
+                metadata.recommended_to_office_id,
+                user_id,
+                new Date(),
+                id
+            ];
         } else if ( metadata.recommended_to_office_id && metadata.decision_date ) {
             sql = `
                 UPDATE bandi_transfer_history 

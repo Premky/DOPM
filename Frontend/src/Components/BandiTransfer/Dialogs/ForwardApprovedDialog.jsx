@@ -41,7 +41,7 @@ const ForwardApprovedDialog = ( { open, onClose, onSave, editingData } ) => {
     // console.log(editingData)
     useEffect( () => {
         if ( editingData ) {
-            // console.log( editingData );
+            console.log( editingData );
             reset( {
                 id: editingData.transfer_id || "", // ✅ Include this
                 transfer_id: editingData.transfer_id || "",

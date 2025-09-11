@@ -57,6 +57,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
       setOpenApprovalDialog( false );
     }
   };
+
   const handleApprovedSave = async ( data ) => {
     console.log( "Saving data:", data );    
     try {
@@ -114,42 +115,13 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
     // onClose();
   };
 
-
-  const handleAcceptRejectSave1 = async ( data ) => {
-    console.log( "Saving data:", data );
-    // console.log( "Saving data:" );
-    try {
-      await axios.put(
-        `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
-        data,
-        { withCredentials: true }
-      );
-
-      await Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
-      // ✅ Now close after user sees the alert
-      setOpenForwardDialog( false );
-      setOpenApprovalDialog( false );
-
-    } catch ( err ) {
-      console.error( err );
-
-      await Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
-      // Close even on error after alert
-      setOpenForwardDialog( false );
-      setOpenApprovalDialog( false );
-    } finally {
-      setOpenForwardDialog( false );
-      setOpenApprovalDialog( false );
-    }
-  };
-
   const handleForward = () => {
     setOpenForwardDialog( true );
     // onClose();
   };
 
   const handleApprovedForward=()=>{
-    setOpenApprovalDialog(true);
+    setApprovedOpenForwardDialog(true);
   }
 
   const handleApproval = () => {
