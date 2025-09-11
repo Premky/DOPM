@@ -200,7 +200,7 @@ const { state: authState } = useAuth();
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center">सि.नं.</TableCell>
+                            <TableCell align="center">सि.नं. </TableCell>
                             {/* <TableCell align="center">कारागार कार्यालय</TableCell> */}
                             {columns.map( col => (
                                 <TableCell key={col.field} align="center"
@@ -258,9 +258,8 @@ const { state: authState } = useAuth();
                                     <TableCell align="center">{( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )}</TableCell>
 
                                     {muddaIndex === 0 && (
-                                        <TableCell rowSpan={rowSpan} align="center">
-
-                                            {( bandi.current_office_id != authState ) && (
+                                        <TableCell rowSpan={rowSpan} align="center">                                                
+                                            {( bandi.current_office_id != authState.office_id ) && (
                                                 ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
                                                     <a
                                                         href={`/bandi/view_saved_record/${ bandi.id }`}
@@ -268,7 +267,7 @@ const { state: authState } = useAuth();
                                                         rel="noopener noreferrer"
                                                         style={{ textDecoration: "none", color: "inherit" }}
                                                     >
-                                                        <Button variant="outlined" size="small" color="primary">VIEW</Button>
+                                                        <Button variant="outlined" size="small" color="primary">VIEW {bandi.current_office_id}, {authState.office_id}</Button>
                                                     </a>
                                                 )
                                             )}

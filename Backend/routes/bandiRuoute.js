@@ -985,6 +985,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         params.push( bandi_type );
     }
 
+    // if ( search_name ) {
+    //     conditions.push( '(bp.bandi_name LIKE ? OR bp.office_bandi_id = ?)' );
+    //     params.push( `%${ search_name }%`, search_name );
+    // }
     if ( search_name ) {
         conditions.push( '(bp.bandi_name LIKE ? OR bp.office_bandi_id = ?)' );
         params.push( `%${ search_name }%`, search_name );
