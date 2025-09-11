@@ -688,7 +688,7 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
+router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
     const searchOffice = req.query.searchOffice || 0;
@@ -713,6 +713,244 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     } else if ( !( active_office == 1 || active_office == 2 ) ) {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( active_office );
+    }
+
+    if ( nationality ) {
+        conditions.push( 'bp.nationality = ?' );
+        params.push( nationality );
+    }
+
+    if ( country ) {
+        conditions.push( 'nc.id = ?' );
+        params.push( country );
+    }
+
+    if ( mudda_group_id ) {
+        conditions.push( `
+            bp.id IN (
+                SELECT bmd.bandi_id
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                WHERE m.muddas_group_id = ?
+            )
+        `);
+        params.push( mudda_group_id );
+    }
+
+    if ( gender ) {
+        conditions.push( 'bp.gender = ?' );
+        params.push( gender );
+    }
+
+    if ( bandi_type ) {
+        conditions.push( 'bp.bandi_type = ?' );
+        params.push( bandi_type );
+    }
+
+    if ( search_name ) {
+        conditions.push( '(bp.bandi_name LIKE ? OR bp.office_bandi_id = ?)' );
+        params.push( `%${ search_name }%`, search_name );
+    }
+
+    if ( is_dependent ) {
+        conditions.push( 'bri.is_dependent = ?' );
+        params.push( is_dependent );
+    }
+
+    conditions.push( 'bp.is_active = ?' );
+    params.push( is_active );
+
+    const baseWhere = conditions.length ? ' WHERE ' + conditions.join( ' AND ' ) : '';
+
+    try {
+        // STEP 1: Get bandi IDs
+        const idQuery = `
+            SELECT bp.id
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+            ${ baseWhere }
+            ORDER BY bp.id DESC
+        `;
+        const [idRows] = await pool.query( idQuery, params );
+        const bandiIds = idRows.map( row => row.id );
+        if ( !bandiIds.length ) return res.json( { Status: true, Result: [], TotalCount: 0 } );
+
+        // STEP 2: Total count
+        const countSQL = `
+            SELECT COUNT(*) AS total
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+            ${ baseWhere }
+        `;
+        const [countResult] = await pool.query( countSQL, params );
+        const totalCount = countResult[0].total;
+
+        // STEP 3: Full records with total_jariwana_amount first
+        const placeholders = bandiIds.map( () => '?' ).join( ',' );
+
+        const fullQuery = `
+            SELECT 
+                bp.id,
+                bp.id AS bandi_id,
+                bp.office_bandi_id,
+                bp.current_office_id,
+                bp.lagat_no,
+                bp.bandi_name,
+                bp.bandi_type,
+                bp.photo_path,
+                bp.nationality,
+                bp.is_under_facility,
+                bp.gender,
+                bp.dob_ad,
+                bp.dob,
+                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
+                ba.wardno,
+                ba.bidesh_nagarik_address_details,
+                nc.country_name_np,
+                ns.state_name_np,
+                nd.district_name_np,
+                nci.city_name_np,
+                bfd_combined.total_jariwana_amount,
+                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+                bkd.thuna_date_bs, bkd.release_date_bs,
+                oo.letter_address AS current_office_letter_address,
+                brd_combined.last_karnayan_miti,
+                bmd_combined.mudda_id,
+                bmd_combined.mudda_name,
+                bmd_combined.is_main_mudda,
+                bmd_combined.is_last_mudda,
+                bmd_combined.office_name_with_letter_address AS mudda_phesala_antim_office,
+                bmd_combined.vadi,
+                bmd_combined.mudda_phesala_antim_office_date,
+                bmd_combined.mudda_group_id,
+                bmd_combined.mudda_group_name,
+                bicd.card_no,
+                git.govt_id_name_np
+            FROM bandi_person bp
+            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
+            LEFT JOIN np_district nd ON ba.district_id = nd.did
+            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
+            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+            LEFT JOIN offices oo ON bp.current_office_id = oo.id
+            LEFT JOIN bandi_id_card_details bicd ON bp.id=bicd.bandi_id
+            LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id
+
+            -- Join total_jariwana_amount first
+            LEFT JOIN (
+            SELECT 
+                bandi_id, 
+                COALESCE(SUM(deposit_amount),0) AS total_jariwana_amount           
+            FROM bandi_fine_details
+            WHERE fine_type_id = 2 AND (amount_deposited IS NULL OR amount_deposited =0)
+            GROUP BY bandi_id
+            ) AS bfd_combined 
+            ON bp.id = bfd_combined.bandi_id
+
+            LEFT JOIN (
+                SELECT brd.bandi_id, MAX(brd.karnayan_miti) AS last_karnayan_miti
+                FROM bandi_release_details brd
+                GROUP BY brd.bandi_id
+            ) AS brd_combined ON bp.id = brd_combined.bandi_id
+
+            LEFT JOIN (
+                SELECT 
+                    bmd.bandi_id, bmd.mudda_id, bmd.is_main_mudda,
+                    bmd.is_last_mudda, m.mudda_name, bmd.vadi,
+                    bmd.mudda_phesala_antim_office_date,
+                    o.office_name_with_letter_address AS mudda_phesala_antim_office,
+                    o.office_name_with_letter_address,
+                    mg.mudda_group_name, mg.id AS mudda_group_id
+                FROM bandi_mudda_details bmd
+                LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+                LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
+            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
+
+            WHERE bp.id IN (${ placeholders })
+            ORDER BY bp.id DESC
+        `;
+
+        const [fullRows] = await pool.query( fullQuery, bandiIds );
+
+        // STEP 4: Group muddas under each bandi, keep total_jariwana_amount
+        const grouped = {};
+        fullRows.forEach( row => {
+            const {
+                bandi_id,
+                mudda_id,
+                mudda_name,
+                is_main_mudda,
+                is_last_mudda,
+                office_name_with_letter_address,
+                vadi,
+                mudda_phesala_antim_office_date,
+                mudda_phesala_antim_office,
+                mudda_group_name,
+                total_jariwana_amount,
+                ...bandiData
+            } = row;
+
+            if ( !grouped[bandi_id] ) {
+                grouped[bandi_id] = {
+                    ...bandiData,
+                    bandi_id,
+                    muddas: [],
+                    total_jariwana_amount: total_jariwana_amount || 0
+                };
+            }
+
+            if ( mudda_id ) {
+                grouped[bandi_id].muddas.push( {
+                    mudda_id,
+                    mudda_name,
+                    is_main_mudda,
+                    is_last_mudda,
+                    office_name_with_letter_address,
+                    vadi,
+                    mudda_phesala_antim_office_date,
+                    mudda_phesala_antim_office,
+                    mudda_group_name
+                } );
+            }
+        } );
+
+        return res.json( {
+            Status: true,
+            Result: Object.values( grouped ),
+            TotalCount: totalCount
+        } );
+
+    } catch ( err ) {
+        console.error( 'Query Error:', err );
+        return res.json( { Status: false, Error: 'Query Error' } );
+    }
+} );
+
+router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const selectedOffice = req.query.selected_office || 0;
+    const searchOffice = req.query.searchOffice || 0;
+    const nationality = req.query.nationality || 0;
+    const country = req.query.country || 0;
+    const gender = req.query.gender || 0;
+    const bandi_type = req.query.bandi_type || 0;
+    const search_name = req.query.search_name || 0;
+    const is_active = req.query.is_active || 1; // Default active
+    const is_dependent = req.query.is_dependent || null;
+    const mudda_group_id = req.query.mudda_group_id || '';
+
+    let conditions = ['bp.is_under_payrole != 1'];
+    let params = [];
+
+    if ( selectedOffice ) {
+        conditions.push( 'bp.current_office_id = ?' );
+        params.push( selectedOffice );
     }
 
     if ( nationality ) {

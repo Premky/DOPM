@@ -59,6 +59,7 @@ import CurrentDarbandi from './Components/Employee/Tables/CurrentDarbandi';
 import CurrentDarbandiForm from './Components/Employee/Forms/CurrentDarbandiForm';
 import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
 import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
+import ParoleSetting from './Components/Parole/Settings/ParoleSetting';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -123,7 +124,7 @@ function App() {
                   <Route path="payrole_table" element={<PayroleTable />} />
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
                   <Route path="payrole_log" element={<ParoleLogForm />} />
-                  <Route path="parole_settings" element={<ParoleLogForm />} />
+                  <Route path="parole_settings" element={<ParoleSetting />} />
                 </Route>
 
                 {/* Kaamdari Subidha Routes */}
