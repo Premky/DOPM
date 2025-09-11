@@ -221,7 +221,7 @@ const AllBandiTable = () => {
                 ),
         },
         { field: "govt_id_name_np", headerName: "परिचयपत्र प्रकार", width: 100 },
-        { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },
+        { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },        
         { field: "current_age", headerName: "उमेर", width: 100 },
         { field: "gender", headerName: "लिङ्ग", width: 100 },
         { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },

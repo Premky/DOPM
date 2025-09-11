@@ -94,13 +94,13 @@ const ReusableBandiTable = ( {
         const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
-        worksheet.addRow( ['सि.नं.', ...bandiHeaders,'देश', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+        worksheet.addRow( ['सि.नं.', ...bandiHeaders,'देश','जन्म मिति(ई.सं.)','जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
 
         let excelRowIndex = 2;
         filteredRows.forEach( ( bandi, bandiIndex ) => {
             const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
             const muddaCount = muddaList.length;
-            console.log( muddaList );
+            // console.log( muddaList );
             muddaList.forEach( ( mudda, idx ) => {
                 let rowData = [
                     idx === 0 ? bandiIndex + 1 : '',
