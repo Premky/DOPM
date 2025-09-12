@@ -242,13 +242,14 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
       {
         authState.role_name === "office_admin" && ( <>
           {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
-          {( data.status_id == 12 ) ? ( <>
+          {( data.status_id == 12  ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 13 ) ? ( <>
             <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
           </> ) : ( data.status_id < 12 ) &&
           ( <>
             <MenuItem onClick={handleForward}>Forward</MenuItem>
+            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
           </> )}
         </> )
