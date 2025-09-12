@@ -39,7 +39,7 @@ const ReusableBandiTable = ( {
         } ) );
     }, [rows] );
 
-const { state: authState } = useAuth();
+    const { state: authState } = useAuth();
     const filteredRows = useMemo( () => {
         if ( !filterText ) return rowsWithComputed;
         return rowsWithComputed.filter( bandi =>
@@ -258,19 +258,21 @@ const { state: authState } = useAuth();
                                     <TableCell align="center">{( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )}</TableCell>
 
                                     {muddaIndex === 0 && (
-                                        <TableCell rowSpan={rowSpan} align="center">                                                
-                                            {( bandi.current_office_id == authState.office_id ) && (
-                                                ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
-                                                    <a
-                                                        href={`/bandi/view_saved_record/${ bandi.id }`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        style={{ textDecoration: "none", color: "inherit" }}
-                                                    >
-                                                        <Button variant="outlined" size="small" color="primary">VIEW</Button>
-                                                    </a>
+                                        <TableCell rowSpan={rowSpan} align="center">
+                                            {
+                                                ( bandi.current_office_id === authState.office_id || authState.office_id===2 ) && (
+                                                    ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
+                                                        <a
+                                                            href={`/bandi/view_saved_record/${ bandi.id }`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{ textDecoration: "none", color: "inherit" }}
+                                                        >
+                                                            <Button variant="outlined" size="small" color="primary">VIEW</Button>
+                                                        </a>
+                                                    )
                                                 )
-                                            )}
+                                            }
 
 
                                             {showEdit && (
