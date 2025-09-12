@@ -951,7 +951,14 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     if ( selectedOffice ) {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( selectedOffice );
-    }
+    } else if ( searchOffice ) {
+        conditions.push( 'bp.current_office_id = ?' );
+        params.push( searchOffice );
+    } 
+    // else if ( !( active_office == 1 || active_office == 2 ) ) {
+    //     conditions.push( 'bp.current_office_id = ?' );
+    //     params.push( active_office );
+    // }
 
     if ( nationality ) {
         conditions.push( 'bp.nationality = ?' );
@@ -3092,10 +3099,10 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         ageFilter = `AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?`;
         params.push( Number( ageFrom ), Number( ageTo ) );
     }
-    const defaultOfficeCategory=2;
-    officeFilter += ' AND o.office_categories_id=? '
+    const defaultOfficeCategory = 2;
+    officeFilter += ' AND o.office_categories_id=? ';
     params.push( defaultOfficeCategory );
-    
+
     const sql = `
     SELECT 
       o.id AS office_id,
