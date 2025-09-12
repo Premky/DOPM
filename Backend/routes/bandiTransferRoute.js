@@ -439,7 +439,7 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
                 WHERE id = ?`;
             values = [
                 to_role_id[0].id,
-                status_id[0].id,
+                12,
                 metadata.decision_date,
                 metadata.letter_cn,
                 metadata.letter_date,
