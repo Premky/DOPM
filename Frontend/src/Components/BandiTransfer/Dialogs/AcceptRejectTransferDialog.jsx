@@ -17,10 +17,7 @@ import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import useFetchUserRolesUsedInProcess from "../../Bandi/Apis_to_fetch/useFetchUserRolesUsedInProcess";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import { useAuth } from "../../../Context/AuthContext";
-import Swal from "sweetalert2";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
-import axios from "axios";
-import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
 
@@ -78,8 +75,7 @@ const AcceptRejectTransferDialog = ( { open, onClose, onSave, editingData } ) =>
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>स्विकार/अस्विकार गर्नुहोस्ः</DialogTitle>
             <DialogContent>
-                <input type='text' value={`${ editingData?.office_bandi_id || "" }`}  name="office_bandi_id" hidden/>
-                <input type='text' name="payrole_id" value={`${ editingData?.payrole_id || "" }`} hidden />
+                <input type='text' value={`${ editingData?.office_bandi_id || "" }`}  name="office_bandi_id" hidden/>                
                 <TextField
                     sx={{ mt: 1 }}
                     fullWidth

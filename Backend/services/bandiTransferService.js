@@ -92,9 +92,64 @@ async function insertFinalTransferDetails( data, InitialStatus, user_id, active_
 async function getAllowedStatusesForRole(role_id) {
     
 }
+
+// ✅ Helper Function to build dynamic SQL and values
+async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
+    const now = new Date();
+
+    if (metadata.final_to_office_id) {
+        return {
+            sql: `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id=?, decision_date=?, remarks=?, final_to_office_id=?, updated_by=?, updated_at=?
+                WHERE id=?`,
+            values: [roleId, statusId, metadata.decision_date, metadata.remarks, metadata.final_to_office_id, userId, now, recordId]
+        };
+    }
+
+    if (metadata.decision_date && metadata.letter_cn && metadata.letter_date) {
+        return {
+            sql: `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id=?, decision_date=?, letter_cn=?, letter_date=?, remarks=?, final_to_office_id=?, updated_by=?, updated_at=?
+                WHERE id=?`,
+            values: [roleId, 12, metadata.decision_date, metadata.letter_cn, metadata.letter_date, metadata.remarks, metadata.recommended_to_office_id, userId, now, recordId]
+        };
+    }
+
+    if (metadata.recommended_to_office_id && metadata.decision_date) {
+        return {
+            sql: `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id=?, decision_date=?, remarks=?, recommended_to_office_id=?, updated_by=?, updated_at=?
+                WHERE id=?`,
+            values: [roleId, statusId, metadata.decision_date, metadata.remarks, metadata.recommended_to_office_id, userId, now, recordId]
+        };
+    }
+
+    if (metadata.transfer_date) {
+        return {
+            sql: `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id=?, remarks=?, transfer_from_date=?, updated_by=?, updated_at=?
+                WHERE id=?`,
+            values: [roleId, statusId, metadata.remarks, metadata.transfer_date, userId, now, recordId]
+        };
+    }
+
+    return {
+        sql: `
+            UPDATE bandi_transfer_history 
+            SET role_id=?, status_id=?, remarks=?, updated_by=?, updated_at=?
+            WHERE id=?`,
+        values: [roleId, statusId, metadata.remarks, userId, now, recordId]
+    };
+}
+
 export {
     insertTransferDetails,
     insertFinalTransferDetails,
 
-    getAllowedStatusesForRole
+    getAllowedStatusesForRole,
+    buildUpdateData
 };

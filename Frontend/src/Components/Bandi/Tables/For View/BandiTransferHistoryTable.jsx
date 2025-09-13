@@ -18,9 +18,13 @@ import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import DisabilityModal from '../../Dialogs/DisabilityModal';
 import fetchBandiTransferHistory from '../../../ReuseableComponents/FetchApis/fetchBandiTransferHistory';
 import BandiTransfer from '../../Dialogs/BandiTransferModal';
+import { useAuth } from '../../../../Context/AuthContext';
+
 
 const BandiTransferHistoryTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
+    const { state: authState } = useAuth();
+
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
     const [modalOpen, setModalOpen] = useState( false );
@@ -69,7 +73,7 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                 // Update existing contact
                 response = await axios.put(
                     `${ BASE_URL }/bandiTransfer/update_bandi_old_transfer_history/${ id }`,
-                    {bandi_transfer_details: [formData]},
+                    { bandi_transfer_details: [formData] },
                     { withCredentials: true }
                 );
 
@@ -100,6 +104,10 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
             console.error( "❌ Axios Error:", error );
             Swal.fire( 'त्रुटि!', error.message || 'सर्भर अनुरोध असफल भयो ।', 'error' );
         }
+    };
+
+    const shouldShowDeleteButton = ( opt, role_Id ) => {
+        return opt.is_completed === 'Pending' || role_Id === 99;
     };
 
 
@@ -144,15 +152,29 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.transfer_reason}</TableCell>
 
                                     <TableCell align="center">
+                                        {/* Delete Button (Conditional) */}
+                                        {shouldShowDeleteButton( opt, authState.role_Id ) && (
+                                            <Grid item>
+                                                <Button variant="contained" color="error" onClick={() => handleDelete( opt.id )}>
+                                                    🗑️
+                                                </Button>
+                                            </Grid>
+                                        )}
+                                    </TableCell>
+                                    {/* <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
                                                 <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
                                             </Grid>
-                                            <Grid item>
-                                                <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                            </Grid>
+                                            {( opt.is_completed == 'Pending' ) ? ( <>
+                                                <Grid item>
+                                                    <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
+                                                </Grid>
+                                            </> ):(authState.role_Id==99)?(<Grid item>
+                                                    <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
+                                                </Grid>):<></>}
                                         </Grid>
-                                    </TableCell>
+                                    </TableCell> */}
                                 </TableRow>
                             ) )}
                         </TableBody>

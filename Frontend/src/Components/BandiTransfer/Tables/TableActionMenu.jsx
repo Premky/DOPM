@@ -34,7 +34,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   };
 
   const handleSave = async ( data ) => {
-    console.log( "Saving data:", data );    
+    console.log( "Saving data:", data );
     try {
       await axios.put(
         `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
@@ -59,7 +59,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   };
 
   const handleApprovedSave = async ( data ) => {
-    console.log( "Saving data:", data );    
+    console.log( "Saving data:", data );
     try {
       await axios.put(
         `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ data.transfer_id }`,
@@ -120,9 +120,9 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
     // onClose();
   };
 
-  const handleApprovedForward=()=>{
-    setApprovedOpenForwardDialog(true);
-  }
+  const handleApprovedForward = () => {
+    setApprovedOpenForwardDialog( true );
+  };
 
   const handleApproval = () => {
     setOpenApprovalDialog( true );
@@ -168,7 +168,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
   };
 
   const forwardRoles = ["supervisor", "headoffice_approver", "top_level"];
-
+  // console.log(data)
   return (
     <>
       <ForwardDialog
@@ -231,7 +231,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
                   कार्यालय प्रमुखमा पेश गर्नुहोस्
                 </MenuItem>
                 <MenuItem onClick={handleApprovedForward}>
-                  विभागाबाट स्विकृत भएका सरुवा गर्नुहोस् 
+                  विभागाबाट स्विकृत भएका सरुवा गर्नुहोस्
                 </MenuItem>
               </>
             )
@@ -242,14 +242,18 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
       {
         authState.role_name === "office_admin" && ( <>
           {/* <MenuItem onClick={handleAcceptReject}>{authState.role_id}</MenuItem> */}
-          {( data.status_id == 12  ) ? ( <>
+          {( data.status_id == 12 ) ? ( <>
             <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 13 ) ? ( <>
-            <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
+            {( data.final_to_office_id == authState.office_id ) && (
+              <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
+            )}
           </> ) : ( data.status_id < 12 ) &&
           ( <>
             <MenuItem onClick={handleForward}>Forward</MenuItem>
-            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
+            <MenuItem onClick={handleApprovedForward}>
+              विभागाबाट स्विकृत भएका सरुवा गर्नुहोस्
+            </MenuItem>
             {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
           </> )}
         </> )
@@ -260,7 +264,9 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
           <>
             {( data.status_id <= 13 ) && ( <>
               {( authState.role_id > 3 ) && ( <>
+
                 <MenuItem onClick={handleApproval}>स्विकृत</MenuItem>
+
               </> )}
               <MenuItem onClick={handleForward}>Forward</MenuItem>
             </> )}

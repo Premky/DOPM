@@ -49,7 +49,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
                 decision_date: editingData.decision_date || "",
                 to_user: editingData.to_user || "",
                 to_role: editingData.to_role || "",
-                final_to_office_id: editingData.final_to_office_id || editingData.recommended_to_office_id,
+                final_to_office_id: editingData.final_to_office_id || editingData.recommended_to_office_id,                
                 remarks: editingData.remarks || ""
             } );
         } else {
