@@ -152,6 +152,9 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.transfer_reason}</TableCell>
 
                                     <TableCell align="center">
+                                        <Grid item>
+                                            <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
+                                        </Grid>
                                         {/* Delete Button (Conditional) */}
                                         {shouldShowDeleteButton( opt, authState.role_Id ) && (
                                             <Grid item>

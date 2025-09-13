@@ -43,7 +43,7 @@ const ApprovalDialog = ( { open, onClose, onSave, editingData } ) => {
         if ( editingData ) {
             console.log( editingData );
             setValue( 'final_to_office_id', editingData.final_to_office_id || editingData.recommended_to_office_id );
-            reset( {
+            reset( {            
                 id: editingData.transfer_id || "", // ✅ Include this
                 transfer_id: editingData.transfer_id || "",
                 decision_date: editingData.decision_date || "",
