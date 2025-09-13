@@ -85,9 +85,9 @@ const ViewBandi = ( { bandi } ) => {
                 <Grid size={{ xs: 12 }}>
                     <BandiTransferHistoryTable bandi_id={bandi_id} />
                 </Grid>
-                <Grid size={{ xs: 12 }}>
+                {/* <Grid size={{ xs: 12 }}>
                     <BandiReleaseTable bandi_id={bandi_id} />
-                </Grid>
+                </Grid> */}
             </Grid>
         </>
     );

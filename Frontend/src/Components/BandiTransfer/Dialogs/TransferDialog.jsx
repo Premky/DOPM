@@ -103,7 +103,7 @@ const TransferDialog = ( { open, onClose, onSave, editingData } ) => {
                     defaultValue={1}
                     control={control}
                     required={true}
-                    disabled={true}
+                    disabled={editingData.letter_cn}
                 />
 
                 <ReuseInput
