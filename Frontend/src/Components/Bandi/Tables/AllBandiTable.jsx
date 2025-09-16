@@ -9,14 +9,14 @@ import { useForm } from 'react-hook-form';
 import NepaliDate from 'nepali-datetime';
 import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
+import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
+import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 const ReuseKaragarOffice = React.lazy( () => import( '../../ReuseableComponents/ReuseKaragarOffice' ) );
 const ReuseSelect = React.lazy( () => import( '../../ReuseableComponents/ReuseSelect' ) );
 const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInput' ) );
 const ReuseCountry = React.lazy( () => import( '../../ReuseableComponents/ReuseCountry' ) );
 const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
-import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
-import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
-import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
 const AllBandiTable = () => {
@@ -70,6 +70,7 @@ const AllBandiTable = () => {
     const is_active = watch( 'is_active' );
     const is_dependent = watch( 'is_dependent' );
     const mudda_group_id = watch( 'mudda_group_id' );
+    const is_escape = watch( 'is_escape' );
     //Watch Variables
 
     const [allKaidi, setAllKaidi] = useState( [] );
@@ -83,7 +84,7 @@ const AllBandiTable = () => {
                 params: {
                     searchOffice, nationality, country,
                     gender, bandi_type, search_name,
-                    is_active, is_dependent, mudda_group_id
+                    is_active, is_dependent, mudda_group_id, is_escape
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
@@ -135,7 +136,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id] );
+    }, [page, rowsPerPage, searchOffice, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id, is_escape] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -347,6 +348,17 @@ const AllBandiTable = () => {
                             options={[
                                 // { label: 'नभएको', value: '0' },
                                 { label: 'भएको', value: '1' }
+                            ]}
+                            control={control}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="is_escape"
+                            label='फरार/पुनःपक्राउ'
+                            options={[
+                                { label: 'फरार', value: 'escaped' },
+                                { label: 'पुनःपक्राउ', value: 'recaptured' }
                             ]}
                             control={control}
                         />

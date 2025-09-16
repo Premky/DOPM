@@ -40,6 +40,7 @@ export const menuAccess = {
       '/bandi/create_bandi',
       '/bandi/bandi_details',
       '/bandi/bandi_release',
+      '/bandi/bandi_escape',
     ],
     clerk: 'all',
     office_admin: 'all',

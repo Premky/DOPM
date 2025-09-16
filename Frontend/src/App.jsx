@@ -19,6 +19,8 @@ const BandiMaskebari = lazy( () => import( './Components/Bandi/Reports/BandiMask
 const AllBandiTable = lazy( () => import( './Components/Bandi/Tables/AllBandiTable' ) );
 const BandiPersonForm = lazy( () => import( './Components/Bandi/Forms/BandiPersonForm' ) );
 const BandiReleaseForm = lazy( () => import( './Components/Bandi/Forms/BandiReleaseForm' ) );
+// const BandiEscapeForm = lazy( () => import( './Components/Bandi/Forms/BandiEscapeForm' ) );
+
 const ViewBandi = lazy( () => import( './Components/Bandi/ViewBandi' ) );
 
 const PayroleMakebari = lazy( () => import( './Components/Parole/Tables/PayroleMakebari' ) );
@@ -60,6 +62,7 @@ import CurrentDarbandiForm from './Components/Employee/Forms/CurrentDarbandiForm
 import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
 import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
 import ParoleSetting from './Components/Parole/Settings/ParoleSetting';
+import BandiEscapeForm from './Components/Bandi/Forms/BandiEcapeForm';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -106,6 +109,7 @@ function App() {
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />
                   <Route path="bandi_release" element={<BandiReleaseForm />} />
+                  <Route path="bandi_escape" element={<BandiEscapeForm />} />
                   {/* <Route path="create_bandi_family" element={<BandiFamilyForm />} /> */}
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                   <Route path='details/:caseName' element={<AllBandiTable />} />

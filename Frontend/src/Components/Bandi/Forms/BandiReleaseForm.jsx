@@ -43,10 +43,10 @@ const BandiReleaseForm = () => {
                 withCredentials: true
             } );
             const { Status, Result, Error } = response.data;
-            console.log( response );
+            // console.log( response );
             if ( Status ) {
                 Swal.fire( {
-                    title: `Office ${ editing ? 'updated' : 'created' } successfully!`,
+                    title: `Bandi ${ editing ? 'updated' : 'created' } successfully!`,
                     icon: "success",
                     draggable: true
                 } );

@@ -944,6 +944,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const is_active = req.query.is_active || 1; // Default active
     const is_dependent = req.query.is_dependent || null;
     const mudda_group_id = req.query.mudda_group_id || '';
+    const is_escape = req.query.is_escape || '';
 
     let conditions = ['bp.is_under_payrole != 1'];
     let params = [];
@@ -954,7 +955,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     } else if ( searchOffice ) {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( searchOffice );
-    }     
+    }
     else if ( !( active_office == 1 || active_office == 2 ) ) {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( active_office );
@@ -980,6 +981,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             )
         `);
         params.push( mudda_group_id );
+    }
+    if ( is_escape=='escaped' ) {
+        conditions.push( 'bp.is_escaped = ?' );
+        params.push( is_active );
     }
 
     if ( gender ) {
@@ -1018,7 +1023,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id            
             ${ baseWhere }
             ORDER BY bp.id DESC
         `;
@@ -1032,7 +1037,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id            
             ${ baseWhere }
         `;
         const [countResult] = await pool.query( countSQL, params );
@@ -1088,7 +1093,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
             LEFT JOIN offices oo ON bp.current_office_id = oo.id
             LEFT JOIN bandi_id_card_details bicd ON bp.id=bicd.bandi_id
-            LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id
+            LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id            
 
             -- Join total_jariwana_amount first
             LEFT JOIN (
@@ -3373,6 +3378,63 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         // await pool.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
         // await commitAsync();
         await connection.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
+        await connection.commit();
+        res.json( { Status: true, Message: "Inserted successfully" } );
+    } catch ( err ) {
+        await connection.rollback();
+        console.error( "Insert error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
+
+router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
+    const user_id = req.user.username;
+    const active_office = req.user.office_id;
+    console.log( req.body );
+    const { bandi_id, office_bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+        recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes
+    } = req.body;
+    let insertSql;
+    let values;
+    if ( status == 'recaptured' ) {
+        insertSql = `
+        INSERT INTO bandi_escape_details (
+            bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
+            recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
+            updated_office_id,
+            created_by, created_at, updated_by, updated_at
+            ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?, ?)
+            `;
+        values = [bandi_id, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+            recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
+            active_office,
+            user_id, new Date(), user_id, new Date()];
+
+    } else {
+        insertSql = `
+            INSERT INTO bandi_escape_details (
+              bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+              updated_office_id,
+              created_by, created_at, updated_by, updated_at
+            ) VALUES (?, ?, ?, ?, ?,?,?, ?, ?, ?, ?, ?)
+          `;
+        values = [bandi_id, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+            active_office,
+            user_id, new Date(), user_id, new Date()];
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+        await connection.query( insertSql, values );
+        if ( status == 'escaped' ) {
+            await connection.query( `UPDATE bandi_person SET is_escaped=1 WHERE id=${ bandi_id }` );
+        } else {
+            await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ bandi_id }` );
+        }
         await connection.commit();
         res.json( { Status: true, Message: "Inserted successfully" } );
     } catch ( err ) {
