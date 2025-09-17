@@ -956,10 +956,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( searchOffice );
     }
-    else if ( !( active_office == 1 || active_office == 2 ) ) {
-        conditions.push( 'bp.current_office_id = ?' );
-        params.push( active_office );
-    }
+    // else if ( !( active_office == 1 || active_office == 2 ) ) {
+    //     conditions.push( 'bp.current_office_id = ?' );
+    //     params.push( active_office );
+    // }
 
     if ( nationality ) {
         conditions.push( 'bp.nationality = ?' );
