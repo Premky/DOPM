@@ -46,6 +46,8 @@ const CombinedNav = ( { user } ) => {
         { name: 'देश अनुसारको संख्या', path: '/bandi/count_ac_country' },
         { name: 'मास्केवारी', path: '/bandi/maskebari' },
         { name: 'कैदमुक्त/लगत कट्टा', path: '/bandi/bandi_release' },
+        { name: 'फरार बन्दी प्रविष्टि', path: '/bandi/bandi_escape' },
+        { name: 'पक्राउ बन्दी प्रविष्टि', path: '/bandi/bandi_recapture' },
       ]
     },
     {

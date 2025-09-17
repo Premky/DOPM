@@ -115,7 +115,7 @@ const BandiEscapeForm = () => {
                 </Helmet>
             </HelmetProvider>
             <Typography variant="h6" mb={2}>
-                Bandi Escape / Recapture Form
+                फरार बन्दी प्रविष्टि फारम
             </Typography>
 
             <form onSubmit={handleSubmit( onFormSubmit )}>
@@ -140,7 +140,7 @@ const BandiEscapeForm = () => {
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseDateField
                             name={"escape_date_bs"}
-                            label='निर्णय मिति'
+                            label='भागेको मिति'
                             control={control}
                             required={true}
                             errors={errors.decision_date}

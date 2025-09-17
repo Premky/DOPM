@@ -63,6 +63,7 @@ import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
 import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
 import ParoleSetting from './Components/Parole/Settings/ParoleSetting';
 import BandiEscapeForm from './Components/Bandi/Forms/BandiEcapeForm';
+import BandiRecaptureForm from './Components/Bandi/Forms/BandiRecaptureForm';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -110,6 +111,7 @@ function App() {
                   <Route path="create_bandi" element={<BandiPersonForm />} />
                   <Route path="bandi_release" element={<BandiReleaseForm />} />
                   <Route path="bandi_escape" element={<BandiEscapeForm />} />
+                  <Route path="bandi_recapture" element={<BandiRecaptureForm />} />
                   {/* <Route path="create_bandi_family" element={<BandiFamilyForm />} /> */}
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                   <Route path='details/:caseName' element={<AllBandiTable />} />

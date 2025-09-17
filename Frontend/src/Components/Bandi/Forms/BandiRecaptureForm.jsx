@@ -20,6 +20,8 @@ import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import Swal from "sweetalert2";
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
+import ReuseEscapedBandi from "../../ReuseableComponents/ReuseEscapedBandi";
 
 const BandiRecaptureForm = () => {
     const BASE_URL = useBaseURL();
@@ -31,7 +33,8 @@ const BandiRecaptureForm = () => {
             escape_date_ad: "",
             escape_method: "",
             notified_by: "",
-            status: "escaped",
+            notified_at: "",
+            status: "recaptured",
             recapture_date_bs: "",
             recapture_date_ad: "",
             recaptured_by: "",
@@ -115,7 +118,7 @@ const BandiRecaptureForm = () => {
                 </Helmet>
             </HelmetProvider>
             <Typography variant="h6" mb={2}>
-                Bandi Escape / Recapture Form
+                फरार बन्दी पुनः पक्राउ परेको विवरण प्रविष्टि फारम
             </Typography>
 
             <form onSubmit={handleSubmit( onFormSubmit )}>
@@ -123,7 +126,7 @@ const BandiRecaptureForm = () => {
 
                     {/* Escape Date BS */}
                     <Grid size={{ xs: 12 }}>
-                        <ReuseBandi
+                        <ReuseEscapedBandi
                             name='bandi_id'
                             label='बन्दी'
                             required={true}
@@ -140,7 +143,7 @@ const BandiRecaptureForm = () => {
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseDateField
                             name={"escape_date_bs"}
-                            label='निर्णय मिति'
+                            label='भागेको मिति'
                             control={control}
                             required={true}
                             errors={errors.decision_date}

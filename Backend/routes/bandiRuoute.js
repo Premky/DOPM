@@ -1409,6 +1409,29 @@ router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     }
 } );
 
+router.get( '/get_escaped_bandi', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    // console.log(active_office)    
+    const sql=`SELECT bp.id, bp.office_bandi_id, bp.bandi_name,m.mudda_name
+                    FROM bandi_escape_details bed
+                    LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
+                    LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
+                    LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                    WHERE bed.status='escaped'`
+    try {
+        const [result] = await pool.query( sql ); // Use promise-wrapped query
+
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
+        }        
+        // console.log(age)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
 router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
     const { id } = req.params;
     console.log( id );
