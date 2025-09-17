@@ -245,14 +245,14 @@ router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), a
     }
 } );
 
-router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async (req, res) => {
+router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     let connection;
     const bandi_id = req.params.id;
     const photoFile = req.file;
-    const photo_path = photoFile ? `/uploads/bandi_photos/${photoFile.filename}` : null;
+    const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
 
-    if (!photoFile) {
-        return res.status(400).json({ success: false, message: 'No photo uploaded' });
+    if ( !photoFile ) {
+        return res.status( 400 ).json( { success: false, message: 'No photo uploaded' } );
     }
 
     try {
@@ -267,14 +267,14 @@ router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async
         const oldPhotoPath = result?.[0]?.photo_path;
 
         // Delete old photo from disk if exists
-        if (oldPhotoPath) {
-            const oldPath = path.join('.', oldPhotoPath);
+        if ( oldPhotoPath ) {
+            const oldPath = path.join( '.', oldPhotoPath );
             try {
-                await fs.promises.access(oldPath);
-                await fs.promises.unlink(oldPath);
-                console.log(`🗑️ Old photo deleted: ${oldPath}`);
-            } catch (unlinkErr) {
-                console.warn(`⚠️ Could not delete old photo (${oldPath}):`, unlinkErr.message);
+                await fs.promises.access( oldPath );
+                await fs.promises.unlink( oldPath );
+                console.log( `🗑️ Old photo deleted: ${ oldPath }` );
+            } catch ( unlinkErr ) {
+                console.warn( `⚠️ Could not delete old photo (${ oldPath }):`, unlinkErr.message );
             }
         }
 
@@ -285,44 +285,44 @@ router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async
         );
 
         await connection.commit();
-        res.status(200).json({
+        res.status( 200 ).json( {
             success: true,
             message: 'फोटो सफलतापूर्वक अपडेट भयो',
             photo_path,
-        });
+        } );
 
-    } catch (err) {
-        console.error('❌ Update transaction failed:', err);
+    } catch ( err ) {
+        console.error( '❌ Update transaction failed:', err );
 
-        if (connection) {
+        if ( connection ) {
             try {
                 await connection.rollback();
-            } catch (rollbackErr) {
-                console.error('⚠️ Rollback failed:', rollbackErr);
+            } catch ( rollbackErr ) {
+                console.error( '⚠️ Rollback failed:', rollbackErr );
             } finally {
                 connection.release();
             }
         }
 
         // Cleanup newly uploaded photo if error
-        if (photoFile) {
+        if ( photoFile ) {
             try {
-                await fs.promises.unlink(photoFile.path);
-                console.log('🗑️ Uploaded photo deleted due to error');
+                await fs.promises.unlink( photoFile.path );
+                console.log( '🗑️ Uploaded photo deleted due to error' );
             } catch {
-                console.warn('⚠️ Uploaded photo already missing');
+                console.warn( '⚠️ Uploaded photo already missing' );
             }
         }
 
-        res.status(500).json({
+        res.status( 500 ).json( {
             success: false,
             message: 'फोटो अपडेट असफल भयो',
             error: err.message,
-        });
+        } );
     } finally {
-        if (connection) connection.release();
+        if ( connection ) connection.release();
     }
-});
+} );
 
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.username;
@@ -3426,18 +3426,22 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     const { bandi_id, office_bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
         recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes
     } = req.body;
+
+    let connection;
+    const [bandi_details]=await pool.query(`SELECT * FROM bandi_person WHERE id=?`,[bandi_id])
+    const officeBandiId=bandi_details[0].office_bandi_id;
     let insertSql;
     let values;
     if ( status == 'recaptured' ) {
         insertSql = `
         INSERT INTO bandi_escape_details (
-            bandi_id,escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
+            bandi_id,office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
             current_office_id,
             created_by, created_at, updated_by, updated_at
-            ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?,?,  ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-        values = [bandi_id, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+        values = [bandi_id, officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
             active_office,
             user_id, new Date(), user_id, new Date()];
@@ -3445,17 +3449,17 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     } else {
         insertSql = `
             INSERT INTO bandi_escape_details (
-              bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+              bandi_id, office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
               current_office_id,
               created_by, created_at, updated_by, updated_at
-            ) VALUES (?, ?, ?, ?, ?,?,?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?,  ?, ?, ?,?,?, ?, ?, ?, ?, ?, ?)
           `;
-        values = [bandi_id, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+        values = [bandi_id,officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
             active_office,
             user_id, new Date(), user_id, new Date()];
     }
 
-    let connection;
+
     try {
         connection = await pool.getConnection();
         await connection.beginTransaction();
@@ -3498,11 +3502,11 @@ router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
             data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.recaptured_by, data.recapture_location, data.recapture_notes,
             active_office, req.user.username, id
         ] );
-        
+
 
         if ( data.status == 'recaptured' ) {
             await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ data.bandi_id }` );
-        } 
+        }
         await connection.commit();
         console.log( result );
         res.json( { Status: true, message: "Updated successfully" } );
