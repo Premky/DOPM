@@ -1,6 +1,4 @@
-// src/Components/Bandi/BandiEscapeForm.jsx
-
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
     Box,
@@ -10,23 +8,19 @@ import {
     Typography,
     Grid,
 } from "@mui/material";
+import Swal from "sweetalert2";
 import axios from "axios";
-import { HelmetProvider } from "react-helmet-async";
-import { Helmet } from "react-helmet";
-import ReuseBandi from "../../ReuseableComponents/ReuseBandi";
-import BandiAddressTable from "../Tables/For View/BandiAddressTable";
-import BandiMuddaTable from "../Tables/For View/BandiMuddaTable";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
-import Swal from "sweetalert2";
-import { useBaseURL } from '../../../Context/BaseURLProvider';
-import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseEscapedBandi from "../../ReuseableComponents/ReuseEscapedBandi";
+import { useBaseURL } from '../../../Context/BaseURLProvider';
 
 const BandiRecaptureForm = () => {
     const BASE_URL = useBaseURL();
     const { control, handleSubmit, watch, reset, formState: { errors } } = useForm( {
         defaultValues: {
+            escape_id: "",
             bandi_id: "",
             office_bandi_id: "",
             escape_date_bs: "",
@@ -47,29 +41,39 @@ const BandiRecaptureForm = () => {
     const [editing, setEditing] = useState( false );
 
     const status = watch( "status" );
+    const escapeId = watch( "escape_id" );
 
-    const onSubmit = async ( data ) => {
-        try {
-            setLoading( true );
-            const res = await axios.post( "http://localhost:5000/api/bandi_escape", data );
-            if ( res.status === 200 ) {
-                alert( "Escape details saved successfully!" );
-                reset();
-                if ( onSuccess ) onSuccess();
+    useEffect(()=>{
+        if(!escapeId) return;
+        const fetchEscapeDetails = async()=>{
+            try{
+                const {data} = await axios.get(
+                    `${BASE_URL}/bandi/get_escaped_bandi/${escapeId}`,{withCredentials:true}
+                );
+                const {Status, Result}=data;
+                console.log(Result)
+                if(data.Status){
+                    //auto populate form
+                    reset({
+                        ...Result[0],                        
+                        escape_id:escapeId,
+                        status:Result.status||"recaptured", //fallback
+                    });
+                }else{
+                    Swal.fire("Error","Could not fetch escape details", "error");
+                }
+            }catch(err){
+                console.error(err);
+                Swal.fire("Error", err?.response?.data?.Error||"सर्भरमा समस्या आयो।","error");
             }
-        } catch ( err ) {
-            console.error( err );
-            alert( "Failed to save escape details!" );
-        } finally {
-            setLoading( false );
-        }
-    };
+        };
+        fetchEscapeDetails();
+    },[escapeId, BASE_URL, reset]);
 
     const onFormSubmit = async ( data ) => {
         setLoading( true );
         try {
-            // console.log(data)
-            const url = `${ BASE_URL }/bandi/update_recapture_bandi/${ editableData.id }` ;
+            const url = `${ BASE_URL }/bandi/update_recapture_bandi/${ data.escape_id }` ;
             const method = 'PUT' ;
             const response = await axios( {
                 method, url, data: data,
@@ -105,16 +109,12 @@ const BandiRecaptureForm = () => {
             setLoading( false );
         }
     };
-
-    const bandi_id = watch( 'bandi_id' );
+    
     return (
         <Box p={3} sx={{ background: "#fff", borderRadius: 2, boxShadow: 2 }}>
             <HelmetProvider>
                 <Helmet>
-                    <title>PMIS: बन्दी फरार/पक्राउ फारम</title>
-                    <meta name="description" content="बन्दी फरार/पक्राउ सम्बन्धि फारम भर्नुहोस्" />
-                    <meta name="keywords" content="बन्दी, बन्दी फरार, पक्राउ फारम, बन्दी विवरण, बन्दी रेकर्ड" />
-                    <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+                    <title>PMIS: बन्दी पक्राउ फारम</title>                    
                 </Helmet>
             </HelmetProvider>
             <Typography variant="h6" mb={2}>
@@ -127,26 +127,20 @@ const BandiRecaptureForm = () => {
                     {/* Escape Date BS */}
                     <Grid size={{ xs: 12 }}>
                         <ReuseEscapedBandi
-                            name='bandi_id'
+                            name='escape_id'
                             label='बन्दी'
                             required={true}
-                            control={control}
-                            // error={errors.bandi_id}
-                            // current_office={authState.office_np}
+                            control={control}                            
                             type='allbandi'
                         />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        <BandiAddressTable bandi_id={bandi_id} />
-                        <BandiMuddaTable bandi_id={bandi_id} />
-                    </Grid>
+                    </Grid>                    
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseDateField
-                            name={"escape_date_bs"}
+                            name="escape_date_bs"
                             label='भागेको मिति'
                             control={control}
-                            required={true}
-                            errors={errors.decision_date}
+                            required
+                            errors={errors.escape_date_bs}
                         />
                     </Grid>
 
@@ -200,7 +194,7 @@ const BandiRecaptureForm = () => {
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseDateField
                                     name="recapture_date_bs"
-                                    label='निर्णय मिति'
+                                    label='पक्राउ मिति'
                                     control={control}
                                     required={true}
                                     errors={errors.decision_date}

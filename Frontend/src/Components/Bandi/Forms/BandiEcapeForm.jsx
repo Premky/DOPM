@@ -197,7 +197,7 @@ const BandiEscapeForm = () => {
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseDateField
                                     name="recapture_date_bs"
-                                    label='निर्णय मिति'
+                                    label='पक्राउ मिति'
                                     control={control}
                                     required={true}
                                     errors={errors.decision_date}

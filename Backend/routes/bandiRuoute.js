@@ -245,98 +245,84 @@ router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), a
     }
 } );
 
-router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
+router.put('/update_bandi_photo/:id', verifyToken, upload.single('photo'), async (req, res) => {
     let connection;
     const bandi_id = req.params.id;
-    const { bandi_name, office_bandi_id } = req.body;
     const photoFile = req.file;
-    const photo_path = photoFile ? `/uploads/bandi_photos/${ photoFile.filename }` : null;
+    const photo_path = photoFile ? `/uploads/bandi_photos/${photoFile.filename}` : null;
 
-    if ( !photoFile || !bandi_name || !office_bandi_id ) {
-        return res.status( 400 ).json( { success: false, message: 'Missing required fields' } );
+    if (!photoFile) {
+        return res.status(400).json({ success: false, message: 'No photo uploaded' });
     }
 
     try {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // Fetch old photo
+        // Fetch old photo if any
         const [result] = await connection.query(
             'SELECT photo_path FROM bandi_person WHERE id = ?',
             [bandi_id]
         );
         const oldPhotoPath = result?.[0]?.photo_path;
 
-        // Delete old photo from disk (if exists)
-        if ( oldPhotoPath ) {
-            const oldPath = path.join( '.', oldPhotoPath );
+        // Delete old photo from disk if exists
+        if (oldPhotoPath) {
+            const oldPath = path.join('.', oldPhotoPath);
             try {
-                await fs.promises.access( oldPath );
-                await fs.promises.unlink( oldPath );
-                await pool.query( 'UPDATE bandi_person SET photo_path = NULL WHERE id = ?', [bandi_id] );
-                console.log( `🗑️ Old photo deleted: ${ oldPath }` );
-            } catch ( unlinkErr ) {
-                console.warn( `⚠️ Could not delete old photo (${ oldPath }):`, unlinkErr.message );
+                await fs.promises.access(oldPath);
+                await fs.promises.unlink(oldPath);
+                console.log(`🗑️ Old photo deleted: ${oldPath}`);
+            } catch (unlinkErr) {
+                console.warn(`⚠️ Could not delete old photo (${oldPath}):`, unlinkErr.message);
             }
         }
 
-        // Update photo path in DB
+        // Update DB with new photo path
         await connection.query(
             'UPDATE bandi_person SET photo_path = ? WHERE id = ?',
             [photo_path, bandi_id]
         );
+
         await connection.commit();
-
-
-
-        res.status( 200 ).json( {
+        res.status(200).json({
             success: true,
             message: 'फोटो सफलतापूर्वक अपडेट भयो',
             photo_path,
-        } );
-    } catch ( err ) {
-        console.error( '❌ Update transaction failed:', err );
+        });
 
-        // Cleanup if error occurred
-        if ( connection ) {
+    } catch (err) {
+        console.error('❌ Update transaction failed:', err);
+
+        if (connection) {
             try {
                 await connection.rollback();
-            } catch ( rollbackErr ) {
-                console.error( '⚠️ Rollback failed:', rollbackErr );
+            } catch (rollbackErr) {
+                console.error('⚠️ Rollback failed:', rollbackErr);
             } finally {
                 connection.release();
             }
         }
 
-        // Delete newly uploaded photo if it exists
-        if ( photoFile ) {
-            const uploadedPath = photoFile.path;
+        // Cleanup newly uploaded photo if error
+        if (photoFile) {
             try {
-                await fs.promises.access( uploadedPath );
-                await fs.promises.unlink( uploadedPath );
-                console.log( '🗑️ Uploaded photo deleted due to error' );
+                await fs.promises.unlink(photoFile.path);
+                console.log('🗑️ Uploaded photo deleted due to error');
             } catch {
-                console.warn( '⚠️ Uploaded photo already missing' );
-            }
-
-            // Set photo_path = NULL in DB if it was inserted before failure
-            try {
-                await pool.query( 'UPDATE bandi_person SET photo_path = NULL WHERE id = ?', [bandi_id] );
-                console.log( '📛 photo_path reset to NULL due to error' );
-            } catch ( dbErr ) {
-                console.error( '❌ Failed to reset photo_path to NULL:', dbErr );
+                console.warn('⚠️ Uploaded photo already missing');
             }
         }
 
-        res.status( 500 ).json( {
+        res.status(500).json({
             success: false,
             message: 'फोटो अपडेट असफल भयो',
             error: err.message,
-        } );
+        });
     } finally {
-        if ( connection ) connection.release();
+        if (connection) connection.release();
     }
-} );
+});
 
 router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     const user_id = req.user.username;
@@ -982,7 +968,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         `);
         params.push( mudda_group_id );
     }
-    if ( is_escape=='escaped' ) {
+    if ( is_escape == 'escaped' ) {
         conditions.push( 'bp.is_escaped = ?' );
         params.push( is_active );
     }
@@ -1409,29 +1395,6 @@ router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get( '/get_escaped_bandi', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    // console.log(active_office)    
-    const sql=`SELECT bp.id, bp.office_bandi_id, bp.bandi_name,m.mudda_name
-                    FROM bandi_escape_details bed
-                    LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
-                    LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
-                    LEFT JOIN muddas m ON bmd.mudda_id=m.id
-                    WHERE bed.status='escaped'`
-    try {
-        const [result] = await pool.query( sql ); // Use promise-wrapped query
-
-        if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi not found for select" } );
-        }        
-        // console.log(age)
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( err );
-        return res.json( { Status: false, Error: "Query Error" } );
-    }
-} );
-
 router.get( '/get_bandi_name_for_select/:id', async ( req, res ) => {
     const { id } = req.params;
     console.log( id );
@@ -1533,6 +1496,50 @@ router.get( '/get_selected_bandi/:id', async ( req, res ) => {
     }
 } );
 
+router.get( '/get_escaped_bandi', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    // console.log(active_office)    
+    const sql = `SELECT bed.id, bp.id AS bandi_id, bp.office_bandi_id, bp.bandi_name,m.mudda_name
+                    FROM bandi_escape_details bed
+                    LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
+                    LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
+                    LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                    WHERE bed.status='escaped'`;
+    try {
+        const [result] = await pool.query( sql ); // Use promise-wrapped query
+
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
+        }
+        // console.log(age)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+router.get( '/get_escaped_bandi/:id', verifyToken, async ( req, res ) => {
+    const { id } = req.params;
+    // console.log(id)    
+    const sql = `SELECT bed.*, bp.id AS bandi_id, bp.office_bandi_id, bp.bandi_name,m.mudda_name
+                    FROM bandi_escape_details bed
+                    LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
+                    LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
+                    LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                    WHERE bed.status='escaped' AND bed.id=?`;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        console.log( result );
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
+        }
+        // console.log(age)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
 router.get( '/get_bandi_address/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
@@ -3426,7 +3433,7 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
         INSERT INTO bandi_escape_details (
             bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
-            updated_office_id,
+            current_office_id,
             created_by, created_at, updated_by, updated_at
             ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?, ?)
             `;
@@ -3439,7 +3446,7 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
         insertSql = `
             INSERT INTO bandi_escape_details (
               bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
-              updated_office_id,
+              current_office_id,
               created_by, created_at, updated_by, updated_at
             ) VALUES (?, ?, ?, ?, ?,?,?, ?, ?, ?, ?, ?)
           `;
@@ -3464,6 +3471,45 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
         await connection.rollback();
         console.error( "Insert error:", err );
         res.status( 500 ).json( { Status: false, Error: "Insert failed" } );
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
+
+router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
+    const { id } = req.params;
+    const active_office = req.user.office_id;
+    const data = req.body;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [result] = await connection.query( `
+            UPDATE bandi_escape_details SET                
+                bandi_id = ?, office_bandi_id=?, escape_date_bs = ?, escape_date_ad = ?, escape_method=?, 
+                notified_by = ?, notified_at = ?, status=?,
+                recapture_date_bs = ?, recapture_date_ad = ?, recaptured_by = ?, recapture_location = ?, recapture_notes = ?,
+                current_office_id = ?, updated_by = ?, updated_at = NOW()
+            WHERE id = ?
+        `, [
+            data.bandi_id, data.office_bandi_id, data.escape_date_bs, await bs2ad( data.escape_date_bs ), data.escape_method,
+            data.notified_by, data.notified_at, data.status,
+            data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.recaptured_by, data.recapture_location, data.recapture_notes,
+            active_office, req.user.username, id
+        ] );
+        
+
+        if ( data.status == 'recaptured' ) {
+            await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ data.bandi_id }` );
+        } 
+        await connection.commit();
+        console.log( result );
+        res.json( { Status: true, message: "Updated successfully" } );
+    } catch ( error ) {
+        await connection.rollback();
+        console.error( error );
+        res.status( 500 ).json( { Status: false, message: "Server error", error: error.message } );
     } finally {
         if ( connection ) connection.release();
     }

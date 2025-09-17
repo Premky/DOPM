@@ -37,7 +37,7 @@ const ReuseEscapedBandi = ({ name, label, required, control, error, defaultvalue
           const bt = opt.bandi_type;
           return {
             label: `${opt.office_bandi_id} | ${bt} ${opt.bandi_name?.trim()} | ${opt.mudda_name} | ${index + 1}`,
-            value: opt.bandi_id,
+            value: opt.id,
           };
         });
       setFormattedOptions(formatted);
