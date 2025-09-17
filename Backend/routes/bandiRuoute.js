@@ -3431,13 +3431,13 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     if ( status == 'recaptured' ) {
         insertSql = `
         INSERT INTO bandi_escape_details (
-            bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
+            bandi_id,escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
             current_office_id,
             created_by, created_at, updated_by, updated_at
-            ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-        values = [bandi_id, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+        values = [bandi_id, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
             active_office,
             user_id, new Date(), user_id, new Date()];
@@ -3445,12 +3445,12 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     } else {
         insertSql = `
             INSERT INTO bandi_escape_details (
-              bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+              bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
               current_office_id,
               created_by, created_at, updated_by, updated_at
-            ) VALUES (?, ?, ?, ?, ?,?,?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?,?,?, ?, ?, ?, ?, ?, ?)
           `;
-        values = [bandi_id, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+        values = [bandi_id, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
             active_office,
             user_id, new Date(), user_id, new Date()];
     }
