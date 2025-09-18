@@ -240,12 +240,13 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
         )
       }
       {
-        authState.role_name === "office_admin" && ( <>          
+        authState.role_name === "office_admin" && ( <>
           {( data.status_id == 12 ) ? ( <>
-            {( data.final_to_office_id == authState.office_id ) && (
-              <></>
+            {( data.final_to_office_id !== authState.office_id ) && (
+              <>
+                <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
+              </>
             )}
-            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 13 ) ? ( <>
             {( data.final_to_office_id == authState.office_id ) && (
               <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
@@ -255,7 +256,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
             <MenuItem onClick={handleForward}>Forward</MenuItem>
             <MenuItem onClick={handleApprovedForward}>
               विभागाबाट स्विकृत भएका सरुवा गर्नुहोस्
-            </MenuItem>            
+            </MenuItem>
           </> )}
         </> )
       }
