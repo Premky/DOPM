@@ -147,25 +147,6 @@ const BandiEscapeForm = () => {
                         />
                     </Grid>
 
-                    {/* Notified By */}
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                        <ReuseInput
-                            name="notified_by"
-                            label='जानकारी गराउने'
-                            control={control}
-                            errors={errors.notified_by}
-                        />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                        <ReuseDateField
-                            name="notified_at"
-                            label='जानकारी मिति'
-                            control={control}
-                            required={true}
-                            errors={errors.notified_at}
-                        />
-                    </Grid>
                     {/* Status */}
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Controller
@@ -174,7 +155,8 @@ const BandiEscapeForm = () => {
                             render={( { field } ) => (
                                 <TextField {...field} select fullWidth label="Status" required>
                                     <MenuItem value="escaped">फरार</MenuItem>
-                                    <MenuItem value="recaptured">पक्राउ परेको</MenuItem>                                    
+                                    <MenuItem value="self_present">स्वयं उपस्थित</MenuItem>
+                                    <MenuItem value="recaptured">पक्राउ परेको</MenuItem>
                                 </TextField>
                             )}
                         />
@@ -192,7 +174,7 @@ const BandiEscapeForm = () => {
                     </Grid>
 
                     {/* Recapture Fields (only show if recaptured) */}
-                    {status === "recaptured" && (
+                    {( status === "recaptured" || status === "self_present" ) && (
                         <>
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseDateField
@@ -230,6 +212,42 @@ const BandiEscapeForm = () => {
                                     control={control}
                                     render={( { field } ) => (
                                         <TextField {...field} fullWidth multiline label="कैफियत" />
+                                    )}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Controller
+                                    name="is_researched"
+                                    control={control}
+                                    render={( { field } ) => (
+                                        <TextField {...field} select fullWidth label="घटनाको अनुसन्धान गरे/नगरेको" required>
+                                            <MenuItem value="1">गरेको</MenuItem>
+                                            <MenuItem value="0">नगरेको</MenuItem>                                            
+                                        </TextField>
+                                    )}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Controller
+                                    name="is_reported"
+                                    control={control}
+                                    render={( { field } ) => (
+                                        <TextField {...field} select fullWidth label="प्रतिवेदन गरे/नगरेको" required>
+                                            <MenuItem value="1">गरेको</MenuItem>
+                                            <MenuItem value="0">नगरेको</MenuItem>                                            
+                                        </TextField>
+                                    )}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Controller
+                                    name="is_action_taken"
+                                    control={control}
+                                    render={( { field } ) => (
+                                        <TextField {...field} select fullWidth label="कारवाही गरे/नगरेको" required>
+                                            <MenuItem value="1">गरेको</MenuItem>
+                                            <MenuItem value="0">नगरेको</MenuItem>                                            
+                                        </TextField>
                                     )}
                                 />
                             </Grid>

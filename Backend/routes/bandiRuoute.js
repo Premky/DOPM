@@ -3435,13 +3435,13 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     if ( status == 'recaptured' ) {
         insertSql = `
         INSERT INTO bandi_escape_details (
-            bandi_id,office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by,notified_at, status,
+            bandi_id,office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
             current_office_id,
             created_by, created_at, updated_by, updated_at
             ) VALUES (?, ?,?,  ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-        values = [bandi_id, officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+        values = [bandi_id, officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
             recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
             active_office,
             user_id, new Date(), user_id, new Date()];
@@ -3449,12 +3449,12 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     } else {
         insertSql = `
             INSERT INTO bandi_escape_details (
-              bandi_id, office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+              bandi_id, office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, status,
               current_office_id,
               created_by, created_at, updated_by, updated_at
             ) VALUES (?, ?, ?,  ?, ?, ?,?,?, ?, ?, ?, ?, ?, ?)
           `;
-        values = [bandi_id,officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, notified_by, notified_at, status,
+        values = [bandi_id,officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
             active_office,
             user_id, new Date(), user_id, new Date()];
     }
@@ -3492,19 +3492,18 @@ router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
         const [result] = await connection.query( `
             UPDATE bandi_escape_details SET                
                 bandi_id = ?, office_bandi_id=?, escape_date_bs = ?, escape_date_ad = ?, escape_method=?, 
-                notified_by = ?, notified_at = ?, status=?,
+                status=?,
                 recapture_date_bs = ?, recapture_date_ad = ?, recaptured_by = ?, recapture_location = ?, recapture_notes = ?,
                 current_office_id = ?, updated_by = ?, updated_at = NOW()
             WHERE id = ?
         `, [
             data.bandi_id, data.office_bandi_id, data.escape_date_bs, await bs2ad( data.escape_date_bs ), data.escape_method,
-            data.notified_by, data.notified_at, data.status,
+            data.status,
             data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.recaptured_by, data.recapture_location, data.recapture_notes,
             active_office, req.user.username, id
         ] );
 
-
-        if ( data.status == 'recaptured' ) {
+        if ( data.status == 'recaptured' || data.status == 'self_present' ) {
             await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ data.bandi_id }` );
         }
         await connection.commit();
