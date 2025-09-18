@@ -3423,8 +3423,8 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     const user_id = req.user.username;
     const active_office = req.user.office_id;
     console.log( req.body );
-    const { bandi_id, office_bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
-        recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes
+    const { bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+        recapture_date_bs, recaptured_by, recapture_location, recapture_notes
     } = req.body;
 
     let connection;
@@ -3435,14 +3435,16 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     if ( status == 'recaptured' ) {
         insertSql = `
         INSERT INTO bandi_escape_details (
-            bandi_id,office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, status,
-            recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
+            bandi_id, office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, status,
+            recapture_date_bs, recapture_date_ad, enrollment_date_bs, enrollment_date_ad,
+            recaptured_by, recapture_location, recapture_notes,
             current_office_id,
             created_by, created_at, updated_by, updated_at
-            ) VALUES (?, ?,?,  ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?,?,  ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)
             `;
         values = [bandi_id, officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
-            recapture_date_bs, recapture_date_ad, recaptured_by, recapture_location, recapture_notes,
+            recapture_date_bs, await bs2ad(recapture_date_bs), enrollment_date_bs, await bs2ad(enrollment_date_bs), 
+            recaptured_by, recapture_location, recapture_notes,
             active_office,
             user_id, new Date(), user_id, new Date()];
 
@@ -3493,13 +3495,15 @@ router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
             UPDATE bandi_escape_details SET                
                 bandi_id = ?, office_bandi_id=?, escape_date_bs = ?, escape_date_ad = ?, escape_method=?, 
                 status=?,
-                recapture_date_bs = ?, recapture_date_ad = ?, recaptured_by = ?, recapture_location = ?, recapture_notes = ?,
+                recapture_date_bs = ?, recapture_date_ad = ?, enrollment_date_bs=?, enrollment_date_ad=?,
+                recaptured_by = ?, recapture_location = ?, recapture_notes = ?,
                 current_office_id = ?, updated_by = ?, updated_at = NOW()
             WHERE id = ?
         `, [
             data.bandi_id, data.office_bandi_id, data.escape_date_bs, await bs2ad( data.escape_date_bs ), data.escape_method,
             data.status,
-            data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.recaptured_by, data.recapture_location, data.recapture_notes,
+            data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.enrollment_date_bs, await bs2ad(data.enrollment_date_bs),
+            data.recaptured_by, data.recapture_location, data.recapture_notes,
             active_office, req.user.username, id
         ] );
 

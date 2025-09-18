@@ -177,10 +177,20 @@ const BandiRecaptureForm = () => {
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseDateField
                                     name="recapture_date_bs"
-                                    label='पक्राउ मिति'
+                                    label='उपस्थित/पक्राउ मिति'
                                     control={control}
                                     required={true}
                                     errors={errors.decision_date}
+                                />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <ReuseDateField
+                                    name="enrollment_date_bs"
+                                    label='सम्बन्धित कारागारमा दाखिला मिति'
+                                    control={control}
+                                    required={true}
+                                    errors={errors.enrollment_date_bs}
                                 />
                             </Grid>
 
@@ -189,7 +199,7 @@ const BandiRecaptureForm = () => {
                                     name="recaptured_by"
                                     control={control}
                                     render={( { field } ) => (
-                                        <TextField {...field} fullWidth multiline label="पक्राउ गर्ने व्यक्ती/निकाय" />
+                                        <TextField {...field} fullWidth multiline label="पक्राउ गर्ने निकाय" />
                                     )}
                                 />
                             </Grid>

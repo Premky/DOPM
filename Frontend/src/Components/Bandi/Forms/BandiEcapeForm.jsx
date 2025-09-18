@@ -187,11 +187,21 @@ const BandiEscapeForm = () => {
                             </Grid>
 
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <ReuseDateField
+                                    name="enrollment_date_bs"
+                                    label='सम्बन्धित कारागारमा दाखिला मिति'
+                                    control={control}
+                                    required={true}
+                                    errors={errors.enrollment_date_bs}
+                                />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <Controller
                                     name="recaptured_by"
                                     control={control}
                                     render={( { field } ) => (
-                                        <TextField {...field} fullWidth multiline label="पक्राउ गर्ने व्यक्ती/निकाय" />
+                                        <TextField {...field} fullWidth multiline label="पक्राउ गर्ने निकाय" />
                                     )}
                                 />
                             </Grid>
@@ -222,7 +232,7 @@ const BandiEscapeForm = () => {
                                     render={( { field } ) => (
                                         <TextField {...field} select fullWidth label="घटनाको अनुसन्धान गरे/नगरेको" required>
                                             <MenuItem value="1">गरेको</MenuItem>
-                                            <MenuItem value="0">नगरेको</MenuItem>                                            
+                                            <MenuItem value="0">नगरेको</MenuItem>
                                         </TextField>
                                     )}
                                 />
@@ -234,7 +244,7 @@ const BandiEscapeForm = () => {
                                     render={( { field } ) => (
                                         <TextField {...field} select fullWidth label="प्रतिवेदन गरे/नगरेको" required>
                                             <MenuItem value="1">गरेको</MenuItem>
-                                            <MenuItem value="0">नगरेको</MenuItem>                                            
+                                            <MenuItem value="0">नगरेको</MenuItem>
                                         </TextField>
                                     )}
                                 />
@@ -246,7 +256,7 @@ const BandiEscapeForm = () => {
                                     render={( { field } ) => (
                                         <TextField {...field} select fullWidth label="कारवाही गरे/नगरेको" required>
                                             <MenuItem value="1">गरेको</MenuItem>
-                                            <MenuItem value="0">नगरेको</MenuItem>                                            
+                                            <MenuItem value="0">नगरेको</MenuItem>
                                         </TextField>
                                     )}
                                 />
