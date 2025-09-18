@@ -3454,7 +3454,7 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
               bandi_id, office_bandi_id, escaped_from_office_id, escape_date_bs, escape_date_ad, escape_method, status,
               current_office_id,
               created_by, created_at, updated_by, updated_at
-            ) VALUES (?, ?, ?,  ?, ?, ?, ?,?,?,  ?, ?, ?)
+            ) VALUES (?, ?, ?,  ?, ?, ?, ?, ?, ?,  ?, ?, ?)
           `;
         values = [bandi_id,officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
             active_office,

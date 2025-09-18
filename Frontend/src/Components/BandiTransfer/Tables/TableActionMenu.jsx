@@ -243,8 +243,9 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
         authState.role_name === "office_admin" && ( <>          
           {( data.status_id == 12 ) ? ( <>
             {( data.final_to_office_id == authState.office_id ) && (
-              <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
+              <></>
             )}
+            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
           </> ) : ( data.status_id == 13 ) ? ( <>
             {( data.final_to_office_id == authState.office_id ) && (
               <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
