@@ -2873,7 +2873,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
 
         let extraSubqueryFilters = '';
         if(escaped){
-            extraSubqueryFilters=` AND bed.status=${escaped}             `
+            extraSubqueryFilters=` AND bed.status='${escaped}'             `
         }
 
         if ( nationality ) {
