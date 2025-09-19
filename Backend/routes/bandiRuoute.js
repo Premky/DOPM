@@ -2953,6 +2953,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
           LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
           WHERE bp.is_under_payrole != 1 AND bp.is_active=1
             AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
+            ${ extraSubqueryFilters }
           GROUP BY bp.current_office_id, vbad.country_name_np
         ) AS country_counts
         GROUP BY current_office_id
