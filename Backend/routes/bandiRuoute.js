@@ -2875,7 +2875,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
 
         let extraSubqueryFilters = '';
         if(escaped=='escaped'){
-            extraSubqueryFilters='AND bp.is_escaped=?';
+            extraSubqueryFilters=' AND bp.is_escaped=?';
             params.push(1)
         }
 
