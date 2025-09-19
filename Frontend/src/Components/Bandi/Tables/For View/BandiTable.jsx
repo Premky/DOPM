@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import axios from 'axios';
-import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { calculateAge, inCalculateAge } from '../../../../../Utils/ageCalculator';
+import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
 import BandiEditModal from '../../Dialogs/BandiEditModa';
 import UpdatePhotoModal from '../../Dialogs/UpdatePhotoModal';
 import Swal from 'sweetalert2';
@@ -24,7 +22,7 @@ const BandiTable = ( { bandi_id } ) => {
             if ( Status ) {
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
                     setFetchedBandies( Result[0] );
-                    // console.log( Result[0] );
+                    console.log( fetchedBandi );
                 } else {
                     console.log( 'No records found.' );
                     setFetchedBandies( [] );
@@ -38,7 +36,6 @@ const BandiTable = ( { bandi_id } ) => {
             setLoading( false );
         }
     };
-
     useEffect( () => {
         if ( bandi_id ) {
             fetchBandies();
@@ -58,7 +55,7 @@ const BandiTable = ( { bandi_id } ) => {
     };
 
     const handleSave = async ( formData, id ) => {
-        // console.log(id)
+        console.log(formData)
         try {
             if ( formData.bandi_id ) {
                 await axios.put(
@@ -125,18 +122,9 @@ const BandiTable = ( { bandi_id } ) => {
                                 <TableRow>
                                     <TableCell>बन्दी आई.डि.</TableCell>
                                     <TableCell>{fetchedBandi.office_bandi_id}</TableCell>
-                                    <TableCell>बन्दी प्रकार</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_type}</TableCell>
-                                    <TableCell rowSpan={5} colSpan={2} align='center'>
-                                        {/* <img                                            
-                                            src={
-                                                fetchedBandi.photo_path
-                                                    ? `${ BASE_URL }${ fetchedBandi.photo_path.startsWith( '/' ) ? '' : '/' }${ fetchedBandi.photo_path }`
-                                                    : `${ ( fetchBandies.gender == 'Female' ) ? '/icons/female_icon-1.png' : '/icons/male_icon-1.png' }`
-                                            }
-                                            alt="Bandi"
-                                            style={{ height: 150, width: 150, objectFit: 'cover', borderRadius: 4 }}
-                                        /> */}
+                                    <TableCell>बन्दी प्रकार/नामथर</TableCell>
+                                    <TableCell>{fetchedBandi.bandi_type} {fetchedBandi.bandi_name} </TableCell>
+                                    <TableCell rowSpan={5} colSpan={2} align='center'>                                       
                                         <img
                                             src={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : '/icons/male_icon-1.png'}
                                             alt="Bandi"
@@ -146,8 +134,14 @@ const BandiTable = ( { bandi_id } ) => {
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell>नामथर / लगत नं.</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_name} /{fetchedBandi.lagat_no} </TableCell>
+                                    <TableCell>लगत नं.</TableCell>
+                                    <TableCell>{fetchedBandi.lagat_no} </TableCell>
+                                    <TableCell>ब्लक नं.</TableCell>
+                                    <TableCell>{fetchedBandi.block_name}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>दाखिला मिति</TableCell>
+                                    <TableCell>{fetchedBandi.enrollment_date_bs}</TableCell>
                                     <TableCell>लिङ्ग</TableCell>
                                     <TableCell>{fetchedBandi.gender == 'Male' ? 'पुरुष' : fetchedBandi.gender == 'Female' ? 'महिला' : 'अन्य'}</TableCell>
                                 </TableRow>

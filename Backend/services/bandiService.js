@@ -19,6 +19,7 @@ async function insertBandiPerson( data, connection ) {
   const dob_ad = await bs2ad( data.dob );
   const values = [
     data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name,
+    data.enrollment_date_bs, await bs2ad(enrollment_date_bs), data.block_no,
     data.gender, data.dob, dob_ad, data.age, data.married_status, data.photo_path,
     data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
     0,    
@@ -26,7 +27,9 @@ async function insertBandiPerson( data, connection ) {
   ];
 
   const sql = `INSERT INTO bandi_person (
-    bandi_type, office_bandi_id,lagat_no, nationality, bandi_name, gender, dob, dob_ad, age, married_status, photo_path,
+    bandi_type, office_bandi_id,lagat_no, nationality, bandi_name, 
+    enrollment_date_bs, enrollment_date_ad, block_no,
+    gender, dob, dob_ad, age, married_status, photo_path,
     bandi_education, height, weight, bandi_huliya, is_under_payrole,
      remarks, created_by, updated_by, current_office_id
   ) VALUES (?)`;
@@ -37,9 +40,7 @@ async function insertBandiPerson( data, connection ) {
 }
 
 async function insertKaidDetails( bandi_id, data, connection ) {
-
   // const defaultDate = '1950-01-01';
-
   const hirasatBs = data.hirasat_date_bs;
   const releaseBs = data.release_date_bs;
 

@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
+import  { useEffect } from "react";
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Grid, TextField, Button, MenuItem
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
-import { NepaliDatePicker } from "nepali-datepicker-reactjs";
 import "nepali-datepicker-reactjs/dist/index.css";
-import SmartNepaliDatePicker from "../../ReuseableComponents/SmartNepaliDatePicker";
-import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
+import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
+import useBlockList from "../../ReuseableComponents/FetchApis/useBlockList";
+import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 
 const educationOptions = ["थाहा नभएको", "सामान्य पढ्न लेख्न जान्ने", "आठ सम्म", "एस.एल.सी/एस.ई.ई", "+२ वा सो सरह",
     "स्नातक", "स्नातकोत्तर"
@@ -17,6 +17,7 @@ const genderOptions = ["Male", "Female", "Other"];
 const maritalStatusOptions = ["Married", "Unmarried"];
 
 const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
+    const {optrecords, loading}=useBlockList();
     const { control, handleSubmit, reset, formState: { errors } } = useForm( {
         defaultValues: {
             // bandi_type: "",
@@ -96,56 +97,67 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                         />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        <ReuseInput
-                            name='lagat_no'
-                            label="लगत नं."
-                            // defaultValue={band_rand_id}
-                            required={false}
-                            control={control}
-                            error={errors.lagat_no} />
+                    <Grid size={{ xs: 12 }} container>
+                        <Grid size={{ xs: 6 }} >
+                            <ReuseInput
+                                name='lagat_no'
+                                label="लगत नं."
+                                // defaultValue={band_rand_id}
+                                required={false}
+                                control={control}
+                                error={errors.lagat_no} />
+                        </Grid>
+                        <Grid size={{ xs: 6 }} >
+                            <ReuseSelect
+                                name='block_no'
+                                label="ब्लक नं."
+                                options={optrecords}
+                                required={false}
+                                control={control}
+                                error={errors.block_no} />
+                        </Grid>
                     </Grid>
 
-                    <Grid size={{ xs: 12 }}>
-                        <Controller
-                            name="bandi_education"
-                            control={control}
-                            render={( { field } ) => (
-                                <TextField
-                                    {...field}
-                                    select
-                                    label="शैक्षिक योग्यता"
-                                    fullWidth
-                                    size="small"
-                                >
-                                    {educationOptions.map( ( opt ) => (
-                                        <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-                                    ) )}
-                                </TextField>
-                            )}
-                        />
+                    <Grid size={{ xs: 12 }} container>
+                        <Grid size={{ xs: 6 }}>
+                            <Controller
+                                name="bandi_education"
+                                control={control}
+                                render={( { field } ) => (
+                                    <TextField
+                                        {...field}
+                                        select
+                                        label="शैक्षिक योग्यता"
+                                        fullWidth
+                                        size="small"
+                                    >
+                                        {educationOptions.map( ( opt ) => (
+                                            <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                                        ) )}
+                                    </TextField>
+                                )}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
+                            <Controller
+                                name="gender"
+                                control={control}
+                                render={( { field } ) => (
+                                    <TextField
+                                        {...field}
+                                        select
+                                        label="लिङ्ग"
+                                        fullWidth
+                                        size="small"
+                                    >
+                                        {genderOptions.map( ( opt ) => (
+                                            <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                                        ) )}
+                                    </TextField>
+                                )}
+                            />
+                        </Grid>
                     </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                        <Controller
-                            name="gender"
-                            control={control}
-                            render={( { field } ) => (
-                                <TextField
-                                    {...field}
-                                    select
-                                    label="लिङ्ग"
-                                    fullWidth
-                                    size="small"
-                                >
-                                    {genderOptions.map( ( opt ) => (
-                                        <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-                                    ) )}
-                                </TextField>
-                            )}
-                        />
-                    </Grid>
-
                     <Grid size={{ xs: 12 }}>
                         <Controller
                             name="married_status"
@@ -165,6 +177,27 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             )}
                         />
                     </Grid>
+
+
+                    <Grid size={{ xs: 12 }} container>
+                        <Grid size={{ xs: 6 }}>
+                            <ReuseDateField
+                                name='enrollment_date_bs'
+                                label="दाखिला मिति"
+                                required={true}
+                                control={control}
+                                error={errors.enrollment_date_bs} />
+                        </Grid>
+                        <Grid size={{ xs: 6 }} style={{ position: 'relative' }}>
+                            <ReuseDateField
+                                name="dob"
+                                control={control}
+                                label="जन्म मिति"
+                            />
+                        </Grid>
+                    </Grid>
+
+
                     <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="bandi_huliya"
@@ -173,13 +206,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                             control={control}
                         />
                     </Grid>
-                    <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
-                        <ReuseDatePickerBS
-                            name="dob"
-                            control={control}
-                            label="जन्म मिति"
-                        />
-                    </Grid>
+
                     <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="remarks"

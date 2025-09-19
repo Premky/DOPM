@@ -5,44 +5,44 @@ import { promisify } from 'util';
 import verifyToken from '../middlewares/verifyToken.js';
 
 const router = express.Router();
-const query = promisify(con.query).bind(con);
+const query = promisify( con.query ).bind( con );
 
 // PUT /assign_role
-router.get('/get_roles', async (req, res) => {
-  const sql = 'SELECT id, role_name FROM user_roles';
-  try{
-    const [result] = await pool.query(sql);
-    return res.json({ Status: true, Result: result, message: 'Roles fetched successfully.' });    
-  }catch (err) {
-    console.error(err);
-    return res.status(500).json({ Status: false, Error: 'Internal Server Error' });
-  }
-});
+router.get( '/get_roles', async ( req, res ) => {
+    const sql = 'SELECT id, role_name FROM user_roles';
+    try {
+        const [result] = await pool.query( sql );
+        return res.json( { Status: true, Result: result, message: 'Roles fetched successfully.' } );
+    } catch ( err ) {
+        console.error( err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
+    }
+} );
 
-router.put('/assign_role', verifyToken, async (req, res) => {
-  const { userId, roleId } = req.body;
+router.put( '/assign_role', verifyToken, async ( req, res ) => {
+    const { userId, roleId } = req.body;
 
-  try {
-    await pool.query('UPDATE users SET role_id = ? WHERE id = ?', [roleId, userId]);
-    return res.json({ message: 'Role assigned successfully.' });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Failed to assign role.' });
-  }
-});
+    try {
+        await pool.query( 'UPDATE users SET role_id = ? WHERE id = ?', [roleId, userId] );
+        return res.json( { message: 'Role assigned successfully.' } );
+    } catch ( err ) {
+        console.error( err );
+        return res.status( 500 ).json( { message: 'Failed to assign role.' } );
+    }
+} );
 
 // Create User Route
-router.post("/add_branch_name", async (req, res) => {
+router.post( "/add_branch_name", async ( req, res ) => {
     try {
         const { name_np, name_en } = req.body;
         // Check for missing fields
-        if (!name_np || !name_en) {
-            return res.status(400).json({ message: "सबै फिल्डहरू आवश्यक छन्।" });
+        if ( !name_np || !name_en ) {
+            return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
         }
         // Check if the username already exists
-        const existingBranch = await query("SELECT id FROM branch WHERE name_np = ?", [name_np]);
-        if (existingBranch.length > 0) {
-            return res.status(400).json({ message: "यो शाखा नाम पहिल्यै अवस्थित छ।" });
+        const existingBranch = await query( "SELECT id FROM branch WHERE name_np = ?", [name_np] );
+        if ( existingBranch.length > 0 ) {
+            return res.status( 400 ).json( { message: "यो शाखा नाम पहिल्यै अवस्थित छ।" } );
         }
         // Insert user into the database
         const sql = `
@@ -50,143 +50,205 @@ router.post("/add_branch_name", async (req, res) => {
             VALUES (?, ?,0)`;
 
         try {
-            const result = await query(sql, [name_np, name_en]);
-            return res.json({ Status: true, Result: result, message: "प्रयोगकर्ता सफलतापूर्वक सिर्जना गरियो।" })
-        } catch (err) {
-            console.error("Database Query Error:", err);
-            res.status(500).json({ Status: false, Error: "Internal Server Error" })
+            const result = await query( sql, [name_np, name_en] );
+            return res.json( { Status: true, Result: result, message: "प्रयोगकर्ता सफलतापूर्वक सिर्जना गरियो।" } );
+        } catch ( err ) {
+            console.error( "Database Query Error:", err );
+            res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
         }
-    } catch (error) {
-        console.error("User creation error:", error);
-        return res.json({ Status: false, Error: error, message: "सर्भर त्रुटि भयो।" })
-        res.status(500).json({ message: "सर्भर त्रुटि भयो।" });
+    } catch ( error ) {
+        console.error( "User creation error:", error );
+        return res.json( { Status: false, Error: error, message: "सर्भर त्रुटि भयो।" } );
+        res.status( 500 ).json( { message: "सर्भर त्रुटि भयो।" } );
     }
-});
+} );
 
-router.put("/update_branch_name/:id", async (req, res) => {
+router.put( "/update_branch_name/:id", async ( req, res ) => {
     const id = req.params.id;
     try {
         const { name_np, name_en } = req.body;
         // Check for missing fields
-        if (!name_np || !name_en) {
-            return res.status(400).json({ message: "सबै फिल्डहरू आवश्यक छन्।" });
+        if ( !name_np || !name_en ) {
+            return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
         }
         // Check if the username already exists
-        const existingBranch = await query("SELECT id FROM branch WHERE name_np = ? AND id!=?", [name_np, id]);
-        if (existingBranch.length > 0) {
-            return res.status(400).json({ message: "यो शाखा नाम पहिल्यै अवस्थित छ।" });
+        const existingBranch = await query( "SELECT id FROM branch WHERE name_np = ? AND id!=?", [name_np, id] );
+        if ( existingBranch.length > 0 ) {
+            return res.status( 400 ).json( { message: "यो शाखा नाम पहिल्यै अवस्थित छ।" } );
         }
         // Insert user into the database
         const sql = `
             UPDATE branch SET name_np=? , name_en=?, updated_by=0 WHERE id=?`;
         const values = [name_np, name_en, id];
         try {
-            const result = await query(sql, values);
-            return res.json({ Status: true, Result: result, message: "प्रयोगकर्ता सफलतापूर्वक अद्यावधिक गरियो।" })
-        } catch (err) {
-            console.error("Database Query Error:", err);
-            res.status(500).json({ Status: false, Error: "Internal Server Error" })
+            const result = await query( sql, values );
+            return res.json( { Status: true, Result: result, message: "प्रयोगकर्ता सफलतापूर्वक अद्यावधिक गरियो।" } );
+        } catch ( err ) {
+            console.error( "Database Query Error:", err );
+            res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
         }
-    } catch (error) {
-        console.error("User creation error:", error);
-        return res.json({ Status: false, Error: error, message: "सर्भर त्रुटि भयो।" })
-        res.status(500).json({ message: "सर्भर त्रुटि भयो।" });
+    } catch ( error ) {
+        console.error( "User creation error:", error );
+        return res.json( { Status: false, Error: error, message: "सर्भर त्रुटि भयो।" } );
+        res.status( 500 ).json( { message: "सर्भर त्रुटि भयो।" } );
     }
-});
+} );
 
-router.get('/get_branch_name', async (req, res) => {
+router.get( '/get_branch_name', async ( req, res ) => {
     const sql = `SELECT * FROM branch`;
     try {
-        const [result] = await pool.query(sql);
-        return res.json({ Status: true, Result: result })
-    } catch (err) {
-        console.error("Database Query Error:", err);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" })
+        const [result] = await pool.query( sql );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
-});
+} );
 //Office Operations
 
-router.post("/add_office", async (req, res) => {
+router.post( "/add_office", async ( req, res ) => {
     try {
         const { name_np, name_en, state, district, municipality, ward, email, contact, headoffice } = req.body;
         // Check for missing fields
-        if (!name_np) {
-            return res.status(400).json({ message: "सबै फिल्डहरू आवश्यक छन्।" });
+        if ( !name_np ) {
+            return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
         }
         // Check if the name_np already exists
-        const existingBranch = await query("SELECT id FROM office WHERE name_np = ?", [name_np]);
-        if (existingBranch.length > 0) {
-            return res.status(400).json({ message: "यो कार्यालय पहिल्यै अवस्थित छ।" });
+        const existingBranch = await query( "SELECT id FROM office WHERE name_np = ?", [name_np] );
+        if ( existingBranch.length > 0 ) {
+            return res.status( 400 ).json( { message: "यो कार्यालय पहिल्यै अवस्थित छ।" } );
         }
         // Insert user into the database
         const sql = `
             INSERT INTO office (name_np, name_en, state_id, district_id, municipality_id, ward, email, 
             contact, headoffice, created_by) 
             VALUES (?)`;
-        const values = [name_np, name_en, state, district, municipality, ward, email, contact, headoffice, 0]
+        const values = [name_np, name_en, state, district, municipality, ward, email, contact, headoffice, 0];
         try {
-            const result = await query(sql, [values]);
-            return res.json({ Status: true, Result: result, message: "कार्यालयको विवरण सफलता पुर्वक प्रविष्ट गरियो।" })
-        } catch (err) {
-            console.error("Database Query Error:", err);
+            const result = await query( sql, [values] );
+            return res.json( { Status: true, Result: result, message: "कार्यालयको विवरण सफलता पुर्वक प्रविष्ट गरियो।" } );
+        } catch ( err ) {
+            console.error( "Database Query Error:", err );
 
             // Return custom error for incorrect integer values (e.g., Nepali digits)
-            if (err.sqlMessage && err.sqlMessage.includes("Incorrect integer value")) {
-                return res.status(500).json({
+            if ( err.sqlMessage && err.sqlMessage.includes( "Incorrect integer value" ) ) {
+                return res.status( 500 ).json( {
                     Status: false,
-                    message: err.sqlMessage,                                       
+                    message: err.sqlMessage,
                     Error: err.sqlMessage
-                });
+                } );
             }
             // res.status(500).json({ Status: false, Error: err })
         }
-    } catch (error) {
-        console.error("User creation error:", error);
-        return res.json({ Status: false, Error: error, message: "सर्भर त्रुटि भयो।" })
-        res.status(500).json({ message: "सर्भर त्रुटि भयो।" });
+    } catch ( error ) {
+        console.error( "User creation error:", error );
+        return res.json( { Status: false, Error: error, message: "सर्भर त्रुटि भयो।" } );
+        res.status( 500 ).json( { message: "सर्भर त्रुटि भयो।" } );
     }
-});
+} );
 
-router.put("/update_branch_name/:id", async (req, res) => {
+router.put( "/update_branch_name/:id", async ( req, res ) => {
     const id = req.params.id;
     try {
         const { name_np, name_en } = req.body;
         // Check for missing fields
-        if (!name_np || !name_en) {
-            return res.status(400).json({ message: "सबै फिल्डहरू आवश्यक छन्।" });
+        if ( !name_np || !name_en ) {
+            return res.status( 400 ).json( { message: "सबै फिल्डहरू आवश्यक छन्।" } );
         }
         // Check if the username already exists
-        const existingBranch = await query("SELECT id FROM branch WHERE name_np = ? AND id!=?", [name_np, id]);
-        if (existingBranch.length > 0) {
-            return res.status(400).json({ message: "यो शाखा नाम पहिल्यै अवस्थित छ।" });
+        const existingBranch = await query( "SELECT id FROM branch WHERE name_np = ? AND id!=?", [name_np, id] );
+        if ( existingBranch.length > 0 ) {
+            return res.status( 400 ).json( { message: "यो शाखा नाम पहिल्यै अवस्थित छ।" } );
         }
         // Insert user into the database
         const sql = `
             UPDATE branch SET name_np=? , name_en=?, updated_by=0 WHERE id=?`;
         const values = [name_np, name_en, id];
         try {
-            const result = await query(sql, values);
-            return res.json({ Status: true, Result: result, message: "प्रयोगकर्ता सफलतापूर्वक अद्यावधिक गरियो।" })
-        } catch (err) {
-            console.error("Database Query Error:", err);
-            res.status(500).json({ Status: false, Error: "Internal Server Error" })
+            const result = await query( sql, values );
+            return res.json( { Status: true, Result: result, message: "प्रयोगकर्ता सफलतापूर्वक अद्यावधिक गरियो।" } );
+        } catch ( err ) {
+            console.error( "Database Query Error:", err );
+            res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
         }
-    } catch (error) {
-        console.error("User creation error:", error);
-        return res.json({ Status: false, Error: error, message: "सर्भर त्रुटि भयो।" })
-        res.status(500).json({ message: "सर्भर त्रुटि भयो।" });
+    } catch ( error ) {
+        console.error( "User creation error:", error );
+        return res.json( { Status: false, Error: error, message: "सर्भर त्रुटि भयो।" } );
+        res.status( 500 ).json( { message: "सर्भर त्रुटि भयो।" } );
     }
-});
+} );
 
-router.get('/get_offices', async (req, res) => {
+router.get( '/get_offices', async ( req, res ) => {
     const sql = `SELECT * FROM office ORDER BY name_np`;
     try {
-        const result = await query(sql);
-        return res.json({ Status: true, Result: result })
-    } catch (err) {
-        console.error("Database Query Error:", err);
-        res.status(500).json({ Status: false, Error: "Internal Server Error" })
+        const result = await pool.query( sql );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
+} );
+
+// Create
+router.post("/prison_blocks", verifyToken, async (req, res) => {
+  const active_office = req.user.office_id;
+  const role_id = req.user.role_id;
+  const { prison_id, block_name, capacity, description } = req.body;
+
+  try {
+    if (role_id == 2 || active_office == prison_id || role_id == 99) {
+      await pool.query(
+        "INSERT INTO prison_blocks (prison_id, block_name, capacity, description) VALUES (?, ?, ?, ?)",
+        [prison_id, block_name, capacity || null, description || null]
+      );
+      return res.json({ message: "Block created" });
+    }
+    return res.status(403).json({ message: "Unauthorized" });
+  } catch (err) {
+    console.error("Create Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
+
+// Update
+router.put("/prison_blocks/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { prison_id, block_name, capacity, description } = req.body;
+  const active_office = req.user.office_id;
+  const role_id = req.user.role_id;
+
+  try {
+    if (role_id == 2 || active_office == prison_id || role_id == 99) {
+      await pool.query(
+        "UPDATE prison_blocks SET prison_id=?, block_name=?, capacity=?, description=? WHERE id=?",
+        [prison_id, block_name, capacity || null, description || null, id]
+      );
+      return res.json({ message: "Block updated" });
+    }
+    return res.status(403).json({ message: "Unauthorized" });
+  } catch (err) {
+    console.error("Update Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Delete
+router.delete("/prison_blocks/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const active_office = req.user.office_id;
+  const role_id = req.user.role_id;
+
+  try {
+    if (role_id == 2 || role_id == 99) {
+      await pool.query("DELETE FROM prison_blocks WHERE id=?", [id]);
+      return res.json({ message: "Block deleted" });
+    }
+    return res.status(403).json({ message: "Unauthorized" });
+  } catch (err) {
+    console.error("Delete Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 export { router as adminRouter };

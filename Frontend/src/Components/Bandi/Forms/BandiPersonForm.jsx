@@ -34,6 +34,7 @@ import { useAuth } from '../../../Context/AuthContext';
 import ReuseDatePickerBSsmV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
+import useBlockList from '../../ReuseableComponents/FetchApis/useBlockList';
 
 const BandiPersonForm = () => {
   const BASE_URL = useBaseURL();
@@ -292,7 +293,7 @@ const BandiPersonForm = () => {
     } );
   }, [muddaCount, watch] );
 
-
+  const { optrecords: blockListOpt, loading: blockListLoading } = useBlockList();
   const { optrecords: fineTypesOpt, loading: fineTypesLoading } = fetchFineTypes();
   const { optrecords: diseasesOpt, loading: diseasesLoading } = fetchDiseases();
   const { optrecords: disabilitiesOpt, loading: disablilitiesLoading } = fetchDisabilities();
@@ -330,6 +331,23 @@ const BandiPersonForm = () => {
                 required={false}
                 control={control}
                 error={errors.lagat_no} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseSelect
+                name='block_no'
+                label="ब्लक नं."
+                options={blockListOpt}
+                required={false}
+                control={control}
+                error={errors.block_no} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseDateField
+                name='enrollment_date_bs'
+                label="दाखिला मिति"
+                required={false}
+                control={control}
+                error={errors.enrollment_date_bs} />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>

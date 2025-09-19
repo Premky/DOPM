@@ -394,35 +394,35 @@ router.get( '/get_bandi_type', async ( req, res ) => {
     }
 } );
 
-router.get('/get_mudda', async (req, res) => {
+router.get( '/get_mudda', async ( req, res ) => {
     try {
         let sql = `SELECT * FROM muddas`;
         const params = [];
 
         // Apply filter if mudda_group_id is provided
-        if (req.query.mudda_group_id) {
+        if ( req.query.mudda_group_id ) {
             sql += ' WHERE muddas_group_id = ?';
-            params.push(req.query.mudda_group_id);
+            params.push( req.query.mudda_group_id );
         }
 
         sql += ' ORDER BY mudda_name ASC'; // make ordering explicit
 
-        const [result] = await pool.query(sql, params);
+        const [result] = await pool.query( sql, params );
 
-        if (!result || result.length === 0) {
-            return res.json({ Status: true, Result: [], Message: "No muddas found" });
+        if ( !result || result.length === 0 ) {
+            return res.json( { Status: true, Result: [], Message: "No muddas found" } );
         }
 
-        return res.json({ Status: true, Result: result });
-    } catch (err) {
-        console.error("Database Query Error:", err.message);
-        return res.status(500).json({
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err.message );
+        return res.status( 500 ).json( {
             Status: false,
             Error: "Internal Server Error",
             Details: err.message, // helpful for debugging
-        });
+        } );
     }
-});
+} );
 
 router.get( '/get_mudda1', async ( req, res ) => {
     try {
@@ -543,9 +543,26 @@ router.get( '/search_pmis', ( req, res ) => {
                 WHERE pmis = ?`;
     pool.query( sql, [pmis], ( err, result ) => {
         return handleResponse( err, result, "Query Error" );
-    } );
+    } );    
 } );
 
+// Get all blocks with office name
+router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const sql = `SELECT * FROM usertypes;`;
+    try {
+        const [result] = await pool.query(
+            `SELECT pb.*, o.letter_address 
+       FROM prison_blocks pb 
+       JOIN offices o ON pb.prison_id = o.id
+       WHERE o.id=?`,
+            [active_office])
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
 
+} );
 
 export { router as publicRouter };

@@ -4,6 +4,8 @@ import { AuthProvider } from './Context/AuthContext';
 import axios from 'axios';
 
 // Lazy-loaded components
+const PrisionBlocksForm = lazy( () => import( './Components/AdminPanel/AdminSettings/PrisionBlocksForm' ) );
+
 const Login = lazy( () => import( './Components/Auth/Login' ) );
 const CombinedNav = lazy( () => import( './Components/Nav/CombinedNav' ) );
 const CombinedNavBar = lazy( () => import( './Components/Nav/CombinedNavBar' ) );
@@ -87,11 +89,12 @@ function App() {
             {/* Admin routes wrapped with AdminCheck */}
 
             {/* Routes wrapped with LoggedIn middleware */}
-            <Route path="/" element={<Login />} />            
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route element={<LoggedIn />}>
 
               <Route element={<ProtectedLayout />}>
+
                 <Route element={<AdminCheck />}>
                   <Route path="admin">
                     <Route path="create_user" element={<CreateUser />} />
@@ -100,12 +103,15 @@ function App() {
                   </Route>
                 </Route>
 
+                <Route path="adminsettings" element={<OutletLayout />}>
+                  <Route path="block" element={<PrisionBlocksForm />} />
+                </Route>
                 {/* Bandis Routes */}
                 <Route path="bandi" element={<OutletLayout />}>
                   <Route index element={<CountReport />} />
                   <Route path="dashboard" element={<CountReport />} />
                   <Route path="count_ac_office" element={<BandiMaskebari />} />
-                  <Route path = "count_ac_country" element={<CountAcOfficenCountry/>}/>
+                  <Route path="count_ac_country" element={<CountAcOfficenCountry />} />
                   <Route path="maskebari" element={<KaragarMaskebari />} />
                   <Route path="bandi_details" element={<AllBandiTable />} />
                   <Route path="create_bandi" element={<BandiPersonForm />} />

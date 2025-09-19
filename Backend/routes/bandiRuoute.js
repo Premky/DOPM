@@ -561,6 +561,8 @@ const getBandiQuery = `
     b.id AS bandi_id,
     b.office_bandi_id,
     b.lagat_no,
+    b.enrollment_date_bs,
+    pb.block_name,
     b.bandi_name,
     b.bandi_type,
     b.gender,
@@ -624,6 +626,7 @@ LEFT JOIN bandi_kaid_details bkd ON b.id = bkd.bandi_id
 
 LEFT JOIN bandi_punarabedan_details bpd ON b.id = bpd.bandi_id
 LEFT JOIN offices bpdo ON bpd.punarabedan_office_id = bpdo.id
+LEFT JOIN prison_blocks pb ON b.block_no=pb.id
 
 -- LEFT JOIN payroles p ON b.id = p.bandi_id
 -- LEFT JOIN offices po ON p.created_office = po.id
@@ -1591,6 +1594,7 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
 router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
+    console.log(data.enrollment_date_bs)
     const dob_ad = await bs2ad( data.dob );
     console.log( dob_ad );
     try {
@@ -1598,11 +1602,13 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
             UPDATE bandi_person SET                
                 bandi_name = ?, lagat_no=?, gender = ?, dob = ?, dob_ad=?, married_status = ?,
                 bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
+                enrollment_date_bs=?, enrollment_date_ad=?, block_no=?,
                 updated_by = ?, updated_at = NOW()
             WHERE id = ?
         `, [
             data.bandi_name, data.lagat_no, data.gender, data.dob, dob_ad, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
+            data.enrollment_date_bs, await bs2ad(data.enrollment_date_bs), data.block_no,
             req.user.username, id
         ] );
         console.log( result );
