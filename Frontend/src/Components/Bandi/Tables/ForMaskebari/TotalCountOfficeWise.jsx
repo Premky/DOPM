@@ -31,6 +31,41 @@ const TotalCountOfficeWise = ( { filters } ) => {
         textAlign: 'center', verticalAlign: 'middle', backgroundColor: 'teal'
     };
     // console.log(loginStatus)
+    //For Bottom Totals: 
+    const totals = count.reduce(
+        ( acc, data ) => {
+            acc.totalKaidiMale += data.kaidi_male || 0;
+            acc.totalKaidiFemale += data.kaidi_female || 0;
+            acc.totalKaidi += data.total_kaidi || 0;
+            acc.totalThunuwaMale += data.thunuwa_male || 0;
+            acc.totalThunuwaFemale += data.thunuwa_female || 0;
+            acc.totalThunuwa += data.total_thunuwa || 0;
+            acc.totalMale += data.total_male || 0;
+            acc.totalFemale += data.total_female || 0;
+            acc.totalKaidi65 += ( data.kaidi_male_65plus || 0 ) + ( data.kaidi_female_65plus || 0 );
+            acc.totalThunuwa65 += ( data.thunuwa_male_65plus || 0 ) + ( data.thunuwa_female_65plus || 0 );
+            acc.totalAashrit += data.total_aashrit || 0;
+            acc.totalForeign += data.foreign_count || 0;
+            acc.totalAll += ( data.total_male || 0 ) + ( data.total_female || 0 );
+            return acc;
+        },
+        {
+            totalKaidiMale: 0,
+            totalKaidiFemale: 0,
+            totalKaidi: 0,
+            totalThunuwaMale: 0,
+            totalThunuwaFemale: 0,
+            totalThunuwa: 0,
+            totalMale: 0,
+            totalFemale: 0,
+            totalKaidi65: 0,
+            totalThunuwa65: 0,
+            totalAashrit: 0,
+            totalForeign: 0,
+            totalAll: 0,
+        }
+    );
+
     return (
         <Box>
             <Helmet>
@@ -113,10 +148,26 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                                 .map( c => `${ c.country }-${ c.count }` )
                                                 .join( ', ' )}
                                         </TableCell>
-
                                     </>
                                 </TableRow>
                             ) )}
+                            <TableRow sx={{ backgroundColor: '#f0f0f0', fontWeight: 'bold' }}>
+                                <TableCell colSpan={3}>कुल जम्मा</TableCell>
+                                <TableCell>{totals.totalAll}</TableCell>
+                                <TableCell>{totals.totalKaidiMale}</TableCell>
+                                <TableCell>{totals.totalKaidiFemale}</TableCell>
+                                <TableCell>{totals.totalKaidi}</TableCell>
+                                <TableCell>{totals.totalThunuwaMale}</TableCell>
+                                <TableCell>{totals.totalThunuwaFemale}</TableCell>
+                                <TableCell>{totals.totalThunuwa}</TableCell>
+                                <TableCell>{totals.totalMale}</TableCell>
+                                <TableCell>{totals.totalFemale}</TableCell>
+                                <TableCell>{totals.totalKaidi65}</TableCell>
+                                <TableCell>{totals.totalThunuwa65}</TableCell>
+                                <TableCell>{totals.totalAashrit}</TableCell>
+                                <TableCell>{totals.totalForeign}</TableCell>
+                                <TableCell>-</TableCell>
+                            </TableRow>
 
                         </TableBody>
                     </Table>

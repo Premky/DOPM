@@ -44,7 +44,7 @@ const BandiMaskebari = () => {
       <form>
         <Grid size={{ xs: 12, md: 12, sm: 12 }} spacing={2} container>
           {(authState.office_id == 0 || authState.office_id == 0) && (
-            <Grid size={{ xs: 4 }}>
+            <Grid size={{ xs: 3 }}>
               <ReuseKaragarOffice
                 name='karagar_office'
                 control={control}
@@ -52,21 +52,21 @@ const BandiMaskebari = () => {
               />
             </Grid>
           )}
-          <Grid size={{ xs: 4 }}>
+          <Grid size={{ xs: 3 }}>
             <ReuseDateField
               name='start_date'
               control={control}
               label='सुरु मिति'
             />
           </Grid>
-          <Grid size={{ xs: 4 }}>
+          <Grid size={{ xs: 3 }}>
             <ReuseDateField
               name='end_date'
               control={control}
               label='अन्तिम मिति'
             />
           </Grid>
-          <Grid size={{ xs: 4 }}>
+          <Grid size={{ xs: 3 }}>
             <ReuseSelect              
               label='फरार'
               name='escaped'
