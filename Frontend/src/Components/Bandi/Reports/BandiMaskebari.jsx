@@ -9,6 +9,7 @@ import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 import { useForm } from 'react-hook-form';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { useAuth } from '../../../Context/AuthContext';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 //Export data to Excel
 const exportMaskebari = async () => {
   await exportToExcel( releasedCounts, records, totals, foreignrecords, foreignTotals, fy, fm );
@@ -22,18 +23,21 @@ const BandiMaskebari = () => {
     const searchKaragarOffice = watch('karagar_office');
     const searchStartDate = watch('start_date');
     const searchEndDate = watch('end_date');
+    const escaped = watch('escaped');
 
     //decounced Variables, so update only happens after given interval of time
     const [debounceKaragarOffice] = useDebounce(searchKaragarOffice, 100)
     const [debounceStartDate] = useDebounce(searchStartDate, 300)
     const [deobounceEndDate] = useDebounce(searchEndDate, 300)
+    
 
     // const filters={searchKaragarOffice, searchStartDate, searchEndDate}
     const filters = useMemo(()=>({
       searchKaragarOffice:debounceKaragarOffice,
       searchStartDate:debounceStartDate, 
-      searchEndDate:deobounceEndDate
-    }),[debounceKaragarOffice, debounceStartDate, deobounceEndDate])
+      searchEndDate:deobounceEndDate,
+      escaped
+    }),[debounceKaragarOffice, debounceStartDate, deobounceEndDate,escaped])
     
   return (
     <Box>
@@ -60,6 +64,14 @@ const BandiMaskebari = () => {
               name='end_date'
               control={control}
               label='अन्तिम मिति'
+            />
+          </Grid>
+          <Grid size={{ xs: 4 }}>
+            <ReuseSelect              
+              label='फरार'
+              name='escaped'
+              options={[{ label: 'फरार', value: 'escaped'}]}
+              control={control}
             />
           </Grid>
         </Grid>

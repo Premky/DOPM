@@ -17,6 +17,7 @@ const UseBandiTotalCountACoffice = (filters={}) => {
             office_id: filters?.searchKaragarOffice || '',
             startDate: filters?.searchStartDate || '',
             endDate: filters?.searchEndDate || '',
+            escaped:filters?.escaped ||'',
             _t: Date.now(),
           },
           withCredentials: true
@@ -32,7 +33,7 @@ const UseBandiTotalCountACoffice = (filters={}) => {
     if (filters) {
       fetchRecords();
     }
-  }, [BASE_URL, filters?.searchKaragarOffice, filters?.searchStartDate, filters?.searchEndDate]);
+  }, [BASE_URL, filters?.searchKaragarOffice, filters?.searchStartDate, filters?.searchEndDate, filters?.escaped]);
 
   const totals = count.reduce((acc, curr) => {
     Object.keys(curr).forEach((key) => {

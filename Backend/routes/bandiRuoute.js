@@ -2846,7 +2846,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         const defaultAge = 65;
         const defaultOfficeCategory = 2;
 
-        let { nationality, ageFrom, ageTo, office_id, startDate, endDate } = req.query;
+        let { nationality, ageFrom, ageTo, office_id, startDate, endDate, escaped } = req.query;
 
         if ( !startDate && !endDate ) {
             startDate = '1000-01-01';
@@ -2871,7 +2871,14 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             officeFilterSql = 'AND o.id = ?';
         }
 
+        console.log(escaped)
+
         let extraSubqueryFilters = '';
+        if(escaped=='escaped'){
+            extraSubqueryFilters='AND bp.is_escaped=?';
+            params.push(1)
+        }
+
         if ( nationality ) {
             extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape( nationality.trim() );
         }
@@ -2961,7 +2968,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
       ) brd ON brd.bandi_id = bp.id
 
       WHERE (brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti, '%Y-%m-%d') > STR_TO_DATE(?, '%Y-%m-%d'))
-        AND o.office_categories_id = ?
+        AND o.office_categories_id = ? 
         ${ officeFilterSql }
 
       GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
