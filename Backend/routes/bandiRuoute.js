@@ -2869,14 +2869,11 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         } else if ( office_id ) {
             params.push( office_id );
             officeFilterSql = 'AND o.id = ?';
-        }
-
-        console.log(escaped)
+        }        
 
         let extraSubqueryFilters = '';
         if(escaped=='escaped'){
-            extraSubqueryFilters=' AND bp.is_escaped=?';
-            params.push(1)
+            extraSubqueryFilters=' AND bp.is_escaped=1';            
         }
 
         if ( nationality ) {
