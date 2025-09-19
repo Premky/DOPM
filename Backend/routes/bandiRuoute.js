@@ -2970,6 +2970,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         ${ officeFilterSql }
 
       GROUP BY voad.state_id, voad.district_order_id, o.letter_address, o.id
+      HAVING SUM(total_kaidi) >0;
       ORDER BY voad.state_id, voad.district_order_id, o.letter_address, o.id;
     `;
 
