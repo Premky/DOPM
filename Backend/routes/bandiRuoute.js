@@ -922,6 +922,7 @@ router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
 } );
 
 router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
+    // res.set( 'Cache-Control', 'no-store' );
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
     const searchOffice = req.query.searchOffice || 0;
@@ -1529,6 +1530,8 @@ router.get( '/get_escaped_bandi', verifyToken, async ( req, res ) => {
         return res.json( { Status: false, Error: "Query Error" } );
     }
 } );
+
+//Only to get escaped list
 router.get( '/get_escaped_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     // console.log(id)    
@@ -1537,7 +1540,9 @@ router.get( '/get_escaped_bandi/:id', verifyToken, async ( req, res ) => {
                     LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
                     LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
                     LEFT JOIN muddas m ON bmd.mudda_id=m.id
-                    WHERE bed.status='escaped' AND bed.id=?`;
+                    LEFT JOIN offices o ON bed.escaped_from_office_id=o.id
+                    LEFT JOIN offices oo ON bed.current_office_id=oo.id
+                WHERE bed.status='escaped' AND bed.id=?`;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
         console.log( result );
@@ -1551,6 +1556,33 @@ router.get( '/get_escaped_bandi/:id', verifyToken, async ( req, res ) => {
         return res.json( { Status: false, Error: "Query Error" } );
     }
 } );
+
+//To get all list
+router.get( '/get_escaped_bandi_for_view/:id', verifyToken, async ( req, res ) => {
+    const { id } = req.params;
+    // console.log(id)    
+    const sql = `SELECT bed.*, bp.id AS bandi_id, bp.office_bandi_id, bp.bandi_name,m.mudda_name
+                    FROM bandi_escape_details bed
+                    LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
+                    LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
+                    LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                    LEFT JOIN offices o ON bed.escaped_from_office_id=o.id
+                    LEFT JOIN offices oo ON bed.current_office_id=oo.id
+                WHERE bed.bandi_id=?`;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        console.log( result );
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
+        }
+        // console.log(age)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
 router.get( '/get_bandi_address/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
