@@ -972,8 +972,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         params.push( mudda_group_id );
     }
     if ( is_escape == 'escaped' ) {
-        conditions.push( 'bp.is_escaped = ?' );
-        params.push( is_active );
+        conditions.push( 'bed.status = ?' );
+        params.push( is_escape );
     }
 
     if ( gender ) {
