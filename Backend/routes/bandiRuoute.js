@@ -1012,7 +1012,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id            
+            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id   
+            LEFT JOIN bandi_escape_details bed ON bp.id=bed.bandi_id         
             ${ baseWhere }
             ORDER BY bp.id DESC
         `;
@@ -1026,7 +1027,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id            
+            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+            LEFT JOIN bandi_escape_details bed ON bp.id=bed.bandi_id            
             ${ baseWhere }
         `;
         const [countResult] = await pool.query( countSQL, params );
@@ -1083,7 +1085,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN offices oo ON bp.current_office_id = oo.id
             LEFT JOIN bandi_id_card_details bicd ON bp.id=bicd.bandi_id
             LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id   
-            LEFT JOIN bandi_escape_details bed ON bp.id=bed.bandi_id         
+            LEFT JOIN bandi_escape_details bed ON bp.id=bed.bandi_id      
 
             -- Join total_jariwana_amount first
             LEFT JOIN (
