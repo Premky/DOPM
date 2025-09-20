@@ -1560,8 +1560,8 @@ router.get( '/get_escaped_bandi/:id', verifyToken, async ( req, res ) => {
 //To get all list
 router.get( '/get_escaped_bandi_for_view/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
-    // console.log(id)    
-    const sql = `SELECT bed.*, bp.id AS bandi_id, bp.office_bandi_id, bp.bandi_name,m.mudda_name
+    console.log( "🔥 Route hit, ID =", id );
+    const sql = `SELECT bed.*, o.letter_address AS escaped_from_office, oo.letter_address AS current_office
                     FROM bandi_escape_details bed
                     LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
                     LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
@@ -1573,7 +1573,7 @@ router.get( '/get_escaped_bandi_for_view/:id', verifyToken, async ( req, res ) =
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
         console.log( result );
         if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi not found for select" } );
+            return res.json( { Status: false, Error: "Record not found for bandi escape" } );
         }
         // console.log(age)
         return res.json( { Status: true, Result: result } );
