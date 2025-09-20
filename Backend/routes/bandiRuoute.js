@@ -1562,10 +1562,7 @@ router.get( '/get_escaped_bandi_for_view/:id', verifyToken, async ( req, res ) =
     const { id } = req.params;
     console.log( "🔥 Route hit, ID =", id );
     const sql = `SELECT bed.*, o.letter_address AS escaped_from_office, oo.letter_address AS current_office
-                    FROM bandi_escape_details bed
-                    LEFT JOIN bandi_person bp ON bed.bandi_id=bp.id
-                    LEFT JOIN bandi_mudda_details bmd ON bed.bandi_id=bmd.bandi_id
-                    LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                    FROM bandi_escape_details bed                                                            
                     LEFT JOIN offices o ON bed.escaped_from_office_id=o.id
                     LEFT JOIN offices oo ON bed.current_office_id=oo.id
                 WHERE bed.bandi_id=?`;
