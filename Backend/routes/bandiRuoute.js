@@ -971,6 +971,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         `);
         params.push( mudda_group_id );
     }
+    console.log( 'is_escape:', is_escape );
     if ( is_escape == 'escaped' ) {
         conditions.push( 'bed.status = ?' );
         params.push( is_escape );
@@ -1597,7 +1598,7 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
 router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
-    console.log(data.enrollment_date_bs)
+    console.log( data.enrollment_date_bs );
     const dob_ad = await bs2ad( data.dob );
     console.log( dob_ad );
     try {
@@ -1611,7 +1612,7 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
         `, [
             data.bandi_name, data.lagat_no, data.gender, data.dob, dob_ad, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
-            data.enrollment_date_bs, await bs2ad(data.enrollment_date_bs), data.block_no,
+            data.enrollment_date_bs, await bs2ad( data.enrollment_date_bs ), data.block_no,
             req.user.username, id
         ] );
         console.log( result );
@@ -2878,13 +2879,13 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         } else if ( office_id ) {
             params.push( office_id );
             officeFilterSql = 'AND o.id = ?';
-        }        
+        }
 
         let extraSubqueryFilters = '';
-        if(escaped){
-            extraSubqueryFilters=` AND bed.status='${escaped}'`
-            extraSubqueryFilters=` AND bed.escape_date_bs BETWEEN ${startDate} AND ${endDate}`
-            extraSubqueryFilters=` AND bed.recapture_date_bs BETWEEN ${startDate} AND ${endDate}`
+        if ( escaped ) {
+            extraSubqueryFilters = ` AND bed.status='${ escaped }'`;
+            extraSubqueryFilters = ` AND bed.escape_date_bs BETWEEN ${ startDate } AND ${ endDate }`;
+            extraSubqueryFilters = ` AND bed.recapture_date_bs BETWEEN ${ startDate } AND ${ endDate }`;
         }
 
         if ( nationality ) {
@@ -3447,8 +3448,8 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     } = req.body;
 
     let connection;
-    const [bandi_details]=await pool.query(`SELECT * FROM bandi_person WHERE id=?`,[bandi_id])
-    const officeBandiId=bandi_details[0].office_bandi_id;
+    const [bandi_details] = await pool.query( `SELECT * FROM bandi_person WHERE id=?`, [bandi_id] );
+    const officeBandiId = bandi_details[0].office_bandi_id;
     let insertSql;
     let values;
     if ( status == 'recaptured' ) {
@@ -3462,7 +3463,7 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
             ) VALUES (?, ?,?,  ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)
             `;
         values = [bandi_id, officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
-            recapture_date_bs, await bs2ad(recapture_date_bs), enrollment_date_bs, await bs2ad(enrollment_date_bs), 
+            recapture_date_bs, await bs2ad( recapture_date_bs ), enrollment_date_bs, await bs2ad( enrollment_date_bs ),
             recaptured_by, recapture_location, recapture_notes,
             active_office,
             user_id, new Date(), user_id, new Date()];
@@ -3475,7 +3476,7 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
               created_by, created_at, updated_by, updated_at
             ) VALUES (?, ?, ?,  ?, ?, ?, ?, ?, ?,  ?, ?, ?)
           `;
-        values = [bandi_id,officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
+        values = [bandi_id, officeBandiId, active_office, escape_date_bs, await bs2ad( escape_date_bs ), escape_method, status,
             active_office,
             user_id, new Date(), user_id, new Date()];
     }
@@ -3521,7 +3522,7 @@ router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
         `, [
             data.bandi_id, data.office_bandi_id, data.escape_date_bs, await bs2ad( data.escape_date_bs ), data.escape_method,
             data.status,
-            data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.enrollment_date_bs, await bs2ad(data.enrollment_date_bs),
+            data.recapture_date_bs, await bs2ad( data.recapture_date_bs ), data.enrollment_date_bs, await bs2ad( data.enrollment_date_bs ),
             data.recaptured_by, data.recapture_location, data.recapture_notes,
             active_office, req.user.username, id
         ] );
