@@ -972,10 +972,14 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         params.push( mudda_group_id );
     }
     console.log( 'is_escape:', is_escape );
-    if ( is_escape == 'escaped' ) {
-        conditions.push( 'bed.status = ?' );
-        params.push( is_escape );
+    if ( is_escape === 'escaped' ) {
+        conditions.push( '(bed.status = "escaped")' );
+    } else if ( is_escape === 'recaptured' ) {
+        conditions.push( '(bed.status = "recaptured")' );
+    } else if ( is_escape === 'self_present' ) {
+        conditions.push( '(bed.status = "self_present")' );
     }
+
 
     if ( gender ) {
         conditions.push( 'bp.gender = ?' );
