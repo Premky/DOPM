@@ -138,6 +138,8 @@ const BandiEscapeTable = ( { bandi_id } ) => {
                                 <TableCell align="center">पक्राउ/हाजिर मिति</TableCell>
                                 <TableCell align="center">पक्राउ गर्ने निकाय</TableCell>
                                 <TableCell align="center">पक्राउ परेको स्थान</TableCell>
+                                <TableCell align="center">हाल रहेको कारागार</TableCell>
+                                <TableCell align="center">कैफियत</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -145,11 +147,14 @@ const BandiEscapeTable = ( { bandi_id } ) => {
                             {bandiEscapeDetails.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.transfer_to_office_fn}</TableCell>
-                                    <TableCell align="center">{opt.transfer_from_date}</TableCell>
-                                    <TableCell align="center">{opt.transfer_to_date}</TableCell>
-                                    <TableCell align="center">{opt.transfer_reason_np}</TableCell>
-                                    <TableCell align="center">{opt.transfer_reason}</TableCell>
+                                    <TableCell align="center">{opt.escaped_from_office}</TableCell>
+                                    <TableCell align="center">{opt.escaped_date_bs}</TableCell>
+                                    <TableCell align="center">{opt.escape_method}</TableCell>
+                                    <TableCell align="center">{opt.status}</TableCell>
+                                    <TableCell align="center">{opt.recapture_date_bs}</TableCell>
+                                    <TableCell align="center">{opt.recapture_by}</TableCell>
+                                    <TableCell align="center">{opt.recapture_location}</TableCell>
+                                    <TableCell align="center">{opt.recapture_notes}</TableCell>
 
                                     <TableCell align="center">
                                         <Grid item>
