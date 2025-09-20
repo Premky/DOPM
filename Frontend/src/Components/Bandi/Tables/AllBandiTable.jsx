@@ -358,7 +358,8 @@ const AllBandiTable = () => {
                             label='फरार/पुनःपक्राउ'
                             options={[
                                 { label: 'फरार', value: 'escaped' },
-                                { label: 'पुनःपक्राउ', value: 'recaptured' }
+                                { label: 'पुनःपक्राउ', value: 'recaptured' },
+                                { label: 'स्वयं हाजिर', value: 'self_present' }
                             ]}
                             control={control}
                         />
