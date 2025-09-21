@@ -976,9 +976,11 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     if ( is_escape === 'escaped' ) {
         conditions.push( '(bed.status = "escaped")' );
     } else if ( is_escape === 'recaptured' ) {
-        conditions.push(`(bed.status = 'recaptured') AND (bed.current_office_id=${active_office})`);
+        // conditions.push(`(bed.status = 'recaptured') AND (bed.current_office_id=${active_office})`);
+        conditions.push(`(bed.status = 'recaptured') `);
     } else if ( is_escape === 'self_present' ) {
-        conditions.push( `(bed.status = 'self_present') AND (bed.current_office_id=${active_office})`);
+        // conditions.push( `(bed.status = 'self_present') AND (bed.current_office_id=${active_office})`);
+        conditions.push( `(bed.status = 'self_present') `);
     }
 
     if ( gender ) {
