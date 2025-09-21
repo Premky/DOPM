@@ -19,7 +19,7 @@ async function insertBandiPerson( data, connection ) {
   const dob_ad = await bs2ad( data.dob );
   const values = [
     data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name,
-    data.enrollment_date_bs, await bs2ad(enrollment_date_bs), data.block_no,
+    data.enrollment_date_bs, await bs2ad(data.enrollment_date_bs), data.block_no,
     data.gender, data.dob, dob_ad, data.age, data.married_status, data.photo_path,
     data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
     0,    
