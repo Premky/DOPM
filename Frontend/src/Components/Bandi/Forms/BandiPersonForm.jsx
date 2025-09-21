@@ -308,6 +308,9 @@ const BandiPersonForm = () => {
         </Helmet>
       </HelmetProvider>
       <form onSubmit={handleSubmit( onSubmit )}>
+        <Typography variant="h6" mb={2} style={{ color: 'red' }}>
+          यस फारममा इन्ट्री गर्नु अगाडी कारागार प्रशासकको ID प्रयोग गरेर सेटिङ मेनुमा गई ब्लक थप्नुहोला । 
+        </Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }} sx={formHeadStyle}>
             बन्दीको विवरणः
