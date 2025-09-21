@@ -18,6 +18,7 @@ import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import BandiTransfer from '../../Dialogs/BandiTransferModal';
 import { useAuth } from '../../../../Context/AuthContext';
 import fetchBandiEscape from '../../Apis_to_fetch/useFetchBandiEscape';
+import BandiEscapeModal from '../../Dialogs/BandiEscapeModal';
 
 
 const BandiEscapeTable = ( { bandi_id } ) => {
@@ -111,7 +112,7 @@ const BandiEscapeTable = ( { bandi_id } ) => {
 
     return (
         <Grid container spacing={2}>
-            <BandiTransfer
+            <BandiEscapeModal
                 open={modalOpen}
                 onClose={() => setModalOpen( false )}
                 onSave={handleSave}
@@ -148,7 +149,7 @@ const BandiEscapeTable = ( { bandi_id } ) => {
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
                                     <TableCell align="center">{opt.escaped_from_office}</TableCell>
-                                    <TableCell align="center">{opt.escaped_date_bs}</TableCell>
+                                    <TableCell align="center">{opt.escape_date_bs}</TableCell>
                                     <TableCell align="center">{opt.escape_method}</TableCell>
                                     <TableCell align="center">{opt.status}</TableCell>
                                     <TableCell align="center">{opt.recapture_date_bs}</TableCell>
