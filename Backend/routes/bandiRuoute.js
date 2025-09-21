@@ -3483,7 +3483,7 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
     const user_id = req.user.username;
     const active_office = req.user.office_id;
     console.log( req.body );
-    const { bandi_id, escape_date_bs, escape_date_ad, escape_method, notified_by, notified_at, status,
+    const { bandi_id, escape_date_bs, enrollment_date_bs, escape_method, notified_by, notified_at, status,
         recapture_date_bs, recaptured_by, recapture_location, recapture_notes
     } = req.body;
 

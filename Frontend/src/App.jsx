@@ -66,6 +66,7 @@ import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountA
 import ParoleSetting from './Components/Parole/Settings/ParoleSetting';
 import BandiEscapeForm from './Components/Bandi/Forms/BandiEcapeForm';
 import BandiRecaptureForm from './Components/Bandi/Forms/BandiRecaptureForm';
+import PayroleNosForm from './Components/Parole/Settings/ParoleNosForm';
 
 // Layout component to wrap protected routes with navigation
 const ProtectedLayout = () => <CombinedNav />;
@@ -137,6 +138,7 @@ function App() {
                   <Route path="maskebari_table" element={<PayroleMakebari />} />
                   <Route path="payrole_log" element={<ParoleLogForm />} />
                   <Route path="parole_settings" element={<ParoleSetting />} />
+                  <Route path="parole_nos" element={<PayroleNosForm/>}/>
                 </Route>
 
                 {/* Kaamdari Subidha Routes */}

@@ -131,11 +131,11 @@ const PrisonBlocksForm = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Prison</TableCell>
-                <TableCell>Block Name</TableCell>
-                <TableCell>Capacity</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>कारागार कार्यालय</TableCell>
+                <TableCell>ब्लकको नाम</TableCell>
+                <TableCell>क्षमता</TableCell>
+                <TableCell>विवरण</TableCell>
+                <TableCell>#</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

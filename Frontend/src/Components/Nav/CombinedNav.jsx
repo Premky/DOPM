@@ -100,6 +100,13 @@ const CombinedNav = ( { user } ) => {
         // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
       ]
     }
+    , {
+      name: 'सेटिङ',
+      defaultPath: '/adminsettings',
+      submenu: [        
+        { name: 'ब्लकहरु', path: '/adminsettings/block' },        
+      ]
+    }
   ];
   const [resetPasswordOpen, setResetPasswordOpen] = useState( false );
   // console.log(authState)

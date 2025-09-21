@@ -114,8 +114,11 @@ const BandiEscapeForm = () => {
                     <meta name="author" content="कारागार व्यवस्थापन विभाग" />
                 </Helmet>
             </HelmetProvider>
-            <Typography variant="h6" mb={2}>
-                फरार बन्दी प्रविष्टि फारम
+            <Typography variant="h5" mb={2}>
+                फरार बन्दी प्रविष्टि फारम                
+            </Typography>
+            <Typography variant="h6" mb={2} style={{color:'red'}}>
+                यस फारममा इन्ट्री गर्नु अगाडी बन्दिको नाम बन्दी  विवरणको फरार सुचीमा रहेको छ/छैन चेक गर्नुहोला । यदी छ भने पुनः इन्ट्री गर्नु परेमा ।
             </Typography>
 
             <form onSubmit={handleSubmit( onFormSubmit )}>
