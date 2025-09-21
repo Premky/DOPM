@@ -2,7 +2,7 @@ import React, { useEffect, useState, useTransition } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import axios from 'axios';
 import { set, useForm } from 'react-hook-form';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Grid } from '@mui/material';
 import NepaliDate from 'nepali-datetime';
@@ -307,7 +307,7 @@ const BandiPersonForm = () => {
           <title>PMIS: बन्दी विवरण फारम</title>
         </Helmet>
       </HelmetProvider>
-      <form onSubmit={handleSubmit( onSubmit )}>
+      <form onSubmit={handleSubmit( onSubmit )}>      
         <Typography variant="h6" mb={2} style={{ color: 'red' }}>
           यस फारममा इन्ट्री गर्नु अगाडी कारागार प्रशासकको ID प्रयोग गरेर सेटिङ मेनुमा गई ब्लक थप्नुहोला । 
         </Typography>
