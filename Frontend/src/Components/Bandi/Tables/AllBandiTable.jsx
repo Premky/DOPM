@@ -180,8 +180,13 @@ const AllBandiTable = () => {
                 } else {
                     return (
                         <>
-                            {row.current_office_letter_address} <br />
-                            हालः {row?.arrested_office}
+                            {row.current_office_letter_address}
+                            {row.arrested_office && (
+                                <>
+                                    <br />
+                                    हालः {row.arrested_office}
+                                </>
+                            )}
                         </>
                     );
                 }
