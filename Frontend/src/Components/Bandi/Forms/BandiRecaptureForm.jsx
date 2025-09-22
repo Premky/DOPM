@@ -43,7 +43,7 @@ const BandiRecaptureForm = () => {
 
     const status = watch( "status" );
     const escapeId = watch( "escape_id" );
-    const [bandi_id, setBandi_id]=useState();
+    const [bandi_id, setBandi_id] = useState();
 
     useEffect( () => {
         if ( !escapeId ) return;
@@ -61,7 +61,7 @@ const BandiRecaptureForm = () => {
                         escape_id: escapeId,
                         status: Result.status || "recaptured", //fallback
                     } );
-                    setBandi_id(Result[0].bandi_id)
+                    setBandi_id( Result[0].bandi_id );
                 } else {
                     Swal.fire( "Error", "Could not fetch escape details", "error" );
                 }
@@ -137,9 +137,11 @@ const BandiRecaptureForm = () => {
                             type='allbandi'
                         />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        <BandiTable bandi_id={bandi_id} />
-                    </Grid>
+                    {bandi_id && (
+                        <Grid size={{ xs: 12 }}>
+                            <BandiTable bandi_id={bandi_id} />
+                        </Grid>
+                    )}
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseDateField
                             name="escape_date_bs"
