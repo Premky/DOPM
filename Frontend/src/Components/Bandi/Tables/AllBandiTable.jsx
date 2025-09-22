@@ -178,7 +178,12 @@ const AllBandiTable = () => {
                 if ( row.current_office_letter_address == row.arrested_office ) {
                     return row.current_office_letter_address;
                 } else {
-                    return `${ row.current_office_letter_address } \n हालः ${ row.arrested_office }`;
+                    return (
+                        <>
+                            {row.current_office_letter_address} <br />
+                            हालः {row?.arrested_office}
+                        </>
+                    );
                 }
             }
         },
