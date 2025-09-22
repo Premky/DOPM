@@ -15,6 +15,7 @@ import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import ReuseEscapedBandi from "../../ReuseableComponents/ReuseEscapedBandi";
 import { useBaseURL } from '../../../Context/BaseURLProvider';
+import BandiTable from "../Tables/For View/BandiTable";
 
 const BandiRecaptureForm = () => {
     const BASE_URL = useBaseURL();
@@ -42,39 +43,41 @@ const BandiRecaptureForm = () => {
 
     const status = watch( "status" );
     const escapeId = watch( "escape_id" );
+    const [bandi_id, setBandi_id]=useState();
 
-    useEffect(()=>{
-        if(!escapeId) return;
-        const fetchEscapeDetails = async()=>{
-            try{
-                const {data} = await axios.get(
-                    `${BASE_URL}/bandi/get_escaped_bandi/${escapeId}`,{withCredentials:true}
+    useEffect( () => {
+        if ( !escapeId ) return;
+        const fetchEscapeDetails = async () => {
+            try {
+                const { data } = await axios.get(
+                    `${ BASE_URL }/bandi/get_escaped_bandi/${ escapeId }`, { withCredentials: true }
                 );
-                const {Status, Result}=data;
-                console.log(Result)
-                if(data.Status){
+                const { Status, Result } = data;
+                console.log( Result );
+                if ( data.Status ) {
                     //auto populate form
-                    reset({
-                        ...Result[0],                        
-                        escape_id:escapeId,
-                        status:Result.status||"recaptured", //fallback
-                    });
-                }else{
-                    Swal.fire("Error","Could not fetch escape details", "error");
+                    reset( {
+                        ...Result[0],
+                        escape_id: escapeId,
+                        status: Result.status || "recaptured", //fallback
+                    } );
+                    setBandi_id(Result[0].bandi_id)
+                } else {
+                    Swal.fire( "Error", "Could not fetch escape details", "error" );
                 }
-            }catch(err){
-                console.error(err);
-                Swal.fire("Error", err?.response?.data?.Error||"सर्भरमा समस्या आयो।","error");
+            } catch ( err ) {
+                console.error( err );
+                Swal.fire( "Error", err?.response?.data?.Error || "सर्भरमा समस्या आयो।", "error" );
             }
         };
         fetchEscapeDetails();
-    },[escapeId, BASE_URL, reset]);
+    }, [escapeId, BASE_URL, reset] );
 
     const onFormSubmit = async ( data ) => {
         setLoading( true );
         try {
-            const url = `${ BASE_URL }/bandi/update_recapture_bandi/${ data.escape_id }` ;
-            const method = 'PUT' ;
+            const url = `${ BASE_URL }/bandi/update_recapture_bandi/${ data.escape_id }`;
+            const method = 'PUT';
             const response = await axios( {
                 method, url, data: data,
                 withCredentials: true
@@ -109,12 +112,12 @@ const BandiRecaptureForm = () => {
             setLoading( false );
         }
     };
-    
+
     return (
         <Box p={3} sx={{ background: "#fff", borderRadius: 2, boxShadow: 2 }}>
             <HelmetProvider>
                 <Helmet>
-                    <title>PMIS: बन्दी पक्राउ फारम</title>                    
+                    <title>PMIS: बन्दी पक्राउ फारम</title>
                 </Helmet>
             </HelmetProvider>
             <Typography variant="h6" mb={2}>
@@ -130,10 +133,13 @@ const BandiRecaptureForm = () => {
                             name='escape_id'
                             label='बन्दी'
                             required={true}
-                            control={control}                            
+                            control={control}
                             type='allbandi'
                         />
-                    </Grid>                    
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        <BandiTable bandi_id={bandi_id} />
+                    </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <ReuseDateField
                             name="escape_date_bs"
@@ -144,7 +150,7 @@ const BandiRecaptureForm = () => {
                         />
                     </Grid>
 
-                    
+
                     {/* Status */}
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Controller
@@ -154,7 +160,7 @@ const BandiRecaptureForm = () => {
                                 <TextField {...field} select fullWidth label="Status" required>
                                     <MenuItem value="escaped">फरार</MenuItem>
                                     <MenuItem value="self_present">स्वयं उपस्थित</MenuItem>
-                                    <MenuItem value="recaptured">पक्राउ परेको</MenuItem>                                    
+                                    <MenuItem value="recaptured">पक्राउ परेको</MenuItem>
                                 </TextField>
                             )}
                         />
@@ -172,7 +178,7 @@ const BandiRecaptureForm = () => {
                     </Grid>
 
                     {/* Recapture Fields (only show if recaptured) */}
-                    {(status === "recaptured" || status === "self_present") && (
+                    {( status === "recaptured" || status === "self_present" ) && (
                         <>
                             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                                 <ReuseDateField
