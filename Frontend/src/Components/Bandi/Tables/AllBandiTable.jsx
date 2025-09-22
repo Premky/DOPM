@@ -171,7 +171,17 @@ const AllBandiTable = () => {
     };
 
     const columns = [
-        { field: "current_office_letter_address", headerName: "कारागार कार्यालय", width: 100 },
+        {
+            field: "current_office_letter_address", headerName: "कारागार कार्यालय", width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                if ( row.current_office_letter_address == row.arrested_office ) {
+                    return row.current_office_letter_address;
+                } else {
+                    return `${ row.current_office_letter_address } \n हालः ${ row.arrested_office }`;
+                }
+            }
+        },
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
         { field: "lagat_no", headerName: "लगत नं.", width: 100 },
         { field: "bandi_type", headerName: "बन्दी प्रकार", width: 100 },
@@ -222,7 +232,7 @@ const AllBandiTable = () => {
                 ),
         },
         { field: "govt_id_name_np", headerName: "परिचयपत्र प्रकार", width: 100 },
-        { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },        
+        { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },
         { field: "current_age", headerName: "उमेर", width: 100 },
         { field: "gender", headerName: "लिङ्ग", width: 100 },
         { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },
@@ -261,7 +271,7 @@ const AllBandiTable = () => {
             <HelmetProvider>
                 <Helmet>
                     <title>PMIS: बन्दीहरुको सूची</title>
-                    <meta name="description" content="बन्दीहरुको सूची हेर्नुहोस् र व्यवस्थापन गर्नुहोस्" />                    
+                    <meta name="description" content="बन्दीहरुको सूची हेर्नुहोस् र व्यवस्थापन गर्नुहोस्" />
                 </Helmet>
             </HelmetProvider>
 
@@ -272,7 +282,7 @@ const AllBandiTable = () => {
                             name="searchOffice"
                             label="Office"
                             control={control}
-                            // disabled={authState.office_id >= 3}
+                        // disabled={authState.office_id >= 3}
                         />
                     </Grid>
 

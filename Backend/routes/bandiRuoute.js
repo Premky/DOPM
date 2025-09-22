@@ -1076,6 +1076,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs,
                 oo.letter_address AS current_office_letter_address,
+                esc_office AS arrested_office,
                 brd_combined.last_karnayan_miti,
                 bmd_combined.mudda_id,
                 bmd_combined.mudda_name,
@@ -1098,7 +1099,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN offices oo ON bp.current_office_id = oo.id
             LEFT JOIN bandi_id_card_details bicd ON bp.id=bicd.bandi_id
             LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id   
-            LEFT JOIN bandi_escape_details bed ON bp.id=bed.bandi_id      
+            LEFT JOIN bandi_escape_details bed ON bp.id=bed.bandi_id 
+            LEFT JOIN offices esc_office ON bed.current_office_id=esc_office.id     
 
             -- Join total_jariwana_amount first
             LEFT JOIN (
