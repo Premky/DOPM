@@ -570,6 +570,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
     let sql;
     let params=[];
+    let officeFilterSql;
     if ( active_office !== 1 && active_office !== 2 ) {
         params.push( active_office );
         officeFilterSql = 'AND o.id = ?';
