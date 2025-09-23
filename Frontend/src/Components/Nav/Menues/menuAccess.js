@@ -82,6 +82,7 @@ export const menuAccess = {
   },
   adminsettings:{
     office_admin:['/adminsettings/block'],
+    clerk:['/adminsettings/block'],
     superadmin:'all',
   }
 };

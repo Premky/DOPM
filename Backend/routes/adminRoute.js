@@ -196,7 +196,7 @@ router.post("/prison_blocks", verifyToken, async (req, res) => {
   const { prison_id, block_name, capacity, description } = req.body;
 
   try {
-    if (role_id == 2 || active_office == prison_id || role_id == 99) {
+    if (role_id == 2 || active_office == prison_id || role_id == 99 || role_id == 1) {
       await pool.query(
         "INSERT INTO prison_blocks (prison_id, block_name, capacity, description) VALUES (?, ?, ?, ?)",
         [prison_id, block_name, capacity || null, description || null]
