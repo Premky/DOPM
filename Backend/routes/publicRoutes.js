@@ -574,10 +574,11 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
     if ( active_office !== 1 && active_office !== 2 ) {
         params.push( active_office );
         officeFilterSql = 'AND o.id = ?';
-    } else if ( active_office ) {
-        params.push( active_office );
-        officeFilterSql = 'AND o.id = ?';
-    }
+    } 
+    // else if ( active_office ) {
+    //     params.push( active_office );
+    //     officeFilterSql = 'AND o.id = ?';
+    // }
 
     sql = `SELECT pb.*, o.letter_address 
        FROM prison_blocks pb 
