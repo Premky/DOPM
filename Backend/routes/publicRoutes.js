@@ -543,20 +543,47 @@ router.get( '/search_pmis', ( req, res ) => {
                 WHERE pmis = ?`;
     pool.query( sql, [pmis], ( err, result ) => {
         return handleResponse( err, result, "Query Error" );
-    } );    
+    } );
 } );
 
 // Get all blocks with office name
-router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
+router.get( '/prison_blocks1/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-    const sql = `SELECT * FROM usertypes;`;
     try {
         const [result] = await pool.query(
             `SELECT pb.*, o.letter_address 
        FROM prison_blocks pb 
        JOIN offices o ON pb.prison_id = o.id
        WHERE o.id=?`,
-            [active_office])
+            [active_office] );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+
+} );
+
+router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+
+
+    let sql;
+    let params=[];
+    if ( active_office !== 1 && active_office !== 2 ) {
+        params.push( active_office );
+        officeFilterSql = 'AND o.id = ?';
+    } else if ( office_id ) {
+        params.push( office_id );
+        officeFilterSql = 'AND o.id = ?';
+    }
+
+    sql = `SELECT pb.*, o.letter_address 
+       FROM prison_blocks pb 
+       JOIN offices o ON pb.prison_id = o.id
+       WHERE 1=1 AND ${ officeFilter }`;
+    try {
+        const [result]=await pool.query(sql, [params])
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
