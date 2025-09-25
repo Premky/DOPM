@@ -24,7 +24,7 @@ import TableFilters from "./TableFilters";
 // import PayroleExportButton from "./PayroleExportButton";
 import { useAuth } from "../../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {Helmet} from "react-helmet";
+import { Helmet } from "react-helmet";
 
 import TableActionMenu from "./TableActionMenu";
 // import BandiFullReportPDF from "../../Bandi/Payrole/View/BandiFullReportPDF";
@@ -101,19 +101,27 @@ const BandiTransferTable = () => {
             case 7:
             case 9:
                 return 'अस्विकार'; // अस्विकार (Reject)
-            case 10:
             case 11:
-                return 'स्विकृत भएको'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
+                return 'अस्विकार'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
+            case 4:
+                return 'कारवाही हुँदैछ'
+            case 6:
+                return 'कारवाही हुँदैछ'
+            case 8:
+                return 'कारवाही हुँदैछ'
+            case 10:
+                return 'कारवाही हुँदैछ'
             case 12:
-                return 'स्विकृत भएको र पठाउन बाँकी';
+                return 'स्विकृत भएको तर पठाउन बाँकी';
             case 13:
                 return 'पठाएको/स्विकार गर्न बाँकी'; // पठाएको र स्विकार गरेको
             case 15:
-                return 'स्थानान्तरण भएको'; // पठाएको र स्विकार गरेको
+                return 'स्थानान्तरण भइसकेको'; // पठाएको र स्विकार गरेको
             default:
                 return 'कुनै कारवाही नभएको'; // Default white background
         }
     };
+
     const bgColor = ( status_id ) => {
         switch ( status_id ) {
             case 3:
@@ -123,7 +131,7 @@ const BandiTransferTable = () => {
                 return '#ff6f6f'; // अस्विकार (Reject)
             case 10:
             case 11:
-                return '#ffcc00'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
+                return '#f8df7aff'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
             case 12:
                 return '#ffcc00';
             case 13:
@@ -215,7 +223,7 @@ const BandiTransferTable = () => {
                             const kaidiMuddas = fetchedMuddas[data.bandi_id] || [];
                             const kaidiTransferHistory = fetchedTransferHistory[data.bandi_id] || [];
                             const rowSpan = Math.max( kaidiTransferHistory.length, 1 ); // ensure at least 1 row
-                            
+
                             return (
                                 <Fragment key={`${ data.id }-${ index }`}>
                                     {/* First row */}
@@ -250,7 +258,7 @@ const BandiTransferTable = () => {
                                         <TableCell rowSpan={rowSpan}>
 
                                         </TableCell>
-                                        <TableCell rowSpan={rowSpan}>{statusValue(data.status_id)}</TableCell>
+                                        <TableCell rowSpan={rowSpan}>{statusValue( data.status_id )}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.remarks}</TableCell>
                                         <TableCell rowSpan={rowSpan}>
                                             <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
