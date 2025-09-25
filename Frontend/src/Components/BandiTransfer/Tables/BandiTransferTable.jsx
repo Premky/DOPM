@@ -119,13 +119,9 @@ const BandiTransferTable = () => {
 
     const bgColor = ( status_id ) => {
         switch ( status_id ) {
-            case 3:
-            case 5:
-            case 7:
-            case 9:
+            case 3: case 5: case 7: case 9: case 11:
                 return '#ff6f6f'; // अस्विकार (Reject)
-            case 10:
-            case 11:
+            case 4: case 6: case 8: case 10:
                 return '#f8df7aff'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
             case 12:
                 return '#ffcc00';
