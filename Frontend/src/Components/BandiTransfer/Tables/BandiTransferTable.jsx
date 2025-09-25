@@ -94,6 +94,26 @@ const BandiTransferTable = () => {
 
 
 
+    const statusValue = ( status_id ) => {
+        switch ( status_id ) {
+            case 3:
+            case 5:
+            case 7:
+            case 9:
+                return 'अस्विकार'; // अस्विकार (Reject)
+            case 10:
+            case 11:
+                return 'स्विकृत भएको'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
+            case 12:
+                return 'स्विकृत भएको र पठाउन बाँकी';
+            case 13:
+                return 'पठाएको/स्विकार गर्न बाँकी'; // पठाएको र स्विकार गरेको
+            case 15:
+                return 'स्थानान्तरण भएको'; // पठाएको र स्विकार गरेको
+            default:
+                return 'कुनै कारवाही नभएको'; // Default white background
+        }
+    };
     const bgColor = ( status_id ) => {
         switch ( status_id ) {
             case 3:
@@ -176,6 +196,7 @@ const BandiTransferTable = () => {
                             <TableCell colSpan={3} sx={tableHeadStyle}>जेलमा बसेको विवरण (शुरुदेखि हालसम्म)</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>सरुवा गर्न चाहेको कारागारको नाम र कारण</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण</TableCell>
+                            <TableCell rowSpan={3} sx={tableHeadStyle}>अवस्था</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>कैफियत</TableCell>
                             <TableCell rowSpan={3} sx={tableHeadStyle}>#</TableCell>
                         </TableRow>
@@ -229,6 +250,7 @@ const BandiTransferTable = () => {
                                         <TableCell rowSpan={rowSpan}>
 
                                         </TableCell>
+                                        <TableCell rowSpan={rowSpan}>{statusValue(data.status_id)}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.remarks}</TableCell>
                                         <TableCell rowSpan={rowSpan}>
                                             <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
