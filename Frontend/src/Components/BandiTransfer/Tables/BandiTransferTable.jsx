@@ -96,31 +96,26 @@ const BandiTransferTable = () => {
 
     const statusValue = ( status_id ) => {
         switch ( status_id ) {
-            case 3:
-            case 5:
-            case 7:
-            case 9:
+            case 3: case 5: case 7: case 9: case 11:
                 return 'अस्विकार'; // अस्विकार (Reject)
-            case 11:
-                return 'अस्विकार'; // पठाउन बाँकी वा स्विकार गर्न बाँकी
-            case 4:
-                return 'कारवाही हुँदैछ'
-            case 6:
-                return 'कारवाही हुँदैछ'
-            case 8:
-                return 'कारवाही हुँदैछ'
-            case 10:
-                return 'कारवाही हुँदैछ'
+
+            case 4: case 6: case 8: case 10:
+                return 'कारवाही हुँदैछ'; // In process
+
             case 12:
                 return 'स्विकृत भएको तर पठाउन बाँकी';
+
             case 13:
-                return 'पठाएको/स्विकार गर्न बाँकी'; // पठाएको र स्विकार गरेको
+                return 'पठाएको/स्विकार गर्न बाँकी';
+
             case 15:
-                return 'स्थानान्तरण भइसकेको'; // पठाएको र स्विकार गरेको
+                return 'स्थानान्तरण भइसकेको';
+
             default:
-                return 'कुनै कारवाही नभएको'; // Default white background
+                return 'कुनै कारवाही नभएको';
         }
     };
+
 
     const bgColor = ( status_id ) => {
         switch ( status_id ) {
