@@ -26,7 +26,7 @@ function TransliterateExcel() {
         const res = await axios.post( `${BASE_URL}/transliterate/get_columns`, { filePath, sheetName: sheet } );
         setColumns( res.data.columns );
     };
-
+ 
     // 3️⃣ Select columns
     const toggleColumn = ( col ) => {
         setSelectedColumns( ( prev ) =>

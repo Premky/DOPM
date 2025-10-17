@@ -6,7 +6,7 @@ from indic_transliteration.sanscript import transliterate
 file_path = sys.argv[1]
 sheet_name = sys.argv[2]
 selected_columns = json.loads(sys.argv[3])
-output_file = sys.argv[4]
+output_file = sys.argv[4] 
 
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 

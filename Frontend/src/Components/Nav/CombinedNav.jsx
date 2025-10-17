@@ -114,7 +114,7 @@ const CombinedNav = ( { user } ) => {
         { name: 'एक्सेल', path: '/transliterate' },        
       ]
     }
-  ];
+  ]; 
   const [resetPasswordOpen, setResetPasswordOpen] = useState( false );
   // console.log(authState)
   const handleTopNavClick = ( menu ) => {
