@@ -22,6 +22,7 @@ import { employeRouter } from './routes/employeRoute.js';
 import { bandiRouter } from './routes/bandiRuoute.js';
 import { payroleRouter } from './routes/payroleRoute.js';
 import { bandiTransferRouter } from './routes/bandiTransferRoute.js';
+import { transliterateRouter} from './routes/transliterateRoute.js';
 dotenv.config();
 
 const app = express();
@@ -178,6 +179,7 @@ app.use( '/emp', employeRouter );
 app.use( '/bandi', bandiRouter );
 app.use( '/payrole', payroleRouter );
 app.use( '/bandiTransfer', bandiTransferRouter );
+app.use( '/transliterate', transliterateRouter );
 
 // ------------------- 9️⃣ Error Handler -------------------
 app.use( errorHandler );

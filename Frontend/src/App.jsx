@@ -44,6 +44,9 @@ import EmployeeForm from './Components/Employee/Forms/EmployeeForm';
 import AllEmpTable from './Components/Employee/Tables/AllEmpTable';
 import BandiTransferTable from './Components/BandiTransfer/Tables/BandiTransferTable';
 
+//Transliteration
+import TransliterateExcel from './Components/Transliteration/TransliterateExcel';
+
 axios.interceptors.response.use(
   res => res,
   error => {
@@ -166,7 +169,12 @@ function App() {
                   <Route path="test_emp" element={<AllEmployeTable />} />
                 </Route>
 
-              </Route>
+                <Route path="transliterate" element={<OutletLayout/>}>
+                  <Route index element={<TransliterateExcel/>}/>
+          
+                </Route>
+              </Route> 
+              {/* End of Protected Route */}
 
               {/* Catch all for unknown routes */}
               <Route path="*" element={<h2>Page not found</h2>} />

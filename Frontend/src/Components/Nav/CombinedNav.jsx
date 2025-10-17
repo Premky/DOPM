@@ -107,6 +107,13 @@ const CombinedNav = ( { user } ) => {
         { name: 'ब्लकहरु', path: '/adminsettings/block' },        
       ]
     }
+    , {
+      name: 'Tools',
+      defaultPath: '/transliterate',
+      submenu: [        
+        { name: 'एक्सेल', path: '/transliterate' },        
+      ]
+    }
   ];
   const [resetPasswordOpen, setResetPasswordOpen] = useState( false );
   // console.log(authState)
