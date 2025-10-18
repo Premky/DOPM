@@ -12,22 +12,25 @@ const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
 
 import { bs2ad } from '../utils/bs2ad.js';
+import { ageCalculator } from '../utils/ageCalculator.js';
 // let connection;
 // connection = await pool.getConnection();
 
 async function insertBandiPerson( data, connection ) {
   const dob_ad = await bs2ad( data.dob );
+  const age = await ageCalculator(dob_ad)
+
   const values = [
-    data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name,
-    data.enrollment_date_bs, await bs2ad(data.enrollment_date_bs), data.block_no,
-    data.gender, data.dob, dob_ad, data.age, data.married_status, data.photo_path,
+    data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name, data.bandi_name_en,
+    data.enrollment_date_bs, await bs2ad( data.enrollment_date_bs ), data.block_no,
+    data.gender, data.dob, dob_ad, age, data.married_status, data.photo_path,
     data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
-    0,    
+    0,
     data.bandi_remarks, data.user_id, data.user_id, data.office_id
   ];
 
   const sql = `INSERT INTO bandi_person (
-    bandi_type, office_bandi_id,lagat_no, nationality, bandi_name, 
+    bandi_type, office_bandi_id, lagat_no, nationality, bandi_name, bandi_name_en,
     enrollment_date_bs, enrollment_date_ad, block_no,
     gender, dob, dob_ad, age, married_status, photo_path,
     bandi_education, height, weight, bandi_huliya, is_under_payrole,
@@ -88,7 +91,7 @@ async function insertKaidDetails( bandi_id, data, connection ) {
   ) VALUES (?)`;
   }
   // await queryAsync( sql, [values] );
-  console.log(values)
+  console.log( values );
   const [result] = await connection.query( sql, [values] );
 }
 

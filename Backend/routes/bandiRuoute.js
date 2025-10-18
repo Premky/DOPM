@@ -30,6 +30,7 @@ import {
     updateContactPerson,
     updateDisabilities,
 } from '../services/bandiService.js';
+import { ageCalculator } from '../utils/ageCalculator.js';
 // console.log(current_date);
 // console.log(fy_date)
 
@@ -564,6 +565,7 @@ const getBandiQuery = `
     b.enrollment_date_bs,
     pb.block_name,
     b.bandi_name,
+    b.bandi_name_en,
     b.bandi_type,
     b.gender,
     b.dob,
@@ -1642,17 +1644,18 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     const data = req.body;
     console.log( data.enrollment_date_bs );
     const dob_ad = await bs2ad( data.dob );
-    console.log( dob_ad );
+    // console.log( dob_ad );
+    const age = await ageCalculator(dob_ad)
     try {
         const [result] = await pool.query( `
             UPDATE bandi_person SET                
-                bandi_name = ?, lagat_no=?, gender = ?, dob = ?, dob_ad=?, married_status = ?,
+                bandi_name = ?, bandi_name_en = ?, lagat_no=?, gender = ?, dob = ?, dob_ad=?, age=?, married_status = ?,
                 bandi_education = ?, height = ?, weight = ?, bandi_huliya = ?, remarks = ?,
                 enrollment_date_bs=?, enrollment_date_ad=?, block_no=?,
                 updated_by = ?, updated_at = NOW()
             WHERE id = ?
         `, [
-            data.bandi_name, data.lagat_no, data.gender, data.dob, dob_ad, data.married_status,
+            data.bandi_name, data.bandi_name_en, data.lagat_no, data.gender, data.dob, dob_ad, age, data.married_status,
             data.bandi_education, data.height, data.weight, data.bandi_huliya, data.remarks,
             data.enrollment_date_bs, await bs2ad( data.enrollment_date_bs ), data.block_no,
             req.user.username, id

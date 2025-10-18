@@ -26,6 +26,7 @@
     "axios": "^1.7.9",
     "bikram-sambat-js": "^1.0.2",
     "bootstrap": "^5.3.3",
+    "browser-image-compression": "^2.0.2",
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "docx": "^9.5.1",

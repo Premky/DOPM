@@ -16,7 +16,7 @@ const educationOptions = ["थाहा नभएको", "सामान्य
 const genderOptions = ["Male", "Female", "Other"];
 const maritalStatusOptions = ["Married", "Unmarried"];
 
-const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
+const BandiEditModal = ( {open, onClose, onSave, editingData} ) => {
     const {optrecords, loading}=useBlockList();
     const { control, handleSubmit, reset, formState: { errors } } = useForm( {
         defaultValues: {
@@ -24,6 +24,7 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
             // office_bandi_id: "",
 
             bandi_name: "",
+            bandi_name_en: "",
             bandi_education: "",
             gender: "",
             married_status: "",
@@ -89,11 +90,19 @@ const BandiEditModal = ( { open, onClose, onSave, editingData } ) => {
                         </Grid>
                     ) )}
 
-                    <Grid size={{ xs: 12 }} style={{ position: 'relative' }}>
+                    <Grid size={{ xs: 6 }} style={{ position: 'relative' }}>
                         <ReuseInput
                             name="bandi_name"
                             label="नामथर"
                             placeholder={'कैफियत'}
+                            control={control}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 6 }} style={{ position: 'relative' }}>
+                        <ReuseInput
+                            name="bandi_name_en"
+                            label="Name (In English)"
+                            placeholder={'नाम (अंग्रेजीमा)'}
                             control={control}
                         />
                     </Grid>

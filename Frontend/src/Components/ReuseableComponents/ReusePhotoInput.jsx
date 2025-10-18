@@ -7,7 +7,8 @@ import {
   Typography
 } from '@mui/material';
 import { Controller } from 'react-hook-form';
-import { Person } from '@mui/icons-material'; // 👤 Default icon
+import { Person } from '@mui/icons-material';
+import imageCompression from 'browser-image-compression';
 
 const ReusePhotoInput = ({
   name,
@@ -16,10 +17,11 @@ const ReusePhotoInput = ({
   control,
   error,
   defaultValue,
-  maxSizeMB = 1 // Default: 1MB
+  maxSizeMB // optional (e.g., 1)
 }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadError, setUploadError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   return (
     <>
@@ -41,11 +43,14 @@ const ReusePhotoInput = ({
           }),
         }}
         render={({ field: { onChange, value, ...field } }) => {
-          const handleImageChange = (e) => {
+          const handleImageChange = async (e) => {
             const file = e.target.files[0];
-            const maxBytes = maxSizeMB * 1024 * 1024;
+            if (!file) return;
 
-            if (file) {
+            setUploadError('');
+            setLoading(true);
+
+            try {
               if (!file.type.startsWith('image/')) {
                 setUploadError('कृपया मात्र फोटो (image) फाइल अपलोड गर्नुहोस्।');
                 setPreviewUrl(null);
@@ -53,25 +58,39 @@ const ReusePhotoInput = ({
                 return;
               }
 
-              if (file.size > maxBytes) {
-                setUploadError(`फोटोको साइज ${maxSizeMB}MB भन्दा कम हुनुपर्छ।`);
-                setPreviewUrl(null);
-                onChange(null);
-                return;
+              let finalFile = file;
+
+              // ✅ If maxSizeMB is defined, check and compress if needed
+              if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
+                const options = {
+                  maxSizeMB,
+                  maxWidthOrHeight: 1024,
+                  useWebWorker: true,
+                };
+                try {
+                  const compressed = await imageCompression(file, options);
+                  finalFile = compressed;
+                } catch (compressionError) {
+                  console.error(compressionError);
+                  setUploadError('फोटो कम्प्रेस गर्दा समस्या आयो।');
+                  setPreviewUrl(null);
+                  onChange(null);
+                  return;
+                }
               }
 
-              setUploadError('');
+              // ✅ Generate preview
               const reader = new FileReader();
-              reader.onloadend = () => {
-                setPreviewUrl(reader.result);
-              };
-              reader.readAsDataURL(file);
-              onChange(file);
+              reader.onloadend = () => setPreviewUrl(reader.result);
+              reader.readAsDataURL(finalFile);
+              onChange(finalFile);
+            } finally {
+              setLoading(false);
             }
           };
 
+          // ✅ If value is already a string (existing photo URL)
           useEffect(() => {
-            // If value is a string (e.g., saved image URL), set it as preview
             if (typeof value === 'string') {
               setPreviewUrl(value);
             }
@@ -84,11 +103,20 @@ const ReusePhotoInput = ({
                 src={previewUrl || undefined}
                 sx={{ width: 150, height: 150, mb: 1 }}
               >
-                {!previewUrl && <Person sx={{ fontSize: 60 }} />} {/* 👤 */}
+                {!previewUrl && <Person sx={{ fontSize: 60 }} />}
               </Avatar>
 
-              <Button variant="contained" component="label" size="small">
-                {previewUrl ? 'फोटो परिवर्तन गर्नुहोस्' : 'फोटो छान्नुहोस्'}
+              <Button
+                variant="contained"
+                component="label"
+                size="small"
+                disabled={loading}
+              >
+                {loading
+                  ? 'कृपया पर्खनुहोस्...'
+                  : previewUrl
+                  ? 'फोटो परिवर्तन गर्नुहोस्'
+                  : 'फोटो छान्नुहोस्'}
                 <input
                   hidden
                   accept="image/*"

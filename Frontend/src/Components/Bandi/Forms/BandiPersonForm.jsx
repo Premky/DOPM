@@ -103,7 +103,7 @@ const BandiPersonForm = () => {
   const handleAdd = () => {
     setModalOpen( true );
   };
-
+  //To get random bandi Id
   useEffect( () => {
     const fetchRandomBandiId = async () => {
       try {
@@ -191,10 +191,16 @@ const BandiPersonForm = () => {
       }
     }
   };
+  const [formError, setFormError] = useState( '' );
+  const onError = ( errors ) => {
+    // Show a top-level warning if any required field is missing
+    setFormError( 'कृपया सबै अनिवार्य फिल्डहरू भर्नुहोस्।' );
+  };
 
   const { optrecords, loading } = fetchMuddaGroups();
   const onSubmit = async ( data ) => {
     // console.log( data );
+    setFormError( '' ); // clear any old error
     if ( !data.photo ) { alert( 'फोटो अनिवार्य छ ।' ); }
     try {
       const url = editing
@@ -307,9 +313,16 @@ const BandiPersonForm = () => {
           <title>PMIS: बन्दी विवरण फारम</title>
         </Helmet>
       </HelmetProvider>
-      <form onSubmit={handleSubmit( onSubmit )}>      
+
+      {formError && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          {formError}
+        </Alert>
+      )}
+
+      <form onSubmit={handleSubmit( onSubmit )}>
         <Typography variant="h6" mb={2} style={{ color: 'red' }}>
-          यस फारममा इन्ट्री गर्नु अगाडी कारागार प्रशासकको ID प्रयोग गरेर सेटिङ मेनुमा गई ब्लक थप्नुहोला । 
+          यस फारममा इन्ट्री गर्नु अगाडी सेटिङ मेनुमा गई कारागारमा रहेका ब्लकहरु थप्नुहोला ।
         </Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }} sx={formHeadStyle}>
@@ -375,6 +388,15 @@ const BandiPersonForm = () => {
                 error={errors.bandi_name}
               />
             </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <ReuseInput
+                name="bandi_name_en"
+                label="Name (In English)"
+                required={true}
+                control={control}
+                error={errors.bandi_name_en}
+              />
+            </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseSelect
@@ -400,7 +422,7 @@ const BandiPersonForm = () => {
                   error={errors.dob}
                 />
               </Grid>
-              <Grid size={{ xs: 2, sm: 3, md: 4 }}>
+              {/* <Grid size={{ xs: 2, sm: 3, md: 4 }}>
                 <ReuseInput
                   name="age"
                   label="उमेर"
@@ -409,7 +431,7 @@ const BandiPersonForm = () => {
                   error={errors.age}
                   type="number"
                 />
-              </Grid>
+              </Grid> */}
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -445,28 +467,6 @@ const BandiPersonForm = () => {
               />
             </Grid>
 
-            {/* <Grid size={{xs:12, sm:6, md:3}}>
-            <ReuseInput
-              hidden
-              name="bandi_height"
-              label="बन्दीको उचाई"
-              required={false}
-              control={control}
-              error={errors.bandi_height}
-            />
-          </Grid>
-
-          <Grid size={{xs:12, sm:6, md:3}}>
-            <ReuseInput
-              hidden
-              name="bandi_weight"
-              label="बन्दीको तौल"
-              required={false}
-              control={control}
-              error={errors.bandi_weight}
-            />
-          </Grid> */}
-
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReuseInput
                 name="bandi_huliya"
@@ -479,12 +479,12 @@ const BandiPersonForm = () => {
           </Grid>
 
           <Grid size={{ xs: 3, sm: 4, md: 2 }}>
-
             <ReusePhotoInput
               name="photo"
-              label="फोटो"
-              required={true}
+              label="बन्दीको फोटो"
+              required
               control={control}
+              maxSizeMB={0.5} // Optional, can omit to disable compression
               error={errors.photo}
             />
           </Grid>
@@ -815,9 +815,9 @@ const BandiPersonForm = () => {
               // defaultValue={selectedBandi.hirasat_date_bs}
               required={true}
               control={control}
+              maxDate={formattedDateNp}
               error={errors.hirasat_date_bs}
             />
-
           </Grid>
 
           {selectedbandi_type === 'कैदी' && ( <>

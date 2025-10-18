@@ -122,9 +122,9 @@ const BandiTable = ( { bandi_id } ) => {
                                 <TableRow>
                                     <TableCell>बन्दी आई.डि.</TableCell>
                                     <TableCell>{fetchedBandi.office_bandi_id}</TableCell>
-                                    <TableCell>बन्दी प्रकार/नामथर</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_type} {fetchedBandi.bandi_name} </TableCell>
-                                    <TableCell rowSpan={5} colSpan={2} align='center'>                                       
+                                    <TableCell>बन्दी प्रकार</TableCell>
+                                    <TableCell>{fetchedBandi.bandi_type} </TableCell>
+                                    <TableCell rowSpan={6} colSpan={2} align='center'>                                       
                                         <img
                                             src={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : '/icons/male_icon-1.png'}
                                             alt="Bandi"
@@ -132,6 +132,12 @@ const BandiTable = ( { bandi_id } ) => {
                                             style={{ height: 150, width: 150, objectFit: 'contain', borderRadius: 4, cursor: 'pointer' }}
                                         />
                                     </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>बन्दीको नामथर</TableCell>
+                                    <TableCell>{fetchedBandi.bandi_name} </TableCell>
+                                    <TableCell>Prisoner's Name</TableCell>
+                                    <TableCell>{fetchedBandi.bandi_name_en}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>लगत नं.</TableCell>
