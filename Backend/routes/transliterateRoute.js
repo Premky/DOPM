@@ -55,7 +55,8 @@ router.post("/transliterate_excel", async (req, res) => {
   const scriptPath = path.join(__dirname, "../scripts/transliterate_excel.py");
 
   // Spawn Python process
-  const pyProcess = spawn("python", [scriptPath, absFilePath, sheetName, JSON.stringify(selectedColumns), outputFile]);
+  // const pyProcess = spawn("python", [scriptPath, absFilePath, sheetName, JSON.stringify(selectedColumns), outputFile]);
+  const pyProcess = spawn("python3", [scriptPath, absFilePath, sheetName, JSON.stringify(selectedColumns), outputFile]);
 
   pyProcess.stdout.on("data", (data) => {
     console.log("Python stdout:", data.toString());
