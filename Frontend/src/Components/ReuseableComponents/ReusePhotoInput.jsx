@@ -51,7 +51,7 @@ const ReusePhotoInput = ({
             setLoading(true);
 
             try {
-              if (!file.type.startsWith('image/')) {
+              if (!file.type.startsWith('image/')) {                
                 setUploadError('कृपया मात्र फोटो (image) फाइल अपलोड गर्नुहोस्।');
                 setPreviewUrl(null);
                 onChange(null);
