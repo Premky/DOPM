@@ -109,7 +109,7 @@ const storage = multer.diskStorage( {
 } );
 
 // File filter (only images allowed)
-const fileFilter = ( req, file, cb ) => {
+const fileFilter1 = ( req, file, cb ) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp|jfif/;
     const extname = allowedTypes.test( path.extname( file.originalname ).toLowerCase() );
     const mimetype = allowedTypes.test( file.mimetype );
@@ -117,6 +117,29 @@ const fileFilter = ( req, file, cb ) => {
     if ( extname && mimetype ) return cb( null, true );
     cb( new Error( 'Only image files are allowed!' ) );
 };
+
+const fileFilter = (req, file, cb) => {
+  const allowedExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.jfif'];
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/pjpeg', // older jpeg mime
+    'image/x-png'  // older png mime
+  ];
+
+  const fileExt = path.extname(file.originalname).toLowerCase();
+  const isExtAllowed = allowedExtensions.includes(fileExt);
+  const isMimeAllowed = allowedMimeTypes.includes(file.mimetype.toLowerCase());
+
+  if (isExtAllowed && isMimeAllowed) {
+    cb(null, true);
+  } else {
+    cb(new Error(`Only image files are allowed! (${file.originalname}, type: ${file.mimetype})`));
+  }
+};
+
 
 //Size limit (1 MB max For now)
 const upload = multer( {
