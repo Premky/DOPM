@@ -17,11 +17,46 @@ const ReusePhotoInput = ({
   control,
   error,
   defaultValue,
-  maxSizeMB // optional (e.g., 1)
+  maxSizeMB, // optional (e.g., 1)
+  allowedTypes = null // optional, e.g. /jpeg|jpg|png/
 }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadError, setUploadError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // ✅ Helper function to convert image to JPG
+  const convertToJPG = (file) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Blob creation failed'));
+            const newFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), {
+              type: 'image/jpeg',
+            });
+            resolve(newFile);
+          },
+          'image/jpeg',
+          0.9
+        );
+      };
+
+      img.onerror = () => reject(new Error('Image load error'));
+      reader.readAsDataURL(file);
+    });
+  };
 
   return (
     <>
@@ -51,24 +86,41 @@ const ReusePhotoInput = ({
             setLoading(true);
 
             try {
-              if (!file.type.startsWith('image/')) {                
-                setUploadError('कृपया मात्र फोटो (image) फाइल अपलोड गर्नुहोस्।');
-                setPreviewUrl(null);
-                onChange(null);
-                return;
+              let finalFile = file;
+              const fileType = file.type.split('/')[1]?.toLowerCase();
+
+              // ✅ Optional type validation
+              if (allowedTypes && !allowedTypes.test(fileType)) {
+                const confirmConvert = window.confirm(
+                  'यो फोटो अनुमत प्रकारमा छैन। JPG फर्म्याटमा रूपान्तरण गर्न चाहनुहुन्छ?'
+                );
+                if (confirmConvert) {
+                  try {
+                    finalFile = await convertToJPG(file);
+                  } catch (err) {
+                    console.error(err);
+                    setUploadError('फोटो रूपान्तरण गर्दा समस्या आयो।');
+                    setPreviewUrl(null);
+                    onChange(null);
+                    return;
+                  }
+                } else {
+                  setUploadError('कृपया JPG, JPEG वा PNG फाइल मात्र अपलोड गर्नुहोस्।');
+                  setPreviewUrl(null);
+                  onChange(null);
+                  return;
+                }
               }
 
-              let finalFile = file;
-
-              // ✅ If maxSizeMB is defined, check and compress if needed
-              if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
-                const options = {
-                  maxSizeMB,
-                  maxWidthOrHeight: 1024,
-                  useWebWorker: true,
-                };
+              // ✅ Compress if too large
+              if (maxSizeMB && finalFile.size > maxSizeMB * 1024 * 1024) {
                 try {
-                  const compressed = await imageCompression(file, options);
+                  const options = {
+                    maxSizeMB,
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true,
+                  };
+                  const compressed = await imageCompression(finalFile, options);
                   finalFile = compressed;
                 } catch (compressionError) {
                   console.error(compressionError);
@@ -89,7 +141,7 @@ const ReusePhotoInput = ({
             }
           };
 
-          // ✅ If value is already a string (existing photo URL)
+          // ✅ If value is existing photo URL
           useEffect(() => {
             if (typeof value === 'string') {
               setPreviewUrl(value);
@@ -124,6 +176,20 @@ const ReusePhotoInput = ({
                   onChange={handleImageChange}
                 />
               </Button>
+
+              {previewUrl && !loading && (
+                <Button
+                  onClick={() => {
+                    setPreviewUrl(null);
+                    onChange(null);
+                  }}
+                  size="small"
+                  color="error"
+                  sx={{ ml: 1 }}
+                >
+                  हटाउनुहोस्
+                </Button>
+              )}
 
               {(error || uploadError) && (
                 <Typography color="error" variant="body2" mt={1}>

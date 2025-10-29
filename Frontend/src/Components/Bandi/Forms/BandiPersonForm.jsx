@@ -482,11 +482,13 @@ const BandiPersonForm = () => {
             <ReusePhotoInput
               name="photo"
               label="बन्दीको फोटो"
-              required
               control={control}
-              maxSizeMB={0.5} // Optional, can omit to disable compression
+              required={true}
+              maxSizeMB={0.5} // optional
+              allowedTypes={/jpeg|jpg|png|gif|webp|jfif/} // optional
               error={errors.photo}
             />
+
           </Grid>
         </Grid>
         <hr />
