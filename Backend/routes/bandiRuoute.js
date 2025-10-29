@@ -119,26 +119,26 @@ const fileFilter1 = ( req, file, cb ) => {
 };
 
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.jfif'];
   const allowedMimeTypes = [
     'image/jpeg',
     'image/png',
     'image/gif',
     'image/webp',
-    'image/pjpeg', // older jpeg mime
-    'image/x-png'  // older png mime
+    'image/jfif',
+    'image/pjpeg',
+    'image/x-png'
   ];
 
-  const fileExt = path.extname(file.originalname).toLowerCase();
-  const isExtAllowed = allowedExtensions.includes(fileExt);
+  // Allow blobs (no name) if MIME is valid
   const isMimeAllowed = allowedMimeTypes.includes(file.mimetype.toLowerCase());
 
-  if (isExtAllowed && isMimeAllowed) {
+  if (isMimeAllowed) {
     cb(null, true);
   } else {
     cb(new Error(`Only image files are allowed! (${file.originalname}, type: ${file.mimetype})`));
   }
 };
+
 
 
 //Size limit (1 MB max For now)
