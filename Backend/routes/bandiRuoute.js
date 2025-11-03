@@ -405,6 +405,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             office: req.body[`mudda_office_${ i }`],
             date: req.body[`mudda_phesala_date_${ i }`],
             vadi: req.body[`vadi_${ i }`],
+            vadi_en: req.body[`vadi_en_${ i }`]
         } ) );
         // console.log( 'muddas', muddas );
         await insertMuddaDetails( bandi_id, muddas, user_id, office_id, connection );
@@ -4306,14 +4307,15 @@ router.post( '/create_mudda', verifyToken, async ( req, res ) => {
     const insertSql = `
     INSERT INTO muddas (
       mudda_name,
+      mudda_name_en,
       muddas_group_id,    
       created_by,
       updated_by,
       current_office_id
-    ) VALUES (?, ?, ?, ?,?)
+    ) VALUES (?, ?, ?, ?, ?,?)
   `;
 
-    const values = [req.body.mudda_name, req.body.mudda_group_id, user_id, user_id, office_id];
+    const values = [req.body.mudda_name, req.body.mudda_name_en, req.body.mudda_group_id, user_id, user_id, office_id];
 
     try {
         await pool.query( insertSql, values );

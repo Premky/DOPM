@@ -151,7 +151,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
   const sql = `INSERT INTO bandi_mudda_details (
     bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
     mudda_condition, mudda_phesala_antim_office_district,
-    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date, vadi, 
+    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date, vadi, vadi_en, 
     hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs, total_kaid, is_life_time,
     created_by, created_at, updated_by, updated_at, current_office_id
   ) VALUES (?)`;
@@ -172,6 +172,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
       m.office,
       m.date,
       m.vadi,
+      m.vadi_en,
       m.hirasat_years, m.hirasat_months, m.hirasat_days, m.thuna_date_bs, m.release_date_bs, m.total_kaid_duration, is_life_time,
       user_id, new Date(), user_id, new Date(), office_id
     ];

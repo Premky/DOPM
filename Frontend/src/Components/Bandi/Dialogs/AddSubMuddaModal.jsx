@@ -21,7 +21,8 @@ const AddSubMuddaModal = ( { open, onClose, onSave, editingData, BASE_URL, refet
     } = useForm( {
         defaultValues: {
             mudda_group_id: "",
-            mudda_name: ""
+            mudda_name: "",
+            mudda_name_en: ""
         },
     } );
 
@@ -82,6 +83,21 @@ const AddSubMuddaModal = ( { open, onClose, onSave, editingData, BASE_URL, refet
                             margin="dense"
                             error={!!errors.mudda_name}
                             helperText={errors.mudda_name?.message}
+                        />
+                    )}
+                />
+                <Controller
+                    name="mudda_name_en"
+                    control={control}
+                    rules={{ required: "Case is Required" }}
+                    render={( { field } ) => (
+                        <TextField
+                            {...field}
+                            label="Case to be Added (In English)"
+                            fullWidth
+                            margin="dense"
+                            error={!!errors.mudda_name_en}
+                            helperText={errors.mudda_name_en?.message}
                         />
                     )}
                 />

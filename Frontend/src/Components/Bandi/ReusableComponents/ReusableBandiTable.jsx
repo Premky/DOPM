@@ -274,7 +274,6 @@ const ReusableBandiTable = ( {
                                                 )
                                             }
 
-
                                             {showEdit && (
                                                 <Button
                                                     variant="outlined"

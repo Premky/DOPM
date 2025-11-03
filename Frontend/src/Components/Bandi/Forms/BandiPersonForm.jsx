@@ -554,7 +554,17 @@ const BandiPersonForm = () => {
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <ReuseInput
                       name={`vadi_${ index + 1 }`}
-                      label="वादी वा जाहेरवालाको नाम"
+                      label="वादी वा जाहेरवालाको नाम(नेपालीमा)"
+                      required={true}
+                      control={control}
+                      error={errors[`vadi_${ index + 1 }`]}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <ReuseInput
+                      name={`vadi_en_${ index + 1 }`}
+                      label="वादी वा जाहेरवालाको नाम(अंग्रेजीमा)"
                       required={true}
                       control={control}
                       error={errors[`vadi_${ index + 1 }`]}
