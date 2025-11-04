@@ -1,4 +1,4 @@
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Button, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import Swal from 'sweetalert2';
@@ -12,6 +12,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { event } from 'jquery';
 const ReuseKaragarOffice = React.lazy( () => import( '../../ReuseableComponents/ReuseKaragarOffice' ) );
 const ReuseSelect = React.lazy( () => import( '../../ReuseableComponents/ReuseSelect' ) );
 const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInput' ) );
@@ -29,6 +30,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         setValue( 'searchOffice', authState.office_id | '' );
     }, [authState] );
+
     const {
         handleSubmit, watch, setValue, register, control, formState: { errors } } = useForm( {
             defaultValues: {
@@ -36,6 +38,11 @@ const AllBandiTable = () => {
                 // other fields...
             },
         } );
+
+    const [language, setLanguage] = useState( 'np' );
+    const handleLanguageChange = ( event, newLanguage ) => {
+        setLanguage( newLanguage );
+    };
 
     const [editing, setEditing] = useState( false );
     const [loading, setLoading] = useState( false );
@@ -94,7 +101,7 @@ const AllBandiTable = () => {
             if ( Status && Array.isArray( Result ) ) {
                 setAllKaidi( Result );
                 setFilteredKaidi( Result );
-                // console.log( Result[0] );
+                // console.log( Result[1] );
                 setTotalKaidi( response.data.TotalCount );  //Total Count 
             } else {
                 console.warn( Error || 'No records found.' );
@@ -170,7 +177,8 @@ const AllBandiTable = () => {
         }
     };
 
-    const columns = [
+    let columns;
+    const columns_np = [
         {
             field: "current_office_letter_address", headerName: "कारागार कार्यालय", width: 100,
             renderCell: ( params ) => {
@@ -275,7 +283,118 @@ const AllBandiTable = () => {
         }
 
     ];
+    const columns_en = [
+        {
+            field: "current_office_letter_address", headerName: "Prison Office", width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                if ( row.current_office_letter_address == row.arrested_office ) {
+                    return row.current_office_letter_address;
+                } else {
+                    return (
+                        <>
+                            {row.current_office_letter_address}
+                            {row.arrested_office && (
+                                <>
+                                    <br />
+                                    Current at: {row.arrested_office}
+                                </>
+                            )}
+                        </>
+                    );
+                }
+            }
+        },
+        { field: "office_bandi_id", headerName: "Bandi Id", width: 100 },
+        { field: "lagat_no", headerName: "Log No.", width: 100 },
+        { field: "bandi_type", headerName: "Prisoner Type", width: 100 },
+        { field: "bandi_name", headerName: "Prisoner's Name", width: 100 },
+        // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
+        {
+            field: "bandi_address",
+            headerName: "Address",
+            width: 200,
+            renderCell: ( params ) => {
+                const row = params.row;
+                if ( row.nationality === 'स्वदेशी' ) {
+                    // Build Nepali address string
+                    return `${ row.state_name_en || '' }, ${ row.district_name_en || '' }, ${ row.city_name_en || '' }, - ${ row.wardno || '' }, ${ row.country_name_np || '' }`;
+                } else {
+                    // Foreign address + country
+                    return `${ row.bidesh_nagarik_address_details || '' }, ${ row.country_name_en || '' }`;
+                }
+            }
+        },
 
+        {
+            field: "photo_path",
+            headerName: "Photo",
+            width: 100,
+            renderCell: ( params ) =>
+                params.value ? (
+                    <img
+                        src={`${ BASE_URL }${ params.value }`}
+                        alt="बन्दी"
+                        style={{
+                            width: 50,
+                            height: 50,
+                            borderRadius: "50%",
+                            cursor: "pointer",
+                            objectFit: "cover",
+                        }}
+                        onClick={() =>
+                            Swal.fire( {
+                                imageUrl: `${ BASE_URL }${ params.value }`,
+                                imageAlt: "बन्दी फोटो",
+                                showConfirmButton: false,
+                            } )
+                        }
+                    />
+                ) : (
+                    "No Image"
+                ),
+        },
+        { field: "govt_id_name_np", headerName: "Identity Card Type", width: 100 },
+        { field: "card_no", headerName: "Identity Card No.", width: 100 },
+        { field: "current_age", headerName: "Age", width: 100 },
+        { field: "gender", headerName: "Gender", width: 100 },
+        { field: "total_jariwana_amount", headerName: "Fine (due)", width: 100 },
+        { field: "thuna_date_bs", headerName: "Date of arrest", width: 100 },
+        {
+            field: "release_date_bs", headerName: "Release date", width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                if ( row.is_active === 0 ) {
+                    // Build Nepali address string
+                    return `हुनेः ${ row.release_date_bs || '' } \n  भएकोः ${ row.last_karnayan_miti || '' }`;
+                } else {
+                    // Foreign address + country
+                    return `${ row.release_date_bs || '' }`;
+                }
+            }
+        },
+        {
+            field: "remaining_days_to_release",
+            headerName: "कैदमुक्त हुन बाँकी दिन (जरिवाना समेत)",
+            width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                return `${ finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0 }`;
+            },
+            sortValue: ( row ) => {
+                // sorting based on the computed numeric value
+                return finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0;
+            }
+        }
+
+    ];
+
+    if(language=='en'){
+        columns=columns_en
+    }else{
+        columns=columns_np
+    }
+    
     return (
         <>
             <HelmetProvider>
@@ -285,9 +404,21 @@ const AllBandiTable = () => {
                 </Helmet>
             </HelmetProvider>
 
+            <Box sx={{ p: 0 }}>
+                <ToggleButtonGroup
+                    color='primary'
+                    value={language}
+                    exclusive
+                    onChange={handleLanguageChange}
+                    aria-label='Platform'
+                >
+                    <ToggleButton value='np'>नेपा</ToggleButton>
+                    <ToggleButton value='en'>En</ToggleButton>
+                </ToggleButtonGroup>
+            </Box>
             <Box sx={{ p: 2 }}>
                 <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 3 }}>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
@@ -406,6 +537,7 @@ const AllBandiTable = () => {
             {/* <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}> */}
 
             <ReusableBandiTable
+                language={language}
                 columns={columns}
                 rows={filteredKaidi}
                 loading={loading}

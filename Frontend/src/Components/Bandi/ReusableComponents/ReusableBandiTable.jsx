@@ -10,6 +10,7 @@ import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 import { useAuth } from '../../../Context/AuthContext';
 
 const ReusableBandiTable = ( {
+    language = '',
     rows = [],
     columns = [],
     primaryMergeKey = 'bandi_id',
@@ -98,6 +99,7 @@ const ReusableBandiTable = ( {
         worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
 
         let excelRowIndex = 2;
+        console.log(filteredRows)
         filteredRows.forEach( ( bandi, bandiIndex ) => {
             const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
             const muddaCount = muddaList.length;
@@ -172,7 +174,7 @@ const ReusableBandiTable = ( {
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <h2>{title}</h2>
+                <h3>{title} {'>'} {filteredRows.length} वटा विवरण भेटियो </h3>
                 <Box mb={2}>
                     <TextField
                         label="बन्दीको नाम/संकेत नं.ले खोज्नुहोस्"
@@ -200,7 +202,8 @@ const ReusableBandiTable = ( {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center">सि.नं. </TableCell>
+
+                            <TableCell align="center"> {language == 'en' ? 'S.N.' : 'सि.नं.'} </TableCell>
                             {/* <TableCell align="center">कारागार कार्यालय</TableCell> */}
                             {columns.map( col => (
                                 <TableCell key={col.field} align="center"
@@ -210,9 +213,9 @@ const ReusableBandiTable = ( {
                                     {orderBy === col.field ? ( order === 'asc' ? ' 🔼' : ' 🔽' ) : ''}
                                 </TableCell>
                             ) )}
-                            <TableCell align="center">मुद्दा</TableCell>
-                            <TableCell align="center">जाहेरवाला</TableCell>
-                            <TableCell align="center">फैसला कार्यालय/मिति</TableCell>
+                            <TableCell align="center">{language == 'en' ? 'Case' : 'मुद्दा'}</TableCell>
+                            <TableCell align="center">{language == 'en' ? 'Complainant' : 'जाहेरवाला'}</TableCell>
+                            <TableCell align="center">{language == 'en' ? 'Decision Office/Date' : 'फैसला कार्यालय/मिति'} </TableCell>
                             <TableCell align="center">#</TableCell>
                         </TableRow>
                     </TableHead>
@@ -253,14 +256,14 @@ const ReusableBandiTable = ( {
                                         );
                                     } )}
 
-                                    <TableCell align="center">{mudda?.mudda_name || ''}</TableCell>
-                                    <TableCell align="center">{mudda?.vadi || '0'}</TableCell>
+                                    <TableCell align="center">{language == 'en' ? mudda?.mudda_name_en : mudda?.mudda_name} </TableCell>
+                                    <TableCell align="center"> {language == 'en' ? mudda?.vadi_en : mudda?.vadi} </TableCell>
                                     <TableCell align="center">{( mudda?.mudda_phesala_antim_office || '' ) + ' ' + ( mudda?.mudda_phesala_antim_office_date || '' )}</TableCell>
 
                                     {muddaIndex === 0 && (
                                         <TableCell rowSpan={rowSpan} align="center">
                                             {
-                                                ( bandi.current_office_id === authState.office_id || authState.office_id===2 ) && (
+                                                ( bandi.current_office_id === authState.office_id || authState.office_id === 2 ) && (
                                                     ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
                                                         <a
                                                             href={`/bandi/view_saved_record/${ bandi.id }`}

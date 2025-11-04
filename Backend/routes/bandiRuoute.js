@@ -1084,6 +1084,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bp.current_office_id,
                 bp.lagat_no,
                 bp.bandi_name,
+                bp.bandi_name_en,
                 bp.bandi_type,
                 bp.photo_path,
                 bp.nationality,
@@ -1095,9 +1096,13 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 ba.wardno,
                 ba.bidesh_nagarik_address_details,
                 nc.country_name_np,
+                nc.country_name_en,
                 ns.state_name_np,
+                ns.state_name_en,
                 nd.district_name_np,
+                nd.district_name_en,
                 nci.city_name_np,
+                nci.city_name_en,
                 bfd_combined.total_jariwana_amount,
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs,
@@ -1106,11 +1111,15 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 brd_combined.last_karnayan_miti,
                 bmd_combined.mudda_id,
                 bmd_combined.mudda_name,
+                bmd_combined.mudda_name_en,
                 bmd_combined.is_main_mudda,
                 bmd_combined.is_last_mudda,
                 bmd_combined.office_name_with_letter_address AS mudda_phesala_antim_office,
+                bmd_combined.office_name_full_en,
                 bmd_combined.vadi,
+                bmd_combined.vadi_en,
                 bmd_combined.mudda_phesala_antim_office_date,
+                bmd_combined.mudda_phesala_antim_office_en,
                 bmd_combined.mudda_group_id,
                 bmd_combined.mudda_group_name,
                 bicd.card_no,
@@ -1147,18 +1156,19 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
             LEFT JOIN (
                 SELECT 
-                    bmd.bandi_id, bmd.mudda_id, bmd.is_main_mudda,
-                    bmd.is_last_mudda, m.mudda_name, bmd.vadi,
+                    bmd.bandi_id, bmd.mudda_id, bmd.is_main_mudda, bmd.is_last_mudda, 
+                    m.mudda_name, m.mudda_name_en, bmd.vadi, bmd.vadi_en,
                     bmd.mudda_phesala_antim_office_date,
-                    o.office_name_with_letter_address AS mudda_phesala_antim_office,
+                    o.office_name_with_letter_address AS mudda_phesala_antim_office,                    
                     o.office_name_with_letter_address,
-                    mg.mudda_group_name, mg.id AS mudda_group_id
+                    o.office_name_full_en,
+                    o.office_name_full_en AS mudda_phesala_antim_office_en,
+                    mg.mudda_group_name, mg.mudda_group_name_en, mg.id AS mudda_group_id                    
                 FROM bandi_mudda_details bmd
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
                 LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
                 LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
             ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
-
             WHERE bp.id IN (${ placeholders })
             ORDER BY bp.id DESC
         `;
@@ -1172,10 +1182,12 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bandi_id,
                 mudda_id,
                 mudda_name,
+                mudda_name_en,
                 is_main_mudda,
                 is_last_mudda,
                 office_name_with_letter_address,
                 vadi,
+                vadi_en,
                 mudda_phesala_antim_office_date,
                 mudda_phesala_antim_office,
                 mudda_group_name,
@@ -1196,10 +1208,12 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 grouped[bandi_id].muddas.push( {
                     mudda_id,
                     mudda_name,
+                    mudda_name_en,
                     is_main_mudda,
                     is_last_mudda,
                     office_name_with_letter_address,
                     vadi,
+                    vadi_en,
                     mudda_phesala_antim_office_date,
                     mudda_phesala_antim_office,
                     mudda_group_name
