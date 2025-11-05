@@ -89,6 +89,12 @@ const ReusableBandiTable = ( {
         setPage( 0 );
     };
 
+    const bandiTypeMap = {
+        "थुनुवा": "Detainee",
+        "कैदी": "Prisoner"
+    };
+
+
     const handleExport = async () => {
         const ExcelJS = await import( 'exceljs' );
         const workbook = new ExcelJS.Workbook();
@@ -131,7 +137,7 @@ const ReusableBandiTable = ( {
                         // 🧠 Add conditional translation for bandi_type here
                         if ( col.field === 'bandi_type' ) {
                             if ( language == 'en' ) {
-                                return bandi_type[bandi[col.field]] || bandi[col.field] || '';
+                                return bandiTypeMap[bandi[col.field]] || bandi[col.field] || '';
                             } else {
                                 // reverse translation if needed
                                 const reverseMap = { "Detainee": "थुनुवा", "Prisoner": "कैदी" };
