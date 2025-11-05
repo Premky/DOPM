@@ -73,22 +73,22 @@ app.use( cors( {
 } ) );
 
 // CORS logging middleware (dev only)
-if ( process.env.NODE_ENV !== 'production' ) {
-  app.use( ( req, res, next ) => {
-    res.on( 'finish', () => {
-      const corsOrigin = res.getHeader( "Access-Control-Allow-Origin" );
-      const corsCreds = res.getHeader( "Access-Control-Allow-Credentials" );
-      if ( corsOrigin || corsCreds ) {
-        console.log( "CORS headers sent:", {
-          origin: req.headers.origin,
-          "Access-Control-Allow-Origin": corsOrigin,
-          "Access-Control-Allow-Credentials": corsCreds
-        } );
-      }
-    } );
-    next();
-  } );
-}
+// if ( process.env.NODE_ENV !== 'production' ) {
+//   app.use( ( req, res, next ) => {
+//     res.on( 'finish', () => {
+//       const corsOrigin = res.getHeader( "Access-Control-Allow-Origin" );
+//       const corsCreds = res.getHeader( "Access-Control-Allow-Credentials" );
+//       if ( corsOrigin || corsCreds ) {
+//         console.log( "CORS headers sent:", {
+//           origin: req.headers.origin,
+//           "Access-Control-Allow-Origin": corsOrigin,
+//           "Access-Control-Allow-Credentials": corsCreds
+//         } );
+//       }
+//     } );
+//     next();
+//   } );
+// }
 
 
 // ------------------- 3️⃣ Security Headers -------------------

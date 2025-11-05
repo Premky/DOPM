@@ -81,7 +81,7 @@ router.get( '/get_bandi_for_transfer', verifyToken, async ( req, res ) => {
         LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
         LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
         LEFT JOIN offices o ON o.id = bp.current_office_id
-        WHERE ${ filters }
+        WHERE ${ filters } 
     `;
 
     console.log( 'Running SQL:', sql );
@@ -95,7 +95,6 @@ router.get( '/get_bandi_for_transfer', verifyToken, async ( req, res ) => {
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
-
 
 router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -132,6 +131,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
         }
 
         if ( statusKey ) {
+            console.log('Status:',statusKey)
             const [statusRow] = await connection.query(
                 `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
                 [statusKey]
@@ -145,7 +145,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                 params.push( statusId );
 
                 // If statusId >= 11, filter using final_to_office_id
-                if ( statusId >= 11 ) {
+                if ( statusId >= 16 ) {
                     queryFilter += ' AND bth.final_to_office_id = ?';
                     params.push( active_office );
                 } else {
@@ -272,10 +272,10 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
 
             }
         }
-
+        const result = Object.values(grouped).sort((a, b) => b.transfer_id - a.transfer_id);
         return res.json( {
             Status: true,
-            Result: Object.values( grouped ),
+            Result: result,
             message: "बन्दी ट्रान्सफर विवरण सफलतापूर्वक प्राप्त भयो।"
         } );
 
@@ -285,97 +285,6 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             Status: false,
             Error: error.message,
             message: "सर्भर त्रुटि भयो, विवरण प्राप्त गर्न असफल।"
-        } );
-    } finally {
-        if ( connection ) connection.release();
-    }
-} );
-
-router.post( '/create_bandi_transfer_history1', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.username;
-    const user_role_id = req.user.role_id;
-    const data = req.body;
-    // console.log( data );
-    let connection;
-    const allowedRoles = ['clerk', 'office_admin'];
-    if ( !Number.isInteger( data.bandi_id ) || !Number.isInteger( data.transfer_reason_id ) ) {
-        return res.status( 400 ).json( { Status: false, message: "Invalid input" } );
-    }
-    try {
-        // if(!allowedRoles.includes(user_role_id)){
-        //     return res.status(403).json({Status:false, message:"अनुमति छैन।"})
-        // }
-        connection = await pool.getConnection();
-        let is_thunuwa_permission;
-        connection.beginTransaction();
-        if ( data.is_thunuwa_permission === "छ" ) {
-            is_thunuwa_permission = 1;
-        } else if ( data.is_thunuwa_permission === "छैन" ) {
-            is_thunuwa_permission = false;
-        } else {
-            is_thunuwa_permission = data.is_thunuwa_permission;
-        }
-        let recommended_to_office_id;
-        if ( data.recommended_to_office_id ) {
-            recommended_to_office_id = data.recommended_to_office_id;
-        } else {
-            recommended_to_office_id = null;
-        }
-        let insertsql;
-        let values;
-        if ( data.is_thunuwa_permission ) {
-            insertsql = `INSERT INTO bandi_transfer_history (
-                bandi_id, transfer_reason_id, transfer_reason, 
-                transfer_from_office_id, recommended_to_office_id,
-                is_thunuwa_permission, bandi_character,
-                role_id, status_id, is_completed,
-                created_by, updated_by, created_at, updated_at, created_office_id)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-
-            values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
-                active_office, recommended_to_office_id,
-                is_thunuwa_permission, data.bandi_character,
-                user_role_id, user_role_id,
-                user_id, user_id, new Date(), new Date(), active_office
-            ];
-        } else {
-            insertsql = `INSERT INTO bandi_transfer_history (
-                bandi_id, transfer_reason_id, transfer_reason, 
-                transfer_from_office_id, recommended_to_office_id,
-                 bandi_character,
-                role_id, status_id,
-                created_by, updated_by, created_at, updated_at, created_office_id)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-
-            values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
-                active_office, data.recommended_to_office_id,
-            data.bandi_character,
-                user_role_id, user_role_id,
-                user_id, user_id, new Date(), new Date(), active_office
-            ];
-        }
-
-
-        const [result] = await connection.query( insertsql, values );
-        const [bp] = await connection.query( `UPDATE bandi_person SET is_under_transfer=? WHERE id=?`, [true, data.bandi_id] );
-        const insertId = result.insertId;
-        const logsql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at)
-                        VALUES(?,?,?,?)`;
-        const logValue = [insertId, user_role_id, user_id, new Date()];
-        await connection.query( logsql, logValue );
-        await connection.commit();
-        return res.status( 200 ).json( {
-            Status: true,
-            message: "ट्रान्सफर विवरण सफलतापूर्वक सिर्जना भयो।"
-        } );
-    } catch ( error ) {
-        await connection.rollback();
-        console.error( "❌ Error in create_bandi_transfer_history:", error );
-        return res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, ट्रान्सफर विवरण सिर्जना गर्न असफल।"
         } );
     } finally {
         if ( connection ) connection.release();
@@ -421,7 +330,7 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
 
             const logValues = [data.bandi_id, active_office, active_office, 100, 'थुना/कैदमा परेको', bandi_details[0].thuna_date_bs,
                 'Completed',
-                user_role_id, user_role_id,
+                user_role_id, '15',
                 user_id, user_id, new Date(), new Date(), active_office];
             await connection.query( logsql, logValues );
         }
@@ -481,9 +390,6 @@ router.post( '/create_bandi_transfer_history', verifyToken, async ( req, res ) =
         if ( connection ) connection.release();
     }
 } );
-
-// const [role_id] = await pool.query(`SELECT id FROM user_roles WHERE role_name=?`, [metadata.to_role]);
-// console.log("Role ID:", role_id[0]?.id);
 
 router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -745,78 +651,6 @@ router.put( '/update_bandi_transfer_history(new_to_be_tested)/:id', verifyToken,
     }
 } );
 
-router.put( '/approve_bandi_transfer1/:id', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.username;
-    const id = req.params.id;
-    const metadata = req.body;
-    // console.log( "metadata:", metadata );
-
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [previous_status_id] = await pool.query( `SELECT status_id FROM bandi_transfer_history WHERE id=?`, [id] );
-        // console.log( previous_status_id );
-        const [status_id] = await pool.query(
-            `SELECT id, role_required FROM bandi_transfer_statuses WHERE status_key = ?`,
-            [metadata.to_role]
-        );
-        const [to_role_id] = await pool.query( `SELECT id FROM user_roles WHERE role_name=?`, status_id[0]?.role_required );
-
-        if ( !status_id[0]?.id ) {
-            return res.status( 400 ).json( {
-                Status: false,
-                message: "मान्य स्थिति फेला परेन।"
-            } );
-        }
-
-        let sql;
-        let values;
-
-        sql = `
-                UPDATE bandi_transfer_history 
-                SET role_id=?, status_id = ?, remarks = ?,final_to_office_id=?, updated_by = ?, updated_at = ?
-                WHERE id = ?`;
-        values = [
-            to_role_id[0].id,
-            status_id[0].id,
-            metadata.remarks,
-            metadata.final_to_office_id,
-            user_id,
-            new Date(),
-            id
-        ];
-
-        const [result] = await connection.query( sql, values );
-
-        const logSql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at, remarks, previous_status_id)
-        VALUES(?, ?, ?, ?, ?, ?)`;
-        const logValues = [id, status_id[0].id, user_id, new Date(), metadata.remarks, previous_status_id[0].status_id];
-        const [logResult] = await connection.query( logSql, logValues );
-        if ( result.affectedRows === 0 ) {
-            return res.status( 404 ).json( {
-                Status: false,
-                message: "ट्रान्सफर ID भेटिएन।"
-            } );
-        }
-
-        return res.status( 200 ).json( {
-            Status: true,
-            message: "ट्रान्सफर स्थिति सफलतापूर्वक अपडेट भयो।"
-        } );
-
-    } catch ( error ) {
-        console.error( "❌ Error in update_bandi_transfer_history:", error );
-        return res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, ट्रान्सफर विवरण अपडेट गर्न असफल।"
-        } );
-    } finally {
-        if ( connection ) connection.release();
-    }
-} );
-
 router.get( '/get_bandi_transfer_history/', async ( req, res ) => {
     // const active_office = req.user.office_id;
     const { id } = req.params;
@@ -826,7 +660,7 @@ router.get( '/get_bandi_transfer_history/', async ( req, res ) => {
             oo.letter_address AS to_office_name            
         FROM bandi_transfer_history bth        
         LEFT JOIN offices o ON bth.transfer_from_office_id = o.id        
-        LEFT JOIN offices oo ON bth.transfer_from_office_id = oo.id        
+        LEFT JOIN offices oo ON bth.transfer_from_office_id = oo.id                
     `;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
@@ -841,7 +675,222 @@ router.get( '/get_bandi_transfer_history/', async ( req, res ) => {
     }
 } );
 
+//
+router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+    SELECT bth.*, 
+    o.office_name_with_letter_address AS transfer_to_office_fn,
+    oo.office_name_with_letter_address AS transfer_from_office_fn,
+    btr.transfer_reason_np
+    FROM bandi_transfer_history bth
+    LEFT JOIN offices o ON bth.transfer_from_office_id = o.id
+    LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason_id=btr.id
+    LEFT JOIN offices oo ON bth.created_office_id = oo.id
+    WHERE bandi_id=?
+    `;
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+        // console.log(result)
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        }
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+//
+router.post( '/create_bandi_old_transfer_history', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    const data = req.body.bandi_transfer_details[0];
+    // console.log( "📝 Update contact request:", data );
+    const [received_status] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE status_key=?`, ['received'] );
+    const status_id = received_status?.[0].id;
+    const values = [
+        data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
+        data.transfer_from_date, data.transfer_to_date,
+        data.transfer_reason_id, data.transfer_reason, role_id, status_id,
+        'Completed', user_id, new Date(), user_id, new Date(), active_office
+    ];
 
+    try {
+        const [result] = await pool.query( `INSERT INTO bandi_transfer_history(
+                    bandi_id, transfer_from_office_id, final_to_office_id, transfer_from_date, transfer_to_date,
+                        transfer_reason_id, transfer_reason, role_id, status_id,
+                        is_completed, created_by, created_at, updated_by, updated_at, created_office_id)VALUES(?)`, [values] );
+        // await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+    } catch ( error ) {
+        // await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+        } );
+    }
+} );
+
+router.put( '/update_bandi_old_transfer_history/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    const data = req.body.bandi_transfer_details[0];
+    console.log( "📝 Update contact request:", data );
+    const values = [
+        data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
+        data.transfer_from_date, data.transfer_to_date,
+        data.transfer_reason_id, data.transfer_reason, role_id,
+        'Completed', user_id, new Date(), id
+    ];
+    try {
+        const [result] = await pool.query( `UPDATE bandi_transfer_history SET
+                        bandi_id=?, transfer_from_office_id=?, final_to_office_id=?, transfer_from_date=?, transfer_to_date=?,
+                        transfer_reason_id=?, transfer_reason=?, role_id=?, 
+                        is_completed=?, updated_by=?, updated_at=? WHERE id=?`, values );
+        // await commitAsync();
+        return res.json( {
+            Status: true,
+            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+        } );
+    } catch ( error ) {
+        // await rollbackAsync();
+        console.error( "❌ Update failed:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+        } );
+    }
+} );
+
+router.get( '/get_transfer_reasons', async ( req, res ) => {
+    const sql = `SELECT * from bandi_transfer_reasons ORDER BY id`;
+    try {
+        const [result] = await pool.query( sql );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
+    const role_id = req.user.role_id;
+    const sql = `SELECT s.status_key, s.status_label 
+        FROM bandi_transfer_role_permisions btrp 
+        JOIN bandi_transfer_statuses s ON btrp.status_id=s.id
+        WHERE btrp.role_id=? ORDER BY btrp.id`;
+    try {
+        const [result] = await pool.query( sql, [role_id] );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.post( '/create_bandi_transfer_history1', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const user_role_id = req.user.role_id;
+    const data = req.body;
+    // console.log( data );
+    let connection;
+    const allowedRoles = ['clerk', 'office_admin'];
+    if ( !Number.isInteger( data.bandi_id ) || !Number.isInteger( data.transfer_reason_id ) ) {
+        return res.status( 400 ).json( { Status: false, message: "Invalid input" } );
+    }
+    try {
+        // if(!allowedRoles.includes(user_role_id)){
+        //     return res.status(403).json({Status:false, message:"अनुमति छैन।"})
+        // }
+        connection = await pool.getConnection();
+        let is_thunuwa_permission;
+        connection.beginTransaction();
+        if ( data.is_thunuwa_permission === "छ" ) {
+            is_thunuwa_permission = 1;
+        } else if ( data.is_thunuwa_permission === "छैन" ) {
+            is_thunuwa_permission = false;
+        } else {
+            is_thunuwa_permission = data.is_thunuwa_permission;
+        }
+        let recommended_to_office_id;
+        if ( data.recommended_to_office_id ) {
+            recommended_to_office_id = data.recommended_to_office_id;
+        } else {
+            recommended_to_office_id = null;
+        }
+        let insertsql;
+        let values;
+        if ( data.is_thunuwa_permission ) {
+            insertsql = `INSERT INTO bandi_transfer_history (
+                bandi_id, transfer_reason_id, transfer_reason, 
+                transfer_from_office_id, recommended_to_office_id,
+                is_thunuwa_permission, bandi_character,
+                role_id, status_id, is_completed,
+                created_by, updated_by, created_at, updated_at, created_office_id)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+            values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
+                active_office, recommended_to_office_id,
+                is_thunuwa_permission, data.bandi_character,
+                user_role_id, user_role_id,
+                user_id, user_id, new Date(), new Date(), active_office
+            ];
+        } else {
+            insertsql = `INSERT INTO bandi_transfer_history (
+                bandi_id, transfer_reason_id, transfer_reason, 
+                transfer_from_office_id, recommended_to_office_id,
+                 bandi_character,
+                role_id, status_id,
+                created_by, updated_by, created_at, updated_at, created_office_id)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+            values = [data.bandi_id, data.transfer_reason_id, data.transfer_reason,
+                active_office, data.recommended_to_office_id,
+            data.bandi_character,
+                user_role_id, user_role_id,
+                user_id, user_id, new Date(), new Date(), active_office
+            ];
+        }
+
+
+        const [result] = await connection.query( insertsql, values );
+        const [bp] = await connection.query( `UPDATE bandi_person SET is_under_transfer=? WHERE id=?`, [true, data.bandi_id] );
+        const insertId = result.insertId;
+        const logsql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at)
+                        VALUES(?,?,?,?)`;
+        const logValue = [insertId, user_role_id, user_id, new Date()];
+        await connection.query( logsql, logValue );
+        await connection.commit();
+        return res.status( 200 ).json( {
+            Status: true,
+            message: "ट्रान्सफर विवरण सफलतापूर्वक सिर्जना भयो।"
+        } );
+    } catch ( error ) {
+        await connection.rollback();
+        console.error( "❌ Error in create_bandi_transfer_history:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो, ट्रान्सफर विवरण सिर्जना गर्न असफल।"
+        } );
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
 
 router.put( '/update_bandi_final_transfer1/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -983,134 +1032,75 @@ router.post( '/create_bandi_karagar_history1', verifyToken, async ( req, res ) =
     }
 } );
 
+router.put( '/approve_bandi_transfer1/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const id = req.params.id;
+    const metadata = req.body;
+    // console.log( "metadata:", metadata );
 
-//
-router.get( '/get_bandi_transfer_history/:id', async ( req, res ) => {
-    const { id } = req.params;
-    const sql = `
-    SELECT bth.*, 
-    o.office_name_with_letter_address AS transfer_to_office_fn,
-    oo.office_name_with_letter_address AS transfer_from_office_fn,
-    btr.transfer_reason_np
-    FROM bandi_transfer_history bth
-    LEFT JOIN offices o ON bth.transfer_from_office_id = o.id
-    LEFT JOIN bandi_transfer_reasons btr ON bth.transfer_reason_id=btr.id
-    LEFT JOIN offices oo ON bth.created_office_id = oo.id
-    WHERE bandi_id=?
-    `;
+    let connection;
     try {
-        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
-        // console.log(result)
-        if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi ID not found" } );
+        connection = await pool.getConnection();
+        const [previous_status_id] = await pool.query( `SELECT status_id FROM bandi_transfer_history WHERE id=?`, [id] );
+        // console.log( previous_status_id );
+        const [status_id] = await pool.query(
+            `SELECT id, role_required FROM bandi_transfer_statuses WHERE status_key = ?`,
+            [metadata.to_role]
+        );
+        const [to_role_id] = await pool.query( `SELECT id FROM user_roles WHERE role_name=?`, status_id[0]?.role_required );
+
+        if ( !status_id[0]?.id ) {
+            return res.status( 400 ).json( {
+                Status: false,
+                message: "मान्य स्थिति फेला परेन।"
+            } );
         }
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( err );
-        return res.json( { Status: false, Error: "Query Error" } );
-    }
-} );
-//
-router.post( '/create_bandi_old_transfer_history', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.username;
-    const role_id = req.user.role_id;
-    const id = req.params.id;
-    const data = req.body.bandi_transfer_details[0];
-    // console.log( "📝 Update contact request:", data );
-    const [received_status] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE status_key=?`, ['received'] );
-    const status_id = received_status?.[0].id;
-    const values = [
-        data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
-        data.transfer_from_date, data.transfer_to_date,
-        data.transfer_reason_id, data.transfer_reason, role_id, status_id,
-        'Completed', user_id, new Date(), user_id, new Date(), active_office
-    ];
 
-    try {
-        const [result] = await pool.query( `INSERT INTO bandi_transfer_history(
-                    bandi_id, transfer_from_office_id, final_to_office_id, transfer_from_date, transfer_to_date,
-                        transfer_reason_id, transfer_reason, role_id, status_id,
-                        is_completed, created_by, created_at, updated_by, updated_at, created_office_id)VALUES(?)`, [values] );
-        // await commitAsync();
-        return res.json( {
+        let sql;
+        let values;
+
+        sql = `
+                UPDATE bandi_transfer_history 
+                SET role_id=?, status_id = ?, remarks = ?,final_to_office_id=?, updated_by = ?, updated_at = ?
+                WHERE id = ?`;
+        values = [
+            to_role_id[0].id,
+            status_id[0].id,
+            metadata.remarks,
+            metadata.final_to_office_id,
+            user_id,
+            new Date(),
+            id
+        ];
+
+        const [result] = await connection.query( sql, values );
+
+        const logSql = `INSERT INTO bandi_transfer_log(bandi_transfer_id, status_id, action_by, action_at, remarks, previous_status_id)
+        VALUES(?, ?, ?, ?, ?, ?)`;
+        const logValues = [id, status_id[0].id, user_id, new Date(), metadata.remarks, previous_status_id[0].status_id];
+        const [logResult] = await connection.query( logSql, logValues );
+        if ( result.affectedRows === 0 ) {
+            return res.status( 404 ).json( {
+                Status: false,
+                message: "ट्रान्सफर ID भेटिएन।"
+            } );
+        }
+
+        return res.status( 200 ).json( {
             Status: true,
-            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
+            message: "ट्रान्सफर स्थिति सफलतापूर्वक अपडेट भयो।"
         } );
+
     } catch ( error ) {
-        // await rollbackAsync();
-        console.error( "❌ Update failed:", error );
+        console.error( "❌ Error in update_bandi_transfer_history:", error );
         return res.status( 500 ).json( {
             Status: false,
             Error: error.message,
-            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
+            message: "सर्भर त्रुटि भयो, ट्रान्सफर विवरण अपडेट गर्न असफल।"
         } );
+    } finally {
+        if ( connection ) connection.release();
     }
 } );
-
-router.put( '/update_bandi_old_transfer_history/:id', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.username;
-    const role_id = req.user.role_id;
-    const id = req.params.id;
-    const data = req.body.bandi_transfer_details[0];
-    console.log( "📝 Update contact request:", data );
-    const values = [
-        data.bandi_id, data.transfer_from_office_id, data.transfer_to_office_id,
-        data.transfer_from_date, data.transfer_to_date,
-        data.transfer_reason_id, data.transfer_reason, role_id,
-        'Completed', user_id, new Date(), id
-    ];
-
-    try {
-
-        const [result] = await pool.query( `UPDATE bandi_transfer_history SET
-                        bandi_id=?, transfer_from_office_id=?, final_to_office_id=?, transfer_from_date=?, transfer_to_date=?,
-                        transfer_reason_id=?, transfer_reason=?, role_id=?, 
-                        is_completed=?, updated_by=?, updated_at=? WHERE id=?`, values );
-        // await commitAsync();
-        return res.json( {
-            Status: true,
-            message: "बन्दी सम्पर्क व्यक्ति विवरण सफलतापूर्वक अपडेट गरियो।"
-        } );
-    } catch ( error ) {
-        // await rollbackAsync();
-        console.error( "❌ Update failed:", error );
-        return res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, सम्पर्क विवरण अपडेट गर्न असफल।"
-        } );
-    }
-} );
-
-router.get( '/get_transfer_reasons', async ( req, res ) => {
-    const sql = `SELECT * from bandi_transfer_reasons ORDER BY id`;
-    try {
-        const [result] = await pool.query( sql );
-        // console.log(result)
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
-
-router.get( '/get_allowed_statuses', verifyToken, async ( req, res ) => {
-    const role_id = req.user.role_id;
-    const sql = `SELECT s.status_key, s.status_label 
-        FROM bandi_transfer_role_permisions btrp 
-        JOIN bandi_transfer_statuses s ON btrp.status_id=s.id
-        WHERE btrp.role_id=? ORDER BY btrp.id`;
-    try {
-        const [result] = await pool.query( sql, [role_id] );
-        // console.log(result)
-        return res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
-    }
-} );
-
-
 export { router as bandiTransferRouter };

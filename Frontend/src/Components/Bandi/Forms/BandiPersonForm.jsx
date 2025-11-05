@@ -395,6 +395,7 @@ const BandiPersonForm = () => {
                 required={true}
                 control={control}
                 error={errors.bandi_name_en}
+                language='english'
               />
             </Grid>
 
@@ -568,6 +569,7 @@ const BandiPersonForm = () => {
                       required={true}
                       control={control}
                       error={errors[`vadi_${ index + 1 }`]}
+                      language='english'
                     />
                   </Grid>
 
@@ -959,12 +961,25 @@ const BandiPersonForm = () => {
             बन्दीको ठेगानाः
           </Grid>
           <Grid size={{ xs: 9 }} sx={{ mt: 1 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
               <select name='nationality' {...register( 'nationality' )}>
                 <option value='स्वदेशी'>स्वदेशी</option>
                 <option value='विदेशी'>विदेशी</option>
               </select>
-            </Grid>
+            </Grid> */}
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            <ReuseSelect
+              name="nationality"
+              label="राष्ट्रियता"
+              required={true}
+              control={control}
+              error={errors.nationality}
+              options={[
+                { label: 'स्वदेशी', value: 'स्वदेशी' },
+                { label: 'विदेशी', value: 'विदेशी' },
+              ]}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <ReuseCountry
@@ -988,7 +1003,7 @@ const BandiPersonForm = () => {
                   error={errors.state_id}
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                 <ReuseDistrict
                   name="district_id"
                   label="जिल्ला"
@@ -1010,25 +1025,27 @@ const BandiPersonForm = () => {
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 1 }}>
                 <ReuseInput
                   name="wardno"
-                  label="वडा नं."
+                  label="वडा नं.(अग्रेजीमा)"
                   type="number"
                   required={true}
                   control={control}
                   error={errors.ward_no}
+                  language='english'
                 />
               </Grid>
             </>
           ) : <>
-            <Grid size={{ xs: 12, sm: 6, md: 10 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 8 }}>
               <ReuseInput
                 name="bidesh_nagrik_address_details"
-                label="विदेशी नागरिक भए (ठेगाना)"
+                label="विदेशी नागरिक भए (ठेगाना)(अग्रेजीमा)"
                 required={true}
                 control={control}
                 error={errors.bidesh_nagrik_address_details}
+                language='english'
               />
             </Grid>
           </>}

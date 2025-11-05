@@ -13,11 +13,18 @@ const ReuseInput = ({
   readonly,
   maxLength,
   minLength,
-  max,
   inputProps,
   defaultValue,
   onlyDigits = false,
+  language, // 'english' | 'nepali'
 }) => {
+  // Define character patterns
+  const patterns = {
+    english: /^[a-zA-Z0-9\s.,!?'"@#%^&*()\-_=+[\]{}<>\\/|`~;:]*$/,
+    nepali: /^[\u0900-\u097F\s०१२३४५६७८९.,!?'"@#%^&*()\-_=+[\]{}<>\\/|`~;:]*$/,
+  };
+
+  // Validation rules for react-hook-form
   const rules = {
     ...(required && {
       required: {
@@ -45,6 +52,41 @@ const ReuseInput = ({
     }),
   };
 
+  // Handle IME-based input safely (for Nepali typing)
+  const handleBeforeInput = (e) => {
+    if (!language) return;
+
+    const data = e.data;
+    if (!data) return; // Allow system/IME control keys
+
+    const isValid = patterns[language].test(data);
+    if (!isValid) {
+      e.preventDefault();
+    }
+  };
+
+  // Handle paste event
+  const handlePaste = (e) => {
+    if (!language) return;
+    const pasted = e.clipboardData.getData('text');
+    const isValid = patterns[language].test(pasted);
+    if (!isValid) e.preventDefault();
+  };
+
+  // ✅ Custom onChange validation to show error live
+  const handleChange = (e, field, onChange) => {
+    const val = e.target.value;
+
+    if (language) {
+      const isValid = patterns[language].test(val);
+      if (!isValid) {
+        field.onChange(''); // clear invalid text
+        return;
+      }
+    }
+
+    onChange(val);
+  };
 
   return (
     <>
@@ -57,7 +99,19 @@ const ReuseInput = ({
         name={name}
         control={control}
         defaultValue={defaultValue ?? ''}
-        rules={rules}
+        rules={{
+          ...rules,
+          validate: (value) => {
+            if (!value) return true; // skip empty validation
+            if (language === 'english' && !patterns.english.test(value)) {
+              return 'कृपया केवल अंग्रेजी अक्षरहरू मात्र प्रविष्ट गर्नुहोस्';
+            }
+            if (language === 'nepali' && !patterns.nepali.test(value)) {
+              return 'कृपया केवल नेपाली अक्षरहरू मात्र प्रविष्ट गर्नुहोस्';
+            }
+            return true;
+          },
+        }}
         render={({ field }) => (
           <TextField
             {...field}
@@ -72,15 +126,17 @@ const ReuseInput = ({
             required={required}
             placeholder={placeholder}
             type={type}
-            InputProps={{ readOnly: readonly }}
+            InputProps={{
+              readOnly: readonly,
+            }}
             inputProps={{
               maxLength: maxLength || 255,
-              inputMode: onlyDigits ? 'numeric' : undefined,
-              pattern: onlyDigits ? '[0-9]*' : undefined,
+              onBeforeInput: handleBeforeInput,
+              onPaste: handlePaste,
               ...(inputProps || {}),
             }}
+            onChange={(e) => handleChange(e, field, field.onChange)}
           />
-
         )}
       />
     </>
