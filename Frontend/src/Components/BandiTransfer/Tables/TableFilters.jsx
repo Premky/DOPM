@@ -32,6 +32,7 @@ const TableFilters = ( { onChange } ) => {
             searchToOffice: "",
             searchStatus: "",
             nationality: "",
+            search_is_completed: "",
             searchbandi_name: "",
             searchmudda_id: "",
             searchchecked: false,
@@ -43,6 +44,7 @@ const TableFilters = ( { onChange } ) => {
     const searchOffice = watch( 'searchOffice' );
     const searchToOffice = watch( 'searchToOffice' );
     const nationality = watch( 'nationality' );
+    const search_is_completed = watch( 'search_is_completed' );
     const searchStatus = watch( 'searchStatus' );
     const searchmudda_id = watch( 'searchmudda_id' );
     const searchbandi_name = watch( 'searchbandi_name' );
@@ -55,6 +57,7 @@ const TableFilters = ( { onChange } ) => {
         searchOffice,
         searchToOffice,
         nationality,
+        search_is_completed,
         searchStatus,
         searchmudda_id,
         searchbandi_name,
@@ -66,6 +69,7 @@ const TableFilters = ( { onChange } ) => {
         filters?.searchOffice,
         filters?.searchToOffice,
         filters?.nationality,
+        filters?.search_is_completed,
         filters?.searchStatus,
         filters?.searchmudda_id,
         filters?.searchbandi_name,
@@ -82,6 +86,7 @@ const TableFilters = ( { onChange } ) => {
             searchOffice,
             searchToOffice,
             nationality,
+            search_is_completed,
             searchStatus,
             searchmudda_id,
             searchbandi_name,
@@ -93,6 +98,7 @@ const TableFilters = ( { onChange } ) => {
         searchOffice,
         searchToOffice,
         nationality,
+        search_is_completed,
         searchStatus,
         searchmudda_id,
         // searchbandi_name,
@@ -194,6 +200,18 @@ const TableFilters = ( { onChange } ) => {
 
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseSelect
+                        name="search_is_completed"
+                        label="सम्पन्न भए/नभएको"
+                        options={[
+                            { value: "Pending", label: "नभएको(प्रक्रयामा रहेको)" },
+                            { value: "Completed", label: "भएको" },
+                        ]}
+                        control={control}
+                        error={errors.search_is_completed}
+                    />
+                </Grid>
+                {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <ReuseSelect
                         name="nationality"
                         label="राष्ट्रियता"
                         options={[
@@ -203,16 +221,16 @@ const TableFilters = ( { onChange } ) => {
                         control={control}
                         error={errors.nationality}
                     />
-                </Grid>
+                </Grid> */}
 
-                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseMudda
                         name="searchmudda_id"
                         label="मुद्दा"
                         control={control}
                         error={errors.searchmudda_id}
                     />
-                </Grid>
+                </Grid> */}
                 {/* <Grid size={{ xs: 12, sm: 1 }}>
                     <ReuseSelect
                         name='is_checked'

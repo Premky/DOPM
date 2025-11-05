@@ -104,6 +104,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
     // const [role] = await pool.query( `SELECT id FROM bandi_transfer_statuses WHERE role_required=?`, user_role );
     const searchOffice = req.query.searchOffice || null;
     const searchToOffice = req.query.searchToOffice || null;
+    const search_is_completed = req.query.search_is_completed || null;
     const statusKey = req.query.searchStatus || null;
     const roleKey = req.query.searchRoles || null;
     // console.log( role );
@@ -131,7 +132,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
         }
 
         if ( statusKey ) {
-            console.log('Status:',statusKey)
+            console.log( 'Status:', statusKey );
             const [statusRow] = await connection.query(
                 `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
                 [statusKey]
@@ -145,7 +146,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                 params.push( statusId );
 
                 // If statusId >= 11, filter using final_to_office_id
-                if ( statusId >= 16 ) {
+                if ( statusId >= 16 ) { //Currently Disabled this condition 
                     queryFilter += ' AND bth.final_to_office_id = ?';
                     params.push( active_office );
                 } else {
@@ -164,6 +165,10 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
             }
         }
 
+        if ( search_is_completed ) {
+            queryFilter += ' AND bth.is_completed = ?';
+            params.push( search_is_completed );
+        }
         const sql = `
             SELECT 
             bp.id AS bandi_id,
@@ -272,7 +277,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
 
             }
         }
-        const result = Object.values(grouped).sort((a, b) => b.transfer_id - a.transfer_id);
+        const result = Object.values( grouped ).sort( ( a, b ) => b.transfer_id - a.transfer_id );
         return res.json( {
             Status: true,
             Result: result,
@@ -523,7 +528,7 @@ router.put( '/update_bandi_transfer_history/:id', verifyToken, async ( req, res 
 
         const [result] = await connection.query( sql, values );
         if ( previousTransferId ) {
-            await connection.query( `UPDATE bandi_transfer_history SET transfer_to_date=? WHERE id=?`, [metadata.transfer_date, previousTransferId]);
+            await connection.query( `UPDATE bandi_transfer_history SET transfer_to_date=? WHERE id=?`, [metadata.transfer_date, previousTransferId] );
         }
         console.log( 'mm', metadata );
 
