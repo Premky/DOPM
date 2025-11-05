@@ -139,10 +139,9 @@ const AllBandiTable = () => {
             console.error( 'Error fetching muddas:', error );
         }
     };
-
     useEffect( () => {
         fetchKaidi();
-        fetchMuddas();
+        // fetchMuddas();
     }, [page, rowsPerPage, searchOffice, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id, is_escape] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
@@ -203,7 +202,7 @@ const AllBandiTable = () => {
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
         { field: "lagat_no", headerName: "लगत नं.", width: 100 },
         { field: "bandi_type", headerName: "बन्दी प्रकार", width: 100 },
-        { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
+        { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100          },
         // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
         {
             field: "bandi_address",
@@ -252,7 +251,16 @@ const AllBandiTable = () => {
         { field: "govt_id_name_np", headerName: "परिचयपत्र प्रकार", width: 100 },
         { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },
         { field: "current_age", headerName: "उमेर", width: 100 },
-        { field: "gender", headerName: "लिङ्ग", width: 100 },
+        {
+            field: "gender", headerName: "लिङ्ग", width: 100,
+            renderCell: ( params ) => {
+                const type = params.value;
+                if ( type === 'Male' ) return 'पुरुष';
+                if ( type === 'Female' ) return 'महिला';
+                if ( type === 'Other' ) return 'अन्य';
+                return type || ''; //fallback for unexpected values 
+            }
+        },
         { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
         {
@@ -307,8 +315,16 @@ const AllBandiTable = () => {
         },
         { field: "office_bandi_id", headerName: "Bandi Id", width: 100 },
         { field: "lagat_no", headerName: "Log No.", width: 100 },
-        { field: "bandi_type", headerName: "Prisoner Type", width: 100 },
-        { field: "bandi_name", headerName: "Prisoner's Name", width: 100 },
+        {
+            field: "bandi_type", headerName: "Prisoner Type", width: 100,
+            renderCell: ( params ) => {
+                const type = params.value;
+                if ( type === 'थुनुवा' ) return 'Detainee';
+                if ( type === 'कैदी' ) return 'Prisoner';
+                return type || ''; //fallback for unexpected values 
+            }            
+        },
+        { field: "bandi_name_en", headerName: "Prisoner's Name", width: 100 },
         // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
         {
             field: "bandi_address",
@@ -318,7 +334,7 @@ const AllBandiTable = () => {
                 const row = params.row;
                 if ( row.nationality === 'स्वदेशी' ) {
                     // Build Nepali address string
-                    return `${ row.state_name_en || '' }, ${ row.district_name_en || '' }, ${ row.city_name_en || '' }, - ${ row.wardno || '' }, ${ row.country_name_np || '' }`;
+                    return `${ row.state_name_en || '' }, ${ row.district_name_en || '' }, ${ row.city_name_en || '' }, - ${ row.wardno || '' }, ${ row.country_name_en || '' }`;
                 } else {
                     // Foreign address + country
                     return `${ row.bidesh_nagarik_address_details || '' }, ${ row.country_name_en || '' }`;
@@ -358,7 +374,7 @@ const AllBandiTable = () => {
         { field: "card_no", headerName: "Identity Card No.", width: 100 },
         { field: "current_age", headerName: "Age", width: 100 },
         { field: "gender", headerName: "Gender", width: 100 },
-        { field: "total_jariwana_amount", headerName: "Fine (due)", width: 100 },
+        { field: "total_jariwana_amount", headerName: "Fine (if due)", width: 100 },
         { field: "thuna_date_bs", headerName: "Date of arrest", width: 100 },
         {
             field: "release_date_bs", headerName: "Release date", width: 100,
@@ -375,7 +391,7 @@ const AllBandiTable = () => {
         },
         {
             field: "remaining_days_to_release",
-            headerName: "कैदमुक्त हुन बाँकी दिन (जरिवाना समेत)",
+            headerName: "Remaining Days to Release (Including Fine)",
             width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
@@ -389,12 +405,12 @@ const AllBandiTable = () => {
 
     ];
 
-    if(language=='en'){
-        columns=columns_en
-    }else{
-        columns=columns_np
+    if ( language == 'en' ) {
+        columns = columns_en;
+    } else {
+        columns = columns_np;
     }
-    
+
     return (
         <>
             <HelmetProvider>

@@ -96,10 +96,14 @@ const ReusableBandiTable = ( {
         const { saveAs } = await import( "file-saver" );
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
-        worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+        if ( language == 'en' ) {
+            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Case', 'Complainant', 'Decision Office', 'Decision Date'] );
+        } else {
+            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+        }
 
         let excelRowIndex = 2;
-        console.log(filteredRows)
+        // console.log(filteredRows)
         filteredRows.forEach( ( bandi, bandiIndex ) => {
             const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
             const muddaCount = muddaList.length;
@@ -110,19 +114,38 @@ const ReusableBandiTable = ( {
                     ...columns.filter( col => col.field !== 'photo_path' ).map( col => {
                         if ( col.field === 'bandi_address' ) {
                             if ( bandi.nationality === 'स्वदेशी' ) {
-                                return `${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_np || '' }`;
+                                if ( language == 'en' ) {
+                                    return `${ bandi.state_name_en || '' }, ${ bandi.district_name_en || '' }, ${ bandi.city_name_en || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_en || '' }`;
+                                } else {
+                                    return `${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_np || '' }`;
+                                }
                             } else {
-                                return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }`;
+                                if ( language == 'en' ) {
+                                    return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_en || '' }`;
+                                } else {
+                                    return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }`;
+                                }
+                            }
+                        }
+
+                        // 🧠 Add conditional translation for bandi_type here
+                        if ( col.field === 'bandi_type' ) {
+                            if ( language == 'en' ) {
+                                return bandi_type[bandi[col.field]] || bandi[col.field] || '';
+                            } else {
+                                // reverse translation if needed
+                                const reverseMap = { "Detainee": "थुनुवा", "Prisoner": "कैदी" };
+                                return reverseMap[bandi[col.field]] || bandi[col.field] || '';
                             }
                         }
                         return idx === 0 ? bandi[col.field] || '' : '';
                     } ),
-                    bandi.country_name_np || '',
-                    bandi.dob_ad || '',
+                    language == 'en' ? bandi.country_name_en || '' : bandi.country_name_np || '',
+                    bandi.dob_ad ? new Date( bandi.dob_ad ) : '',
                     bandi.dob || '',
-                    mudda?.mudda_name || '',
-                    mudda?.vadi || '0',
-                    mudda?.mudda_phesala_antim_office || '',
+                    language == 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
+                    language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
+                    language == 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
                     mudda?.mudda_phesala_antim_office_date || ''
                 ];
                 worksheet.addRow( rowData );
@@ -167,17 +190,19 @@ const ReusableBandiTable = ( {
 
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
-        saveAs( blob, 'bandi_records.xlsx' );
+        const filename = language === 'en' ? 'Bandi_Records.xlsx' : 'बन्दी_विवरण.xlsx';
+        saveAs( blob, filename );
+
     };
 
     // console.log(paginatedRows);
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <h3>{title} {'>'} {filteredRows.length} वटा विवरण भेटियो </h3>
+                <h3>  {filteredRows.length} {language == 'en' ? 'Records Found' : 'वटा विवरण भेटियो'}  </h3>
                 <Box mb={2}>
                     <TextField
-                        label="बन्दीको नाम/संकेत नं.ले खोज्नुहोस्"
+                        label={language == 'en' ? "Prisoner's Name/Bandi ID" : 'बन्दीको नाम/संकेत नं.ले खोज्नुहोस्'}
                         variant="outlined"
                         size="small"
                         value={filterText}
