@@ -1118,6 +1118,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.office_name_full_en,
                 bmd_combined.vadi,
                 bmd_combined.vadi_en,
+                bmd_combined.mudda_no,
                 bmd_combined.mudda_phesala_antim_office_date,
                 bmd_combined.mudda_phesala_antim_office_en,
                 bmd_combined.mudda_group_id,
@@ -1157,7 +1158,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             LEFT JOIN (
                 SELECT 
                     bmd.bandi_id, bmd.mudda_id, bmd.is_main_mudda, bmd.is_last_mudda, 
-                    m.mudda_name, m.mudda_name_en, bmd.vadi, bmd.vadi_en,
+                    m.mudda_name, m.mudda_name_en, bmd.vadi, bmd.vadi_en, bmd.mudda_no,
                     bmd.mudda_phesala_antim_office_date,
                     o.office_name_with_letter_address AS mudda_phesala_antim_office,                    
                     o.office_name_with_letter_address,
@@ -1188,8 +1189,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 office_name_with_letter_address,
                 vadi,
                 vadi_en,
+                mudda_no,
                 mudda_phesala_antim_office_date,
                 mudda_phesala_antim_office,
+                mudda_phesala_antim_office_en,
                 mudda_group_name,
                 total_jariwana_amount,
                 ...bandiData
@@ -1214,8 +1217,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     office_name_with_letter_address,
                     vadi,
                     vadi_en,
+                    mudda_no,
                     mudda_phesala_antim_office_date,
                     mudda_phesala_antim_office,
+                    mudda_phesala_antim_office_en,
                     mudda_group_name
                 } );
             }

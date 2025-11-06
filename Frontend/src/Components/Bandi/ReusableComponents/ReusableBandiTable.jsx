@@ -103,9 +103,9 @@ const ReusableBandiTable = ( {
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
         if ( language == 'en' ) {
-            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Case', 'Complainant', 'Decision Office', 'Decision Date'] );
+            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Case', 'Case No.', 'Complainant', 'Decision Office', 'Decision Date'] );
         } else {
-            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
         }
 
         let excelRowIndex = 2;
@@ -151,6 +151,7 @@ const ReusableBandiTable = ( {
                     bandi.dob || '',
                     language == 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
                     language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
+                    mudda.mudda_no || '',
                     language == 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
                     mudda?.mudda_phesala_antim_office_date || ''
                 ];
