@@ -1192,6 +1192,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 mudda_no,
                 mudda_phesala_antim_office_date,
                 mudda_phesala_antim_office,
+                office_name_full_en,
                 mudda_phesala_antim_office_en,
                 mudda_group_name,
                 total_jariwana_amount,
@@ -1220,6 +1221,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     mudda_no,
                     mudda_phesala_antim_office_date,
                     mudda_phesala_antim_office,
+                    office_name_full_en,
                     mudda_phesala_antim_office_en,
                     mudda_group_name
                 } );
