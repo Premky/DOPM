@@ -109,7 +109,7 @@ const ReusableBandiTable = ( {
         }
 
         let excelRowIndex = 2;
-        // console.log(filteredRows)
+        console.log(filteredRows)
         filteredRows.forEach( ( bandi, bandiIndex ) => {
             const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
             const muddaCount = muddaList.length;
@@ -150,8 +150,8 @@ const ReusableBandiTable = ( {
                     bandi.dob_ad ? new Date( bandi.dob_ad ) : '',
                     bandi.dob || '',
                     language == 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
-                    language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
                     mudda.mudda_no || '',
+                    language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
                     language == 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
                     mudda?.mudda_phesala_antim_office_date || ''
                 ];
