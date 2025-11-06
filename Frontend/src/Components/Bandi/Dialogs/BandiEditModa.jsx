@@ -106,6 +106,7 @@ const BandiEditModal = ( {open, onClose, onSave, editingData} ) => {
                             placeholder={'नाम (अंग्रेजीमा)'}
                             control={control}
                             required={true}
+                            language='english'
                         />
                     </Grid>
                     <Grid size={{ xs: 12 }} container>
