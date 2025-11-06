@@ -145,7 +145,8 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
                 queryFilter += ' AND bth.status_id = ?';
                 params.push( statusId );
 
-                // If statusId >= 11, filter using final_to_office_id                
+                // If statusId >= 11, filter using final_to_office_id    
+                // Currently Disabled             
                 if ( statusId <= 16 ) {  
                     queryFilter += ' AND bth.final_to_office_id = ?';
                     params.push( active_office );

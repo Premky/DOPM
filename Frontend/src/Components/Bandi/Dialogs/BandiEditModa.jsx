@@ -96,6 +96,7 @@ const BandiEditModal = ( {open, onClose, onSave, editingData} ) => {
                             label="नामथर"
                             placeholder={'कैफियत'}
                             control={control}
+                            required={true}
                         />
                     </Grid>
                     <Grid size={{ xs: 6 }} style={{ position: 'relative' }}>
@@ -104,6 +105,7 @@ const BandiEditModal = ( {open, onClose, onSave, editingData} ) => {
                             label="Name (In English)"
                             placeholder={'नाम (अंग्रेजीमा)'}
                             control={control}
+                            required={true}
                         />
                     </Grid>
                     <Grid size={{ xs: 12 }} container>
@@ -193,7 +195,7 @@ const BandiEditModal = ( {open, onClose, onSave, editingData} ) => {
                             <ReuseDateField
                                 name='enrollment_date_bs'
                                 label="दाखिला मिति"
-                                required={true}
+                                required={false}
                                 control={control}
                                 error={errors.enrollment_date_bs} />
                         </Grid>

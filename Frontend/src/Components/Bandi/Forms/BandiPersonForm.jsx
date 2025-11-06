@@ -361,9 +361,10 @@ const BandiPersonForm = () => {
               <ReuseDateField
                 name='enrollment_date_bs'
                 label="दाखिला मिति"
-                required={false}
+                required={true}
                 control={control}
-                error={errors.enrollment_date_bs} />
+                error={errors.enrollment_date_bs}                 
+                />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
