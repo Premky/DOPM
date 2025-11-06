@@ -180,6 +180,8 @@ LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
 
+import translate from "google-translate-api-x";
+
 async function translateEscapedNames(limit = 100) {
   try {
     const [rows] = await pool.query(`
@@ -221,7 +223,7 @@ async function translateEscapedNames(limit = 100) {
   }
 }
 
-//   translateEscapedNames();
+  translateEscapedNames();
 
 
 router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
