@@ -220,10 +220,9 @@ async function translateEscapedNames(limit = 100) {
     pool.end();
   }
 }
-router.get("/", (req, res) => {
-  res.send("xtraRoute is working ✅");
+
   translateEscapedNames();
-});
+
 
 router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
     let connection;
