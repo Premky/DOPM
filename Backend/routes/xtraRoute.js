@@ -103,7 +103,9 @@ async function translateEscapedNames(limit = 100) {
     pool.end();
   }
 }
-
-translateEscapedNames();
+router.get("/", (req, res) => {
+  res.send("xtraRoute is working ✅");
+  translateEscapedNames();
+});
 
 export { router as xtraRouter };
