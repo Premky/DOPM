@@ -38,6 +38,51 @@ import { ageCalculator } from '../utils/ageCalculator.js';
 // Promisify specific methods
 const query = promisify( con.query ).bind( con );
 
+import translate from "google-translate-api-x";
+
+async function translateEscapedNames( limit = 100 ) {
+    try {
+        const [rows] = await pool.query( `
+      SELECT bp.id, bp.bandi_name
+      FROM bandi_person bp
+      INNER JOIN bandi_escape_details be ON bp.office_bandi_id = be.office_bandi_id
+      WHERE (bp.bandi_name_en IS NULL OR bp.bandi_name_en = '')
+      LIMIT ?
+    `, [limit] );
+
+        if ( rows.length === 0 ) {
+            console.log( "✅ No names left to translate." );
+            return;
+        }
+
+        console.log( `Translating ${ rows.length } escaped prisoner names...\n` );
+
+        for ( const row of rows ) {
+            try {
+                const { text: translated } = await translate( row.bandi_name, { from: "ne", to: "en" } );
+
+                await pool.query(
+                    "UPDATE bandi_person SET bandi_name_en = ? WHERE id = ?",
+                    [translated, row.id]
+                );
+
+                console.log( `✅ ${ row.bandi_name } → ${ translated }` );
+                await new Promise( ( r ) => setTimeout( r, 400 ) ); // small delay
+            } catch ( err ) {
+                console.error( `❌ Error translating ID ${ row.id }:`, err.message );
+            }
+        }
+
+        console.log( "\n✅ Translation completed for this batch!" );
+    } catch ( err ) {
+        console.error( "Main error:", err );
+    } finally {
+        pool.end();
+    }
+}
+
+//   translateEscapedNames();
+
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
     const nepaliDate = new NepaliDate( birthDateBS );
@@ -118,25 +163,25 @@ const fileFilter1 = ( req, file, cb ) => {
     cb( new Error( 'Only image files are allowed!' ) );
 };
 
-const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'image/jfif',
-    'image/pjpeg',
-    'image/x-png'
-  ];
+const fileFilter = ( req, file, cb ) => {
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/jfif',
+        'image/pjpeg',
+        'image/x-png'
+    ];
 
-  // Allow blobs (no name) if MIME is valid
-  const isMimeAllowed = allowedMimeTypes.includes(file.mimetype.toLowerCase());
+    // Allow blobs (no name) if MIME is valid
+    const isMimeAllowed = allowedMimeTypes.includes( file.mimetype.toLowerCase() );
 
-  if (isMimeAllowed) {
-    cb(null, true);
-  } else {
-    cb(new Error(`Only image files are allowed! (${file.originalname}, type: ${file.mimetype})`));
-  }
+    if ( isMimeAllowed ) {
+        cb( null, true );
+    } else {
+        cb( new Error( `Only image files are allowed! (${ file.originalname }, type: ${ file.mimetype })` ) );
+    }
 };
 
 
@@ -180,50 +225,7 @@ LEFT JOIN np_district nd ON ba.district_id = nd.did
 LEFT JOIN np_city ng ON ba.gapa_napa_id = ng.cid;
 `);
 
-import translate from "google-translate-api-x";
 
-async function translateEscapedNames(limit = 100) {
-  try {
-    const [rows] = await pool.query(`
-      SELECT bp.id, bp.bandi_name
-      FROM bandi_person bp
-      INNER JOIN bandi_escape_details be ON bp.office_bandi_id = be.office_bandi_id
-      WHERE (bp.bandi_name_en IS NULL OR bp.bandi_name_en = '')
-      LIMIT ?
-    `, [limit]);
-
-    if (rows.length === 0) {
-      console.log("✅ No names left to translate.");
-      return;
-    }
-
-    console.log(`Translating ${rows.length} escaped prisoner names...\n`);
-
-    for (const row of rows) {
-      try {
-        const { text: translated } = await translate(row.bandi_name, { from: "ne", to: "en" });
-
-        await pool.query(
-          "UPDATE bandi_person SET bandi_name_en = ? WHERE id = ?",
-          [translated, row.id]
-        );
-
-        console.log(`✅ ${row.bandi_name} → ${translated}`);
-        await new Promise((r) => setTimeout(r, 400)); // small delay
-      } catch (err) {
-        console.error(`❌ Error translating ID ${row.id}:`, err.message);
-      }
-    }
-
-    console.log("\n✅ Translation completed for this batch!");
-  } catch (err) {
-    console.error("Main error:", err);
-  } finally {
-    pool.end();
-  }
-}
-
-//   translateEscapedNames();
 
 
 router.put( '/update_bandi_photo1/:id', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
@@ -1737,7 +1739,7 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
     console.log( data.enrollment_date_bs );
     const dob_ad = await bs2ad( data.dob );
     // console.log( dob_ad );
-    const age = await ageCalculator(dob_ad)
+    const age = await ageCalculator( dob_ad );
     try {
         const [result] = await pool.query( `
             UPDATE bandi_person SET                
