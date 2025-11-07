@@ -1153,6 +1153,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs,
                 oo.letter_address AS current_office_letter_address,
+                oo.short_name_en AS current_office_letter_address_en,
                 esc_office.letter_address AS arrested_office,
                 brd_combined.last_karnayan_miti,
                 bmd_combined.mudda_id,

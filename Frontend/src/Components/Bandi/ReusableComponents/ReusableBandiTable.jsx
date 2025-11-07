@@ -45,6 +45,7 @@ const ReusableBandiTable = ( {
         if ( !filterText ) return rowsWithComputed;
         return rowsWithComputed.filter( bandi =>
             bandi.bandi_name?.toLowerCase().includes( filterText.toLowerCase() ) ||
+            bandi.bandi_name_en?.toLowerCase().includes( filterText.toLowerCase() ) ||
             bandi.office_bandi_id?.toString().includes( filterText.toLowerCase() )
         );
     }, [rowsWithComputed, filterText] );

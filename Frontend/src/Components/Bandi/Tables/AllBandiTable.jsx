@@ -293,7 +293,7 @@ const AllBandiTable = () => {
     ];
     const columns_en = [
         {
-            field: "current_office_letter_address", headerName: "Prison Office", width: 100,
+            field: "current_office_letter_address_en", headerName: "Prison Office", width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
                 if ( row.current_office_letter_address == row.arrested_office ) {
@@ -305,7 +305,7 @@ const AllBandiTable = () => {
                             {row.arrested_office && (
                                 <>
                                     <br />
-                                    Current at: {row.arrested_office}
+                                    Now at: {row.arrested_office}
                                 </>
                             )}
                         </>
@@ -370,7 +370,7 @@ const AllBandiTable = () => {
                     "No Image"
                 ),
         },
-        { field: "govt_id_name_np", headerName: "Identity Card Type", width: 100 },
+        { field: "govt_id_name_en", headerName: "Identity Card Type", width: 100 },
         { field: "card_no", headerName: "Identity Card No.", width: 100 },
         { field: "current_age", headerName: "Age", width: 100 },
         { field: "gender", headerName: "Gender", width: 100 },
