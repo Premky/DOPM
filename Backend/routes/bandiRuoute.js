@@ -1020,10 +1020,10 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( searchOffice );
     }
-    // else if ( !( active_office == 1 || active_office == 2 ) ) {
-    //     conditions.push( 'bp.current_office_id = ?' );
-    //     params.push( active_office );
-    // }
+    else if ( !( active_office == 1 || active_office == 2 ) ) {
+        conditions.push( 'bp.current_office_id = ?' );
+        params.push( active_office );
+    }
 
     if ( nationality ) {
         conditions.push( 'bp.nationality = ?' );
@@ -1173,7 +1173,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.mudda_group_id,
                 bmd_combined.mudda_group_name,
                 bicd.card_no,
-                git.govt_id_name_np
+                git.govt_id_name_np,
+                git.govt_id_name_en
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
