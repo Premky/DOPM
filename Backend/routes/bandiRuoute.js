@@ -1013,17 +1013,20 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     let conditions = ['bp.is_under_payrole != 1'];
     let params = [];
 
-    if ( selectedOffice ) {
+    if(searchOffice=='all'){
+        
+    }
+    else if ( selectedOffice ) {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( selectedOffice );
     } else if ( searchOffice ) {
         conditions.push( 'bp.current_office_id = ?' );
         params.push( searchOffice );
     }
-    else if ( !( active_office == 1 || active_office == 2 ) ) {
-        conditions.push( 'bp.current_office_id = ?' );
-        params.push( active_office );
-    }
+    // else if ( !( active_office == 1 || active_office == 2 ) ) {
+    //     conditions.push( 'bp.current_office_id = ?' );
+    //     params.push( active_office );
+    // }
 
     if ( nationality ) {
         conditions.push( 'bp.nationality = ?' );
