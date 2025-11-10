@@ -29,6 +29,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
             mudda_list: "",
             mudda_no: "",
             vadi: "",
+            vadi_en: "",
             mudda_condition: "",
             mudda_phesala_antim_office_id: "",
             mudda_phesala_antim_office_name: "",
@@ -90,10 +91,19 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 <Grid size={{ xs: 12 }}>
                     <ReuseInput
                         name="vadi"
-                        label="वादी वा जाहेरवालाको नाम"
+                        label="वादी वा जाहेरवालाको नाम(नेपालीमा)"
                         control={control}
                         required={true}
                         errors={errors.vadi}
+                    />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <ReuseInput
+                        name="vadi_en"
+                        label="वादी वा जाहेरवालाको नाम(IN ENGLISH)"
+                        control={control}
+                        required={true}
+                        errors={errors.vadi_en}
                     />
                 </Grid>
 

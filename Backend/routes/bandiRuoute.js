@@ -2221,7 +2221,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
     const user_id = req.user.id;
 
     const { bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-        mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+        mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi, vadi_en,
         hirasat_years, hirasat_months, hirasat_days,
         thuna_date_bs, release_date_bs, is_life_time,
         is_main_mudda, is_last_mudda
@@ -2235,7 +2235,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
         await connection.beginTransaction();
         const values = [
             bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-            mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+            mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi, vadi_en,
             hirasat_years, hirasat_months, hirasat_days,
             thuna_date_bs, release_date_bs, is_life_time,
             is_main_mudda, is_last_mudda,
@@ -2245,7 +2245,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
         const sql = `
             INSERT INTO bandi_mudda_details (
                 bandi_id, mudda_id, mudda_no, mudda_condition, mudda_phesala_antim_office_id,
-                mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi,
+                mudda_phesala_antim_office_district, mudda_phesala_antim_office_date, vadi, vadi_en,
                 hirasat_years, hirasat_months, hirasat_days,
                 thuna_date_bs, release_date_bs, is_life_time,
                 is_main_mudda, is_last_mudda, 
@@ -2288,6 +2288,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
         mudda_no,
         mudda_condition,
         vadi,
+        vadi_en,
         mudda_phesala_antim_office_id,
         mudda_phesala_antim_office_district,
         mudda_phesala_antim_office_date,
@@ -2304,7 +2305,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 
         const sql = `
             UPDATE bandi_mudda_details 
-            SET mudda_id=?, mudda_no=?, mudda_condition=?, vadi=?, mudda_phesala_antim_office_id=?,
+            SET mudda_id=?, mudda_no=?, mudda_condition=?, vadi=?, vadi=?, mudda_phesala_antim_office_id=?,
                 mudda_phesala_antim_office_district=?, mudda_phesala_antim_office_date=?,
                 hirasat_years=?, hirasat_months=?, hirasat_days=?, 
                 thuna_date_bs=?, release_date_bs=?, is_life_time=?,
@@ -2317,6 +2318,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
             mudda_no,
             mudda_condition,
             vadi,
+            vadi_en,
             mudda_phesala_antim_office_id,
             mudda_phesala_antim_office_district,
             mudda_phesala_antim_office_date,
