@@ -23,7 +23,7 @@ const ViewBandi = ( { bandi } ) => {
     const location = useLocation();
     const [urlLocation, setUrlLocation] = React.useState( location.pathname );
     useEffect( () => {
-        if ( location.pathname.startsWith( "/payrole/view_saved_record" ) ) {
+        if ( location.pathname.startsWith( "/parole/view_saved_record" ) ) {
             setUrlLocation( "parole" );
         } else if ( location.pathname.startsWith( "/bandi/view_saved_record" ) ) {
             setUrlLocation( "bandi" );
