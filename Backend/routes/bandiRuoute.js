@@ -1220,7 +1220,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     mg.mudda_group_name, mg.mudda_group_name_en, mg.id AS mudda_group_id                    
                 FROM bandi_mudda_details bmd
                 LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
+                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_id = o.id
                 LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
             ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
             WHERE bp.id IN (${ placeholders })
