@@ -83,6 +83,7 @@ const AllBandiTable = () => {
     const [allKaidi, setAllKaidi] = useState( [] );
     const [filteredKaidi, setFilteredKaidi] = useState( [] );
     const [totalKaidi, setTotalKaidi] = useState( 0 );
+    
     const fetchKaidi = async () => {
         setLoading( true );
         try {

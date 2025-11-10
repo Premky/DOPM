@@ -66,14 +66,14 @@ const ReuseKaragarOffice = ( { name, label, required, control, error, defaultVal
     }, [] );
 
     // 👇 Automatically select "All" if nothing is selected
-    useEffect( () => {
-        if ( !loading && formattedOptions.length > 0 ) {
-            const allOption = formattedOptions.find( ( opt ) => opt.value === 'all' );
-            if ( allOption && !control._formValues[name] ) {
-                setValue( name, 'all' );
-            }
-        }
-    }, [loading, formattedOptions] );
+    // useEffect( () => {
+    //     if ( !loading && formattedOptions.length > 0 ) {
+    //         const allOption = formattedOptions.find( ( opt ) => opt.value === 'all' );
+    //         if ( allOption && !control._formValues[name] ) {
+    //             setValue( name, 'all' );
+    //         }
+    //     }
+    // }, [loading, formattedOptions] );
 
     return (
         <>

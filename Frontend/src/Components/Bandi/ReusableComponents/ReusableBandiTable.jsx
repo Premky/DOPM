@@ -8,6 +8,8 @@ import {
 import { useBaseURL } from '../../../Context/BaseURLProvider';
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 import { useAuth } from '../../../Context/AuthContext';
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 const ReusableBandiTable = ( {
     language = '',
@@ -52,6 +54,7 @@ const ReusableBandiTable = ( {
 
     const [orderBy, setOrderBy] = useState( null );
     const [order, setOrder] = useState( 'asc' );
+    const [includePhoto, setIncludePhoto] = useState( false );
 
     const handleSort = ( field ) => {
         if ( orderBy === field ) {
@@ -96,112 +99,107 @@ const ReusableBandiTable = ( {
     };
 
 
+
+    /**
+ * Exports prisoner (bandi) data with optional embedded photos to Excel.
+ *
+ * @param {Array} filteredRows - Array of bandi objects
+ * @param {boolean} includePhoto - Whether to include photos in Excel
+ * @param {Array} columns - Table columns definition (must include `field` and `headerName`)
+ * @param {string} BASE_URL - Base server URL for fetching images
+ */
+
     const handleExport = async () => {
-        const ExcelJS = await import( 'exceljs' );
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
-        const { saveAs } = await import( "file-saver" );
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet( "Bandi List" );
 
-        const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
-        if ( language == 'en' ) {
-            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Case', 'Case No.', 'Complainant', 'Decision Office', 'Decision Date'] );
-        } else {
-            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
-        }
+            // ===== Header Row =====
+            const headers = [
+                "SN",
+                ...columns
+                    .filter( col => includePhoto || col.field !== "photo_path" )
+                    .map( col => col.headerName ),
+            ];
+            worksheet.addRow( headers );
 
-        let excelRowIndex = 2;
-        console.log(filteredRows)
-        filteredRows.forEach( ( bandi, bandiIndex ) => {
-            const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
-            const muddaCount = muddaList.length;
-            // console.log( muddaList );
-            muddaList.forEach( ( mudda, idx ) => {
-                let rowData = [
-                    idx === 0 ? bandiIndex + 1 : '',
-                    ...columns.filter( col => col.field !== 'photo_path' ).map( col => {
-                        if ( col.field === 'bandi_address' ) {
-                            if ( bandi.nationality === 'स्वदेशी' ) {
-                                if ( language == 'en' ) {
-                                    return `${ bandi.state_name_en || '' }, ${ bandi.district_name_en || '' }, ${ bandi.city_name_en || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_en || '' }`;
-                                } else {
-                                    return `${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_np || '' }`;
-                                }
-                            } else {
-                                if ( language == 'en' ) {
-                                    return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_en || '' }`;
-                                } else {
-                                    return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }`;
-                                }
+            worksheet.getRow( 1 ).font = { bold: true };
+
+            let rowIndex = 2;
+
+            // ===== Loop through bandi rows =====
+            for ( const [bandiIndex, bandi] of filteredRows.entries() ) {
+                const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
+
+                for ( const [idx, mudda] of muddaList.entries() ) {
+                    const rowData = [
+                        idx === 0 ? bandiIndex + 1 : "",
+                        ...columns
+                            .filter( col => includePhoto || col.field !== "photo_path" )
+                            // .map( col => ( idx === 0 ? bandi[col.field] || "" : "" ) ), // This line is for Image with URL also
+                            .map(col=>{
+                                if(col.field==="photo_path") return "";
+                                return idx===0 ? bandi[col.field] || "" :"";
+                            })
+                    ];
+
+                    const excelRow = worksheet.addRow( rowData );
+
+                    // ===== Insert image if enabled =====
+                    if ( includePhoto && bandi.photo_path ) {
+                        try {
+                            const imageUrl = `${ BASE_URL }${ bandi.photo_path }`;
+                            const response = await fetch( imageUrl );
+                            if ( !response.ok ) throw new Error( "Image not found" );
+
+                            const arrayBuffer = await response.arrayBuffer();
+                            const imageId = workbook.addImage( {
+                                buffer: new Uint8Array( arrayBuffer ),
+                                extension: "jpeg",
+                            } );
+
+                            const photoColIndex = columns.findIndex( c => c.field === "photo_path" );
+                            if ( photoColIndex !== -1 ) {
+                                const colNum = photoColIndex + 2; // +2 because SN is first column
+                                const rowNum = excelRow.number;
+
+                                worksheet.addImage( imageId, {
+                                    tl: { col: colNum - 1, row: rowNum - 1 },
+                                    ext: { width: 120, height: 180 },
+                                } );
+
+                                worksheet.getColumn( colNum ).width = 80;
+                                worksheet.getRow( rowNum ).height = 135;
                             }
+                        } catch ( err ) {
+                            console.warn( "Image fetch failed:", err );
                         }
+                    }
 
-                        // 🧠 Add conditional translation for bandi_type here
-                        if ( col.field === 'bandi_type' ) {
-                            if ( language == 'en' ) {
-                                return bandiTypeMap[bandi[col.field]] || bandi[col.field] || '';
-                            } else {
-                                // reverse translation if needed
-                                const reverseMap = { "Detainee": "थुनुवा", "Prisoner": "कैदी" };
-                                return reverseMap[bandi[col.field]] || bandi[col.field] || '';
-                            }
-                        }
-                        return idx === 0 ? bandi[col.field] || '' : '';
-                    } ),
-                    language == 'en' ? bandi.country_name_en || '' : bandi.country_name_np || '',
-                    bandi.dob_ad ? new Date( bandi.dob_ad ) : '',
-                    bandi.dob || '',
-                    language == 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
-                    mudda.mudda_no || '',
-                    language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
-                    language == 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
-                    mudda?.mudda_phesala_antim_office_date || ''
-                ];
-                worksheet.addRow( rowData );
-            } );
-
-            if ( muddaCount > 1 ) {
-                worksheet.mergeCells( `A${ excelRowIndex }:A${ excelRowIndex + muddaCount - 1 }` );
-                columns.filter( c => c.field !== 'photo_path' ).forEach( ( col, idx ) => {
-                    const colNumber = idx + 2;
-                    worksheet.mergeCells(
-                        worksheet.getCell( excelRowIndex, colNumber ).address +
-                        ':' +
-                        worksheet.getCell( excelRowIndex + muddaCount - 1, colNumber ).address
-                    );
-                } );
+                    rowIndex++;
+                }
             }
-            excelRowIndex += muddaCount;
-        } );
 
-        worksheet.columns.forEach( column => {
-            let maxLength = 10;
-            column.eachCell( { includeEmpty: true }, cell => {
-                const length = cell.value ? cell.value.toString().length : 0;
-                if ( length > maxLength ) maxLength = length;
+            // ===== Auto-fit column widths =====
+            worksheet.columns.forEach( col => {
+                if ( col.eachCell ) {
+                    let maxLength = 0;
+                    col.eachCell( { includeEmpty: true }, cell => {
+                        const cellLength = cell.value ? cell.value.toString().length : 0;
+                        maxLength = Math.max( maxLength, cellLength );
+                    } );
+                    col.width = maxLength < 10 ? 10 : maxLength + 2;
+                }
             } );
-            column.width = maxLength + 2;
-        } );
-        worksheet.eachRow( row => {
-            row.eachCell( cell => {
-                cell.font = { name: 'Kalimati', size: 12 }; // Set font for each cell     
-                cell.alignment = {
-                    wrapText: true,
-                    vertical: 'middle',
-                    horizontal: 'center'
-                };
-            } );
-        } );
-        worksheet.getRow( 1 ).eachCell( cell => {
-            cell.font = { name: 'Kalimati', size: 14, bold: true };
-        } );
-        worksheet.views = [{ state: "frozen", ySplit: 1 }];
 
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
-        const filename = language === 'en' ? 'Bandi_Records.xlsx' : 'बन्दी_विवरण.xlsx';
-        saveAs( blob, filename );
-
+            // ===== Generate Excel File =====
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs( new Blob( [buffer] ), "bandi_export_with_photos.xlsx" );
+        } catch ( error ) {
+            console.error( "Export failed:", error );
+        }
     };
+
 
     // console.log(paginatedRows);
     return (
@@ -217,7 +215,19 @@ const ReusableBandiTable = ( {
                         onChange={( e ) => setFilterText( e.target.value )}
                     />
                 </Box>
-                <Button variant="outlined" onClick={handleExport}>एक्सेल निर्यात</Button>
+                <Box display="flex" alignItems="center" gap={2}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <input
+                            type="checkbox"
+                            checked={includePhoto}
+                            onChange={( e ) => setIncludePhoto( e.target.checked )}
+                        />
+                        {language === 'en' ? 'Include Photo' : 'फोटो समावेश गर्नुहोस्'}
+                    </label>
+                    <Button variant="outlined" onClick={handleExport}>
+                        {language === 'en' ? 'Export to Excel' : 'एक्सेल निर्यात'}
+                    </Button>
+                </Box>
             </Box>
 
             <Dialog open={photoPreviewOpen} onClose={() => setPhotoPreviewOpen( false )} maxWidth="sm" fullWidth>
