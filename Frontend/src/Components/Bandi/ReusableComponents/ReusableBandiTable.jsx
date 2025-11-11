@@ -201,187 +201,110 @@ const ReusableBandiTable = ( {
     };
 
     const handleExport = async () => {
-        try {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet( language === 'en' ? "Bandi Details" : "बन्दी विवरण" );
-            const { saveAs } = await import( "file-saver" );
+        const ExcelJS = await import( 'exceljs' );
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
+        const { saveAs } = await import( "file-saver" );
 
-            // ===== Header Row =====
-            const bandiHeaders = columns
-                .filter( c => c.field !== 'photo_path' )
-                .map( c => c.headerName );
-
-            if ( language === 'en' ) {
-                worksheet.addRow( [
-                    'S.N.',
-                    ...bandiHeaders,
-                    'Address',
-                    'Country',
-                    'Date of Birth(A.D.)',
-                    'Date of Birth(B.S.)',
-                    'Case',
-                    'Case No.',
-                    'Complainant',
-                    'Decision Office',
-                    'Decision Date'
-                ] );
-            } else {
-                worksheet.addRow( [
-                    'सि.नं.',
-                    ...bandiHeaders,
-                    'ठेगाना',
-                    'देश',
-                    'जन्म मिति(ई.सं.)',
-                    'जन्म मिति(वि.सं.)',
-                    'मुद्दा',
-                    'मुद्दा नं.',
-                    'जाहेरवाला',
-                    'फैसला गर्ने कार्यालय',
-                    'फैसला मिति'
-                ] );
-            }
-
-            worksheet.getRow( 1 ).font = { name: 'Kalimati', size: 14, bold: true };
-            worksheet.views = [{ state: "frozen", ySplit: 1 }];
-
-            let excelRowIndex = 2;
-
-            // ===== Loop through each bandi =====
-            for ( const [bandiIndex, bandi] of filteredRows.entries() ) {
-                const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
-                const muddaCount = muddaList.length;
-
-                for ( const [idx, mudda] of muddaList.entries() ) {
-                    const rowData = [
-                        idx === 0 ? bandiIndex + 1 : '',
-
-                        // ==== Table Columns ====
-                        ...columns
-                            .filter( col => col.field !== 'photo_path' )
-                            .map( col => {
-                                if ( col.field === 'bandi_address' ) {
-                                    if ( bandi.nationality === 'स्वदेशी' ) {
-                                        // Local address
-                                        return language === 'en'
-                                            ? `${ bandi.state_name_en || '' }, ${ bandi.district_name_en || '' }, ${ bandi.city_name_en || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_en || '' }`
-                                            : `${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_np || '' }`;
-                                    } else {
-                                        // Foreign address
-                                        return language === 'en'
-                                            ? `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_en || '' }`
-                                            : `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }`;
-                                    }
-                                }
-
-                                if ( col.field === 'bandi_type' ) {
-                                    const bandiTypeMap = { "थुनुवा": "Detainee", "कैदी": "Prisoner" };
-                                    const reverseMap = { "Detainee": "थुनुवा", "Prisoner": "कैदी" };
-                                    return language === 'en'
-                                        ? bandiTypeMap[bandi[col.field]] || bandi[col.field] || ''
-                                        : reverseMap[bandi[col.field]] || bandi[col.field] || '';
-                                }
-
-                                return idx === 0 ? bandi[col.field] || '' : '';
-                            } ),
-
-                        // ==== Address, Case & Other Columns ====
-                        language === 'en'
-                            ? ( bandi.nationality === 'स्वदेशी'
-                                ? `${ bandi.state_name_en || '' }, ${ bandi.district_name_en || '' }, ${ bandi.city_name_en || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_en || '' }`
-                                : `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_en || '' }` )
-                            : ( bandi.nationality === 'स्वदेशी'
-                                ? `${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_np || '' }`
-                                : `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }` ),
-
-                        language === 'en' ? bandi.country_name_en || '' : bandi.country_name_np || '',
-                        bandi.dob_ad ? new Date( bandi.dob_ad ) : '',
-                        bandi.dob || '',
-                        language === 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
-                        mudda.mudda_no || '',
-                        language === 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
-                        language === 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
-                        mudda?.mudda_phesala_antim_office_date || ''
-                    ];
-
-                    const excelRow = worksheet.addRow( rowData );
-
-                    // ==== Insert Photo if Enabled ====
-                    if ( includePhoto && bandi.photo_path && idx === 0 ) {
-                        try {
-                            const imageUrl = `${ BASE_URL }${ bandi.photo_path }`;
-                            const response = await fetch( imageUrl );
-                            if ( !response.ok ) throw new Error( "Image not found" );
-                            const arrayBuffer = await response.arrayBuffer();
-
-                            const imageId = workbook.addImage( {
-                                buffer: new Uint8Array( arrayBuffer ),
-                                extension: "jpeg",
-                            } );
-
-                            const photoColIndex = columns.findIndex( c => c.field === "photo_path" );
-                            if ( photoColIndex !== -1 ) {
-                                const colNum = photoColIndex + 2;
-                                const rowNum = excelRow.number;
-                                worksheet.addImage( imageId, {
-                                    tl: { col: colNum - 1, row: rowNum - 1 },
-                                    ext: { width: 60, height: 80 },
-                                } );
-                                worksheet.getColumn( colNum ).width = 15;
-                                worksheet.getRow( rowNum ).height = 50;
-                            }
-                        } catch ( err ) {
-                            console.warn( "Image fetch failed:", err );
-                        }
-                    }
-                }
-
-                // ==== Merge cells for bandi with multiple mudda ====
-                if ( muddaCount > 1 ) {
-                    worksheet.mergeCells( `A${ excelRowIndex }:A${ excelRowIndex + muddaCount - 1 }` );
-                    columns
-                        .filter( c => c.field !== 'photo_path' )
-                        .forEach( ( col, idx ) => {
-                            const colNumber = idx + 2;
-                            worksheet.mergeCells(
-                                worksheet.getCell( excelRowIndex, colNumber ).address +
-                                ':' +
-                                worksheet.getCell( excelRowIndex + muddaCount - 1, colNumber ).address
-                            );
-                        } );
-                }
-
-                excelRowIndex += muddaCount;
-            }
-
-            // ==== Format Excel ====
-            worksheet.columns.forEach( column => {
-                let maxLength = 10;
-                column.eachCell( { includeEmpty: true }, cell => {
-                    const length = cell.value ? cell.value.toString().length : 0;
-                    if ( length > maxLength ) maxLength = length;
-                } );
-                column.width = maxLength + 2;
-            } );
-
-            worksheet.eachRow( row => {
-                row.eachCell( cell => {
-                    cell.font = { name: 'Kalimati', size: 12 };
-                    cell.alignment = {
-                        wrapText: true,
-                        vertical: 'middle',
-                        horizontal: 'center',
-                    };
-                } );
-            } );
-
-            // ==== Save File ====
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
-            const filename = language === 'en' ? 'Bandi_Records.xlsx' : 'बन्दी_विवरण.xlsx';
-            saveAs( blob, filename );
-        } catch ( error ) {
-            console.error( "Export failed:", error );
+        const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
+        if ( language == 'en' ) {
+            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Case', 'Case No.', 'Complainant', 'Decision Office', 'Decision Date'] );
+        } else {
+            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
         }
+
+        let excelRowIndex = 2;
+        console.log( filteredRows );
+        filteredRows.forEach( ( bandi, bandiIndex ) => {
+            const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
+            const muddaCount = muddaList.length;
+            // console.log( muddaList );
+            muddaList.forEach( ( mudda, idx ) => {
+                let rowData = [
+                    idx === 0 ? bandiIndex + 1 : '',
+                    ...columns.filter( col => col.field !== 'photo_path' ).map( col => {
+                        if ( col.field === 'bandi_address' ) {
+                            if ( bandi.nationality === 'स्वदेशी' ) {
+                                if ( language == 'en' ) {
+                                    return `${ bandi.state_name_en || '' }, ${ bandi.district_name_en || '' }, ${ bandi.city_name_en || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_en || '' }`;
+                                } else {
+                                    return `${ bandi.state_name_np || '' }, ${ bandi.district_name_np || '' }, ${ bandi.city_name_np || '' } - ${ bandi.wardno || '' }, ${ bandi.country_name_np || '' }`;
+                                }
+                            } else {
+                                if ( language == 'en' ) {
+                                    return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_en || '' }`;
+                                } else {
+                                    return `${ bandi.bidesh_nagarik_address_details || '' }, ${ bandi.country_name_np || '' }`;
+                                }
+                            }
+                        }
+
+                        // 🧠 Add conditional translation for bandi_type here
+                        if ( col.field === 'bandi_type' ) {
+                            if ( language == 'en' ) {
+                                return bandiTypeMap[bandi[col.field]] || bandi[col.field] || '';
+                            } else {
+                                // reverse translation if needed
+                                const reverseMap = { "Detainee": "थुनुवा", "Prisoner": "कैदी" };
+                                return reverseMap[bandi[col.field]] || bandi[col.field] || '';
+                            }
+                        }
+                        return idx === 0 ? bandi[col.field] || '' : '';
+                    } ),
+                    language == 'en' ? bandi.country_name_en || '' : bandi.country_name_np || '',
+                    bandi.dob_ad ? new Date( bandi.dob_ad ) : '',
+                    bandi.dob || '',
+                    language == 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
+                    mudda.mudda_no || '',
+                    language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
+                    language == 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
+                    mudda?.mudda_phesala_antim_office_date || ''
+                ];
+                worksheet.addRow( rowData );
+            } );
+
+            if ( muddaCount > 1 ) {
+                worksheet.mergeCells( `A${ excelRowIndex }:A${ excelRowIndex + muddaCount - 1 }` );
+                columns.filter( c => c.field !== 'photo_path' ).forEach( ( col, idx ) => {
+                    const colNumber = idx + 2;
+                    worksheet.mergeCells(
+                        worksheet.getCell( excelRowIndex, colNumber ).address +
+                        ':' +
+                        worksheet.getCell( excelRowIndex + muddaCount - 1, colNumber ).address
+                    );
+                } );
+            }
+            excelRowIndex += muddaCount;
+        } );
+
+        worksheet.columns.forEach( column => {
+            let maxLength = 10;
+            column.eachCell( { includeEmpty: true }, cell => {
+                const length = cell.value ? cell.value.toString().length : 0;
+                if ( length > maxLength ) maxLength = length;
+            } );
+            column.width = maxLength + 2;
+        } );
+        worksheet.eachRow( row => {
+            row.eachCell( cell => {
+                cell.font = { name: 'Kalimati', size: 12 }; // Set font for each cell     
+                cell.alignment = {
+                    wrapText: true,
+                    vertical: 'middle',
+                    horizontal: 'center'
+                };
+            } );
+        } );
+        worksheet.getRow( 1 ).eachCell( cell => {
+            cell.font = { name: 'Kalimati', size: 14, bold: true };
+        } );
+        worksheet.views = [{ state: "frozen", ySplit: 1 }];
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob( [buffer], { type: 'application/octet-stream' } );
+        const filename = language === 'en' ? 'Bandi_Records.xlsx' : 'बन्दी_विवरण.xlsx';
+        saveAs( blob, filename );
+
     };
 
 
