@@ -208,51 +208,65 @@ const ReusableBandiTable = ( {
             // ===== Header Row =====
             const headers = [
                 "SN",
-                ...columns.map( ( col ) => col.headerName ),
+                ...columns
+                    .filter( ( col ) => includePhoto || col.field !== "photo_path" )
+                    .map( ( col ) => col.headerName ),
+                "ठेगाना", // ✅ Added address column at the end
             ];
             worksheet.addRow( headers );
+
             worksheet.getRow( 1 ).font = { bold: true };
 
-            let rowIndex = 2;
+            // ===== Preprocess rows with formatted address =====
+            const formattedRows = filteredRows.map( ( bandi ) => {
+                let formattedAddress = "";
+                if ( bandi.nationality === "स्वदेशी" ) {
+                    formattedAddress = `${ bandi.state_name_np || "" }, ${ bandi.district_name_np || "" }, ${ bandi.city_name_np || "" } - ${ bandi.wardno || "" }, ${ bandi.country_name_np || "" }`;
+                } else {
+                    formattedAddress = `${ bandi.bidesh_nagarik_address_details || "" }, ${ bandi.country_name_np || "" }`;
+                }
+                return { ...bandi, formattedAddress };
+            } );
 
-            // ===== Loop through all bandi rows =====
-            for ( const [bandiIndex, bandi] of filteredRows.entries() ) {
+            // ===== Loop through bandi rows =====
+            for ( const [bandiIndex, bandi] of formattedRows.entries() ) {
                 const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
 
                 for ( const [idx, mudda] of muddaList.entries() ) {
                     const rowData = [
                         idx === 0 ? bandiIndex + 1 : "",
-                        ...columns.map( ( col ) => {
-                            // Skip image URL text
-                            if ( col.field === "photo_path" ) return "";
-
-                            // Prefer bandi[col.field], then mudda[col.field], fallback ""
-                            return (
-                                ( idx === 0 ? bandi[col.field] : mudda[col.field] ) || ""
-                            );
-                        } ),
+                        ...columns
+                            .filter( ( col ) => includePhoto || col.field !== "photo_path" )
+                            .map( ( col ) => {
+                                if ( col.field === "photo_path" ) return "";
+                                if ( col.field === "bandi_type" ) {
+                                    // Example: Translate bandi type
+                                    const bandiTypeMap = { "थुनुवा": "Detainee", "कैदी": "Prisoner" };
+                                    return bandiTypeMap[bandi[col.field]] || bandi[col.field] || "";
+                                }
+                                return idx === 0 ? bandi[col.field] || "" : "";
+                            } ),
+                        bandi.formattedAddress || "", // ✅ Add formatted address
                     ];
 
                     const excelRow = worksheet.addRow( rowData );
 
-                    // ===== Insert photo (only image, no URL) =====
-                    if ( includePhoto && bandi.photo_path ) {
+                    // ===== Insert image if enabled =====
+                    if ( includePhoto && bandi.photo_path && idx === 0 ) {
                         try {
                             const imageUrl = `${ BASE_URL }${ bandi.photo_path }`;
                             const response = await fetch( imageUrl );
                             if ( !response.ok ) throw new Error( "Image not found" );
-
                             const arrayBuffer = await response.arrayBuffer();
+
                             const imageId = workbook.addImage( {
                                 buffer: new Uint8Array( arrayBuffer ),
                                 extension: "jpeg",
                             } );
 
-                            const photoColIndex = columns.findIndex(
-                                ( c ) => c.field === "photo_path"
-                            );
+                            const photoColIndex = columns.findIndex( ( c ) => c.field === "photo_path" );
                             if ( photoColIndex !== -1 ) {
-                                const colNum = photoColIndex + 2; // +2 because SN column first
+                                const colNum = photoColIndex + 2; // +2 because SN is first column
                                 const rowNum = excelRow.number;
 
                                 worksheet.addImage( imageId, {
@@ -267,26 +281,22 @@ const ReusableBandiTable = ( {
                             console.warn( "Image fetch failed:", err );
                         }
                     }
-
-                    rowIndex++;
                 }
             }
 
             // ===== Auto-fit column widths =====
             worksheet.columns.forEach( ( col ) => {
-                if ( col.eachCell ) {
-                    let maxLength = 0;
-                    col.eachCell( { includeEmpty: true }, ( cell ) => {
-                        const cellLength = cell.value ? cell.value.toString().length : 0;
-                        maxLength = Math.max( maxLength, cellLength );
-                    } );
-                    col.width = maxLength < 10 ? 10 : maxLength + 2;
-                }
+                let maxLength = 0;
+                col.eachCell( { includeEmpty: true }, ( cell ) => {
+                    const cellLength = cell.value ? cell.value.toString().length : 0;
+                    maxLength = Math.max( maxLength, cellLength );
+                } );
+                col.width = maxLength < 10 ? 10 : maxLength + 2;
             } );
 
             // ===== Generate Excel File =====
             const buffer = await workbook.xlsx.writeBuffer();
-            saveAs( new Blob( [buffer] ), "bandi_export_with_photos.xlsx" );
+            saveAs( new Blob( [buffer] ), "bandi_export_with_address.xlsx" );
         } catch ( error ) {
             console.error( "Export failed:", error );
         }
