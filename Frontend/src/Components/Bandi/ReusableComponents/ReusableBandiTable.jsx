@@ -109,7 +109,7 @@ const ReusableBandiTable = ( {
  * @param {string} BASE_URL - Base server URL for fetching images
  */
 
-    const handleExport = async () => {
+    const handleExport1 = async () => {
         try {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet( "Bandi List" );
@@ -137,10 +137,10 @@ const ReusableBandiTable = ( {
                         ...columns
                             .filter( col => includePhoto || col.field !== "photo_path" )
                             // .map( col => ( idx === 0 ? bandi[col.field] || "" : "" ) ), // This line is for Image with URL also
-                            .map(col=>{
-                                if(col.field==="photo_path") return "";
-                                return idx===0 ? bandi[col.field] || "" :"";
-                            })
+                            .map( col => {
+                                if ( col.field === "photo_path" ) return "";
+                                return idx === 0 ? bandi[col.field] || "" : "";
+                            } )
                     ];
 
                     const excelRow = worksheet.addRow( rowData );
@@ -185,6 +185,98 @@ const ReusableBandiTable = ( {
                 if ( col.eachCell ) {
                     let maxLength = 0;
                     col.eachCell( { includeEmpty: true }, cell => {
+                        const cellLength = cell.value ? cell.value.toString().length : 0;
+                        maxLength = Math.max( maxLength, cellLength );
+                    } );
+                    col.width = maxLength < 10 ? 10 : maxLength + 2;
+                }
+            } );
+
+            // ===== Generate Excel File =====
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs( new Blob( [buffer] ), "bandi_export_with_photos.xlsx" );
+        } catch ( error ) {
+            console.error( "Export failed:", error );
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet( "Bandi List" );
+
+            // ===== Header Row =====
+            const headers = [
+                "SN",
+                ...columns.map( ( col ) => col.headerName ),
+            ];
+            worksheet.addRow( headers );
+            worksheet.getRow( 1 ).font = { bold: true };
+
+            let rowIndex = 2;
+
+            // ===== Loop through all bandi rows =====
+            for ( const [bandiIndex, bandi] of filteredRows.entries() ) {
+                const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
+
+                for ( const [idx, mudda] of muddaList.entries() ) {
+                    const rowData = [
+                        idx === 0 ? bandiIndex + 1 : "",
+                        ...columns.map( ( col ) => {
+                            // Skip image URL text
+                            if ( col.field === "photo_path" ) return "";
+
+                            // Prefer bandi[col.field], then mudda[col.field], fallback ""
+                            return (
+                                ( idx === 0 ? bandi[col.field] : mudda[col.field] ) || ""
+                            );
+                        } ),
+                    ];
+
+                    const excelRow = worksheet.addRow( rowData );
+
+                    // ===== Insert photo (only image, no URL) =====
+                    if ( includePhoto && bandi.photo_path ) {
+                        try {
+                            const imageUrl = `${ BASE_URL }${ bandi.photo_path }`;
+                            const response = await fetch( imageUrl );
+                            if ( !response.ok ) throw new Error( "Image not found" );
+
+                            const arrayBuffer = await response.arrayBuffer();
+                            const imageId = workbook.addImage( {
+                                buffer: new Uint8Array( arrayBuffer ),
+                                extension: "jpeg",
+                            } );
+
+                            const photoColIndex = columns.findIndex(
+                                ( c ) => c.field === "photo_path"
+                            );
+                            if ( photoColIndex !== -1 ) {
+                                const colNum = photoColIndex + 2; // +2 because SN column first
+                                const rowNum = excelRow.number;
+
+                                worksheet.addImage( imageId, {
+                                    tl: { col: colNum - 1, row: rowNum - 1 },
+                                    ext: { width: 60, height: 60 },
+                                } );
+
+                                worksheet.getColumn( colNum ).width = 15;
+                                worksheet.getRow( rowNum ).height = 45;
+                            }
+                        } catch ( err ) {
+                            console.warn( "Image fetch failed:", err );
+                        }
+                    }
+
+                    rowIndex++;
+                }
+            }
+
+            // ===== Auto-fit column widths =====
+            worksheet.columns.forEach( ( col ) => {
+                if ( col.eachCell ) {
+                    let maxLength = 0;
+                    col.eachCell( { includeEmpty: true }, ( cell ) => {
                         const cellLength = cell.value ? cell.value.toString().length : 0;
                         maxLength = Math.max( maxLength, cellLength );
                     } );
