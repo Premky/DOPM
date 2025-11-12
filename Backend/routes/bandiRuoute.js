@@ -2250,7 +2250,7 @@ router.post( '/create_bandi_mudda', verifyToken, async ( req, res ) => {
                 thuna_date_bs, release_date_bs, is_life_time,
                 is_main_mudda, is_last_mudda, 
                 created_by, updated_by, current_office_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
         // const [result] = await pool.query( sql, [values] );
         // await commitAsync(); // Commit the transaction
