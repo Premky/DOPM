@@ -46,7 +46,7 @@ async function translateEscapedNames( limit = 100 ) {
       SELECT bp.id, bp.bandi_name
       FROM bandi_person bp
       INNER JOIN bandi_escape_details be ON bp.office_bandi_id = be.office_bandi_id
-      WHERE (bp.bandi_name_en IS NULL OR bp.bandi_name_en = '')
+      WHERE (bp.bandi_name_en IS NULL OR bp.bandi_name_en = '') AND current_office_id=5
       LIMIT ?
     `, [limit] );
 
@@ -81,7 +81,7 @@ async function translateEscapedNames( limit = 100 ) {
     }
 }
 
-//   translateEscapedNames();
+   translateEscapedNames();
 
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
