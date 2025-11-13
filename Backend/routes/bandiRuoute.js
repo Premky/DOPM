@@ -45,8 +45,8 @@ async function translateEscapedNames( limit = 100 ) {
         const [rows] = await pool.query( `
       SELECT bp.id, bp.bandi_name
       FROM bandi_person bp
-      INNER JOIN bandi_escape_details be ON bp.office_bandi_id = be.office_bandi_id
-      WHERE (bp.bandi_name_en IS NULL OR bp.bandi_name_en = '') AND bp.current_office_id=5
+      INNER JOIN bandi_escape_details be ON bp.office_bandi_id = be.office_bandi_id      
+      WHERE (bp.bandi_name_en IS NULL OR bp.bandi_name_en = '' AND bp.current_office_id=5) 
       LIMIT ?
     `, [limit] );
 
