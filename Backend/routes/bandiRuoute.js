@@ -38,7 +38,7 @@ import { ageCalculator } from '../utils/ageCalculator.js';
 // Promisify specific methods
 const query = promisify( con.query ).bind( con );
 
-import translate from "google-translate-api-x";
+import {translate} from "google-translate-api-x";
 
 async function translateEscapedNames( limit = 100 ) {
     try {
