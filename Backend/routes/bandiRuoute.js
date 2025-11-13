@@ -81,7 +81,7 @@ async function translateEscapedNames( limit = 4000 ) {
     }
 }
 
-   translateEscapedNames();
+//    translateEscapedNames();
 
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
