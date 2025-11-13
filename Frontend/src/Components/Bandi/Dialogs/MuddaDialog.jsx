@@ -95,6 +95,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                         control={control}
                         required={true}
                         errors={errors.vadi}
+                        language='nepali'
                     />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
@@ -104,6 +105,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                         control={control}
                         required={true}
                         errors={errors.vadi_en}
+                        language='english'
                     />
                 </Grid>
 
@@ -191,11 +193,12 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 <Grid container>
                     <Grid size={{ xs: 12, sm: 4 }}>
                         <ReuseDatePickerBS
+                        // <ReuseDatePickerSMV5
                         // <ReuseDateField
                             name="thuna_date_bs"
                             label="थुना परेको मिति"
                             placeholder='YYYY-MM-DD'
-                            required={false}
+                            required={true}
                             control={control}
                             error={errors.thuna_date_bs}   // 👈 you’re passing this
                             open={open}

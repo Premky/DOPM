@@ -117,6 +117,7 @@ const AddressModal = ({ open, onClose, onSave, editingData }) => {
                         label="ठेगाना"
                         control={control}
                         required={true}
+                        language='english'
                     />
                 </>)}
             </DialogContent>
