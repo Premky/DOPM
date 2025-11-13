@@ -46,7 +46,7 @@ async function translateEscapedNames( limit = 4000 ) {
       SELECT bp.id, bp.bandi_name
       FROM bandi_person bp
       INNER JOIN bandi_escape_details be ON bp.office_bandi_id = be.office_bandi_id      
-      WHERE ((bp.bandi_name_en IS NULL OR bp.bandi_name_en = '') AND be.status='escaped' AND bp.current_office_id=40) 
+      WHERE ((bp.bandi_name_en IS NULL OR bp.bandi_name_en = '') AND be.status='escaped' AND bp.current_office_id=42) 
       LIMIT ?
     `, [limit] );
 
