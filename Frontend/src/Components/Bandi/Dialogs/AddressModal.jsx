@@ -114,7 +114,7 @@ const AddressModal = ({ open, onClose, onSave, editingData }) => {
                 </>) : (<>
                     <ReuseInput
                         name="bidesh_nagarik_address_details"
-                        label="ठेगाना"
+                        label="ठेगाना (In English Only)"
                         control={control}
                         required={true}
                         language='english'
