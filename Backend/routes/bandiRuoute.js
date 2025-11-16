@@ -680,9 +680,7 @@ const getBandiQuery = `
     bpd.punarabedan_office_ch_no,
     bpd.punarabedan_office_date,
 
-   
-
-    -- Fine Summary
+   -- Fine Summary
     fine_summary_table.fine_summary
 
 FROM bandi_person b
@@ -1164,6 +1162,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 bmd_combined.mudda_id,
                 bmd_combined.mudda_name,
                 bmd_combined.mudda_name_en,
+                bmd_combined.mudda_group_name,
+                bmd_combined.mudda_group_name_en,
                 bmd_combined.is_main_mudda,
                 bmd_combined.is_last_mudda,
                 bmd_combined.office_name_with_letter_address AS mudda_phesala_antim_office,
@@ -1237,6 +1237,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 mudda_id,
                 mudda_name,
                 mudda_name_en,
+                mudda_group_name,
+                mudda_group_name_en,
                 is_main_mudda,
                 is_last_mudda,
                 office_name_with_letter_address,
@@ -1246,8 +1248,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 mudda_phesala_antim_office_date,
                 mudda_phesala_antim_office,
                 office_name_full_en,
-                mudda_phesala_antim_office_en,
-                mudda_group_name,
+                mudda_phesala_antim_office_en,                
                 total_jariwana_amount,
                 ...bandiData
             } = row;
@@ -1266,6 +1267,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     mudda_id,
                     mudda_name,
                     mudda_name_en,
+                    mudda_group_name,
+                    mudda_group_name_en,
                     is_main_mudda,
                     is_last_mudda,
                     office_name_with_letter_address,
@@ -1275,8 +1278,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     mudda_phesala_antim_office_date,
                     mudda_phesala_antim_office,
                     office_name_full_en,
-                    mudda_phesala_antim_office_en,
-                    mudda_group_name
+                    mudda_phesala_antim_office_en                    
                 } );
             }
         } );

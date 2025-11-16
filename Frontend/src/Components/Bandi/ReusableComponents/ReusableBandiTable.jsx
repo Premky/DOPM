@@ -208,9 +208,9 @@ const ReusableBandiTable = ( {
 
         const bandiHeaders = columns.filter( c => c.field !== 'photo_path' ).map( c => c.headerName );
         if ( language == 'en' ) {
-            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Case', 'Case No.', 'Complainant', 'Decision Office', 'Decision Date'] );
+            worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Mudda Group', 'Case', 'Case No.', 'Complainant', 'Decision Office', 'Decision Date'] );
         } else {
-            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)','मुद्दा समुह', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
         }
 
         let excelRowIndex = 2;
@@ -254,6 +254,7 @@ const ReusableBandiTable = ( {
                     language == 'en' ? bandi.country_name_en || '' : bandi.country_name_np || '',
                     bandi.dob_ad ? new Date( bandi.dob_ad ) : '',
                     bandi.dob || '',
+                    language == 'en' ? mudda?.mudda_group_name || '' : mudda?.mudda_group_name || '',
                     language == 'en' ? mudda?.mudda_name_en || '' : mudda?.mudda_name || '',
                     mudda.mudda_no || '',
                     language == 'en' ? mudda?.vadi_en || '' : mudda?.vadi || '',
