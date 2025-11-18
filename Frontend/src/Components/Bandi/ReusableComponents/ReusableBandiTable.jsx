@@ -200,7 +200,7 @@ const ReusableBandiTable = ( {
         }
     };
 
-    const handleExport = async () => {
+    const handleExport2 = async () => {
         const ExcelJS = await import( 'exceljs' );
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet( 'बन्दी विवरण' );
@@ -210,7 +210,12 @@ const ReusableBandiTable = ( {
         if ( language == 'en' ) {
             worksheet.addRow( ['S.N.', ...bandiHeaders, 'Country', 'Date of Birth(A.D.)', 'Date of Birth(B.S.)', 'Mudda Group', 'Case', 'Case No.', 'Complainant', 'Decision Office', 'Decision Date'] );
         } else {
-            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)','मुद्दा समुह', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+            worksheet.addRow( ['सि.नं.', ...bandiHeaders, 'देश', 'जन्म मिति(ई.सं.)', 'जन्म मिति(वि.सं.)', 'मुद्दा समुह', 'मुद्दा', 'मुद्दा नं.', 'जाहेरवाला', 'फैसला गर्ने कार्यालय', 'फैसला मिति'] );
+        }
+
+        // ADD PHOTO COLUMN IF ENABLED
+        if ( includePhoto ) {
+            headerRow.push( language === 'en' ? 'Photo' : 'फोटो' );
         }
 
         let excelRowIndex = 2;
@@ -261,8 +266,11 @@ const ReusableBandiTable = ( {
                     language == 'en' ? mudda?.mudda_phesala_antim_office_en || '' : mudda?.mudda_phesala_antim_office || '',
                     mudda?.mudda_phesala_antim_office_date || ''
                 ];
+                // ADD EMPTY CELL FOR PHOTO COLUMN
+                if ( includePhoto ) rowData.push( "" );
                 worksheet.addRow( rowData );
             } );
+
 
             if ( muddaCount > 1 ) {
                 worksheet.mergeCells( `A${ excelRowIndex }:A${ excelRowIndex + muddaCount - 1 }` );
@@ -286,6 +294,7 @@ const ReusableBandiTable = ( {
             } );
             column.width = maxLength + 2;
         } );
+
         worksheet.eachRow( row => {
             row.eachCell( cell => {
                 cell.font = { name: 'Kalimati', size: 12 }; // Set font for each cell     
@@ -296,6 +305,7 @@ const ReusableBandiTable = ( {
                 };
             } );
         } );
+
         worksheet.getRow( 1 ).eachCell( cell => {
             cell.font = { name: 'Kalimati', size: 14, bold: true };
         } );
@@ -308,6 +318,190 @@ const ReusableBandiTable = ( {
 
     };
 
+    const handleExport = async () => {
+        const ExcelJS = await import( "exceljs" );
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet( "बन्दी विवरण" );
+        const { saveAs } = await import( "file-saver" );
+
+        // ⬅️ Toggle from UI
+        const includePhoto = true;
+
+        // Build dynamic headers
+        const bandiHeaders = columns.filter( c => c.field !== "photo_path" ).map( c => c.headerName );
+
+        let headerRow = [];
+
+        if ( language === "en" ) {
+            headerRow = [
+                "S.N.",
+                ...bandiHeaders,
+                "Country",
+                "Date of Birth(A.D.)",
+                "Date of Birth(B.S.)",
+                "Mudda Group",
+                "Case",
+                "Case No.",
+                "Complainant",
+                "Decision Office",
+                "Decision Date"
+            ];
+        } else {
+            headerRow = [
+                "सि.नं.",
+                ...bandiHeaders,
+                "देश",
+                "जन्म मिति(ई.सं.)",
+                "जन्म मिति(वि.सं.)",
+                "मुद्दा समूह",
+                "मुद्दा",
+                "मुद्दा नं.",
+                "जाहेरवाला",
+                "फैसला गर्ने कार्यालय",
+                "फैसला मिति"
+            ];
+        }
+
+        // ➕ ADD PHOTO HEADER
+        if ( includePhoto ) {
+            headerRow.push( language === "en" ? "Photo" : "फोटो" );
+        }
+
+        worksheet.addRow( headerRow );
+
+        let excelRowIndex = 2;
+
+        for ( let bandiIndex = 0; bandiIndex < filteredRows.length; bandiIndex++ ) {
+            const bandi = filteredRows[bandiIndex];
+            const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
+            const muddaCount = muddaList.length;
+
+            for ( let idx = 0; idx < muddaCount; idx++ ) {
+                const mudda = muddaList[idx];
+
+                let rowData = [
+                    idx === 0 ? bandiIndex + 1 : "",
+                    ...columns.filter( col => col.field !== "photo_path" ).map( col => {
+                        if ( col.field === "bandi_address" ) {
+                            if ( bandi.nationality === "स्वदेशी" ) {
+                                return language === "en"
+                                    ? `${ bandi.state_name_en }, ${ bandi.district_name_en }, ${ bandi.city_name_en } - ${ bandi.wardno }, ${ bandi.country_name_en }`
+                                    : `${ bandi.state_name_np }, ${ bandi.district_name_np }, ${ bandi.city_name_np } - ${ bandi.wardno }, ${ bandi.country_name_np }`;
+                            } else {
+                                return language === "en"
+                                    ? `${ bandi.bidesh_nagarik_address_details }, ${ bandi.country_name_en }`
+                                    : `${ bandi.bidesh_nagarik_address_details }, ${ bandi.country_name_np }`;
+                            }
+                        }
+
+                        if ( col.field === "bandi_type" ) {
+                            if ( language === "en" ) {
+                                return bandiTypeMap[bandi[col.field]] || bandi[col.field] || "";
+                            } else {
+                                const reverseMap = { Detainee: "थुनुवा", Prisoner: "कैदी" };
+                                return reverseMap[bandi[col.field]] || bandi[col.field] || "";
+                            }
+                        }
+
+                        return idx === 0 ? bandi[col.field] || "" : "";
+                    } ),
+                    language === "en" ? bandi.country_name_en : bandi.country_name_np,
+                    bandi.dob_ad ? new Date( bandi.dob_ad ) : "",
+                    bandi.dob || "",
+                    language === "en" ? mudda.mudda_group_name : mudda.mudda_group_name,
+                    language === "en" ? mudda.mudda_name_en : mudda.mudda_name,
+                    mudda.mudda_no || "",
+                    language === "en" ? mudda.vadi_en : mudda.vadi,
+                    language === "en"
+                        ? mudda.mudda_phesala_antim_office_en
+                        : mudda.mudda_phesala_antim_office,
+                    mudda.mudda_phesala_antim_office_date || ""
+                ];
+
+                // ➕ ADD EMPTY PHOTO CELL
+                if ( includePhoto ) rowData.push( "" );
+
+                worksheet.addRow( rowData );
+            }
+
+            // MERGE CELLS FOR MULTIPLE MUDDAS
+            if ( muddaCount > 1 ) {
+                const colCount = headerRow.length - ( includePhoto ? 1 : 0 );
+
+                worksheet.mergeCells( `A${ excelRowIndex }:A${ excelRowIndex + muddaCount - 1 }` );
+
+                columns.filter( c => c.field !== "photo_path" ).forEach( ( col, idx ) => {
+                    const cIndex = idx + 2;
+                    worksheet.mergeCells(
+                        `${ worksheet.getCell( excelRowIndex, cIndex ).address }:${ worksheet.getCell(
+                            excelRowIndex + muddaCount - 1,
+                            cIndex
+                        ).address }`
+                    );
+                } );
+            }
+
+            // ADD IMAGE INTO MERGED ROW
+            if ( includePhoto && bandi.photo_path ) {
+                try {
+                    const imgUrl = `${ BASE_URL }${ bandi.photo_path }`;
+                    const res = await fetch( imgUrl );
+                    const imgBuffer = await res.arrayBuffer();
+
+                    const imageId = workbook.addImage( {
+                        buffer: imgBuffer,
+                        extension: "jpeg"
+                    } );
+
+                    const photoCol = headerRow.length; // last column
+                    const rowStart = excelRowIndex - 1;
+                    const rowEnd = rowStart + muddaCount - 1;
+
+                    worksheet.getColumn( photoCol ).width = 25;
+
+                    worksheet.addImage( imageId, {
+                        tl: { col: photoCol - 1, row: rowStart },
+                        ext: { width: 120, height: 150 }
+                    } );
+
+                    for ( let r = rowStart; r <= rowEnd; r++ ) {
+                        worksheet.getRow( r + 1 ).height = 110;
+                    }
+                } catch ( err ) {
+                    console.log( "IMAGE ERROR:", err );
+                }
+            }
+
+            excelRowIndex += muddaCount;
+        }
+
+        // AUTO COLUMN WIDTHS
+        worksheet.columns.forEach( column => {
+            let max = 10;
+            column.eachCell( { includeEmpty: true }, cell => {
+                const len = cell.value ? cell.value.toString().length : 0;
+                if ( len > max ) max = len;
+            } );
+            column.width = max + 2;
+        } );
+
+        // STYLING
+        worksheet.eachRow( row => {
+            row.eachCell( cell => {
+                cell.font = { name: "Kalimati", size: 12 };
+                cell.alignment = { wrapText: true, vertical: "middle", horizontal: "center" };
+            } );
+        } );
+
+        worksheet.getRow( 1 ).eachCell( cell => {
+            cell.font = { name: "Kalimati", size: 14, bold: true };
+        } );
+
+        worksheet.views = [{ state: "frozen", ySplit: 1 }];
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs( new Blob( [buffer] ), language === "en" ? "Bandi_Records.xlsx" : "बन्दी_विवरण.xlsx" );
+    };
 
 
     // console.log(paginatedRows);

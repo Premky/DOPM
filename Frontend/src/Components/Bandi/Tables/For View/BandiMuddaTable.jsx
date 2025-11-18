@@ -161,6 +161,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                 <TableCell align="center">कैद अवधी</TableCell>
                                 <TableCell align="center">मुख्य मुद्दा हो?</TableCell>
                                 <TableCell align="center">अन्तिम मुद्दा हो?</TableCell>
+                                {/* <TableCell align="center">कैदी/थुनुवा पूर्जी</TableCell> */}
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -182,6 +183,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                     }</TableCell>
                                     <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
                                     <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
+                                    {/* <TableCell align="center">File</TableCell> */}
 
                                     <TableCell align="center">
                                         <Grid container spacing={2}>

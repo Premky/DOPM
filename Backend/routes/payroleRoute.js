@@ -67,12 +67,6 @@ import { bs2ad } from '../utils/bs2ad.js';
 // console.log(current_date);
 // console.log(fy_date)
 
-//गाडीका विवरणहरुः नाम सुची
-// Promisify specific methods
-// const queryAsync = promisify( con.query ).bind( con );
-// const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
-// const commitAsync = promisify( con.commit ).bind( con );
-// const rollbackAsync = promisify( con.rollback ).bind( con );
 const query = promisify( con.query ).bind( con );
 
 // Convert BS to AD
@@ -80,8 +74,6 @@ const query = promisify( con.query ).bind( con );
 
 // English to Nepali date conversion
 const [npYear, npMonth, npDay] = dateConverter.englishToNepali( 2023, 5, 27 );
-
-
 
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
@@ -103,71 +95,6 @@ async function calculateAge( birthDateBS ) {
     return age;
 }
 
-async function generateUniqueBandiId() {
-    const maxAttempts = 10;
-
-    for ( let i = 0; i < maxAttempts; i++ ) {
-        const randId = Math.floor( 100000 + Math.random() * 900000 ); // 6-digit random number
-        const [result] = await pool.query(
-            `SELECT office_bandi_id FROM bandi_person WHERE office_bandi_id = ?`,
-            [randId]
-        );
-
-        if ( result.length === 0 ) {
-            return randId; // Unique ID
-        }
-    }
-
-    throw new Error( "Unable to generate a unique bandi ID after multiple attempts." );
-}
-
-router.get( '/get_random_bandi_id', async ( req, res ) => {
-    const rand_bandi_id = await generateUniqueBandiId();
-    // console.log( rand_bandi_id );
-    return res.json( { Status: true, Result: rand_bandi_id } );
-} );
-
-//Define storage configuration
-const storage = multer.diskStorage( {
-    destination: function ( req, file, cb ) {
-        const uploadDir = './uploads/bandi_photos';
-        if ( !fs.existsSync( uploadDir ) ) {
-            fs.mkdirSync( uploadDir, { recursive: true } );
-        }
-        cb( null, uploadDir );
-    },
-    filename: function ( req, file, cb ) {
-        const { office_bandi_id, bandi_name } = req.body;
-
-        if ( !office_bandi_id || !bandi_name ) {
-            return cb( new Error( 'bandi_id and bandi_name are required' ), null );
-        }
-
-        const ext = path.extname( file.originalname );
-        const dateStr = new Date().toISOString().split( 'T' )[0];
-        const safeName = bandi_name.replace( /\s+/g, '_' ); //sanitize spaces
-
-        const uniqueName = `${ office_bandi_id }_${ safeName }_${ dateStr }${ ext }`;
-        cb( null, uniqueName );
-    }
-} );
-
-// File filter (only images allowed)
-const fileFilter = ( req, file, cb ) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test( path.extname( file.originalname ).toLowerCase() );
-    const mimetype = allowedTypes.test( file.mimetype );
-
-    if ( extname && mimetype ) return cb( null, true );
-    cb( new Error( 'Only image files are allowed!' ) );
-};
-
-//Size limit (1 MB max For now)
-const upload = multer( {
-    storage,
-    fileFilter,
-    limits: { fileSize: 1 * 1024 * 1024 },
-} );
 
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

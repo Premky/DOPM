@@ -21,7 +21,7 @@ const handleViewPayrole = async ( row ) => {
   saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
 };
 
-const PayroleActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchAll } ) => {
+const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchAll } ) => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
@@ -164,7 +164,7 @@ const PayroleActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchA
                 <MenuItem onClick={handleForward}>
                   <Button variant='outline'>कार्यालय प्रमुखमा पेश गर्नुहोस्</Button>
                 </MenuItem>
-                
+
                 {oldStatus === "under_parole" && (
                   <MenuItem onClick={handleApproval}>
                     <Button variant="outlined" color="success">
@@ -180,32 +180,36 @@ const PayroleActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchA
       }
 
       {
-        authState.role_name === "office_admin" ? ( <>
-          <MenuItem onClick={handleForward}>Forward</MenuItem>
-          {oldStatus === 'under_parole' && ( <MenuItem onClick={handleApproval}>
-            <Button variant="outlined" color="success">
-              Approve
-            </Button></MenuItem> )}
-
-          {( data.status_id == 10 ) ? ( <>
-            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
-          </> ) : ( data.status_id == 11 ) ? ( <>
-            <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
-          </> ) : ( data.payrole_status == 10 ) &&
-          ( <>
+        authState.role_name === "office_admin" ? (
+          <>
+            {/* Forward is always shown for office_admin */}
             <MenuItem onClick={handleForward}>Forward</MenuItem>
-            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-          </> )}
-        </> ) :
-          ( <></>
-            // authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (
-            //    <>
-            //   <MenuItem onClick={handleForward}>Forward</MenuItem>
-            //   {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-            // </> ) : ( <>
-            // </> )
-          )
+
+            {/* Show Approve only when oldStatus === 'under_parole' */}
+            {oldStatus === "under_parole" && (
+              <MenuItem onClick={handleApproval}>
+                <Button variant="outlined" color="success">Approve</Button>
+              </MenuItem>
+            )}
+
+            {/* Status-based actions */}
+            {data.status_id === 10 ? (
+              <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
+            ) : data.status_id === 11 ? (
+              <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
+            ) : (
+              // If payrole_status is 10, show Forward again (if needed)
+              data.payrole_status === 10 && (
+                <MenuItem onClick={handleForward}>Forward</MenuItem>
+              )
+            )}
+          </>
+        ) : (
+          // Non-office_admin roles currently display nothing
+          <></>
+        )
       }
+
 
       {
         authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (

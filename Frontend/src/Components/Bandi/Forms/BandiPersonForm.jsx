@@ -67,25 +67,13 @@ const BandiPersonForm = () => {
   const selectedState = watch( 'state_id' );
   const selectedDistrict = watch( 'district_id' );
   const selectedbandi_type = watch( 'bandi_type' );
-  const selectedIs_amount_fixed = watch( "is_fine_fixed" );
-  const selectedIs_compensation = watch( "is_compensation" );
-  const selectedIs_bigo = watch( "is_bigo" );
   const bsdob = watch( "dob" );
-  const bandiRelation = watch( 'bandi_relative_relation' );
   const idcardtype = watch( 'id_card_type' );
-  const is_fine_paid = watch( 'is_fine_paid' );
-  const is_bigo_paid = watch( 'is_bigo_paid' );
-  const is_compensation_paid = watch( 'is_compensation_paid' );
   const is_life_time = watch( 'is_life_time' );
-
-  const testVariable = watch( 'office_bandi_id' );
-
   // console.log('office_bandi_id', testVariable)
-
   const isSwadeshi = selectedNationality === 'स्वदेशी';
   const is_active = watch( 'is_active' );
-  const is_ill = watch( 'is_ill' );
-  const is_disabled = watch( 'is_disabled' );
+
 
   useEffect( () => {
     // console.log( is_active );
@@ -167,7 +155,7 @@ const BandiPersonForm = () => {
   ] );
 
   const handleSameAsAbove = () => {
-    console.log( "handleSameAsAbove button is Working" );
+    // console.log( "handleSameAsAbove button is Working" );
     for ( let index = 1; index <= muddaCount; index++ ) {
       const isMain = watch( `is_main_mudda_${ index }` );
       if ( isMain === 1 || isMain === '1' ) {
@@ -353,7 +341,7 @@ const BandiPersonForm = () => {
                 name='block_no'
                 label="ब्लक नं."
                 options={blockListOpt}
-                required={false}
+                required={true}
                 control={control}
                 error={errors.block_no} />
             </Grid>
@@ -1630,8 +1618,6 @@ const BandiPersonForm = () => {
             />
           </Grid>
         </Grid>
-
-
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }}>
