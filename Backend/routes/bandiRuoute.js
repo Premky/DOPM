@@ -796,7 +796,8 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
         is_active = 1,
         is_dependent,
         mudda_group_id,
-        is_escape
+        is_escape,
+        is_under_payrole=0
     } = req.query;
 
     let conditions = ['1=1'];
@@ -814,6 +815,7 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     if (is_escape) conditions.push('escape_status = ?'), params.push(is_escape);
     if (is_dependent) conditions.push('is_dependent = ?'), params.push(is_dependent);
     if (is_active !== undefined) conditions.push('is_active = ?'), params.push(is_active);
+    if (is_under_payrole !== undefined) conditions.push('is_under_payrole = ?'), params.push(is_under_payrole);
 
     const whereClause = ' WHERE ' + conditions.join(' AND ');
 
@@ -854,7 +856,6 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
         res.json({ Status: false, Error: 'Query Error' });
     }
 });
-
 
 router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
     // res.set( 'Cache-Control', 'no-store' );

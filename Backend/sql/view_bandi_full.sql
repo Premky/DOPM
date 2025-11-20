@@ -22,6 +22,7 @@ SELECT
     b.remarks,
     b.current_office_id,
     b.is_under_facility,
+    b.is_under_payrole,
 
     -- Bandi Office
     bo.letter_address AS bandi_office,
@@ -116,5 +117,4 @@ LEFT JOIN (
     LEFT JOIN offices bfdo ON bfd.deposit_office = bfdo.id
     GROUP BY bandi_id
 ) AS fine_summary_table ON b.id = fine_summary_table.bandi_id
-
-WHERE b.is_active = 1;
+;
