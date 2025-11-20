@@ -2,14 +2,15 @@
 
 //गाडीका विवरणहरुः नाम सुची
 // Promisify specific methods
+// const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
+// const commitAsync = promisify( con.commit ).bind( con );
+// const rollbackAsync = promisify( con.rollback ).bind( con );
+// const query = promisify( con.query ).bind( con );
+
 import con from '../utils/db.js';
 import pool from '../utils/db3.js';
 import { promisify } from 'util';
 const queryAsync = promisify( con.query ).bind( con );
-const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
-const commitAsync = promisify( con.commit ).bind( con );
-const rollbackAsync = promisify( con.rollback ).bind( con );
-const query = promisify( con.query ).bind( con );
 
 import { bs2ad } from '../utils/bs2ad.js';
 import { ageCalculator } from '../utils/ageCalculator.js';
@@ -18,7 +19,7 @@ import { ageCalculator } from '../utils/ageCalculator.js';
 
 async function insertBandiPerson( data, connection ) {
   const dob_ad = await bs2ad( data.dob );
-  const age = await ageCalculator(dob_ad)
+  const age = await ageCalculator( dob_ad );
 
   const values = [
     data.bandi_type, data.office_bandi_id, data.lagat_no, data.nationality, data.bandi_name, data.bandi_name_en,
@@ -28,7 +29,6 @@ async function insertBandiPerson( data, connection ) {
     0,
     data.bandi_remarks, data.user_id, data.user_id, data.office_id
   ];
-
   const sql = `INSERT INTO bandi_person (
     bandi_type, office_bandi_id, lagat_no, nationality, bandi_name, bandi_name_en,
     enrollment_date_bs, enrollment_date_ad, block_no,
@@ -36,8 +36,6 @@ async function insertBandiPerson( data, connection ) {
     bandi_education, height, weight, bandi_huliya, is_under_payrole,
      remarks, created_by, updated_by, current_office_id
   ) VALUES (?)`;
-
-  // const result = await queryAsync( sql, [values] );
   const [result] = await connection.query( sql, [values] );
   return result.insertId;
 }
@@ -151,7 +149,54 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
   const sql = `INSERT INTO bandi_mudda_details (
     bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
     mudda_condition, mudda_phesala_antim_office_district,
+    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date,
+    vadi, vadi_en, thunuwa_or_kaidi_purji,
+    hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs, total_kaid, is_life_time,
+    created_by, created_at, updated_by, updated_at, current_office_id
+  ) VALUES (?)`;
+
+  for ( const m of muddas ) {
+    let is_life_time = Number( m.is_life_time );
+    if ( isNaN( is_life_time ) ) is_life_time = 0;
+
+    const values = [
+      bandi_id,
+      m.mudda_id,
+      m.mudda_no,
+      m.is_last || 0,
+      m.is_main || 0,
+      m.condition || null,
+      m.district || null,
+      m.office || null,
+      m.date || null,
+      m.vadi || null,
+      m.vadi_en || null,
+      m.thunuwa_or_kaidi_purji || null, // optional photo
+      m.hirasat_years || 0,
+      m.hirasat_months || 0,
+      m.hirasat_days || 0,
+      m.thuna_date_bs || null,
+      m.release_date_bs || null,
+      m.total_kaid_duration || 0,
+      is_life_time,
+      user_id,
+      new Date(),
+      user_id,
+      new Date(),
+      office_id
+    ];
+
+    await connection.query( sql, [values] );
+  }
+}
+
+
+async function insertMuddaDetails1( bandi_id, muddas = [], user_id, office_id, connection ) {
+  const sql = `INSERT INTO bandi_mudda_details (
+    bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
+    mudda_condition, mudda_phesala_antim_office_district,
     mudda_phesala_antim_office_id, mudda_phesala_antim_office_date, vadi, vadi_en, 
+    thunuwa_or_kaidi_purji,
     hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs, total_kaid, is_life_time,
     created_by, created_at, updated_by, updated_at, current_office_id
   ) VALUES (?)`;
@@ -171,8 +216,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
       m.district,
       m.office,
       m.date,
-      m.vadi,
-      m.vadi_en,
+      m.vadi, m.vadi_en, m.thunuwa_or_kaidi_purji,
       m.hirasat_years, m.hirasat_months, m.hirasat_days, m.thuna_date_bs, m.release_date_bs, m.total_kaid_duration, is_life_time,
       user_id, new Date(), user_id, new Date(), office_id
     ];

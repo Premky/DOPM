@@ -38,7 +38,7 @@ import { ageCalculator } from '../utils/ageCalculator.js';
 // Promisify specific methods
 const query = promisify( con.query ).bind( con );
 
-import {translate} from "google-translate-api-x";
+import { translate } from "google-translate-api-x";
 
 async function translateEscapedNames( limit = 4000 ) {
     try {
@@ -400,6 +400,7 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
     const user_id = req.user.username;
     const office_id = req.user.office_id;
     const photo_path = req.file ? `/uploads/bandi_photos/${ req.file.filename }` : null;
+
     const data = req.body;
     const office_bandi_id = data.office_bandi_id;
     let connection;
@@ -453,7 +454,8 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
             office: req.body[`mudda_office_${ i }`],
             date: req.body[`mudda_phesala_date_${ i }`],
             vadi: req.body[`vadi_${ i }`],
-            vadi_en: req.body[`vadi_en_${ i }`]
+            vadi_en: req.body[`vadi_en_${ i }`],
+            // thunuwa_or_kaidi_purji_path : req.file ? `/uploads/bandi_kaidi_purji_photos/thunuwa_or_kaidi_purji_${ i }` : null,            
         } ) );
         // console.log( 'muddas', muddas );
         await insertMuddaDetails( bandi_id, muddas, user_id, office_id, connection );
@@ -629,6 +631,39 @@ router.post( '/create_bandi_fine', verifyToken, async ( req, res ) => {
     }
 } );
 
+
+router.get( '/get_bandi', async ( req, res ) => {
+    const {
+        office_id = 0,
+        gender = 0,
+        mudda_id = 0,
+        page = 1,
+        limit = 50
+    } = req.query;
+
+    let where = "WHERE 1=1";
+    if ( office_id > 0 ) where += ` AND current_office_id = ${ office_id }`;
+    if ( gender ) where += ` AND gender = '${ gender }'`;
+    if ( mudda_id > 0 ) where += ` AND mudda_id = ${ mudda_id }`;
+
+    const offset = ( page - 1 ) * limit;
+
+    const sql = `
+        SELECT * FROM view_bandi_full
+        ${ where }
+        ORDER BY bandi_id DESC
+        LIMIT ${ limit } OFFSET ${ offset }
+    `;
+
+    pool.query( sql, ( err, result ) => {
+        if ( err ) return res.json( { Status: false, Error: "Query Error" } );
+        res.json( { Status: true, Result: result } );
+    } );
+} );
+
+
+
+
 const getBandiQuery = `
     SELECT 
     b.id AS bandi_id,
@@ -729,7 +764,7 @@ LEFT JOIN (
 WHERE b.is_active = 1
 `;
 
-router.get( '/get_bandi', async ( req, res ) => {
+router.get( '/get_bandi1', async ( req, res ) => {
     pool.query( getBandiQuery, ( err, result ) => {
         if ( err ) return res.json( { Status: false, Error: "Query Error" } );
         return res.json( { Status: true, Result: result } );
@@ -749,251 +784,80 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const selectedOffice = req.query.selected_office || 0;
-    const searchOffice = req.query.searchOffice || 0;
-    const nationality = req.query.nationality || 0;
-    const country = req.query.country || 0;
-    const gender = req.query.gender || 0;
-    const bandi_type = req.query.bandi_type || 0;
-    const search_name = req.query.search_name || 0;
-    const is_active = req.query.is_active || 1; // Default active
-    const is_dependent = req.query.is_dependent || null;
-    const mudda_group_id = req.query.mudda_group_id || '';
+router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
+    const {
+        selected_office = 0,
+        searchOffice = 0,
+        nationality = 0,
+        country = 0,
+        gender = 0,
+        bandi_type = 0,
+        search_name = '',
+        is_active = 1,
+        is_dependent,
+        mudda_group_id,
+        is_escape
+    } = req.query;
 
-    let conditions = ['bp.is_under_payrole != 1'];
+    let conditions = ['1=1'];
     let params = [];
 
-    if ( selectedOffice ) {
-        conditions.push( 'bp.current_office_id = ?' );
-        params.push( selectedOffice );
-    } else if ( searchOffice ) {
-        conditions.push( 'bp.current_office_id = ?' );
-        params.push( searchOffice );
-    } else if ( !( active_office == 1 || active_office == 2 ) ) {
-        conditions.push( 'bp.current_office_id = ?' );
-        params.push( active_office );
-    }
+    if (selected_office) { conditions.push('current_office_id = ?'); params.push(selected_office); }
+    else if (searchOffice) { conditions.push('current_office_id = ?'); params.push(searchOffice); }
 
-    if ( nationality ) {
-        conditions.push( 'bp.nationality = ?' );
-        params.push( nationality );
-    }
+    if (nationality) conditions.push('nationality = ?'), params.push(nationality);
+    if (country) conditions.push('country_name_np = ?'), params.push(country);
+    if (gender) conditions.push('gender = ?'), params.push(gender);
+    if (bandi_type) conditions.push('bandi_type = ?'), params.push(bandi_type);
+    if (search_name) conditions.push('(bandi_name LIKE ? OR office_bandi_id = ?)'), params.push(`%${search_name}%`, search_name);
+    if (mudda_group_id) conditions.push('muddas_group_id = ?'), params.push(mudda_group_id);
+    if (is_escape) conditions.push('escape_status = ?'), params.push(is_escape);
+    if (is_active !== undefined) conditions.push('is_active = ?'), params.push(is_active);
 
-    if ( country ) {
-        conditions.push( 'nc.id = ?' );
-        params.push( country );
-    }
-
-    if ( mudda_group_id ) {
-        conditions.push( `
-            bp.id IN (
-                SELECT bmd.bandi_id
-                FROM bandi_mudda_details bmd
-                LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                WHERE m.muddas_group_id = ?
-            )
-        `);
-        params.push( mudda_group_id );
-    }
-
-    if ( gender ) {
-        conditions.push( 'bp.gender = ?' );
-        params.push( gender );
-    }
-
-    if ( bandi_type ) {
-        conditions.push( 'bp.bandi_type = ?' );
-        params.push( bandi_type );
-    }
-
-    if ( search_name ) {
-        conditions.push( '(bp.bandi_name LIKE ? OR bp.office_bandi_id = ?)' );
-        params.push( `%${ search_name }%`, search_name );
-    }
-
-    if ( is_dependent ) {
-        conditions.push( 'bri.is_dependent = ?' );
-        params.push( is_dependent );
-    }
-
-    conditions.push( 'bp.is_active = ?' );
-    params.push( is_active );
-
-    const baseWhere = conditions.length ? ' WHERE ' + conditions.join( ' AND ' ) : '';
+    const whereClause = ' WHERE ' + conditions.join(' AND ');
 
     try {
-        // STEP 1: Get bandi IDs
-        const idQuery = `
-            SELECT bp.id
-            FROM bandi_person bp
-            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
-            ${ baseWhere }
-            ORDER BY bp.id DESC
-        `;
-        const [idRows] = await pool.query( idQuery, params );
-        const bandiIds = idRows.map( row => row.id );
-        if ( !bandiIds.length ) return res.json( { Status: true, Result: [], TotalCount: 0 } );
+        const [rows] = await pool.query(`SELECT * FROM view_bandi_full ${whereClause} ORDER BY bandi_id DESC`, params);
 
-        // STEP 2: Total count
-        const countSQL = `
-            SELECT COUNT(*) AS total
-            FROM bandi_person bp
-            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
-            ${ baseWhere }
-        `;
-        const [countResult] = await pool.query( countSQL, params );
-        const totalCount = countResult[0].total;
-
-        // STEP 3: Full records with total_jariwana_amount first
-        const placeholders = bandiIds.map( () => '?' ).join( ',' );
-
-        const fullQuery = `
-            SELECT 
-                bp.id,
-                bp.id AS bandi_id,
-                bp.office_bandi_id,
-                bp.current_office_id,
-                bp.lagat_no,
-                bp.bandi_name,
-                bp.bandi_type,
-                bp.photo_path,
-                bp.nationality,
-                bp.is_under_facility,
-                bp.gender,
-                bp.dob_ad,
-                bp.dob,
-                TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
-                ba.wardno,
-                ba.bidesh_nagarik_address_details,
-                nc.country_name_np,
-                ns.state_name_np,
-                nd.district_name_np,
-                nci.city_name_np,
-                bfd_combined.total_jariwana_amount,
-                bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
-                bkd.thuna_date_bs, bkd.release_date_bs,
-                oo.letter_address AS current_office_letter_address,
-                brd_combined.last_karnayan_miti,
-                bmd_combined.mudda_id,
-                bmd_combined.mudda_name,
-                bmd_combined.is_main_mudda,
-                bmd_combined.is_last_mudda,
-                bmd_combined.office_name_with_letter_address AS mudda_phesala_antim_office,
-                bmd_combined.vadi,
-                bmd_combined.mudda_phesala_antim_office_date,
-                bmd_combined.mudda_group_id,
-                bmd_combined.mudda_group_name,
-                bicd.card_no,
-                git.govt_id_name_np
-            FROM bandi_person bp
-            LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
-            LEFT JOIN np_country nc ON ba.nationality_id = nc.id
-            LEFT JOIN np_state ns ON ba.province_id = ns.state_id
-            LEFT JOIN np_district nd ON ba.district_id = nd.did
-            LEFT JOIN np_city nci ON ba.gapa_napa_id = nci.cid
-            LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
-            LEFT JOIN offices oo ON bp.current_office_id = oo.id
-            LEFT JOIN bandi_id_card_details bicd ON bp.id=bicd.bandi_id
-            LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id
-
-            -- Join total_jariwana_amount first
-            LEFT JOIN (
-            SELECT 
-                bandi_id, 
-                COALESCE(SUM(deposit_amount),0) AS total_jariwana_amount           
-            FROM bandi_fine_details
-            WHERE fine_type_id = 2 AND (amount_deposited IS NULL OR amount_deposited =0)
-            GROUP BY bandi_id
-            ) AS bfd_combined 
-            ON bp.id = bfd_combined.bandi_id
-
-            LEFT JOIN (
-                SELECT brd.bandi_id, MAX(brd.karnayan_miti) AS last_karnayan_miti
-                FROM bandi_release_details brd
-                GROUP BY brd.bandi_id
-            ) AS brd_combined ON bp.id = brd_combined.bandi_id
-
-            LEFT JOIN (
-                SELECT 
-                    bmd.bandi_id, bmd.mudda_id, bmd.is_main_mudda,
-                    bmd.is_last_mudda, m.mudda_name, bmd.vadi,
-                    bmd.mudda_phesala_antim_office_date,
-                    o.office_name_with_letter_address AS mudda_phesala_antim_office,
-                    o.office_name_with_letter_address,
-                    mg.mudda_group_name, mg.id AS mudda_group_id
-                FROM bandi_mudda_details bmd
-                LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_name = o.id
-                LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
-            ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
-
-            WHERE bp.id IN (${ placeholders })
-            ORDER BY bp.id DESC
-        `;
-
-        const [fullRows] = await pool.query( fullQuery, bandiIds );
-
-        // STEP 4: Group muddas under each bandi, keep total_jariwana_amount
+        // Group muddas per bandi
         const grouped = {};
-        fullRows.forEach( row => {
-            const {
-                bandi_id,
-                mudda_id,
-                mudda_name,
-                is_main_mudda,
-                is_last_mudda,
-                office_name_with_letter_address,
-                vadi,
-                mudda_phesala_antim_office_date,
-                mudda_phesala_antim_office,
-                mudda_group_name,
-                total_jariwana_amount,
-                ...bandiData
-            } = row;
-
-            if ( !grouped[bandi_id] ) {
-                grouped[bandi_id] = {
-                    ...bandiData,
-                    bandi_id,
-                    muddas: [],
-                    total_jariwana_amount: total_jariwana_amount || 0
-                };
+        rows.forEach(row => {
+            const bandiId = row.bandi_id;
+            if (!grouped[bandiId]) {
+                grouped[bandiId] = { ...row, muddas: [] };
             }
+            if (row.mudda_id) {
+                grouped[bandiId].muddas.push({
+                    mudda_no: row.mudda_no,
+                    mudda_id: row.mudda_id,
+                    is_main_mudda: row.is_main_mudda,
+                    mudda_condition: row.mudda_condition,
+                    muddas_group_id:row.muddas_group_id,
+                    mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
+                    
+                    vadi: row.vadi,
+                    mudda_name: row.mudda_name,
+                    mudda_group_name: row.mudda_group_name,
+                    mudda_phesala_antim_office:row.mudda_phesala_antim_office,
 
-            if ( mudda_id ) {
-                grouped[bandi_id].muddas.push( {
-                    mudda_id,
-                    mudda_name,
-                    is_main_mudda,
-                    is_last_mudda,
-                    office_name_with_letter_address,
-                    vadi,
-                    mudda_phesala_antim_office_date,
-                    mudda_phesala_antim_office,
-                    mudda_group_name
-                } );
+                    vadi_en: row.vadi_en,
+                    mudda_name_en: row.mudda_name_en,
+                    mudda_group_name_en: row.mudda_group_name_en,
+                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en, 
+                    
+                });
             }
-        } );
+        });
 
-        return res.json( {
-            Status: true,
-            Result: Object.values( grouped ),
-            TotalCount: totalCount
-        } );
-
-    } catch ( err ) {
-        console.error( 'Query Error:', err );
-        return res.json( { Status: false, Error: 'Query Error' } );
+        res.json({ Status: true, Result: Object.values(grouped), TotalCount: Object.keys(grouped).length });
+    } catch (err) {
+        console.error(err);
+        res.json({ Status: false, Error: 'Query Error' });
     }
-} );
+});
 
-router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
+
+router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
     // res.set( 'Cache-Control', 'no-store' );
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
@@ -1011,8 +875,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     let conditions = ['bp.is_under_payrole != 1'];
     let params = [];
 
-    if(searchOffice=='all'){
-        
+    if ( searchOffice == 'all' ) {
+
     }
     else if ( selectedOffice ) {
         conditions.push( 'bp.current_office_id = ?' );
@@ -1248,7 +1112,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                 mudda_phesala_antim_office_date,
                 mudda_phesala_antim_office,
                 office_name_full_en,
-                mudda_phesala_antim_office_en,                
+                mudda_phesala_antim_office_en,
                 total_jariwana_amount,
                 ...bandiData
             } = row;
@@ -1278,7 +1142,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
                     mudda_phesala_antim_office_date,
                     mudda_phesala_antim_office,
                     office_name_full_en,
-                    mudda_phesala_antim_office_en                    
+                    mudda_phesala_antim_office_en
                 } );
             }
         } );

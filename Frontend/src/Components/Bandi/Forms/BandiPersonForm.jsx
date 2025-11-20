@@ -351,8 +351,8 @@ const BandiPersonForm = () => {
                 label="दाखिला मिति"
                 required={true}
                 control={control}
-                error={errors.enrollment_date_bs}                 
-                />
+                error={errors.enrollment_date_bs}
+              />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -600,6 +600,18 @@ const BandiPersonForm = () => {
                       error={errors[`mudda_condition_${ index + 1 }`]}
                     />
                   </Grid>
+
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <ReusePhotoInput
+                      name={`thunuwa_or_kaidi_purji_${ index + 1 }`}
+                      label="थुनुवा/कैदी पुर्जी"
+                      required={true}
+                      control={control}
+                      error={errors[`thunuwa_or_kaidi_purji_${ index + 1 }`]}
+                      showAvatar={false}
+                    />
+                  </Grid>
+
                   {muddaCondition === 0 && ( <>
 
 
@@ -1618,6 +1630,8 @@ const BandiPersonForm = () => {
             />
           </Grid>
         </Grid>
+
+
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }}>

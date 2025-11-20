@@ -19,7 +19,6 @@ const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInp
 const ReuseCountry = React.lazy( () => import( '../../ReuseableComponents/ReuseCountry' ) );
 const ReusableBandiTable = React.lazy( () => import( '../ReusableComponents/ReusableBandiTable' ) );
 
-
 const AllBandiTable = () => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
@@ -83,7 +82,7 @@ const AllBandiTable = () => {
     const [allKaidi, setAllKaidi] = useState( [] );
     const [filteredKaidi, setFilteredKaidi] = useState( [] );
     const [totalKaidi, setTotalKaidi] = useState( 0 );
-    
+
     const fetchKaidi = async () => {
         setLoading( true );
         try {
@@ -163,7 +162,7 @@ const AllBandiTable = () => {
 
         if ( result.isConfirmed ) {
             try {
-                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi/${ bandi.id }`, { withCredentials: true } );
+                const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi/${ bandi.bandi_id }`, { withCredentials: true } );
                 if ( res.data.Status ) {
                     Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
                     fetchKaidi(); // Re-fetch updated data
@@ -180,15 +179,15 @@ const AllBandiTable = () => {
     let columns;
     const columns_np = [
         {
-            field: "current_office_letter_address", headerName: "कारागार कार्यालय", width: 100,
+            field: "bandi_office", headerName: "कारागार कार्यालय", width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
-                if ( row.current_office_letter_address == row.arrested_office ) {
-                    return row.current_office_letter_address;
+                if ( row.bandi_office == row.arrested_office ) {
+                    return row.bandi_office;
                 } else {
                     return (
                         <>
-                            {row.current_office_letter_address}
+                            {row.bandi_office}
                             {row.arrested_office && (
                                 <>
                                     <br />
@@ -203,7 +202,7 @@ const AllBandiTable = () => {
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
         { field: "lagat_no", headerName: "लगत नं.", width: 100 },
         { field: "bandi_type", headerName: "बन्दी प्रकार", width: 100 },
-        { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100          },
+        { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
         // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
         {
             field: "bandi_address",
@@ -323,7 +322,7 @@ const AllBandiTable = () => {
                 if ( type === 'थुनुवा' ) return 'Detainee';
                 if ( type === 'कैदी' ) return 'Prisoner';
                 return type || ''; //fallback for unexpected values 
-            }            
+            }
         },
         { field: "bandi_name_en", headerName: "Prisoner's Name", width: 100 },
         // { field: "bandi_address", headerName: "ठेगाना", width: 100 },
@@ -565,24 +564,27 @@ const AllBandiTable = () => {
                 onDelete={handleDelete}
                 showDelete={authState.role_name === 'supervisor' || authState.role_id === 99}
             />
-            {/* <ReusableTable
-                    columns={columns}
-                    rows={rows}
-                    loading={loading}
-                    showView
-                    // showEdit
-                    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
-                    // onEdit={ handleEdit }
-                    enableExport
-                    includeSerial
-                    serialLabel='सि.नं. '
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    pageSizeOptions={pageSizeOptions}
-                    page={page}
-                /> */}
+
         </>
     );
 };
 
 export default AllBandiTable;
+
+
+{/* <ReusableTable
+    columns={columns}
+    rows={rows}
+    loading={loading}
+    showView
+    // showEdit
+    onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+    // onEdit={ handleEdit }
+    enableExport
+    includeSerial
+    serialLabel='सि.नं. '
+    onPageChange={handleChangePage}
+    onRowsPerPageChange={handleChangeRowsPerPage}
+    pageSizeOptions={pageSizeOptions}
+    page={page}
+/> */}
