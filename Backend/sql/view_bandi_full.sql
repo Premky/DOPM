@@ -73,7 +73,10 @@ SELECT
     bed.escape_date_bs, 
     bed.escape_method,
     bed.status AS escape_status,
-    bed.current_office_id AS current_office_id_after_recapture
+    bed.current_office_id AS current_office_id_after_recapture,
+
+    -- Bandi Relative Info 
+    bri.is_dependent
 
 FROM bandi_person b
 LEFT JOIN bandi_address ba ON b.id = ba.bandi_id
@@ -87,7 +90,6 @@ LEFT JOIN muddas m ON bmd.mudda_id = m.id
 LEFT JOIN muddas_groups mg ON m.muddas_group_id=mg.id
 LEFT JOIN offices bmo ON bmd.mudda_phesala_antim_office_id = bmo.id
 
-
 LEFT JOIN bandi_kaid_details bkd ON b.id = bkd.bandi_id
 
 LEFT JOIN bandi_punarabedan_details bpd ON b.id = bpd.bandi_id
@@ -96,6 +98,7 @@ LEFT JOIN offices bo ON b.current_office_id=bo.id
 
 LEFT JOIN prison_blocks pb ON b.block_no = pb.id
 LEFT JOIN bandi_escape_details bed ON b.id=bed.bandi_id
+LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
 
 LEFT JOIN (
     SELECT 

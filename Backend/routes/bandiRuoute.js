@@ -812,6 +812,7 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
     if (search_name) conditions.push('(bandi_name LIKE ? OR office_bandi_id = ?)'), params.push(`%${search_name}%`, search_name);
     if (mudda_group_id) conditions.push('muddas_group_id = ?'), params.push(mudda_group_id);
     if (is_escape) conditions.push('escape_status = ?'), params.push(is_escape);
+    if (is_dependent) conditions.push('is_dependent = ?'), params.push(is_dependent);
     if (is_active !== undefined) conditions.push('is_active = ?'), params.push(is_active);
 
     const whereClause = ' WHERE ' + conditions.join(' AND ');
@@ -843,12 +844,10 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
                     vadi_en: row.vadi_en,
                     mudda_name_en: row.mudda_name_en,
                     mudda_group_name_en: row.mudda_group_name_en,
-                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en, 
-                    
+                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,                     
                 });
             }
         });
-
         res.json({ Status: true, Result: Object.values(grouped), TotalCount: Object.keys(grouped).length });
     } catch (err) {
         console.error(err);
