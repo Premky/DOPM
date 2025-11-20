@@ -24,6 +24,7 @@ import { payroleRouter } from './routes/payroleRoute.js';
 import { bandiTransferRouter } from './routes/bandiTransferRoute.js';
 import { transliterateRouter} from './routes/transliterateRoute.js';
 import {xtraRouter} from './routes/xtraRoute.js';
+import { auditRouter } from './routes/auditRoute.js';
 
 dotenv.config();
 
@@ -183,6 +184,7 @@ app.use( '/payrole', payroleRouter );
 app.use( '/bandiTransfer', bandiTransferRouter );
 app.use( '/transliterate', transliterateRouter );
 app.use( '/xtraRoute', xtraRouter );
+app.use('/audit', auditRouter);
 
 // ------------------- 9️⃣ Error Handler -------------------
 app.use( errorHandler );

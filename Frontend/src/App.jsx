@@ -9,6 +9,8 @@ const PrisionBlocksForm = lazy( () => import( './Components/AdminPanel/AdminSett
 const Login = lazy( () => import( './Components/Auth/Login' ) );
 const CombinedNav = lazy( () => import( './Components/Nav/CombinedNav' ) );
 const CombinedNavBar = lazy( () => import( './Components/Nav/CombinedNavBar' ) );
+const AuditTable = lazy(()=>import('./Pages/Audit/AuditTable'));
+
 const CreateUser = lazy( () => import( './Components/AdminPanel/User/CreateUser' ) );
 const OfficeBranchPage = lazy( () => import( './Components/AdminPanel/Office/OfficeBranchPage' ) );
 const Office = lazy( () => import( './Components/AdminPanel/Office/OfficeForm' ) );
@@ -110,6 +112,12 @@ function App() {
                 <Route path="adminsettings" element={<OutletLayout />}>
                   <Route path="block" element={<PrisionBlocksForm />} />
                 </Route>
+                
+                {/* All Audits */}
+                <Route path="audit" element={<OutletLayout/>}>
+                  <Route index element={<AuditTable />} />
+                </Route>
+
                 {/* Bandis Routes */}
                 <Route path="bandi" element={<OutletLayout />}>
                   <Route index element={<CountReport />} />

@@ -39,6 +39,8 @@ import { ageCalculator } from '../utils/ageCalculator.js';
 const query = promisify( con.query ).bind( con );
 
 import { translate } from "google-translate-api-x";
+import { audit } from '../middlewares/auditMiddleware.js';
+import { logAudit } from '../services/auditService.js';
 
 async function translateEscapedNames( limit = 4000 ) {
     try {
@@ -784,8 +786,8 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
     }
 } );
 
-router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
-    const active_office= req.user.office_id;
+router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
     const {
         selected_office = 0,
         searchOffice = 0,
@@ -798,68 +800,68 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
         is_dependent,
         mudda_group_id,
         is_escape,
-        is_under_payrole=0
+        is_under_payrole = 0
     } = req.query;
 
     let conditions = ['1=1'];
     let params = [];
 
-    if (selected_office) { conditions.push('current_office_id = ?'); params.push(selected_office); }
-    else if (searchOffice) { conditions.push('current_office_id = ?'); params.push(searchOffice); }
-    else if (active_office) { conditions.push('current_office_id = ?'); params.push(active_office); }
-    
+    if ( selected_office ) { conditions.push( 'current_office_id = ?' ); params.push( selected_office ); }
+    else if ( searchOffice ) { conditions.push( 'current_office_id = ?' ); params.push( searchOffice ); }
+    else if ( active_office ) { conditions.push( 'current_office_id = ?' ); params.push( active_office ); }
 
 
-    if (nationality) conditions.push('nationality = ?'), params.push(nationality);
-    if (country) conditions.push('country_name_np = ?'), params.push(country);
-    if (gender) conditions.push('gender = ?'), params.push(gender);
-    if (bandi_type) conditions.push('bandi_type = ?'), params.push(bandi_type);
-    if (search_name) conditions.push('(bandi_name LIKE ? OR office_bandi_id = ?)'), params.push(`%${search_name}%`, search_name);
-    if (mudda_group_id) conditions.push('muddas_group_id = ?'), params.push(mudda_group_id);
-    if (is_escape) conditions.push('escape_status = ?'), params.push(is_escape);
-    if (is_dependent) conditions.push('is_dependent = ?'), params.push(is_dependent);
-    if (is_active !== undefined) conditions.push('is_active = ?'), params.push(is_active);
-    if (is_under_payrole !== undefined) conditions.push('is_under_payrole = ?'), params.push(is_under_payrole);
 
-    const whereClause = ' WHERE ' + conditions.join(' AND ');
+    if ( nationality ) conditions.push( 'nationality = ?' ), params.push( nationality );
+    if ( country ) conditions.push( 'country_name_np = ?' ), params.push( country );
+    if ( gender ) conditions.push( 'gender = ?' ), params.push( gender );
+    if ( bandi_type ) conditions.push( 'bandi_type = ?' ), params.push( bandi_type );
+    if ( search_name ) conditions.push( '(bandi_name LIKE ? OR office_bandi_id = ?)' ), params.push( `%${ search_name }%`, search_name );
+    if ( mudda_group_id ) conditions.push( 'muddas_group_id = ?' ), params.push( mudda_group_id );
+    if ( is_escape ) conditions.push( 'escape_status = ?' ), params.push( is_escape );
+    if ( is_dependent ) conditions.push( 'is_dependent = ?' ), params.push( is_dependent );
+    if ( is_active !== undefined ) conditions.push( 'is_active = ?' ), params.push( is_active );
+    if ( is_under_payrole !== undefined ) conditions.push( 'is_under_payrole = ?' ), params.push( is_under_payrole );
+
+    const whereClause = ' WHERE ' + conditions.join( ' AND ' );
 
     try {
-        const [rows] = await pool.query(`SELECT * FROM view_bandi_full ${whereClause} ORDER BY bandi_id DESC`, params);
+        const [rows] = await pool.query( `SELECT * FROM view_bandi_full ${ whereClause } ORDER BY bandi_id DESC`, params );
 
         // Group muddas per bandi
         const grouped = {};
-        rows.forEach(row => {
+        rows.forEach( row => {
             const bandiId = row.bandi_id;
-            if (!grouped[bandiId]) {
+            if ( !grouped[bandiId] ) {
                 grouped[bandiId] = { ...row, muddas: [] };
             }
-            if (row.mudda_id) {
-                grouped[bandiId].muddas.push({
+            if ( row.mudda_id ) {
+                grouped[bandiId].muddas.push( {
                     mudda_no: row.mudda_no,
                     mudda_id: row.mudda_id,
                     is_main_mudda: row.is_main_mudda,
                     mudda_condition: row.mudda_condition,
-                    muddas_group_id:row.muddas_group_id,
+                    muddas_group_id: row.muddas_group_id,
                     mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
-                    
+
                     vadi: row.vadi,
                     mudda_name: row.mudda_name,
                     mudda_group_name: row.mudda_group_name,
-                    mudda_phesala_antim_office:row.mudda_phesala_antim_office,
+                    mudda_phesala_antim_office: row.mudda_phesala_antim_office,
 
                     vadi_en: row.vadi_en,
                     mudda_name_en: row.mudda_name_en,
                     mudda_group_name_en: row.mudda_group_name_en,
-                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,                     
-                });
+                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,
+                } );
             }
-        });
-        res.json({ Status: true, Result: Object.values(grouped), TotalCount: Object.keys(grouped).length });
-    } catch (err) {
-        console.error(err);
-        res.json({ Status: false, Error: 'Query Error' });
+        } );
+        res.json( { Status: true, Result: Object.values( grouped ), TotalCount: Object.keys( grouped ).length } );
+    } catch ( err ) {
+        console.error( err );
+        res.json( { Status: false, Error: 'Query Error' } );
     }
-});
+} );
 
 router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
     // res.set( 'Cache-Control', 'no-store' );
@@ -1607,14 +1609,16 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
     }
 } );
 
-router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
+router.put( '/update_bandi/:id', verifyToken, audit( "bandi_person", "id" ), async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
+    const userId= req.user.username;
     console.log( data.enrollment_date_bs );
     const dob_ad = await bs2ad( data.dob );
     // console.log( dob_ad );
     const age = await ageCalculator( dob_ad );
     try {
+        //Update Logince
         const [result] = await pool.query( `
             UPDATE bandi_person SET                
                 bandi_name = ?, bandi_name_en = ?, lagat_no=?, gender = ?, dob = ?, dob_ad=?, age=?, married_status = ?,
@@ -1628,7 +1632,19 @@ router.put( '/update_bandi/:id', verifyToken, async ( req, res ) => {
             data.enrollment_date_bs, await bs2ad( data.enrollment_date_bs ), data.block_no,
             req.user.username, id
         ] );
-        console.log( result );
+        //Get New Row
+        const [newData] = await pool.query( `SELECT * FROM bandi_person WHERE id=?`, [id] );
+
+        //log audit
+        await logAudit( {
+            tableName: "bandi_person",
+            recordId: id,
+            action: "update",
+            oldData: req.oldRecord,
+            newData: newData[0],
+            userId
+        } );
+        // console.log( result );
         res.json( { Status: true, message: "Updated successfully" } );
     } catch ( error ) {
         console.error( error );
@@ -2400,13 +2416,24 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.delete( '/delete_bandi_fine/:id', verifyToken, async ( req, res ) => {
+router.delete( '/delete_bandi_fine/:id', audit("bandi_fine_details","id"), verifyToken, async ( req, res ) => {
     const { id } = req.params;
+    const userId = req.user.user_id;
     console.log( id );
     try {
+        //DELETE
         const sql = `DELETE FROM bandi_fine_details WHERE id =? `;
         const [result] = await pool.query( sql, id );
-        return res.json( { Status: true, Result: 'Record Deleted Successfully!' } );
+
+        // Audit Log 
+        await logAudit({
+            tableName:"bandi_fine_details",
+            recordId:id,
+            action:"delete",
+            oldData:req.oldRecord,
+            userId
+        })
+        return res.json( { Status: true, Result: 'Record Deleted and Audit Logged Successfully!' } );
     } catch ( err ) {
         console.error( 'Error Deleting Record:', err );
         return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
@@ -4272,7 +4299,7 @@ router.post( '/create_mudda', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.delete( '/delete_bandi/:id', verifyToken, async ( req, res ) => {
+router.delete( '/delete_bandi/:id', audit("bandi_person", "id"),verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
     const role_name = req.user.role_name;
@@ -4289,7 +4316,16 @@ router.delete( '/delete_bandi/:id', verifyToken, async ( req, res ) => {
     }
 
     try {
+        //DELETE
         const [result] = await pool.query( `DELETE FROM bandi_person WHERE id=?`, [id] );
+        // Audit Log
+        await logAudit({
+            tableName:"bandi_person",
+            recordId:id,
+            action:"delete",
+            oldData:req.oldRecord,
+            user_id
+        })
         res.json( {
             Status: true,
             message: "बन्दी DELETE गरियो।"
