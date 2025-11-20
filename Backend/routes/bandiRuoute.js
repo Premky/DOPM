@@ -785,6 +785,7 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
 } );
 
 router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
+    const active_office= req.user.office_id;
     const {
         selected_office = 0,
         searchOffice = 0,
@@ -805,6 +806,9 @@ router.get('/get_all_office_bandi', verifyToken, async (req, res) => {
 
     if (selected_office) { conditions.push('current_office_id = ?'); params.push(selected_office); }
     else if (searchOffice) { conditions.push('current_office_id = ?'); params.push(searchOffice); }
+    else if (active_office) { conditions.push('current_office_id = ?'); params.push(active_office); }
+    
+
 
     if (nationality) conditions.push('nationality = ?'), params.push(nationality);
     if (country) conditions.push('country_name_np = ?'), params.push(country);

@@ -7,8 +7,6 @@ import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom
 import { useAuth } from '../../Context/AuthContext';
 
 const ReuseBandi = ( { name, label, required, control, error, defaultvalue, type, selected_office } ) => {
-  // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  // const BASE_URL = localStorage.getItem('BASE_URL');
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
   const token = localStorage.getItem( 'token' );
@@ -47,7 +45,7 @@ const ReuseBandi = ( { name, label, required, control, error, defaultvalue, type
 
       if ( Status && Array.isArray( Result ) && Result.length > 0 ) {
         const formatted = Result
-          .filter( opt => opt?.id && opt?.bandi_name )
+          .filter( opt => opt?.bandi_id && opt?.bandi_name )
           .map( ( opt, index ) => {
             const bt = opt.bandi_type;
             return {
