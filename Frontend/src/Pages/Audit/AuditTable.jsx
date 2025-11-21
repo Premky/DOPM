@@ -79,7 +79,7 @@ const AuditTable = () => {
             await axios.post(
                 `${ baseURL }/audit/restore/${ auditId }`,
                 {},
-                { headers: { Authorization: `Bearer ${ token }` } }
+                { headers: { Authorization: `Bearer ${ token }` }, withCredentials:true }
             );
             alert( "Record Restored Successfully" );
             fetchLogs();
@@ -90,7 +90,7 @@ const AuditTable = () => {
 
     const columns = [
         { field: "id", headerName: "ID", width: 90 },
-        { field: "table_name", headerName: "Table", width: 150 },
+        { field: "display_table_name", headerName: "Table", width: 150 },
         { field: "record_id", headerName: "Record ID", width: 100 },
         { field: "action", headerName: "Action Taken", width: 120 },
         { field: "changed_by", headerName: "User", width: 120 },
@@ -107,22 +107,7 @@ const AuditTable = () => {
     const AuditModalContent = ( { modalData } ) => {
         if ( !modalData ) return null;
 
-        // const oldData =
-        //     typeof modalData.old_data === "string"
-        //         ? JSON.parse( modalData.old_data )
-        //         : modalData.old_data || {};
-
-        // const newData =
-        //     typeof modalData.new_data === "string"
-        //         ? JSON.parse( modalData.new_data )
-        //         : modalData.new_data || {};
-
         const fields = modalData.fields || {};
-
-
-        // Combine keys from both oldData and newData
-        // const allFields = Array.from( new Set( [...Object.keys( oldData ), ...Object.keys( newData )] ) );
-
         return (
             <TableContainer component={Paper} sx={{ mt: 2 }}>
                 <Table>

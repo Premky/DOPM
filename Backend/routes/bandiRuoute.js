@@ -1638,7 +1638,7 @@ router.put( '/update_bandi/:id', verifyToken, audit( "bandi_person", "id" ), asy
         //log audit
         await logAudit( {
             tableName: "bandi_person",
-            recordId: id,
+            recordId: newData[0].office_bandi_id,
             action: "update",
             oldData: req.oldRecord,
             newData: newData[0],
