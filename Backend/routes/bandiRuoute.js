@@ -808,7 +808,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
     if ( selected_office ) { conditions.push( 'current_office_id = ?' ); params.push( selected_office ); }
     else if ( searchOffice ) { conditions.push( 'current_office_id = ?' ); params.push( searchOffice ); }
-    else if ( active_office ) { conditions.push( 'current_office_id = ?' ); params.push( active_office ); }
+    // else if ( active_office ) { conditions.push( 'current_office_id = ?' ); params.push( active_office ); }
 
 
 

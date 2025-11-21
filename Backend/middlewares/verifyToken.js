@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
  * If valid → attaches user to req.user and refreshes token.
  * If invalid/expired → responds with appropriate status.
  */
+
 const verifyToken = (req, res, next) => {
   try {
     // Get token from cookie or "Authorization: Bearer ..." header

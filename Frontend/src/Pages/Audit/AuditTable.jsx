@@ -65,6 +65,7 @@ const AuditTable = () => {
                 headers: { Authorization: `Bearer ${ token }` },
                 withCredentials: true,
             } );
+            console.log( res.data );
             setModalData( res.data );
             setOpenModal( true );
         } catch ( err ) {
@@ -106,18 +107,21 @@ const AuditTable = () => {
     const AuditModalContent = ( { modalData } ) => {
         if ( !modalData ) return null;
 
-        const oldData =
-            typeof modalData.old_data === "string"
-                ? JSON.parse( modalData.old_data )
-                : modalData.old_data || {};
+        // const oldData =
+        //     typeof modalData.old_data === "string"
+        //         ? JSON.parse( modalData.old_data )
+        //         : modalData.old_data || {};
 
-        const newData =
-            typeof modalData.new_data === "string"
-                ? JSON.parse( modalData.new_data )
-                : modalData.new_data || {};
+        // const newData =
+        //     typeof modalData.new_data === "string"
+        //         ? JSON.parse( modalData.new_data )
+        //         : modalData.new_data || {};
+
+        const fields = modalData.fields || {};
+
 
         // Combine keys from both oldData and newData
-        const allFields = Array.from( new Set( [...Object.keys( oldData ), ...Object.keys( newData )] ) );
+        // const allFields = Array.from( new Set( [...Object.keys( oldData ), ...Object.keys( newData )] ) );
 
         return (
             <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -129,14 +133,15 @@ const AuditTable = () => {
                             <TableCell>New Value</TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody>
-                        {allFields.map( ( field ) => {
+                    {/* <TableBody>
+                        {
+                        allFields.map( ( field ) => {
                             const oldVal = oldData[field] ?? "-";
                             const newVal = newData[field] ?? "-";
                             const isUpdated = oldVal !== newVal;
                             return (
                                 <TableRow key={field}>
-                                    <TableCell>{field}</TableCell>
+                                    <TableCell>{label}</TableCell>
                                     <TableCell>{oldVal}</TableCell>
                                     <TableCell
                                         sx={{
@@ -150,7 +155,29 @@ const AuditTable = () => {
                                 </TableRow>
                             );
                         } )}
+                    </TableBody> */}
+                    <TableBody>
+                        {Object.entries( fields ).map( ( [key, item] ) => {
+                            const isUpdated = item.old !== item.new;
+
+                            return (
+                                <TableRow key={key}>
+                                    <TableCell>{item.label}</TableCell>  {/* ✅ display_name */}
+                                    <TableCell>{item.old ?? "-"}</TableCell>
+                                    <TableCell
+                                        sx={{
+                                            backgroundColor: isUpdated
+                                                ? "rgba(255, 235, 59, 0.3)"
+                                                : "transparent",
+                                        }}
+                                    >
+                                        {item.new ?? "-"}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        } )}
                     </TableBody>
+
                 </Table>
             </TableContainer>
         );
