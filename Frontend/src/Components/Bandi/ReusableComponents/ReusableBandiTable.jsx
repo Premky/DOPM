@@ -505,6 +505,7 @@ const ReusableBandiTable = ( {
                                 </TableCell>
                             ) )}
                             <TableCell align="center">{t( "मुद्दा", "Case" )}</TableCell>
+                            <TableCell align="center">{t( "मुद्दा नं.", "Case No." )}</TableCell>
                             <TableCell align="center">{t( "जाहेरवाला", "Complainant" )}</TableCell>
                             <TableCell align="center">{t( "फैसला कार्यालय/मिति", "Decision Office/Date" )}</TableCell>
                             <TableCell align="center">#</TableCell>
@@ -549,6 +550,7 @@ const ReusableBandiTable = ( {
                                         } )}
 
                                     <TableCell align="center">{language === "en" ? mudda?.mudda_name_en : mudda?.mudda_name}</TableCell>
+                                    <TableCell align="center">{mudda?.mudda_no}</TableCell>
                                     <TableCell align="center">{language === "en" ? mudda?.vadi_en : mudda?.vadi}</TableCell>
                                     <TableCell align="center">{`${ mudda?.mudda_phesala_antim_office || "" } ${ mudda?.mudda_phesala_antim_office_date || "" }`}</TableCell>
 

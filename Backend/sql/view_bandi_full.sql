@@ -83,7 +83,12 @@ SELECT
     bed.current_office_id AS current_office_id_after_recapture,
 
     -- Bandi Relative Info 
-    bri.is_dependent
+    bri.is_dependent,
+
+    -- Id Card Details
+    bicd.card_no,
+    git.govt_id_name_np,
+    git.govt_id_name_en
 
 FROM bandi_person b
 LEFT JOIN bandi_address ba ON b.id = ba.bandi_id
@@ -106,6 +111,10 @@ LEFT JOIN offices bo ON b.current_office_id=bo.id
 LEFT JOIN prison_blocks pb ON b.block_no = pb.id
 LEFT JOIN bandi_escape_details bed ON b.id=bed.bandi_id
 LEFT JOIN bandi_relative_info bri ON b.id=bri.bandi_id
+
+LEFT JOIN bandi_id_card_details bicd ON b.id=bicd.bandi_id
+LEFT JOIN govt_id_types git ON git.id = bicd.card_type_id 
+
 
 LEFT JOIN (
     SELECT 
