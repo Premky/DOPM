@@ -33,7 +33,7 @@ const ReusableTable = ({ rows = [], columns = [], pageSize = 20 }) => {
               >
                 Restore
               </Button>
-            )}
+            )} 
           </Box>
         ),
       };

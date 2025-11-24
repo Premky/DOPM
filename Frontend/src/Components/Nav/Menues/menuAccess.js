@@ -80,9 +80,15 @@ export const menuAccess = {
     superadmin: 'all',
     clerk: 'all',
   },
+
   adminsettings:{
     office_admin:['/adminsettings/block'],
     clerk:['/adminsettings/block'],
     superadmin:'all',
+  },
+
+  dopm_admin:{
+    superadmin:'all',
   }
+
 };

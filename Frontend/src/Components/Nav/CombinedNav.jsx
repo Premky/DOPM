@@ -68,15 +68,15 @@ const CombinedNav = ( { user } ) => {
         // { name: 'प्यारोल मास्केवारी', path: '/payrole/maskebari_table' }
       ]
     },
-    {
-      name: 'कामदारी सुविधा',
-      defaultPath: '/kaamdari_subidha',
-      submenu: [
-        // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/kaamdari_subidha/create_aantarik_prashasan' },
-        { name: 'आन्तिरक प्रशासन', path: '/kaamdari_subidha/aantarik_prashasan_table' },
-        // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
-      ]
-    },
+    // {
+    //   name: 'कामदारी सुविधा',
+    //   defaultPath: '/kaamdari_subidha',
+    //   submenu: [
+    //     // { name: 'कामदारी सुविधा ड्यासबोर्ड', path: '/kaamdari_subidha/create_aantarik_prashasan' },
+    //     { name: 'आन्तिरक प्रशासन', path: '/kaamdari_subidha/aantarik_prashasan_table' },
+    //     // { name: 'कामदारी सुविधा विवरण', path: '/kaamdari_subidha/kaamdari_subidha_form' }
+    //   ]
+    // },
     {
       name: 'स्थानान्तरण',
       defaultPath: '/bandi_transfer',
@@ -107,7 +107,14 @@ const CombinedNav = ( { user } ) => {
         { name: 'ब्लकहरु', path: '/adminsettings/block' },        
       ]
     }
-    , {
+    // ,{
+    //   name: 'एडमिन',
+    //   defaultPath: '/dopm_admin',
+    //   submenu: [        
+    //     { name: 'प्यारोल संख्या', path: '/parole/parole_count' },        
+    //   ]
+    // }
+    ,{
       name: 'Tools',
       defaultPath: '/transliterate',
       submenu: [        

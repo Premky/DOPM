@@ -15,7 +15,6 @@ import { Grid } from '@mui/material';
 import BandiTransferHistoryTable from './Tables/For View/BandiTransferHistoryTable.jsx';
 import PayroleDetailsTable from '../Parole/View/PayroleDetailsTable.jsx';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import BandiReleaseTable from './Tables/For View/BandiReleaseTable.jsx';
 import BandiEscapeTable from './Tables/For View/BandiEscapeTable.jsx';
 
 const ViewBandi = ( { bandi } ) => {
@@ -29,6 +28,7 @@ const ViewBandi = ( { bandi } ) => {
             setUrlLocation( "bandi" );
         }
     }, [location.pathname] );
+    
     // Prefer the passed prop, fallback to param
     const bandi_id = bandi ? bandi : params.bandi_id;
 
@@ -38,7 +38,7 @@ const ViewBandi = ( { bandi } ) => {
                 <Helmet>
                     <title>PMIS: बन्दी विस्तृत विवरण</title>
                     <meta name="description" content="बन्दी सम्बन्धि सबै विवरणहरु हेर्नुहोस्" />
-                    <meta name="keywords" content="बन्दी, बन्दी विवरण, बन्दी जानकारी, बन्दी रेकर्ड, बन्दी डाटा" />
+                    <meta name="keywords"    content="बन्दी, बन्दी विवरण, बन्दी जानकारी, बन्दी रेकर्ड, बन्दी डाटा" />
                     <meta name="author" content="Your Name or Company" />
                     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                     <link rel="canonical" href={window.location.href} />
@@ -51,7 +51,7 @@ const ViewBandi = ( { bandi } ) => {
                     </Grid>
                 )}
                 <Grid size={{ xs: 12 }}>
-                    <BandiTable bandi_id={bandi_id} />
+                    <BandiTable bandi_id={bandi_id}  />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <BandiMuddaTable bandi_id={bandi_id} />

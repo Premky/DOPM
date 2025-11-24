@@ -26,6 +26,7 @@ SELECT
 
     -- Bandi Office
     bo.letter_address AS bandi_office,
+    bo.short_name_en AS bandi_office_en,
 
     -- Address
     ba.wardno,
@@ -35,6 +36,11 @@ SELECT
     ns.state_name_np,
     nd.district_name_np,
     nci.city_name_np,
+
+    nc.country_name_en,
+    ns.state_name_en,
+    nd.district_name_en,
+    nci.city_name_en,
 
     -- Mudda
     bmd.mudda_id,

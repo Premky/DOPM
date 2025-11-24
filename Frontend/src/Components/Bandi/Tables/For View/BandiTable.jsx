@@ -110,8 +110,7 @@ const BandiTable = ( { bandi_id } ) => {
                         <h3>बन्दी विवरणः</h3>
                     </Grid>
                     <Grid marginTop={2}>
-                        <Button variant="contained" color='success' onClick={() => handleEdit( fetchedBandi )}>✏️</Button>
-                        {/* &nbsp; <Button variant='contained' size='small' onClick={() => handleEdit( fetchedBandi )}>Edit</Button> */}
+                        <Button variant="contained" color='success' onClick={() => handleEdit( fetchedBandi )}>✏️</Button>                        
                     </Grid>
                 </Grid>
 

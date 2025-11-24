@@ -301,7 +301,7 @@ const AllBandiTable = () => {
                 } else {
                     return (
                         <>
-                            {row.current_office_letter_address}
+                            {row.bandi_office_en}
                             {row.arrested_office && (
                                 <>
                                     <br />
