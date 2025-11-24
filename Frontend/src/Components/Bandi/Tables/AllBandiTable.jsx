@@ -297,17 +297,11 @@ const AllBandiTable = () => {
             renderCell: ( params ) => {
                 const row = params.row;
                 if ( row.current_office_letter_address == row.arrested_office ) {
-                    return row.current_office_letter_address;
+                    return row.bandi_office_en;
                 } else {
                     return (
                         <>
                             {row.bandi_office_en}
-                            {row.arrested_office && (
-                                <>
-                                    <br />
-                                    Now at: {row.arrested_office}
-                                </>
-                            )}
                         </>
                     );
                 }
