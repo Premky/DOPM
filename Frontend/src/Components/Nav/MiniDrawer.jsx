@@ -106,11 +106,12 @@ const MenuItemComponent = ({ item, open, level = 0 }) => {
   const [subOpen, setSubOpen] = useState(false);
   const location = useLocation();
   const pathname = location.pathname;
-
+  const menuLink = '/'+item.link;
+  
   // Determine active states:
   const isActive =
-    !!item.link &&
-    (pathname === item.link || pathname.startsWith(item.link)); // handles params like /bandi/123
+    !!menuLink &&
+    (pathname === menuLink || pathname.startsWith(menuLink)); // handles params like /bandi/123
   const childIsActive = hasActiveChild(item, pathname);
   const shouldOpen = childIsActive || subOpen;
 
