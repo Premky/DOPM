@@ -57,6 +57,7 @@ const MuddaDialog = ( { open, onClose, onSave, editingData } ) => {
                 mudda_list: "",
                 mudda_no: "",
                 vadi: "",
+                vadi_en:"",
                 mudda_condition: "",
                 mudda_phesala_antim_office_id: "",
                 mudda_phesala_antim_office_name: "",

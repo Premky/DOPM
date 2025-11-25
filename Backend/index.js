@@ -25,6 +25,7 @@ import { bandiTransferRouter } from './routes/bandiTransferRoute.js';
 import { transliterateRouter} from './routes/transliterateRoute.js';
 import {xtraRouter} from './routes/xtraRoute.js';
 import { auditRouter } from './routes/auditRoute.js';
+import { menuRouter } from './routes/menuRoute.js';
 
 dotenv.config();
 
@@ -175,6 +176,7 @@ app.use( '/uploads', express.static( path.join( __dirname, 'uploads' ) ) );
 app.use( express.static( 'Public' ) );
 
 // ------------------- 8️⃣ Routes -------------------
+app.use('/menu', menuRouter);
 app.use( '/admin', adminRouter );
 app.use( '/auth', authRouter );
 app.use( '/public', publicRouter );

@@ -251,6 +251,34 @@ router.post( '/login', authLimiter, async ( req, res ) => {
   }
 } );
 
+// GET /auth/get_menus
+router.get("/get_menus", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, title, link, icon, parent_id 
+       FROM menus 
+       ORDER BY parent_id, \`order_no\` ASC`
+    );
+
+    // Convert flat list to nested structure
+    const menuMap = {};
+    const topMenus = [];
+
+    rows.forEach((menu) => {
+      menu.children = [];
+      menuMap[menu.id] = menu;
+
+      if (!menu.parent_id) topMenus.push(menu);
+      else if (menuMap[menu.parent_id]) menuMap[menu.parent_id].children.push(menu);
+    });
+    // console.log(topMenus)
+    res.json(topMenus);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch menus" });
+  }
+});
+
 // Logout
 router.post( '/logout', verifyToken, async ( req, res ) => {
   const user_id = req.user?.id;

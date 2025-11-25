@@ -2191,7 +2191,7 @@ router.put( '/update_bandi_mudda/:id', verifyToken, async ( req, res ) => {
 
         const sql = `
             UPDATE bandi_mudda_details 
-            SET mudda_id=?, mudda_no=?, mudda_condition=?, vadi=?, vadi=?, mudda_phesala_antim_office_id=?,
+            SET mudda_id=?, mudda_no=?, mudda_condition=?, vadi=?, vadi_en=?, mudda_phesala_antim_office_id=?,
                 mudda_phesala_antim_office_district=?, mudda_phesala_antim_office_date=?,
                 hirasat_years=?, hirasat_months=?, hirasat_days=?, 
                 thuna_date_bs=?, release_date_bs=?, is_life_time=?,
