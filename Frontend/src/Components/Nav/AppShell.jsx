@@ -8,14 +8,14 @@ import { Outlet } from "react-router-dom";
 
 const drawerWidth = 180; // must match MiniDrawer
 
-export default function AppShell({ menus = [], user }) {
-  const [open, setOpen] = useState(true);
+export default function AppShell( { menus = [], user } ) {
+  const [open, setOpen] = useState( true );
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      
+
       {/* TOPBAR */}
-      <Topbar 
+      <Topbar
         open={open}
         setOpen={setOpen}
         drawerWidth={drawerWidth}
@@ -23,7 +23,7 @@ export default function AppShell({ menus = [], user }) {
       />
 
       {/* MINI DRAWER SIDEBAR */}
-      <MiniDrawer 
+      <MiniDrawer
         menus={menus}
         open={open}
       />
@@ -33,7 +33,7 @@ export default function AppShell({ menus = [], user }) {
         component="main"
         sx={{
           flexGrow: 1,
-          ml: open ? `${drawerWidth}px` : "65px",
+          ml: open ? `${ drawerWidth }px` : "65px",
           mt: `64px`,
           p: 2,
           transition: "all 0.3s ease",

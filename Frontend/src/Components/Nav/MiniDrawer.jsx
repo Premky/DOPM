@@ -1,147 +1,280 @@
-// src/Components/Nav/MiniDrawer.jsx
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { styled, useTheme } from "@mui/material/styles";
-import MuiDrawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Collapse from "@mui/material/Collapse";
-import Divider from "@mui/material/Divider";
-import ExpandLess from "@mui/icons-material/ExpandLess";
+// src/components/Nav/MiniDrawer.jsx
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Collapse,
+  Tooltip,
+  TextField,
+  InputAdornment,
+  Box,
+  Typography,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { NavLink, useLocation } from "react-router-dom";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-// import { getIcon } from "../../utils/iconMap";
+import SearchIcon from "@mui/icons-material/Search";
 
-const drawerWidth = 180;
+const drawerWidth = 201;
+const miniDrawerWidth = 0;
 
-const openedMixin = (theme) => ({
-  width: drawerWidth,
-  transition: theme.transitions.create("width", {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: "hidden",
-});
+/* ----------------------------------------
+   Styled Drawer
+----------------------------------------- */
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  "& .MuiDrawer-paper": {
+    top: "64px",
+    height: "calc(100% - 64px)",
+    background: "#fafafa",
+    borderRight: "1px solid #e0e0e0",
+    overflowX: "hidden",
+    transition: "width 0.25s ease-in-out",
+  },
+}));
 
-const closedMixin = (theme) => ({
-  transition: theme.transitions.create("width", {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: "hidden",
-  width: `calc(${theme.spacing(7)} + 1px)`,
-});
+/* ----------------------------------------
+   Styles used when active
+----------------------------------------- */
+const activeStyle = {
+  background: "#e8f1ff",
+  borderLeft: "4px solid #1976d2",
+};
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== "open" })(
-  ({ theme, open }) => ({
-    width: drawerWidth,
-    flexShrink: 0,
-    whiteSpace: "nowrap",
-    boxSizing: "border-box",
-    ...(open && {
-      ...openedMixin(theme),
-      "& .MuiDrawer-paper": openedMixin(theme),
-    }),
-    ...(!open && {
-      ...closedMixin(theme),
-      "& .MuiDrawer-paper": closedMixin(theme),
-    }),
-  })
-);
+const iconActiveStyle = {
+  background: "#1976d2",
+  color: "#fff",
+  borderRadius: 1,
+  width: 36,
+  height: 36,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
 
-export default function MiniDrawer({ menus = [], open }) {
-  const theme = useTheme();
-  const navigate = useNavigate();
+/* -------------------------------------------------------------------
+   Filter menus recursively (search both parent & children)
+-------------------------------------------------------------------- */
+const filterMenus = (menus, query) => {
+  if (!query) return menus;
+  const q = query.toLowerCase();
+
+  return menus
+    .map((menu) => {
+      const matchesSelf = menu.title?.toLowerCase().includes(q);
+
+      const children = Array.isArray(menu.children) ? menu.children : [];
+
+      // Recursively search children
+      const filteredChildren = filterMenus(children, query);
+
+      // CASE 1: parent matches → keep it with ALL filtered children
+      if (matchesSelf) {
+        return { ...menu, children: filteredChildren };
+      }
+
+      // CASE 2: parent does NOT match but children DO → keep parent + matching children
+      if (filteredChildren.length > 0) {
+        return { ...menu, children: filteredChildren };
+      }
+
+      // CASE 3: no match in parent or children → remove
+      return null;
+    })
+    .filter(Boolean);
+};
+
+
+/* -------------------------------------------------------------------
+   Check if any descendant link matches pathname
+-------------------------------------------------------------------- */
+const hasActiveChild = (menu, pathname) => {
+  if (!menu.children) return false;
+  return menu.children.some(
+    (child) =>
+      (child.link && (pathname === child.link || pathname.startsWith(child.link))) ||
+      hasActiveChild(child, pathname)
+  );
+};
+
+/* ----------------------------------------
+   Recursive Menu Item
+----------------------------------------- */
+const MenuItemComponent = ({ item, open, level = 0 }) => {
+  const [subOpen, setSubOpen] = useState(false);
   const location = useLocation();
-  const [submenuOpen, setSubmenuOpen] = useState({});
+  const pathname = location.pathname;
 
-  const handleClick = (id) => {
-    setSubmenuOpen((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  // Determine active states:
+  const isActive =
+    !!item.link &&
+    (pathname === item.link || pathname.startsWith(item.link)); // handles params like /bandi/123
+  const childIsActive = hasActiveChild(item, pathname);
+  const shouldOpen = childIsActive || subOpen;
 
-  const handleNavigate = (e, link) => {
-    if (e.ctrlKey) {
-      window.open(link, "_blank");
-    } else {
-      navigate(link);
+  // Auto-open when child is active
+  useEffect(() => {
+    if (childIsActive) setSubOpen(true);
+  }, [childIsActive]);
+
+  // Auto-scroll active item into view
+  const itemRef = useRef(null);
+  useEffect(() => {
+    if (isActive && itemRef.current) {
+      setTimeout(() => {
+        itemRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 200);
     }
-  };
+  }, [isActive]);
 
-  const renderMenu = (menu) => {
-    const hasChildren = menu.children && menu.children.length > 0;
-    const active = location.pathname === menu.link;
-
-    return (
-      <React.Fragment key={menu.id}>
-        <ListItemButton
-          sx={{
-            minHeight: 48,
-            justifyContent: open ? "initial" : "center",
-            px: 2.5,
-            backgroundColor: active ? theme.palette.primary.light : "inherit",
-            color: active ? theme.palette.primary.contrastText : "inherit",
-          }}
-          onClick={(e) => {
-            if (hasChildren) handleClick(menu.id);
-            else handleNavigate(e, menu.link);
-          }}
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: 0,
-              mr: open ? 3 : "auto",
-              justifyContent: "center",
-              color: active ? theme.palette.primary.contrastText : "inherit",
-            }}
-          >
-            {/* {getIcon(menu.icon)} */}
-          </ListItemIcon>
-          {open && <ListItemText primary={menu.title} />}
-          {open && hasChildren && (submenuOpen[menu.id] ? <ExpandLess /> : <ExpandMore />)}
-        </ListItemButton>
-
-        {hasChildren && (
-          <Collapse in={submenuOpen[menu.id]} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {menu.children.map((sub) => {
-                const subActive = location.pathname === sub.link;
-                return (
-                  <ListItemButton
-                    key={sub.id}
-                    sx={{
-                      pl: open ? 4 : 2,
-                      justifyContent: open ? "initial" : "center",
-                      backgroundColor: subActive ? theme.palette.secondary.light : "inherit",
-                      color: subActive ? theme.palette.secondary.contrastText : "inherit",
-                    }}
-                    onClick={(e) => handleNavigate(e, sub.link)}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: subActive ? theme.palette.secondary.contrastText : "inherit",
-                      }}
-                    >
-                      {/* {getIcon(sub.icon)} */}
-                    </ListItemIcon>
-                    {open && <ListItemText primary={sub.title} />}
-                  </ListItemButton>
-                );
-              })}
-            </List>
-          </Collapse>
-        )}
-      </React.Fragment>
-    );
-  };
+  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
 
   return (
-    <Drawer variant="permanent" open={open}>
-      <Divider />
-      <List>{menus.map(renderMenu)}</List>
-    </Drawer>
+    <>
+      <Tooltip title={!open ? item.title : ""} placement="right" arrow>
+        <ListItemButton
+          ref={itemRef}
+          component={item.link ? NavLink : "div"}
+          to={item.link || ""}
+          onClick={(e) => {
+            if (hasChildren) {
+              e.preventDefault(); // don't navigate if this item is only a parent (optional)
+              setSubOpen((s) => !s);
+            }
+          }}
+          sx={{
+            pl: 2 + level * 2,
+            margin: "4px 8px",
+            borderRadius: "8px",
+            minHeight: 48,
+            transition: "all 0.12s ease-in-out",
+            "&:hover": { background: "#f1f5ff" },
+            ...(isActive || childIsActive ? activeStyle : {}),
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          {/* Icon with active indicator even when collapsed */}
+          {/* <ListItemIcon sx={{ minWidth: 40, mr: open ? 1 : 0 }}>
+            {isActive ? (
+              <Box sx={iconActiveStyle}>
+                <span className="material-icons" style={{ fontSize: 18 }}>
+                  {item.icon || "menu"}
+                </span>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: 20 }}>
+                  {item.icon || "menu"}
+                </span>
+              </Box>
+            )}
+          </ListItemIcon> */}
+
+          {/* Title */}
+          {open ? (
+            <ListItemText
+              primary={item.title}
+              primaryTypographyProps={{
+                fontWeight: isActive || childIsActive ? 700 : 500,
+              }}
+            />
+          ) : null}
+
+          {/* Expand icon */}
+          {open && hasChildren && (
+            <ExpandMore
+              sx={{
+                transform: subOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "0.18s",
+                color: childIsActive ? "#1976d2" : "inherit",
+              }}
+            />
+          )}
+        </ListItemButton>
+      </Tooltip>
+
+      {/* Children */}
+      {hasChildren && (
+        <Collapse in={shouldOpen} timeout={200} unmountOnExit>
+          <List disablePadding>
+            {item.children.map((child) => (
+              <MenuItemComponent key={child.id} item={child} open={open} level={level + 1} />
+            ))}
+          </List>
+        </Collapse>
+      )}
+    </>
+  );
+};
+
+/* ----------------------------------------
+   MAIN COMPONENT — WITH SEARCH & FILTER
+----------------------------------------- */
+export default function MiniDrawer({ menus = [], open = true }) {
+  const [search, setSearch] = useState("");
+  const filteredMenus = filterMenus(menus, search);
+
+  return (
+    <StyledDrawer
+      variant="permanent"
+      sx={{
+        width: open ? drawerWidth : miniDrawerWidth,
+        "& .MuiDrawer-paper": { width: open ? drawerWidth : miniDrawerWidth },
+      }}
+    >
+      {/* SEARCH BAR - only visible when open */}
+      {open && (
+        <Box sx={{ p: 1, position: "sticky", top: 0, zIndex: 10, bgcolor: "#fafafa" }}>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Search menus..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              sx: { borderRadius: 1 },
+            }}
+          />
+          {search && (
+            <Typography variant="caption" sx={{ ml: 0.5, mt: 0.5, display: "block", color: "text.secondary" }}>
+              Showing results for “{search}”
+            </Typography>
+          )}
+        </Box>
+      )}
+
+      <List sx={{ pt: 1 }}>
+        {filteredMenus.length > 0 ? (
+          filteredMenus.map((menu) => <MenuItemComponent key={menu.id} item={menu} open={open} />)
+        ) : (
+          open && (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                No results found
+              </Typography>
+            </Box>
+          )
+        )}
+      </List>
+    </StyledDrawer>
   );
 }

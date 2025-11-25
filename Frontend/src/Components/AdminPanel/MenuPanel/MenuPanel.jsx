@@ -64,7 +64,7 @@ export default function MenuPanel() {
         Menu Management
       </Typography>
       <Paper sx={{ p: 2, mb: 3 }}>
-        <MenuForm roles={roles} editingMenu={editingMenu} onSubmit={handleFormSubmit} />
+        <MenuForm roles={roles} menus={menus} editingMenu={editingMenu} onSubmit={handleFormSubmit} />
       </Paper>
       <Paper sx={{ p: 2 }}>
         <MenuTree menus={menus} setMenus={setMenus} onEdit={handleEdit} onDelete={handleDelete} />

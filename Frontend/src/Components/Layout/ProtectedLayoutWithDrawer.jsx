@@ -26,107 +26,84 @@ import Swal from "sweetalert2";
 const drawerWidth = 5;
 const miniDrawerWidth = 5;
 
-const MainContent = styled( "main" )( ( { open, theme } ) => ( {
+// 🔥 FIX: Add paddingTop = AppBar height (64px)
+const MainContent = styled("main")(({ open, theme }) => ({
   flexGrow: 1,
-  padding: theme.spacing( 3 ),
+  padding: theme.spacing(3),
   transition: "all 0.3s ease",
   marginLeft: open ? drawerWidth : miniDrawerWidth,
-  marginTop: 64,
-} ) );
+  paddingTop: "68px",       // FIXED (AppBar = 64px, + spacing)
+}));
 
 export default function ProtectedLayoutWithDrawer() {
-  const { dispatch, state: authState } = useAuth();
-  const role = authState.role_name;
+  const { dispatch, state: authState } = useAuth();  
 
-  const [menus, setMenus] = useState( [] );
-  const [drawerOpen, setDrawerOpen] = useState( true );
+  const [menus, setMenus] = useState([]);
+  const [drawerOpen, setDrawerOpen] = useState(true);
 
-  const [user, setUser] = useState( null );          // NEW
-  const [anchorEl, setAnchorEl] = useState( null );  // For user menu
-  const openMenu = Boolean( anchorEl );
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openMenu = Boolean(anchorEl);
 
   const BASE_URL = useBaseURL();
   const navigate = useNavigate();
 
-  // Fetch menus
-  useEffect( () => {
+  useEffect(() => {
     async function fetchMenus() {
       try {
-        const res = await axios.get( `${ BASE_URL }/auth/get_menus`, {
+        const res = await axios.get(`${BASE_URL}/auth/get_menus`, {
           withCredentials: true,
-        } );
-        setMenus( res.data );
-      } catch ( err ) {
-        console.error( "Failed to fetch menus:", err );
+        });
+        setMenus(res.data);
+      } catch (err) {
+        console.error("Failed to fetch menus:", err);
       }
     }
     fetchMenus();
-  }, [] );
+  }, []);
 
-  // Fetch logged-in user's info
-  // useEffect(() => {
-  //   async function fetchUser() {
-  //     try {
-  //       const res = await axios.get(`${BASE_URL}/auth/me`, {
-  //         withCredentials: true,
-  //       });
-  //       setUser(res.data);
-  //     } catch (err) {
-  //       console.error("Failed to load user info:", err);
-  //     }
-  //   }
-  //   fetchUser();
-  // }, []);
+  const toggleDrawer = () => setDrawerOpen((prev) => !prev);
 
-  const toggleDrawer = () => setDrawerOpen( ( prev ) => !prev );
+  const handleUserMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
-  // Open user menu
-  const handleUserMenu = ( event ) => {
-    setAnchorEl( event.currentTarget );
-  };
-
-  // Close menu
-  const handleClose = () => setAnchorEl( null );
-
-  // Logout
   const handleLogout = async () => {
-
     try {
-      await axios.post( `${ BASE_URL }/auth/logout`, {}, { withCredentials: true } );
-      // Clear authentication state
-      dispatch( { type: 'LOGOUT' } );
-      localStorage.removeItem( 'token' );
-      navigate( '/login' );
-      Swal.fire( {
-        title: 'Logged Out',
-        text: 'You have been successfully logged out!',
-        icon: 'success',
+      await axios.post(`${BASE_URL}/auth/logout`, {}, { withCredentials: true });
+      dispatch({ type: "LOGOUT" });
+      localStorage.removeItem("token");
+      navigate("/login");
+
+      Swal.fire({
+        title: "Logged Out",
+        text: "You have been successfully logged out!",
+        icon: "success",
         timer: 1000,
         showConfirmButton: false,
-      } );
-    } catch ( error ) {
-      console.log( "Logout error:", error?.response?.data || error.message || error );
-      Swal.fire( {
-        title: 'Logout Failed',
-        text: error?.response?.data?.message || error.message || 'There was an issue logging out!',
-        icon: 'error',
-      } );
-    }
+      });
 
+    } catch (error) {
+      Swal.fire({
+        title: "Logout Failed",
+        text: error?.response?.data?.message || error.message,
+        icon: "error",
+      });
+    }
   };
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      <MiniDrawer menus={menus} open={drawerOpen} />
+      
+      {/* 🔥 FIX: drawer pushed under AppBar */}
+      <div style={{ marginTop: "64px" }}>
+        <MiniDrawer menus={menus} open={drawerOpen} />
+      </div>
 
       {/* RIGHT SIDE */}
       <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
 
         {/* TOPBAR */}
-        <AppBar position="fixed" color="primary" style={{ zIndex: 1300 }}>
+        <AppBar position="fixed" color="primary" sx={{ zIndex: 2000 }}>
           <Toolbar>
-
-            {/* Drawer toggle */}
             <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
@@ -135,26 +112,16 @@ export default function ProtectedLayoutWithDrawer() {
               PRISON MANAGEMENT INFORMATION SYSTEM (PMIS)
             </Typography>
 
-            {/* USER AVATAR + NAME */}
+            {/* USER AVATAR */}
             {authState && (
               <>
                 <IconButton onClick={handleUserMenu} color="inherit">
                   <Avatar sx={{ width: 32, height: 32 }}>
-                    {authState.username?.charAt( 0 ).toUpperCase()}
+                    {authState.username?.charAt(0).toUpperCase()}
                   </Avatar>
                 </IconButton>
 
-                {/* DROPDOWN MENU */}
-                <Menu
-                  anchorEl={anchorEl}
-                  open={openMenu}
-                  onClose={handleClose}
-                  onClick={handleClose}
-                  PaperProps={{
-                    elevation: 3,
-                    sx: { width: 220, mt: 1 },
-                  }}
-                >
+                <Menu anchorEl={anchorEl} open={openMenu} onClose={handleClose} PaperProps={{ elevation: 3, sx: { width: 220, mt: 1 } }}>
                   <MenuItem disabled>
                     <ListItemIcon>
                       <PersonIcon fontSize="small" />
@@ -184,6 +151,7 @@ export default function ProtectedLayoutWithDrawer() {
         <MainContent open={drawerOpen}>
           <Outlet />
         </MainContent>
+
       </div>
     </div>
   );

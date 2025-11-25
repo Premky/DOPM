@@ -7,7 +7,7 @@ import pool from "../utils/db3.js";
 export const getMenus = async (req, res) => {
   try {
     const [menus] = await pool.query(
-      "SELECT id, title, icon, link, parent_Id, order_no FROM menus ORDER BY order_no ASC"
+      "SELECT id, title, icon, link, parent_id, order_no FROM menus ORDER BY parent_id, order_no ASC"
     );
     const [menuRoles] = await pool.query(
       `SELECT mr.menu_id, r.role_name AS roleName
@@ -17,7 +17,7 @@ export const getMenus = async (req, res) => {
 
     const menusWithRoles = menus.map((menu) => ({
       ...menu,
-      roles: menuRoles.filter((mr) => mr.menuId === menu.id).map((r) => r.roleName),
+      roles: menuRoles.filter((mr) => mr.menu_id === menu.id).map((r) => r.roleName),
     }));
 
     res.json(menusWithRoles);
@@ -45,7 +45,7 @@ export const createMenu = async (req, res) => {
     for (let roleName of roles) {
       const [role] = await connection.query("SELECT id FROM user_roles WHERE role_name=?", [roleName]);
       if (role.length) {
-        await connection.query("INSERT INTO menu_roles (menu_id, role_id) VALUES (?, ?)", [menuId, role[0].id]);
+        await connection.query("INSERT INTO menus_role (menu_id, role_id) VALUES (?, ?)", [menuId, role[0].id]);
       }
     }
 
@@ -66,15 +66,15 @@ export const createMenu = async (req, res) => {
 
 export const updateMenu = async (req, res) => {
   const menuId = req.params.id;
-  const { title, icon, path, parentId, roles = [] } = req.body;
+  const { parent_id, title, icon, link, order_no, roles = [] } = req.body;
 
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
     await connection.query(
-      "UPDATE menus SET title=?, icon=?, link=?, parent_Id=? WHERE id=?",
-      [title, icon, path, parentId || null, menuId]
+      "UPDATE menus SET parent_id=?, title=?, icon=?, link=?, order_no=? WHERE id=?",
+      [parent_id || null, title, icon, link, order_no, menuId]
     );
 
     await connection.query("DELETE FROM menus_role WHERE menu_id=?", [menuId]);
@@ -105,7 +105,7 @@ export const deleteMenu = async (req, res) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    await connection.query("DELETE FROM menu_roles WHERE mudda_id=?", [menuId]);
+    await connection.query("DELETE FROM menus_role WHERE menu_id=?", [menuId]);
     await connection.query("DELETE FROM menus WHERE id=?", [menuId]);
     await connection.commit();
     res.json({ success: true });
