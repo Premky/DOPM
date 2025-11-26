@@ -12,10 +12,10 @@ export const getMenus = async (req, res) => {
     const [menus] = await pool.query(
       `SELECT m.id, m.title, m.icon, m.link, m.parent_id, m.order_no 
       FROM menus m 
-      LEFT JOIN menus_role mr ON m.id=mr.menu_id
       
       ORDER BY m.parent_id, m.order_no ASC`
     );
+    // LEFT JOIN menus_role mr ON m.id=mr.menu_id
     // ,[role_id]
     const [menuRoles] = await pool.query(
       `SELECT mr.menu_id, r.role_name AS roleName
