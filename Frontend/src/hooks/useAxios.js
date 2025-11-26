@@ -6,7 +6,7 @@ import { useBaseURL } from "../Context/BaseURLProvider";
 
 export const useAxios = () => {
   const BASE_URL = useBaseURL(); // get base URL dynamically
-  console.log(BASE_URL)
+  
   const api = useMemo(() => {
     const instance = axios.create({
       BASE_URL: BASE_URL.replace(/\/api\/?$/, "") || "http://localhost:3003",
