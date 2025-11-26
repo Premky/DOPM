@@ -22,8 +22,8 @@ import { employeRouter } from './routes/employeRoute.js';
 import { bandiRouter } from './routes/bandiRuoute.js';
 import { payroleRouter } from './routes/payroleRoute.js';
 import { bandiTransferRouter } from './routes/bandiTransferRoute.js';
-import { transliterateRouter} from './routes/transliterateRoute.js';
-import {xtraRouter} from './routes/xtraRoute.js';
+import { transliterateRouter } from './routes/transliterateRoute.js';
+import { xtraRouter } from './routes/xtraRoute.js';
 import { auditRouter } from './routes/auditRoute.js';
 import { menuRouter } from './routes/menuRoute.js';
 
@@ -152,7 +152,7 @@ const sessionStore = new MySQLStore( {
 const isProd = process.env.NODE_ENV === 'production';
 
 // IMPORTANT: trust proxy if behind Nginx/HTTPS
-if (isProd) app.set('trust proxy', 1);
+if ( isProd ) app.set( 'trust proxy', 1 );
 
 app.use( session( {
   secret: process.env.SESSION_SECRET,
@@ -176,7 +176,7 @@ app.use( '/uploads', express.static( path.join( __dirname, 'uploads' ) ) );
 app.use( express.static( 'Public' ) );
 
 // ------------------- 8️⃣ Routes -------------------
-app.use('/menu', menuRouter);
+app.use( '/menu', menuRouter );
 app.use( '/admin', adminRouter );
 app.use( '/auth', authRouter );
 app.use( '/public', publicRouter );
@@ -186,7 +186,7 @@ app.use( '/payrole', payroleRouter );
 app.use( '/bandiTransfer', bandiTransferRouter );
 app.use( '/transliterate', transliterateRouter );
 app.use( '/xtraRoute', xtraRouter );
-app.use('/audit', auditRouter);
+app.use( '/audit', auditRouter );
 
 // ------------------- 9️⃣ Error Handler -------------------
 app.use( errorHandler );
@@ -195,14 +195,14 @@ app.use( errorHandler );
 // app.listen( port, () => console.log( `🚀 Server running on port ${ port }` ) );
 const PORT = process.env.PORT || 3003;
 
-if (isProd) {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Backend running on https://pmis.dopm.gov.np:${PORT}`);
-  });
+if ( isProd ) {
+  app.listen( PORT, '0.0.0.0', () => {
+    console.log( `🚀 Backend running on https://pmis.dopm.gov.np:${ PORT }` );
+  } );
 } else {
-  app.listen(PORT, 'localhost', () => {
-    console.log(`🚀 Backend running on http://localhost:${PORT}`);
-  });
+  app.listen( PORT, 'localhost', () => {
+    console.log( `🚀 Backend running on http://localhost:${ PORT }` );
+  } );
 }
 
 // ------------------- 1️⃣1️⃣ Graceful Shutdown -------------------

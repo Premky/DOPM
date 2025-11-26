@@ -9,7 +9,7 @@ export const useAxios = () => {
 
   const api = useMemo(() => {
     const instance = axios.create({
-      baseURL: baseURL || "http://localhost:5000",
+      baseURL: baseURL || "http://localhost:3003",
       headers: {
         "Content-Type": "application/json",
       },
