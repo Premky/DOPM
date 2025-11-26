@@ -9,7 +9,7 @@ export const useAxios = () => {
   console.log(BASE_URL)
   const api = useMemo(() => {
     const instance = axios.create({
-      baseURL: baseURL.replace(/\/api\/?$/, "") || "http://localhost:3003",
+      baseURL: BASE_URL.replace(/\/api\/?$/, "") || "http://localhost:3003",
       headers: {
         "Content-Type": "application/json",
       },
