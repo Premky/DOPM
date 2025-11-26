@@ -120,6 +120,7 @@ function App() {
                 {/* Payrole */}
                 <Route path="parole" element={<Outlet />}>
                   <Route index element={<PayroleMakebari />} />
+                  <Route path="maskebari" element={<PayroleMakebari />} />
                   <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                   <Route path="create_previous_parole" element={<PreviousParoleForm status='under_parole' />} />
                   <Route path="create_payrole" element={<PayroleForm />} />
