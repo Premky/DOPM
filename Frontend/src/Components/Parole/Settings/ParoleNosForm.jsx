@@ -112,7 +112,7 @@ const PayroleNosForm = ( { status } ) => {
     }
   };
   const selectedDistrictId = watch( 'recommended_district' );
-  const {records:paroleNos, loading:paroleNosLoading}=useFetchParoleNos();
+  const { records: paroleNos, loading: paroleNosLoading } = useFetchParoleNos();
   const { records: payroleBandi, optrecords: payroleBandiOpt, loading: payroleBandiLoading } = useFetchBandi();
   const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
@@ -141,19 +141,9 @@ const PayroleNosForm = ( { status } ) => {
           </TableBody>
         </Table>
         <form onSubmit={handleSubmit( onFormSubmit )}>
-          <Grid container spacing={1}>
+          <Grid container spacing={1} mt={1}>
             <Grid size={12}>
               कारागार कार्यालयको नामः
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <ReuseSelect
-                name='bandi_id'
-                label='बन्दी'
-                required={true}
-                control={control}
-                options={payroleBandiOpt}
-                error={errors.bandi_id}
-              />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReusePayroleNos
@@ -224,18 +214,8 @@ const PayroleNosForm = ( { status } ) => {
                 office_categories_id={3}
               />
             </Grid>
-
-            {/* <Grid size={{ xs: 12, sm: 6, md: 3 }} >
-              <ReuseMudda
-                name='mudda_id'
-                label='मुददा'
-                required={true}
-                control={control}
-                error={errors.mudda_id}
-              />
-            </Grid> */}
-
           </Grid>
+
           <Grid container spacing={2}>
             {bandi?.payrole_id ?
               <>

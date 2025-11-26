@@ -58,7 +58,7 @@ const hardOrigins = [
   'http://pmis.dopm.gov.np', 'https://pmis.dopm.gov.np', 'https://www.pmis.dopm.gov.np',
   'http://202.45.146.226', 'http://202.45.146.226:5173',
   'http://10.5.60.151', 'http://10.5.60.151:5173',
-  'http://192.168.18.211:5173', 'http://192.168.18.17:5173'
+  'http://192.168.18.61:5173', 'http://192.168.110.140:5173'
 ];
 
 
@@ -204,7 +204,6 @@ if (isProd) {
     console.log(`🚀 Backend running on http://localhost:${PORT}`);
   });
 }
-
 
 // ------------------- 1️⃣1️⃣ Graceful Shutdown -------------------
 process.on( 'SIGINT', async () => {

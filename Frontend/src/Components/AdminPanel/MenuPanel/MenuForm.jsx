@@ -9,11 +9,13 @@ import {
   Select,
 } from "@mui/material";
 import RoleSelect from "./RoleSelect";
-import axios from "axios";
+// import axios from "axios";
+import {useAxios} from "./../../../hooks/useAxios.js";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
 export default function MenuForm({ roles = [], menus = [], editingMenu, onSubmit }) {
   const BASE_URL = useBaseURL();
+  const axios = useAxios();
 
   const [parent_id, setParent_id] = useState("");
   const [title, setTitle] = useState("");

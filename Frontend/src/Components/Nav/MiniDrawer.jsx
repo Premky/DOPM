@@ -22,9 +22,9 @@ const drawerWidth = 201;
 const miniDrawerWidth = 0;
 
 /* ----------------------------------------
-   Styled Drawer
+  Styled Drawer
 ----------------------------------------- */
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
+const StyledDrawer = styled( Drawer )( ( { theme } ) => ( {
   "& .MuiDrawer-paper": {
     top: "64px",
     height: "calc(100% - 64px)",
@@ -33,10 +33,10 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
     overflowX: "hidden",
     transition: "width 0.25s ease-in-out",
   },
-}));
+} ) );
 
 /* ----------------------------------------
-   Styles used when active
+  Styles used when active
 ----------------------------------------- */
 const activeStyle = {
   background: "#e8f1ff",
@@ -55,82 +55,97 @@ const iconActiveStyle = {
 };
 
 /* -------------------------------------------------------------------
-   Filter menus recursively (search both parent & children)
+  Filter menus recursively (search both parent & children)
 -------------------------------------------------------------------- */
-const filterMenus = (menus, query) => {
-  if (!query) return menus;
+const filterMenus = ( menus, query ) => {
+  if ( !query ) return menus;
   const q = query.toLowerCase();
 
   return menus
-    .map((menu) => {
-      const matchesSelf = menu.title?.toLowerCase().includes(q);
+    .map( ( menu ) => {
+      const matchesSelf = menu.title?.toLowerCase().includes( q );
 
-      const children = Array.isArray(menu.children) ? menu.children : [];
+      const children = Array.isArray( menu.children ) ? menu.children : [];
 
       // Recursively search children
-      const filteredChildren = filterMenus(children, query);
+      const filteredChildren = filterMenus( children, query );
 
       // CASE 1: parent matches → keep it with ALL filtered children
-      if (matchesSelf) {
+      if ( matchesSelf ) {
         return { ...menu, children: filteredChildren };
       }
 
       // CASE 2: parent does NOT match but children DO → keep parent + matching children
-      if (filteredChildren.length > 0) {
+      if ( filteredChildren.length > 0 ) {
         return { ...menu, children: filteredChildren };
       }
 
       // CASE 3: no match in parent or children → remove
       return null;
-    })
-    .filter(Boolean);
+    } )
+    .filter( Boolean );
 };
 
 
 /* -------------------------------------------------------------------
-   Check if any descendant link matches pathname
+  Check if any descendant link matches pathname
 -------------------------------------------------------------------- */
-const hasActiveChild = (menu, pathname) => {
-  if (!menu.children) return false;
-  return menu.children.some(
-    (child) =>
-      (child.link && (pathname === child.link || pathname.startsWith(child.link))) ||
-      hasActiveChild(child, pathname)
-  );
+const hasActiveChild = ( item, pathname ) => {
+  if ( !item.children ) return false;
+
+  return item.children.some( ( child ) => {
+    const childLink = child.link
+      ? child.link.startsWith( "/" ) ? child.link : "/" + child.link
+      : "";
+
+    const directMatch =
+      childLink && ( pathname === childLink || pathname.startsWith( childLink ) );
+
+    return (
+      directMatch ||
+      hasActiveChild( child, pathname ) // check deeper levels
+    );
+  } );
 };
 
+
 /* ----------------------------------------
-   Recursive Menu Item
+  Recursive Menu Item
 ----------------------------------------- */
-const MenuItemComponent = ({ item, open, level = 0 }) => {
-  const [subOpen, setSubOpen] = useState(false);
+const MenuItemComponent = ( { item, open, level = 0 } ) => {
+  const [subOpen, setSubOpen] = useState( false );
+  const [userCollapsed, setUserCollapsed] = useState( false );
+
   const location = useLocation();
   const pathname = location.pathname;
-  const menuLink = '/'+item.link;
-  
+  const menuLink = item.link ? ( item.link.startsWith( "/" ) ? item.link : "/" + item.link ) : "";
+
   // Determine active states:
   const isActive =
     !!menuLink &&
-    (pathname === menuLink || pathname.startsWith(menuLink)); // handles params like /bandi/123
-  const childIsActive = hasActiveChild(item, pathname);
-  const shouldOpen = childIsActive || subOpen;
+    ( pathname === menuLink || pathname.startsWith( menuLink ) ); // handles params like /bandi/123
+  const childIsActive = hasActiveChild( item, pathname );
+  // const shouldOpen = childIsActive || subOpen;
+  const shouldOpen = userCollapsed ? subOpen : ( childIsActive || subOpen );
 
   // Auto-open when child is active
-  useEffect(() => {
-    if (childIsActive) setSubOpen(true);
-  }, [childIsActive]);
+  useEffect( () => {
+    if ( childIsActive && !userCollapsed ) {
+      setSubOpen( true );
+    }
+  }, [childIsActive, userCollapsed] );
 
   // Auto-scroll active item into view
-  const itemRef = useRef(null);
-  useEffect(() => {
-    if (isActive && itemRef.current) {
-      setTimeout(() => {
-        itemRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 200);
+  const itemRef = useRef( null );
+  useEffect( () => {
+    if ( isActive && itemRef.current ) {
+      setTimeout( () => {
+        itemRef.current.scrollIntoView( { behavior: "smooth", block: "center" } );
+      }, 200 );
     }
-  }, [isActive]);
+  }, [isActive] );
 
-  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+  const hasChildren = Array.isArray( item.children ) && item.children.length > 0;
 
   return (
     <>
@@ -139,10 +154,19 @@ const MenuItemComponent = ({ item, open, level = 0 }) => {
           ref={itemRef}
           component={item.link ? NavLink : "div"}
           to={item.link || ""}
-          onClick={(e) => {
-            if (hasChildren) {
-              e.preventDefault(); // don't navigate if this item is only a parent (optional)
-              setSubOpen((s) => !s);
+          onClick={( e ) => {
+            if ( hasChildren ) {
+              e.preventDefault();
+
+              const nextState = !subOpen;
+              setSubOpen( nextState );
+
+              //Track user manual collapse and expand
+              if ( childIsActive ) {
+                // setUserCollapsed(!nextState); //Mark collapsed if closing
+                if ( !nextState ) setUserCollapsed( true );   // collapsed manually
+                else setUserCollapsed( false );
+              }
             }
           }}
           sx={{
@@ -152,7 +176,7 @@ const MenuItemComponent = ({ item, open, level = 0 }) => {
             minHeight: 48,
             transition: "all 0.12s ease-in-out",
             "&:hover": { background: "#f1f5ff" },
-            ...(isActive || childIsActive ? activeStyle : {}),
+            ...( isActive || childIsActive ? activeStyle : {} ),
             display: "flex",
             alignItems: "center",
             gap: 1,
@@ -162,28 +186,28 @@ const MenuItemComponent = ({ item, open, level = 0 }) => {
         >
           {/* Icon with active indicator even when collapsed */}
           {/* <ListItemIcon sx={{ minWidth: 40, mr: open ? 1 : 0 }}>
-            {isActive ? (
-              <Box sx={iconActiveStyle}>
-                <span className="material-icons" style={{ fontSize: 18 }}>
-                  {item.icon || "menu"}
-                </span>
-              </Box>
-            ) : (
-              <Box
-                sx={{
-                  width: 36,
-                  height: 36,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <span className="material-icons" style={{ fontSize: 20 }}>
-                  {item.icon || "menu"}
-                </span>
-              </Box>
-            )}
-          </ListItemIcon> */}
+              {isActive ? (
+                <Box sx={iconActiveStyle}>
+                  <span className="material-icons" style={{ fontSize: 18 }}>
+                    {item.icon || "menu"}
+                  </span>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <span className="material-icons" style={{ fontSize: 20 }}>
+                    {item.icon || "menu"}
+                  </span>
+                </Box>
+              )}
+            </ListItemIcon> */}
 
           {/* Title */}
           {open ? (
@@ -212,9 +236,9 @@ const MenuItemComponent = ({ item, open, level = 0 }) => {
       {hasChildren && (
         <Collapse in={shouldOpen} timeout={200} unmountOnExit>
           <List disablePadding>
-            {item.children.map((child) => (
+            {item.children.map( ( child ) => (
               <MenuItemComponent key={child.id} item={child} open={open} level={level + 1} />
-            ))}
+            ) )}
           </List>
         </Collapse>
       )}
@@ -223,11 +247,11 @@ const MenuItemComponent = ({ item, open, level = 0 }) => {
 };
 
 /* ----------------------------------------
-   MAIN COMPONENT — WITH SEARCH & FILTER
+  MAIN COMPONENT — WITH SEARCH & FILTER
 ----------------------------------------- */
-export default function MiniDrawer({ menus = [], open = true }) {
-  const [search, setSearch] = useState("");
-  const filteredMenus = filterMenus(menus, search);
+export default function MiniDrawer( { menus = [], open = true } ) {
+  const [search, setSearch] = useState( "" );
+  const filteredMenus = filterMenus( menus, search );
 
   return (
     <StyledDrawer
@@ -245,7 +269,7 @@ export default function MiniDrawer({ menus = [], open = true }) {
             fullWidth
             placeholder="Search menus..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={( e ) => setSearch( e.target.value )}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -265,7 +289,7 @@ export default function MiniDrawer({ menus = [], open = true }) {
 
       <List sx={{ pt: 1 }}>
         {filteredMenus.length > 0 ? (
-          filteredMenus.map((menu) => <MenuItemComponent key={menu.id} item={menu} open={open} />)
+          filteredMenus.map( ( menu ) => <MenuItemComponent key={menu.id} item={menu} open={open} /> )
         ) : (
           open && (
             <Box sx={{ p: 2 }}>

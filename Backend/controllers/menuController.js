@@ -5,14 +5,22 @@ import pool from "../utils/db3.js";
 // Fetch menus with roles
 // ---------------------
 export const getMenus = async (req, res) => {
+  const user_id = req.user?.id;
+  const role_id = req.user?.role_id;
+
   try {
     const [menus] = await pool.query(
-      "SELECT id, title, icon, link, parent_id, order_no FROM menus ORDER BY parent_id, order_no ASC"
+      `SELECT m.id, m.title, m.icon, m.link, m.parent_id, m.order_no 
+      FROM menus m 
+      LEFT JOIN menus_role mr ON m.id=mr.menu_id
+      WHERE mr.role_id=?
+      ORDER BY m.parent_id, m.order_no ASC`,[role_id]
     );
     const [menuRoles] = await pool.query(
       `SELECT mr.menu_id, r.role_name AS roleName
        FROM menus_role mr
-       JOIN user_roles r ON mr.role_id = r.id`
+       JOIN user_roles r ON mr.role_id = r.id
+       WHERE mr.role_id=?`,[role_id]
     );
 
     const menusWithRoles = menus.map((menu) => ({

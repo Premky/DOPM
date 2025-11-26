@@ -58,11 +58,10 @@ router.get( '/get_parole_nos/', async ( req, res ) => {
         }
         return res.json( { Status: true, Result: result } );
     } );
-
 } );
+
 router.get( '/get_character_conditions', async ( req, res ) => {
     const sql = `SELECT * FROM character_conditions`;
-
     try {
         const [result] = await pool.query( sql );
 
@@ -72,7 +71,6 @@ router.get( '/get_character_conditions', async ( req, res ) => {
                 Error: "No character conditions found",
             } );
         }
-
         return res.json( {
             Status: true,
             Result: result,

@@ -11,14 +11,15 @@ import {
   reorderMenus,
   getRoles
 } from "../controllers/menuController.js";
+import { verifyRole } from "../middlewares/verifyRole.js";
 
 // Menus
-router.get("/get_menus", getMenus);
-router.get("/roles", getRoles);
-router.post("/menus", createMenu);
-router.put("/menus/:id", updateMenu);
-router.delete("/menus/:id", deleteMenu);
-router.post("/menus/reorder", reorderMenus);
+router.get("/get_menus", verifyToken, verifyRole('superadmin','admin', 'clerk'),  getMenus);
+router.get("/roles", verifyToken, verifyRole('superadmin','admin', 'clerk'), getRoles);
+router.post("/menus", verifyToken, verifyRole('superadmin','admin'), createMenu);
+router.put("/menus/:id", verifyToken, verifyRole('superadmin','admin'), updateMenu);
+router.delete("/menus/:id", verifyToken, verifyRole('superadmin','admin'), deleteMenu);
+router.post("/menus/reorder", verifyToken, verifyRole('superadmin','admin'), reorderMenus);
 
 // Roles
 router.get("/roles", getRoles);

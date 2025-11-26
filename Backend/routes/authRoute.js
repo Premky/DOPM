@@ -252,12 +252,15 @@ router.post( '/login', authLimiter, async ( req, res ) => {
 } );
 
 // GET /auth/get_menus
-router.get("/get_menus", async (req, res) => {
+router.get("/get_menus", verifyToken, async (req, res) => {
+  const role_id = req.user?.role_id;
   try {
     const [rows] = await pool.query(
-      `SELECT id, title, link, icon, parent_id 
-       FROM menus 
-       ORDER BY parent_id, \`order_no\` ASC`
+      `SELECT m.id, m.title, m.link, m.icon, m.parent_id 
+       FROM menus m
+       JOIN menus_role mr ON m.id=mr.menu_id
+       WHERE mr.role_id=?
+       ORDER BY m.parent_id, m.order_no ASC`,[role_id]
     );
 
     // Convert flat list to nested structure
