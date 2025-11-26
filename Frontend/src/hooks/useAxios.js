@@ -5,11 +5,11 @@ import Swal from "sweetalert2";
 import { useBaseURL } from "../Context/BaseURLProvider";
 
 export const useAxios = () => {
-  const baseURL = useBaseURL(); // get base URL dynamically
-
+  const BASE_URL = useBaseURL(); // get base URL dynamically
+  console.log(BASE_URL)
   const api = useMemo(() => {
     const instance = axios.create({
-      baseURL: baseURL || "http://localhost:3003",
+      baseURL: BASE_URL,
       headers: {
         "Content-Type": "application/json",
       },
