@@ -47,8 +47,10 @@ export const createMenu = async (req, res) => {
     const [result] = await connection.query(
       "INSERT INTO menus (parent_id, title, icon, link, order_no ) VALUES (?, ?, ?, ?, ?)",
       [parent_id || null, title, icon, link, order_no]
-    );
+    );    
     const menuId = result.insertId;
+    
+    console.log(`Menu Inserted with ID:`, menuId);
 
     for (let roleName of roles) {
       const [role] = await connection.query("SELECT id FROM user_roles WHERE role_name=?", [roleName]);
