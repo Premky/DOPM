@@ -39,14 +39,14 @@ export const getMenus = async (req, res) => {
 // Create menu
 // ---------------------
 export const createMenu = async (req, res) => {
-  const { title, icon, path, parentId, roles = [] } = req.body;
+  const { parent_id, title, icon, link, order_no, roles = [] } = req.body;
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
     const [result] = await connection.query(
-      "INSERT INTO menus (title, icon, link, parent_Id) VALUES (?, ?, ?, ?)",
-      [title, icon, path, parentId || null]
+      "INSERT INTO menus (parent_id, title, icon, link, order_no ) VALUES (?, ?, ?, ?, ?)",
+      [parent_id || null, title, icon, link, order_no]
     );
     const menuId = result.insertId;
 
@@ -56,7 +56,6 @@ export const createMenu = async (req, res) => {
         await connection.query("INSERT INTO menus_role (menu_id, role_id) VALUES (?, ?)", [menuId, role[0].id]);
       }
     }
-
     await connection.commit();
     res.json({ success: true, id: menuId });
   } catch (err) {
