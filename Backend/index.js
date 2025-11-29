@@ -26,6 +26,7 @@ import { transliterateRouter } from './routes/transliterateRoute.js';
 import { xtraRouter } from './routes/xtraRoute.js';
 import { auditRouter } from './routes/auditRoute.js';
 import { menuRouter } from './routes/menuRoute.js';
+import { permissionRouter } from './routes/permissionRoute.js';
 
 dotenv.config();
 
@@ -186,8 +187,9 @@ app.use( '/payrole', payroleRouter );
 app.use( '/parole', payroleRouter );
 app.use( '/bandiTransfer', bandiTransferRouter );
 app.use( '/transliterate', transliterateRouter );
-app.use( '/xtraRoute', xtraRouter );
 app.use( '/audit', auditRouter );
+app.use( '/permission', permissionRouter );
+app.use( '/xtraRoute', xtraRouter );
 
 // ------------------- 9️⃣ Error Handler -------------------
 app.use( errorHandler );

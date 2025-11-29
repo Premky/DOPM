@@ -67,16 +67,7 @@ const fy_date = fy + '-04-01';
 
 import { bs2ad } from '../utils/bs2ad.js';
 import * as paroleController from '../controllers/paroleController.js';
-// console.log(current_date);
-// console.log(fy_date)
-
-const query = promisify( con.query ).bind( con );
-
-// Convert BS to AD
-// const adDate = bs.toGregorian('2081-03-01'); // Output: { year: 2024, month: 6, day: 14 }
-
-// English to Nepali date conversion
-const [npYear, npMonth, npDay] = dateConverter.englishToNepali( 2023, 5, 27 );
+import { verifyPermission } from '../middlewares/verifyPermissions.js';
 
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
@@ -99,8 +90,12 @@ async function calculateAge( birthDateBS ) {
 }
 
 // router.get("/get_parole_nos", verifyToken, paroleController.getParoleNos);
-router.get( "/get_parole_nos", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.getParoleNos );
-router.post( "/create_parole_nos", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.createParoleNos );
+//With VerifyRole 
+// router.get( "/get_parole_nos", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.getParoleNos );
+
+// With VerifyPermissions
+router.post( "/create_parole_nos", verifyToken, verifyPermission("parole_nos", "create"), paroleController.createParoleNos );
+router.get( "/get_parole_nos", verifyToken, verifyPermission("parole_nos", "read"), paroleController.getParoleNos );
 router.put( "/update_parole_nos/:id", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.updateParoleNos );
 router.delete("/delete_parole_nos/:id", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.deleteParoleNos);
 

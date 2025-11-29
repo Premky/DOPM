@@ -50,6 +50,7 @@ import BandiTransferTable from './Components/BandiTransfer/Tables/BandiTransferT
 import TransliterateExcel from './Components/Transliteration/TransliterateExcel';
 
 import MenuPanel from './Components/AdminPanel/MenuPanel/MenuPanel';
+import PermissionsPage from './Pages/Audit/Admin/PermissionsPage';
 
 // Axios interceptor for 401
 axios.interceptors.response.use(
@@ -87,6 +88,8 @@ function App() {
                     <Route path="create_user" element={<CreateUser />} />
                     <Route path="branch" element={<OfficeBranchPage />} />
                     <Route path="office" element={<Office />} />
+
+                    <Route path='manage_permissions' element={<PermissionsPage/>}/>
                   </Route>
                 {/* </Route> */}
 
