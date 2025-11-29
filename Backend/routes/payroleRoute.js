@@ -13,6 +13,7 @@ import dateConverter from 'nepali-datetime/dateConverter';
 
 import { calculateBSDate } from '../utils/dateCalculator.js';
 import verifyToken from '../middlewares/verifyToken.js';
+// import verifyRole from '../middelwares/verifyRole.js';
 
 const userBasedStatusMap1 = {
     clerk: [1, 2],
@@ -64,6 +65,7 @@ const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
 const fy_date = fy + '-04-01';
 
 import { bs2ad } from '../utils/bs2ad.js';
+import * as paroleController from '../controllers/paroleController.js';
 // console.log(current_date);
 // console.log(fy_date)
 
@@ -95,6 +97,11 @@ async function calculateAge( birthDateBS ) {
     return age;
 }
 
+// router.get("/get_parole_nos", verifyToken, paroleController.getParoleNos);
+router.get( "/get_parole_nos", verifyToken, paroleController.getParoleNos );
+router.post( "/create_parole_nos", verifyToken, paroleController.createParoleNos );
+router.put( "/update_parole_nos", verifyToken, paroleController.updateParoleNos );
+// router.delete("/delete_parole_nos", verifyToken, paroleController.deleteParoleNos);
 
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

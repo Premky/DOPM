@@ -183,6 +183,7 @@ app.use( '/public', publicRouter );
 app.use( '/emp', employeRouter );
 app.use( '/bandi', bandiRouter );
 app.use( '/payrole', payroleRouter );
+app.use( '/parole', payroleRouter );
 app.use( '/bandiTransfer', bandiTransferRouter );
 app.use( '/transliterate', transliterateRouter );
 app.use( '/xtraRoute', xtraRouter );

@@ -1,106 +1,54 @@
-import pool from "../utils/db3";
-import con from "../utils/db";
+import { bs2ad } from "../utils/bs2ad.js";
+import pool from "../utils/db3.js";
 
-export const fetchPayroles = async(user, query)=>{
-    const {office_id:active_office, role_name:userRole}=user;
-    const{
-        searchOffice=0,
-        nationality=0, 
-        serchpayroleStatus=1, 
-        searchpayrole_rakhan_upayukat=0, 
-        searchpayrole_no_id=0,
-        searchmudda_id=0,
-        searchbandi_name='',
-        searchchecked=0,
-        searchis_checked='',
-        searchcourt_decision='',
-        page=0,
-        limit=25,
-    } = query;
-    const offset = page*limit;
-    let baseWhere = `WHERE 1=1`;
-    const params = [];
+export const getParoleNos = async ( data, active_user ) => {
+    const sql =`SELECT * FROM payrole_nos`;
+    const [result] = await pool.query(sql);
+    return {result};
+};
 
-    // ✅ Role-based status filtering logic
-    const roleMap = await getUserBasedStatusMap();
-    let allowedStatuses = roleMap[userRole] ?? [];
-    if(allowedStatuses === 'all'){
-        const [allStatuses] = await pool.query('SELECT id FROM payrole_status');
-        allowedStatuses = allStatuses.map((s)=>s.id);
-    }
+export const createParoleNos = async ( data, active_user ) => {
+    //Conversion of Dates:
+    const parole_calculation_date_ad = data.payrole_calculation_date ? await bs2ad( data.payrole_calculation_date ) : null;
+    const parole_decision_date_ad = data.payrole_decision_date ? await bs2ad( data.payrole_decision_date ) : null;
+    const parole_granted_letter_date_ad = data.parole_granted_letter_date ? await bs2ad( data.parole_granted_letter_date ) : null;
 
-    // ✅ Apply Filters 
-    if(searchedStatusKey){
-        const status = Number(searchedStatusKey.id);
-        if(allowedStatuses==='all' || allowedStatuses.includes(status)){
-            baseWhere +=`AND p.status=?`;
-            params.push(status);
-        }else{
-            console.log(`You are not authorized to view payroles with status ${ status }`)
-        }
-    }else{
-        if(allowedStatuses!=='all'){
-            const placeholders=allowedStatuses.map(()=>'?').join(',');
-            baseWhere += `AND p.status IN (${placeholders})`;
-            params.push(...allowedStatuses);
-        }
-    }
+    const sql = `
+        INSERT INTO payrole_nos(
+                payrole_no_name, payrole_calculation_date, parole_calculation_date_ad, payrole_decision_date, parole_decision_date_ad,
+                parole_granted_letter_no, parole_granted_letter_date, parole_granted_letter_date_ad, parole_no_bandi_granted, is_active,
+                created_by, created_at, updated_by, updated_at
+                ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        `;
+    const params = [
+        data.payrole_no_name, data.payrole_calculation_date, parole_calculation_date_ad, data.payrole_decision_date, parole_decision_date_ad,
+        data.parole_granted_letter_no, data.parole_granted_letter_date, parole_granted_letter_date_ad, data.parole_no_bandi_granted, data.is_active,
+        active_user, data.created_at || new Date(), active_user, data.updated_at || new Date()
+    ];
 
-    if(searchmudda_id){
-        const escapedGroupId = con.escape(searchmudda_id);
-        baseWhere += `AND bp.id IN (
-                        SELECT bmd.bandi_id 
-                        FROM bandi_mudda_details bmd
-                        LEFT JOIN muddas m ON bmd.mudda_id = m.id
-                        WHERE m.muddas_group_id = ${escapedGroupId})`;
-    }
+    const [result] = await pool.query( sql, params );
+    return { id: result.insertId, ...data };
+};
 
-    if(searchpayrole_no_id) {
-        baseWhere +=`AND p.payrole_no_id=?`;
-        params.push(searchpayrole_no_id);
-    }
+export const updateParoleNos = async ( data, active_user ) => {
+    //Conversion of Dates:
+    const parole_calculation_date_ad = data.payrole_calculation_date ? await bs2ad( data.payrole_calculation_date ) : null;
+    const parole_decision_date_ad = data.payrole_decision_date ? await bs2ad( data.payrole_decision_date ) : null;
+    const parole_granted_letter_date_ad = data.parole_granted_letter_date ? await bs2ad( data.parole_granted_letter_date ) : null;
 
-    if(active_office==1 || active_office==2){
-        if(searchOffice && searchOffice!=='0'){
-            baseWhere += `AND bp.current_office_id=?`;
-            params.push(searchOffice);
-        }else if(active_office!==1 && active_office!==2){
-            baseWhere += `AND bp.current_office_id=?`;
-            params.push(active_office);
-        }
-    }else{
-        baseWhere += `AND bp.current_office_id=?`;
-        params.push(active_office);
-    }
+    const sql = `
+        UPDATE parole_nos SET
+                payrole_no_name=?, payrole_calculation_date=?, parole_calculation_date_ad=?, payrole_decision_date=?, parole_decision_date_ad=?,
+                parole_granted_letter_no=?, parole_granted_letter_date=?, parole_granted_letter_date_ad=?, parole_no_bandi_granted=?, is_active=?,
+                created_by=?, created_at=?, updated_by=?, updated_at=?
+        `;
 
-    if(nationality !== undefined && nationality!==''){
-        baseWhere +=`AND TRIM(nationality) LIKE CONCAT('%', ?, '%')`;
-        params.push(nationality);
-    }
+    const params = [
+        data.payrole_no_name, data.payrole_calculation_date, parole_calculation_date_ad, data.payrole_decision_date, parole_decision_date_ad,
+        data.parole_granted_letter_no, data.parole_granted_letter_date, parole_granted_letter_date_ad, data.parole_no_bandi_granted, data.is_active,
+        active_user, data.created_at || new Date(), active_user, data.updated_at || new Date()
+    ];
 
-    if(searchpayrole_rakhan_upayukat){
-        baseWhere += `AND p.pyarole_rakhan_upayukat=?`;
-        params.push(searchpayrole_rakhan_upayukat);
-    }
-
-    if(searchcourt_decision){
-        baseWhere += `AND pd.payrole_result=?`;
-        params.push(searchcourt_decision);
-    }
-
-    if(searchis_checked){
-        baseWhere +=`AND p.is_checked=?`;
-        params.push(searchis_checked);
-    }
-
-    if(searchbandi_name){
-        baseWhere +=`AND bp.bandi_name LIKE ?`;
-        params.push(`%${searchbandi_name}`);
-    }
-    try{
-        //Step 1: Get matching bandi IDs
-
-    }catch{
-        
-    }
-}
+    const [result] = await pool.query( sql, params );
+    return { id: result.insertId, ...data };
+};

@@ -46,7 +46,7 @@ router.get( '/get_all_punarabedan_offices', async ( req, res ) => {
     }
 } );
 
-router.get( '/get_parole_nos/', async ( req, res ) => {
+router.get( '/get_parole_nos१/', async ( req, res ) => {
     const { id } = req.params;
     const sql = `SELECT * FROM payrole_nos`;
 
@@ -58,6 +58,29 @@ router.get( '/get_parole_nos/', async ( req, res ) => {
         }
         return res.json( { Status: true, Result: result } );
     } );
+} );
+
+router.get( '/get_parole_nos', async ( req, res ) => {
+    const sql = `SELECT * FROM payrole_nos`;
+    try {
+        const [result] = await pool.query( sql );
+        if ( result.length === 0 ) {
+            return res.json( {
+                Status: false,
+                Error: "No parole found",
+            } );
+        }
+        return res.json( {
+            Status: true,
+            Result: result,
+        } );
+    } catch ( err ) {
+        console.error( "Query Error:", err );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: "Query Error",
+        } );
+    }
 } );
 
 router.get( '/get_character_conditions', async ( req, res ) => {
