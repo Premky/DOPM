@@ -8,7 +8,7 @@ export const useModuleAPI = () => {
   const getModules = async () => {
     try {
       const response = await axiosInstance.get("/permission/modules",{withCredentials:true});
-      console.log(response.data.result.result)
+    //   console.log(response.data.result.result)
       return response.data.result.result;
     } catch (error) {
       console.error("Error fetching modules:", error);
