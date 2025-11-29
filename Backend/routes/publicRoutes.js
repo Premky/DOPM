@@ -61,7 +61,9 @@ router.get( '/get_parole_nos१/', async ( req, res ) => {
 } );
 
 router.get( '/get_parole_nos', async ( req, res ) => {
-    const sql = `SELECT * FROM payrole_nos`;
+    const sql = `SELECT pnos.*,
+                (SELECT SUM(parole_no_bandi_granted) FROM payrole_nos) AS total_granted
+                 FROM payrole_nos pnos`;
     try {
         const [result] = await pool.query( sql );
         if ( result.length === 0 ) {
@@ -70,6 +72,7 @@ router.get( '/get_parole_nos', async ( req, res ) => {
                 Error: "No parole found",
             } );
         }
+        // console.log(result)
         return res.json( {
             Status: true,
             Result: result,
@@ -590,12 +593,12 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
 
     let sql;
-    let params=[];
+    let params = [];
     let officeFilterSql;
     if ( active_office !== 1 && active_office !== 2 ) {
         params.push( active_office );
         officeFilterSql = 'AND o.id = ?';
-    } 
+    }
     // else if ( active_office ) {
     //     params.push( active_office );
     //     officeFilterSql = 'AND o.id = ?';
@@ -606,7 +609,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
        JOIN offices o ON pb.prison_id = o.id
        WHERE 1=1 ${ officeFilterSql }`;
     try {
-        const [result]=await pool.query(sql, [params])
+        const [result] = await pool.query( sql, [params] );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );

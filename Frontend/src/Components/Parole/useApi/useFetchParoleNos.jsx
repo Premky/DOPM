@@ -10,44 +10,44 @@ const useFetchParoleNos = ( bandi_id ) => {
     const [optrecords, setOptRecords] = useState( [] );
     const [loading, setLoading] = useState( true );
 
-    useEffect( () => {
-        const fetchRecords = async () => {
-            try {
 
-                const response = await axios.get( `${ BASE_URL }/public/get_parole_nos/`,
-                    {
-                        withCredentials: true
-                    } );
-                // console.log( response );
-                const { Status, Result, Error } = response.data;
-                if ( Status ) {
-                    if ( Status && Result && typeof Result === 'object' ) {
-                        const resultArray = Object.values( Result );
+    const fetchRecords = async () => {
+        try {
 
-                        const formatted = resultArray.map( ( opt, index ) => ( {
-                            label: `${ opt.characters_np }`,
-                            value: opt.id || index  // fallback for value if id is missing
-                        } ) );
+            const response = await axios.get( `${ BASE_URL }/public/get_parole_nos/`,
+                {
+                    withCredentials: true
+                } );
+            // console.log( response );
+            const { Status, Result, Error } = response.data;
+            if ( Status ) {
+                if ( Status && Result && typeof Result === 'object' ) {
+                    const resultArray = Object.values( Result );
 
-                        setOptRecords( formatted );
-                        setRecords( resultArray );
-                    } else {
-                        console.log( 'No records found' );
-                    }
+                    const formatted = resultArray.map( ( opt, index ) => ( {
+                        label: `${ opt.characters_np }`,
+                        value: opt.id || index  // fallback for value if id is missing
+                    } ) );
+
+                    setOptRecords( formatted );
+                    setRecords( resultArray );
                 } else {
-                    // console.log(Error || 'Faile to fetch records')
+                    console.log( 'No records found' );
                 }
-            } catch ( error ) {
-                console.error( "Failed to fetch ranks:", error );
-            } finally {
-                setLoading( false );
+            } else {
+                // console.log(Error || 'Faile to fetch records')
             }
-        };
-
+        } catch ( error ) {
+            console.error( "Failed to fetch ranks:", error );
+        } finally {
+            setLoading( false );
+        }
+    };
+    useEffect( () => {
         fetchRecords();
     }, [BASE_URL, bandi_id] );
 
-    return { records, optrecords, loading };
+    return { records, optrecords, loading, refetch: fetchRecords };
 };
 
 export default useFetchParoleNos;

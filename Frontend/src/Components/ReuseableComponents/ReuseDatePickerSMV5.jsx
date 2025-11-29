@@ -4,7 +4,6 @@ import { Controller } from "react-hook-form";
 import { Box, InputLabel, Typography } from "@mui/material";
 import "@sajanm/nepali-date-picker/dist/nepali.datepicker.v5.0.6.min.css";
 
-// Make jQuery global
 window.$ = window.jQuery = $;
 
 const ReuseDatePickerSMV5 = ({
@@ -20,51 +19,41 @@ const ReuseDatePickerSMV5 = ({
   const inputRef = useRef(null);
   const initializedRef = useRef(false);
 
+  // ----------------------------
+  // 1️⃣ INIT DATE PICKER
+  // ----------------------------
   useEffect(() => {
-  let isMounted = true;
+    let mounted = true;
 
-  import("@sajanm/nepali-date-picker/dist/nepali.datepicker.v5.0.6.min.js")
-    .then(() => {
-      if (
-        isMounted &&
-        inputRef.current &&
-        !initializedRef.current &&
-        typeof $(inputRef.current).NepaliDatePicker === "function"
-      ) {
-        $(inputRef.current).NepaliDatePicker({
-          ...options,
-          ...(maxDate && { maxDate })
-        });
+    import("@sajanm/nepali-date-picker/dist/nepali.datepicker.v5.0.6.min.js")
+      .then(() => {
+        if (
+          mounted &&
+          inputRef.current &&
+          !initializedRef.current &&
+          typeof $(inputRef.current).NepaliDatePicker === "function"
+        ) {
+          $(inputRef.current).NepaliDatePicker({
+            ...options,
+            ...(maxDate && { maxDate }),
+            onChange: (value) => {
+              // Sync back to react-hook-form
+              inputRef.current.value = value;
+              inputRef.current.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+          });
 
-        // Move calendar into the nearest MUI dialog and force z-index
-        const calendar = $('.nepali-datepicker').last(); // the newly created calendar
-        const dialog = $(inputRef.current).closest('.MuiDialog-root'); // nearest dialog
-        if (dialog.length > 0) {
-          dialog.append(calendar); // move calendar inside dialog          
-          calendar.css({
-            'position': 'fixed',
-            'top':'50%', 
-            'left':'50%', 
-            'transform':'translate(-50%, -50%)',
-            'z-index': 2400
-          }); // slightly above MUI Dialog content
+          initializedRef.current = true;
         }
+      })
+      .catch((err) => console.error("Datepicker load failed:", err));
 
-        initializedRef.current = true;
-      }
-    })
-    .catch((err) => console.error("Failed to load Nepali Date Picker:", err));
+    return () => (mounted = false);
+  }, [open, options, maxDate]);
 
-  return () => {
-    isMounted = false;
-  };
-}, [open, options, maxDate]);
-
-
+  // Reset plugin when dialog re-opens
   useEffect(() => {
-    if (!open) {
-      initializedRef.current = false;
-    }
+    if (!open) initializedRef.current = false;
   }, [open]);
 
   return (
@@ -79,48 +68,20 @@ const ReuseDatePickerSMV5 = ({
         control={control}
         defaultValue={defaultValue}
         rules={{
-          ...(required && { required: "यो फिल्ड अनिवार्य छ" }),
-          pattern: {
-            value: /^\d{4}-\d{2}-\d{2}$/,
-            message: "मिति YYYY-MM-DD ढाँचामा हुनुपर्छ"
-          }
+          ...(required && { required: "यो फिल्ड अनिवार्य छ" })
         }}
-        render={({ field: { onChange }, fieldState: { error } }) => (
+        render={({ field: { onChange, value }, fieldState: { error } }) => (
           <Box sx={{ mb: 2, mt: 1 }}>
+            
+            {/* 👇 MOST IMPORTANT FIX — controlled value */}
             <input
               ref={inputRef}
-              id={name}
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}  // sync text input
+              onBlur={() => onChange(inputRef.current.value)} // sync plugin value
               type="text"
               placeholder="YYYY-MM-DD"
               autoComplete="off"
-              onChange={(e) => {
-                const inputValue = e.target.value.replace(/[^0-9]/g, ""); 
-                let formatted = inputValue;
-
-                if (inputValue.length > 4) {
-                  const year = inputValue.slice(0, 4);
-                  const month = inputValue.slice(4, 6);
-                  formatted = `${year}-${month}`;
-                }
-                if (inputValue.length > 6) {
-                  const year = inputValue.slice(0, 4);
-                  let month = inputValue.slice(4, 6);
-                  let day = inputValue.slice(6, 8);
-
-                  if (parseInt(month, 10) > 12) month = "12";
-                  if (parseInt(day, 10) > 32) day = "32";
-
-                  formatted = `${year}-${month}-${day}`;
-                }
-
-                formatted = formatted.slice(0, 10);
-                e.target.value = formatted;
-              }}
-              onBlur={() => {
-                if (inputRef.current) {
-                  onChange(inputRef.current.value);
-                }
-              }}
               className="nepali-datepicker-input"
             />
 
@@ -132,13 +93,6 @@ const ReuseDatePickerSMV5 = ({
                 border-radius: 4px;
                 border: 1px solid ${error ? "#d32f2f" : "rgba(0, 0, 0, 0.23)"};
                 font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-                transition: border-color 0.2s ease-in-out;
-                box-sizing: border-box;
-                outline: none;
-              }
-              .nepali-datepicker-input:focus {
-                border-color: ${error ? "#d32f2f" : "#1976d2"};
-                box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.25);
               }
             `}</style>
 

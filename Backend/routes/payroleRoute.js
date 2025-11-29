@@ -100,8 +100,8 @@ async function calculateAge( birthDateBS ) {
 // router.get("/get_parole_nos", verifyToken, paroleController.getParoleNos);
 router.get( "/get_parole_nos", verifyToken, paroleController.getParoleNos );
 router.post( "/create_parole_nos", verifyToken, paroleController.createParoleNos );
-router.put( "/update_parole_nos", verifyToken, paroleController.updateParoleNos );
-// router.delete("/delete_parole_nos", verifyToken, paroleController.deleteParoleNos);
+router.put( "/update_parole_nos/:id", verifyToken, paroleController.updateParoleNos );
+router.delete("/delete_parole_nos/:id", verifyToken, paroleController.deleteParoleNos);
 
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;

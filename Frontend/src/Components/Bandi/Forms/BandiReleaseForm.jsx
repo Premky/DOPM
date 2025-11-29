@@ -18,6 +18,7 @@ import axios from 'axios';
 import FamilyTable from '../Tables/For View/FamilyTable';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
 
 const BandiReleaseForm = () => {
     const BASE_URL = useBaseURL();
@@ -118,7 +119,7 @@ const BandiReleaseForm = () => {
                             </Grid>
 
                             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                                <ReuseDateField
+                                <ReuseDatePickerSMV5
                                     name='decision_date'
                                     label='निर्णय मिति'
                                     control={control}
