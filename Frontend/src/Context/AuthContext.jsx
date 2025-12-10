@@ -52,6 +52,7 @@ export const AuthProvider = ( { children } ) => {
                     role_name: response.data.user.role_name,
                     role_id: response.data.user.role_id,
                     branch_np: response.data.user.branch_name,
+                    allowedUrls: response.data.user.allowedUrls || [],
                     valid: true,
                     justLoggedIn: true,
                 };

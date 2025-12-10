@@ -4,6 +4,7 @@ import { Tabs, Tab, Box } from "@mui/material";
 
 import ManagePermissions from "../../../Components/Permissions/ManagePermissions";
 import RolePermissions from "../../../Components/Permissions/RolePermissions";
+import UserPermissions from "../../../Components/Permissions/UserPermissions";
 
 
 const PermissionsPage = () => {
@@ -20,7 +21,7 @@ const PermissionsPage = () => {
       <Box mt={2}>
         {tab === 0 && <ManagePermissions />}
         {tab === 1 && <RolePermissions />}
-        {/* {tab === 2 && <UserPermissions />} */}
+        {tab === 2 && <UserPermissions />}
       </Box>
     </Box>
   );

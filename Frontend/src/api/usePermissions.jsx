@@ -4,6 +4,7 @@ import { useBaseURL } from "../Context/BaseURLProvider";
 /**
  * Custom hook to provide permission APIs with dynamic baseURL
  */
+
 export const usePermissionAPI = () => {
   const BASE_URL = useBaseURL();
   const axiosInstance = axios.create({ baseURL: BASE_URL });
@@ -19,6 +20,7 @@ export const usePermissionAPI = () => {
   };
 
   const createPermission = async (data) => {
+    // console.log(data)
     try {
       const res = await axiosInstance.post("/permission/permissions", data);
       return res.data;

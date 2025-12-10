@@ -105,7 +105,7 @@ router.get( "/get_users", verifyToken, async ( req, res ) => {
     `;
 
     const [result] = await pool.query( sql, params );
-    console.log( result );
+    // console.log( result );
     return res.json( { Status: true, Result: result } );
   } catch ( error ) {
     console.error( "Get users error:", error );
@@ -222,6 +222,15 @@ router.post( '/login', authLimiter, async ( req, res ) => {
       role_id: user.role_id,
       role_name: user.role_name
     };
+    const [allowedMenusUrlRows] = await pool.query( `SELECT m.link 
+                                                    FROM menus_role mr 
+                                                    JOIN menus m ON mr.menu_id = m.id 
+                                                    WHERE mr.role_id=?`, [user.role_id] );
+    const allowedUrls = allowedMenusUrlRows.map( r => r.link )
+    .filter( link => link ) // .filter will remove null, undefined, empty strings
+    .map(link=>link.startsWith("/")?link:"/"+link);  //attaching "/" if url does not starts with "/"
+
+    userdetails.allowedUrls = allowedUrls;    
 
     const token = jwt.sign( userdetails, process.env.JWT_SECRET, { expiresIn: '1h' } );
 
@@ -233,7 +242,6 @@ router.post( '/login', authLimiter, async ( req, res ) => {
       domain: process.env.NODE_ENV === 'production' ? '.dopm.gov.np' : 'localhost',  // ✅ prod: allow subdomains, dev: auto
     } );
 
-
     req.session.user = { userdetails };
 
     // Update online status
@@ -241,7 +249,7 @@ router.post( '/login', authLimiter, async ( req, res ) => {
 
     return res.json( {
       loginStatus: true,
-      userdetails,
+      userdetails: { ...userdetails, allowedUrls },
       must_change_password: user.must_change_password
     } );
 
@@ -252,7 +260,7 @@ router.post( '/login', authLimiter, async ( req, res ) => {
 } );
 
 // GET /auth/get_menus
-router.get("/get_menus", verifyToken, async (req, res) => {
+router.get( "/get_menus", verifyToken, async ( req, res ) => {
   const role_id = req.user?.role_id;
   try {
     const [rows] = await pool.query(
@@ -260,27 +268,27 @@ router.get("/get_menus", verifyToken, async (req, res) => {
        FROM menus m
        JOIN menus_role mr ON m.id=mr.menu_id
        WHERE mr.role_id=?
-       ORDER BY m.parent_id, m.order_no ASC`,[role_id]
+       ORDER BY m.parent_id, m.order_no ASC`, [role_id]
     );
 
     // Convert flat list to nested structure
     const menuMap = {};
     const topMenus = [];
 
-    rows.forEach((menu) => {
+    rows.forEach( ( menu ) => {
       menu.children = [];
       menuMap[menu.id] = menu;
 
-      if (!menu.parent_id) topMenus.push(menu);
-      else if (menuMap[menu.parent_id]) menuMap[menu.parent_id].children.push(menu);
-    });
+      if ( !menu.parent_id ) topMenus.push( menu );
+      else if ( menuMap[menu.parent_id] ) menuMap[menu.parent_id].children.push( menu );
+    } );
     // console.log(topMenus)
-    res.json(topMenus);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch menus" });
+    res.json( topMenus );
+  } catch ( err ) {
+    console.error( err );
+    res.status( 500 ).json( { message: "Failed to fetch menus" } );
   }
-});
+} );
 
 // Logout
 router.post( '/logout', verifyToken, async ( req, res ) => {
@@ -291,7 +299,7 @@ router.post( '/logout', verifyToken, async ( req, res ) => {
     await pool.query( "UPDATE users SET is_online=0 WHERE id=?", [user_id] );
 
     res.clearCookie( 'token', { httpOnly: true, sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' } );
-    const isProd = process.env.NODE_ENV === 'production'
+    const isProd = process.env.NODE_ENV === 'production';
     res.clearCookie( 'token', {
       httpOnly: true,
       sameSite: isProd ? 'None' : 'Lax',

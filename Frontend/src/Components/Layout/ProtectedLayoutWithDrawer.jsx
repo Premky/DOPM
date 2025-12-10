@@ -23,7 +23,6 @@ import { useAuth } from "../../Context/AuthContext";
 import Swal from "sweetalert2";
 import ResetPasswordDialog from "../Auth/ResetPasswordDialog";
 
-
 const drawerWidth = 5;
 const miniDrawerWidth = 5;
 
@@ -92,7 +91,6 @@ export default function ProtectedLayoutWithDrawer() {
   };
 
   const [resetPasswordOpen, setResetPasswordOpen] = useState( false );
-  
   const changePassword = () => {
     setResetPasswordOpen( true );
   };
@@ -186,8 +184,8 @@ export default function ProtectedLayoutWithDrawer() {
         </AppBar>
 
         {/* MAIN PAGE CONTENT */}
-        <MainContent open={drawerOpen}>
-          <Outlet />
+        <MainContent open={drawerOpen}>          
+            <Outlet />          
         </MainContent>
 
       </div>
