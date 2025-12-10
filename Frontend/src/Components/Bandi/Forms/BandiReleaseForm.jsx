@@ -19,6 +19,8 @@ import FamilyTable from '../Tables/For View/FamilyTable';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
+import ContactPersonModal from '../Dialogs/ContactPersonModal';
+
 
 const BandiReleaseForm = () => {
     const BASE_URL = useBaseURL();
@@ -27,6 +29,9 @@ const BandiReleaseForm = () => {
 
     const [loading, setLoading] = useState( false );
     const [editing, setEditing] = useState( false );
+    const [editingData, setEditingData] = useState( null );
+
+    const [addRelativeOpen, setAddRelativeOpen] = useState( false );
 
     const bandi_id = watch( 'bandi_id' );
     const reason_id = watch( 'reason_id' );
@@ -37,8 +42,8 @@ const BandiReleaseForm = () => {
         setLoading( true );
         try {
             // console.log(data)
-            const url = editing ? `${ BASE_URL }/bandi/update_release_bandi/${ editableData.id }` : `${ BASE_URL }/bandi/create_release_bandi`;
-            const method = editing ? 'PUT' : 'POST';
+            const url = editingData ? `${ BASE_URL }/bandi/update_release_bandi/${ editableData.id }` : `${ BASE_URL }/bandi/create_release_bandi`;
+            const method = editingData ? 'PUT' : 'POST';
             const response = await axios( {
                 method, url, data: data,
                 withCredentials: true
@@ -47,12 +52,12 @@ const BandiReleaseForm = () => {
             // console.log( response );
             if ( Status ) {
                 Swal.fire( {
-                    title: `Bandi ${ editing ? 'updated' : 'created' } successfully!`,
+                    title: `Bandi ${ editingData ? 'updated' : 'created' } successfully!`,
                     icon: "success",
                     draggable: true
                 } );
                 reset();
-                setEditing( false );
+                setEditingData( false );
                 // fetchOffices();
             } else {
                 Swal.fire( {
@@ -74,6 +79,36 @@ const BandiReleaseForm = () => {
         }
     };
 
+    const handleSaveContactPerson = async ( formData, id ) => {
+        try {
+            if ( id ) {
+                // update existing contact
+                await axios.put( `${ BASE_URL }/bandi/update_bandi_contact_person/${ id }`, formData, {
+                    withCredentials: true
+                } );
+                Swal.fire( 'सफल भयो!', 'डेटा अपडेट भयो।', 'success' );
+            } else {
+                // create new contact
+                await axios.post( `${ BASE_URL }/bandi/create_bandi_contact_person`, {
+                    bandi_id,
+                    contact_person: [formData]
+                }, { withCredentials: true } );
+                Swal.fire( 'सफल भयो!', 'नयाँ डेटा थपियो।', 'success' );
+            }
+
+            // close modal and reset editingData
+            setAddRelativeOpen( false );
+            setEditingData( null );
+
+            // refresh relatives table if you have a refetch function
+            // e.g., refetchRelatives()
+        } catch ( error ) {
+            console.error( "Axios Error:", error );
+            Swal.fire( 'त्रुटि!', 'सर्भर अनुरोध असफल भयो।', 'error' );
+        }
+    };
+
+
     return (
         <>
             <HelmetProvider>
@@ -84,6 +119,15 @@ const BandiReleaseForm = () => {
                     <meta name="author" content="कारागार व्यवस्थापन विभाग" />
                 </Helmet>
             </HelmetProvider>
+
+            <ContactPersonModal
+                open={addRelativeOpen}
+                onClose={() => setAddRelativeOpen( false )}
+                bandi_id={bandi_id}
+                onSave={handleSaveContactPerson}
+                editingData={editingData}
+            />
+
             <Box>
                 <Grid container spacing={2}>
                     <form onSubmit={handleSubmit( onFormSubmit )}>
@@ -106,8 +150,8 @@ const BandiReleaseForm = () => {
                         </Grid>
 
                         <hr />
-                        <Grid container size={{ xs: 12 }}>
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <Grid container size={{ xs: 12 }} >
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} padding={1}>
                                 <ReuseSelect
                                     name='reason_id'
                                     label='छुटेको/लगत कट्टाको कारणः'
@@ -118,7 +162,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid>
 
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} padding={1}>
                                 <ReuseDatePickerSMV5
                                     name='decision_date'
                                     label='निर्णय मिति'
@@ -128,7 +172,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid>
 
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} padding={1}>
                                 <ReuseDateField
                                     name='apply_date'
                                     label='कार्यान्वयन मिति'
@@ -138,7 +182,7 @@ const BandiReleaseForm = () => {
                                 />
                             </Grid>
 
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} >
                                 <ReuseInput
                                     name='nirnay_officer'
                                     label='निर्णय गर्ने अधिकारी'
@@ -150,26 +194,35 @@ const BandiReleaseForm = () => {
                         </Grid>
                         <Grid container size={{ xs: 12 }}>
                             {( reason_id != 2 && reason_id != 6 ) && (
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <ReuseSelect
-                                        name='aafanta_id'
-                                        label='बुझ्ने मान्छे छान्नुहोस्'
-                                        options={relativeOptions}
-                                        control={control}
-                                        required={( reason_id != 2 && reason_id != 6 )}
-                                        errors={errors.aafanta_id}
-                                    />
+                                <Grid size={{ xs: 12 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <ReuseSelect
+                                            name='aafanta_id'
+                                            label='बुझ्ने व्यक्ती/संस्था छान्नुहोस्'
+                                            options={relativeOptions}
+                                            control={control}
+                                            required={( reason_id != 2 && reason_id != 6 )}
+                                            errors={errors.aafanta_id}
+                                        />
+                                        <Button
+                                            variant="contained"
+                                            sx={{ minWidth: 40, px: 1 }}
+                                            onClick={() => { setAddRelativeOpen( true ); setEditingData( { bandi_id } ); }}
+                                        >
+                                            +
+                                        </Button>
+                                    </Box>
                                 </Grid>
                             )}
+                        </Grid>
 
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <ReuseInput
-                                    name='remarks'
-                                    label='कैफियत'
-                                    control={control}
-                                    errors={errors.remarks}
-                                />
-                            </Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                            <ReuseInput
+                                name='remarks'
+                                label='कैफियत'
+                                control={control}
+                                errors={errors.remarks}
+                            />
                         </Grid>
                         <Grid container>
                             <Grid size={{ xs: 12, sm: 4 }}>

@@ -60,6 +60,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
         // console.log(editingData)
         setModalOpen( true );
     };
+    
     const handleAdd = ( bandi_id ) => {
         setEditingData( { bandi_id } );
         setModalOpen( true );

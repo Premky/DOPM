@@ -2716,7 +2716,9 @@ router.post( '/create_bandi_contact_person', verifyToken, async ( req, res ) => 
     let connection;
     try {
         connection = await pool.getConnection();
-        console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+        // console.log( "📥 Full Request Body:", JSON.stringify( req.body, null, 2 ) );
+
+        // console.log("Bandi ID:", req.body.contact_person);
 
         const insertCount = await insertContacts(
             req.body.bandi_id,

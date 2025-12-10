@@ -10,14 +10,14 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import ReuseRelativeRelations from "../../ReuseableComponents/ReuseRelativeRelations";
 
-const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
+const ContactPersonModal = ( { open, onClose, onSave, editingData, bandi_id } ) => {
     // console.log(editingData)
     const {
         control,
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm({
+    } = useForm( {
         defaultValues: {
             bandi_id: "",
             relation_id: "",
@@ -25,30 +25,31 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
             contact_address: "",
             contact_contact_details: "",
         },
-    });
-// console.log(editingData)
-    useEffect(() => {
-        if (editingData) {
-            reset({
-                bandi_id: editingData.bandi_id || "",
+    } );
+    console.log( editingData );
+    useEffect( () => {
+        if ( editingData ) {
+            reset( {
+                bandi_id: editingData.bandi_id || bandi_id,
                 relation_id: editingData.relation_id || "",
                 contact_name: editingData.contact_name || "",
                 contact_address: editingData.contact_address || "",
                 contact_contact_details: editingData.contact_contact_details || "",
-            });
+            } );
         } else {
-            reset({
-                bandi_id: "",
+            reset( {
+                bandi_id: bandi_id,
                 relation_id: "",
                 contact_name: "",
                 contact_address: "",
                 contact_contact_details: "",
-            });
+            } );
         }
-    }, [editingData, reset]);
+    }, [editingData, bandi_id, reset] );
 
-    const onSubmit = (data) => {
-        onSave(data, editingData?.id);
+    const onSubmit = ( data ) => {
+
+        onSave( data, editingData?.id );
         onClose();
     };
 
@@ -56,10 +57,10 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
-            <input type="text" name="bandi_id" value={editingData?.bandi_id} 
-            hidden
-            />
 
+                <input type="text" name="bandi_id" value={editingData?.bandi_id}
+                    hidden
+                />
                 <ReuseRelativeRelations
                     name="relation_id"
                     label="नाता"
@@ -71,7 +72,7 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
                     name="contact_name"
                     control={control}
                     rules={{ required: "नामथर आवश्यक छ" }}
-                    render={({ field }) => (
+                    render={( { field } ) => (
                         <TextField
                             {...field}
                             label="नामथर"
@@ -87,7 +88,7 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
                     name="contact_address"
                     control={control}
                     rules={{ required: "ठेगाना आवश्यक छ" }}
-                    render={({ field }) => (
+                    render={( { field } ) => (
                         <TextField
                             {...field}
                             label="ठेगाना"
@@ -109,7 +110,7 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
                             message: "मान्य सम्पर्क नम्बर राख्नुहोस्",
                         },
                     }}
-                    render={({ field }) => (
+                    render={( { field } ) => (
                         <TextField
                             {...field}
                             label="सम्पर्क नं."
@@ -124,7 +125,7 @@ const ContactPersonModal = ({ open, onClose, onSave, editingData }) => {
 
             <DialogActions>
                 <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
-                <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
+                <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
                     {editingData ? "अपडेट गर्नुहोस्" : "थप्नुहोस्"}
                 </Button>
             </DialogActions>

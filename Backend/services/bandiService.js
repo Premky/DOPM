@@ -425,6 +425,8 @@ async function insertContacts( bandi_id, contacts = [], user_id, office_id, conn
       console.warn( "⚠️ No contacts provided to insert." );
       return 0;
     }
+    
+    console.log("Bandi ID:", bandi_id)
 
     const filteredContacts = contacts.filter( c =>
       ( typeof c.relation_id === 'string' && c.relation_id.trim() !== '' ) ||
