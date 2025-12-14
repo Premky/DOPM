@@ -138,12 +138,19 @@ const PayroleActionMenu = ( { oldStatus, data, onResultClick, onClose, refetchAl
 
       {
         authState.role_id <= 2 && ( <>
-          <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleCharacterDocx data={data} /> </MenuItem>
-        </> )
+            <>
+              <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
+              <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
+              <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
+              <MenuItem><PayroleCharacterDocx data={data} /> </MenuItem>
+            </>
+          {/* {data.status_id >= 10 && (
+          
+          <>
 
+          </>)
+          } */}
+        </> )
       }
 
       {

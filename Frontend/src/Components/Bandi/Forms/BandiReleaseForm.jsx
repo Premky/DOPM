@@ -19,8 +19,8 @@ import FamilyTable from '../Tables/For View/FamilyTable';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import ReuseDatePickerSMV5 from '../../ReuseableComponents/ReuseDatePickerSMV5';
-import ContactPersonModal from '../Dialogs/ContactPersonModal';
-
+// import ContactPersonModal from '../Dialogs/ContactPersonModal';
+import FamilyModal from '../Dialogs/FamilyModal';
 
 const BandiReleaseForm = () => {
     const BASE_URL = useBaseURL();
@@ -83,13 +83,13 @@ const BandiReleaseForm = () => {
         try {
             if ( id ) {
                 // update existing contact
-                await axios.put( `${ BASE_URL }/bandi/update_bandi_contact_person/${ id }`, formData, {
+                await axios.put( `${ BASE_URL }/bandi/create_bandi_family/${ id }`, formData, {
                     withCredentials: true
                 } );
                 Swal.fire( 'सफल भयो!', 'डेटा अपडेट भयो।', 'success' );
             } else {
                 // create new contact
-                await axios.post( `${ BASE_URL }/bandi/create_bandi_contact_person`, {
+                await axios.post( `${ BASE_URL }/bandi/create_bandi_family`, {
                     bandi_id,
                     contact_person: [formData]
                 }, { withCredentials: true } );
@@ -120,7 +120,7 @@ const BandiReleaseForm = () => {
                 </Helmet>
             </HelmetProvider>
 
-            <ContactPersonModal
+            <FamilyModal
                 open={addRelativeOpen}
                 onClose={() => setAddRelativeOpen( false )}
                 bandi_id={bandi_id}

@@ -1612,7 +1612,7 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
 router.put( '/update_bandi/:id', verifyToken, audit( "bandi_person", "id" ), async ( req, res ) => {
     const { id } = req.params;
     const data = req.body;
-    const userId= req.user.username;
+    const userId = req.user.username;
     console.log( data.enrollment_date_bs );
     const dob_ad = await bs2ad( data.dob );
     // console.log( dob_ad );
@@ -1915,10 +1915,10 @@ router.post( '/create_bandi_family', verifyToken, async ( req, res ) => {
         await connection.beginTransaction();
 
         const sql = `
-      INSERT INTO bandi_relative_info
-        (bandi_id, relative_name, relation_id, relative_address, contact_no, created_by, updated_by, current_office_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+            INSERT INTO bandi_relative_info
+                (bandi_id, relative_name, relation_id, relative_address, contact_no, created_by, updated_by, current_office_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
 
         const values = [bandi_id, relative_name, relation_np, relative_address, contact_no, user_id, user_id, active_office];
 
@@ -2416,7 +2416,7 @@ router.put( '/update_bandi_fine/:id', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.delete( '/delete_bandi_fine/:id', audit("bandi_fine_details","id"), verifyToken, async ( req, res ) => {
+router.delete( '/delete_bandi_fine/:id', audit( "bandi_fine_details", "id" ), verifyToken, async ( req, res ) => {
     const { id } = req.params;
     const userId = req.user.user_id;
     console.log( id );
@@ -2426,13 +2426,13 @@ router.delete( '/delete_bandi_fine/:id', audit("bandi_fine_details","id"), verif
         const [result] = await pool.query( sql, id );
 
         // Audit Log 
-        await logAudit({
-            tableName:"bandi_fine_details",
-            recordId:id,
-            action:"delete",
-            oldData:req.oldRecord,
+        await logAudit( {
+            tableName: "bandi_fine_details",
+            recordId: id,
+            action: "delete",
+            oldData: req.oldRecord,
             userId
-        })
+        } );
         return res.json( { Status: true, Result: 'Record Deleted and Audit Logged Successfully!' } );
     } catch ( err ) {
         console.error( 'Error Deleting Record:', err );
@@ -4301,7 +4301,7 @@ router.post( '/create_mudda', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.delete( '/delete_bandi/:id', audit("bandi_person", "id"),verifyToken, async ( req, res ) => {
+router.delete( '/delete_bandi/:id', audit( "bandi_person", "id" ), verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
     const role_name = req.user.role_name;
@@ -4321,13 +4321,13 @@ router.delete( '/delete_bandi/:id', audit("bandi_person", "id"),verifyToken, asy
         //DELETE
         const [result] = await pool.query( `DELETE FROM bandi_person WHERE id=?`, [id] );
         // Audit Log
-        await logAudit({
-            tableName:"bandi_person",
-            recordId:id,
-            action:"delete",
-            oldData:req.oldRecord,
+        await logAudit( {
+            tableName: "bandi_person",
+            recordId: id,
+            action: "delete",
+            oldData: req.oldRecord,
             user_id
-        })
+        } );
         res.json( {
             Status: true,
             message: "बन्दी DELETE गरियो।"

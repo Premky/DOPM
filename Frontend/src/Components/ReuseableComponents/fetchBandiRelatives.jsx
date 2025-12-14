@@ -13,8 +13,9 @@ const fetchBandiRelatives = ( bandi_id ) => {
     const fetchRecords = async () => {
       try {
         const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_family/${bandi_id}`, { withCredentials: true } );
-        // console.log(response)
+  
         const { Status, Result, Error } = response.data;
+        // console.log(Result)
         if(Status){
           if(Array.isArray(Result) && Result.length>0){
             const formatted = Result.map((opt, index)=>{

@@ -83,7 +83,7 @@ function App() {
             <Route element={<LoggedIn />}>
 
               {/* Wrap with MiniDrawer Layout */}
-              <Route element={<ProtectedRoute />}>
+              <Route element={<ProtectedRoute />}>   {/* This is for URL */}
                 <Route element={<ProtectedLayoutWithDrawer />}>
 
                   {/* Admin Routes */}

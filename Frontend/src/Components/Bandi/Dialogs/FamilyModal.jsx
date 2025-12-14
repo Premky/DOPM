@@ -12,7 +12,7 @@ import ReuseRelativeRelations from "../../ReuseableComponents/ReuseRelativeRelat
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 
-const FamilyModal = ( { open, onClose, onSave, editingData } ) => {
+const FamilyModal = ( { open, onClose, onSave, editingData, bandi_id } ) => {
     const {
         control,
         handleSubmit,
@@ -34,7 +34,7 @@ const FamilyModal = ( { open, onClose, onSave, editingData } ) => {
     useEffect( () => {
         if ( editingData ) {
             reset( {
-                bandi_id: editingData.bandi_id || "",
+                bandi_id: editingData.bandi_id || bandi_id,
                 relation_np: editingData.relation_id || "",
                 relative_name: editingData.relative_name || "",
                 relative_address: editingData.relative_address || "",
@@ -44,7 +44,7 @@ const FamilyModal = ( { open, onClose, onSave, editingData } ) => {
             } );
         } else {
             reset( {
-                bandi_id: "",
+                bandi_id: bandi_id,
                 relation_np: "",
                 relative_name: "",
                 relative_address: "",
@@ -66,7 +66,14 @@ const FamilyModal = ( { open, onClose, onSave, editingData } ) => {
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{editingData ? "संपादन गर्नुहोस्" : "नयाँ थप्नुहोस्"}</DialogTitle>
             <DialogContent>
-                <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden />
+                {/* <input type="text" name="bandi_id" value={editingData?.bandi_id} hidden /> */}
+
+                <Controller
+                    name="bandi_id"
+                    control={control}
+                    defaultValue={bandi_id} // fallback for new entries
+                    render={( { field } ) => <input type="hidden" {...field} />}
+                />
 
                 <ReuseRelativeRelations
                     name="relation_np"
