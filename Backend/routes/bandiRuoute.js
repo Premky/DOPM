@@ -815,7 +815,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
 
     if ( nationality ) conditions.push( 'nationality = ?' ), params.push( nationality );
-    if ( country ) conditions.push( 'country_name_np = ?' ), params.push( country );
+    if ( country ) conditions.push( 'country_id = ?' ), params.push( country );
     if ( gender ) conditions.push( 'gender = ?' ), params.push( gender );
     if ( bandi_type ) conditions.push( 'bandi_type = ?' ), params.push( bandi_type );
     if ( search_name ) conditions.push( '(bandi_name LIKE ? OR office_bandi_id = ?)' ), params.push( `%${ search_name }%`, search_name );
