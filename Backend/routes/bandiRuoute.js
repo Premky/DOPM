@@ -639,6 +639,7 @@ router.get( '/get_bandi', async ( req, res ) => {
         office_id = 0,
         gender = 0,
         mudda_id = 0,
+        country_id = 0,
         page = 1,
         limit = 50
     } = req.query;
@@ -647,6 +648,7 @@ router.get( '/get_bandi', async ( req, res ) => {
     if ( office_id > 0 ) where += ` AND current_office_id = ${ office_id }`;
     if ( gender ) where += ` AND gender = '${ gender }'`;
     if ( mudda_id > 0 ) where += ` AND mudda_id = ${ mudda_id }`;
+    if ( country_id > 0 ) where += `AND country_id = ${ country_id }`;
 
     const offset = ( page - 1 ) * limit;
 
@@ -4301,7 +4303,7 @@ router.post( '/create_mudda', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.delete( '/delete_bandi/:id', audit( "bandi_person", "id" ), verifyToken, async ( req, res ) => {
+router.delete( '/delete_bandi/:id', verifyToken, audit( "bandi_person", "id" ), async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
     const role_name = req.user.role_name;
@@ -4343,15 +4345,23 @@ router.delete( '/delete_bandi/:id', audit( "bandi_person", "id" ), verifyToken, 
 } );
 
 // router.delete( '/delete_bandi_address/:id', verifyToken, async ( req, res ) => (deleteRecord(req, res, "bandi_address")));
-router.delete( '/delete_bandi_disability/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_disability_details" ) ) );
-router.delete( '/delete_bandi_diseases/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_diseases_details" ) ) );
-router.delete( '/delete_bandi_fines/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_fine_details" ) ) );
+router.delete( '/delete_bandi_disability/:id',
+    verifyToken, audit( "bandi_disability_details", "id" ),
+    async ( req, res ) => ( deleteRecord( req, res, "bandi_disability_details" ) ) );
+router.delete( '/delete_bandi_diseases/:id',
+    verifyToken, audit( "bandi_diseases_details", "id" ), async ( req, res ) => ( deleteRecord( req, res, "bandi_diseases_details" ) ) );
+router.delete( '/delete_bandi_fines/:id',
+    verifyToken, audit( "bandi_fine_details", "id" ), async ( req, res ) => ( deleteRecord( req, res, "bandi_fine_details" ) ) );
 // router.delete( '/delete_bandi_ids/:id', verifyToken, async ( req, res ) => (deleteRecord(req, res, "bandi_id_card_details")));
 // router.delete( '/delete_bandi_kaid_details/:id', verifyToken, async ( req, res ) => (deleteRecord(req, res, "bandi_kaid_details")));
-router.delete( '/delete_bandi_mudda_details/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_mudda_details" ) ) );
-router.delete( '/delete_bandi_punrabedan_details/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_punarabedan_details" ) ) );
-router.delete( '/delete_bandi_contact_person/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_contact_person" ) ) );
-router.delete( '/delete_bandi_family/:id', verifyToken, async ( req, res ) => ( deleteRecord( req, res, "bandi_relative_info" ) ) );
+router.delete( '/delete_bandi_mudda_details/:id',
+    verifyToken, audit( "bandi_mudda_details", "id" ), async ( req, res ) => ( deleteRecord( req, res, "bandi_mudda_details" ) ) );
+router.delete( '/delete_bandi_punrabedan_details/:id',
+    verifyToken, audit( "bandi_punarabedan_details", "id" ), async ( req, res ) => ( deleteRecord( req, res, "bandi_punarabedan_details" ) ) );
+router.delete( '/delete_bandi_contact_person/:id',
+    verifyToken, audit( "bandi_contact_person", "id" ), async ( req, res ) => ( deleteRecord( req, res, "bandi_contact_person" ) ) );
+router.delete( '/delete_bandi_family/:id',
+    verifyToken, audit( "bandi_relative_info", "id" ), async ( req, res ) => ( deleteRecord( req, res, "bandi_relative_info" ) ) );
 
 async function deleteRecord( req, res, tableName ) {
     const allowedRoles = [
@@ -4373,6 +4383,15 @@ async function deleteRecord( req, res, tableName ) {
 
     try {
         await pool.query( `DELETE FROM ${ tableName } WHERE id=?`, [id] );
+        // Audit Log
+        await logAudit( {
+            tableName: tableName,
+            recordId: id,
+            action: "delete",
+            oldData: req.oldRecord,
+            user_id
+        } );
+
         res.json( { Status: true, message: "बन्दी DELETE गरियो।" } );
     } catch ( error ) {
         console.error( error );
