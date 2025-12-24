@@ -97,7 +97,7 @@ const ForwardToKapraDialog = ( { open, onClose, onSave, editingData } ) => {
                     render={( { field } ) => (
                         <TextField                            
                             {...field}
-                            label={authState.role_name=='office_admin'?"कारागार प्रशासकको राय":"कैफियत"}
+                            label={(authState.role_name=='office_admin' && editingData?.payrole_status==2)?"कारागार प्रशासकको राय":"कैफियत"}
                             variant="outlined"
                             fullWidth
                             defaultValue={editingData?.remarks || ""}

@@ -7,7 +7,7 @@ import { calculateBSDate } from '../../../../Utils/dateCalculator';
 const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
 export default function PayroleCharacterDocx( props ) {
-    
+
     const { data } = props;
 
     // Handle address
@@ -27,8 +27,8 @@ export default function PayroleCharacterDocx( props ) {
 
 
     const generateDocument = async () => {
-        const { saveAs } = await import("file-saver");
-        const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } = await import("docx");
+        const { saveAs } = await import( "file-saver" );
+        const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } = await import( "docx" );
         const headerRow = new TableRow( {
             children: [
                 "सि.नं.",
@@ -68,7 +68,7 @@ export default function PayroleCharacterDocx( props ) {
             totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
         }
 
-        
+
         const dataRows = data.muddas.map( ( item, index ) => {
             return new TableRow( {
                 children: [
@@ -79,8 +79,8 @@ export default function PayroleCharacterDocx( props ) {
                     totalKaidDuration.formattedDuration,
                     `${ totalBhuktanDuration.formattedDuration }\n (${ totalBhuktanDuration.percentage })%`,
                     'नगरेको',
-                    '',
-                    ''
+                    'नगरेको',
+                    `अन्य कैदीहरुसँगको व्यवहार असल रहेको, कारागारमा रहँदा बस्दा कुनै अनुचित कार्य नगरेको, निजको चालचलन असल रहेको र तोकिएको कैदको दुई तिहाई कैद भुक्तान गरेको हुनाले प्यारोलमा राख्न उचित देखि सिफारिस गरिएको ।`
                 ].map(
                     ( text ) =>
                         new TableCell( {

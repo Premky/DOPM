@@ -3,108 +3,124 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  Grid,
   TextField,
-  MenuItem,
+  Button,
+  MenuItem
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
-import Swal from "sweetalert2";
+import { useForm, Controller } from "react-hook-form";
+import ReuseOffice from "../../ReuseableComponents/ReuseOffice";
+import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
-export default ParoleCourtDecisionModal = ( { open, onClose, data, kaidimuddas, onSave, oldStatus } ) => {
-  const {
-    handleSubmit,
-    register,
-    reset,
-    formState: { errors },
-  } = useForm( {
+const CourtDecisionDialog = ( { open, onClose, onSave, data } ) => {
+  const { control, errors, handleSubmit } = useForm( {
     defaultValues: {
-      payrole_id:"",
-      pyarole_rakhan_upayukat: "",
-      dopmremark: "",
-    },
+      payrole_id: data?.payrole_id,
+      payrole_granted_court: "",
+      payrole_granted_aadesh_date: "",
+      payrole_granted_letter_no: "",
+      payrole_granted_letter_date: "",
+      payrole_result: "",
+      court_remarks: ""
+    }
   } );
 
-  // console.log(data)
-  useEffect( () => {
-    if ( data ) {
-      reset( {
-        payrole_id: data?.payrole_id || "",
-        dopmremark: data?.dopmremark || "",
-        pyarole_rakhan_upayukat: data?.pyarole_rakhan_upayukat || "",
-      } );
-    }
-  }, [data, reset] );
-
-  const onSubmit = async ( formValues ) => {
-    onSave( formValues);
-        onClose();
+  const submit = ( data ) => {
+    onSave( data );
+    onClose();
   };
-
-
-
-  const fullAddress =
-    data?.nationality === "स्वदेशी"
-      ? `${ data?.city_name_np }-${ data?.wardno }, ${ data?.district_name_np }, ${ data?.state_name_np }, ${ data?.country_name_np }`
-      : `${ data?.bidesh_nagarik_address_details }, ${ data?.country_name_np }`;
-
-  const muddaName = kaidimuddas?.[0]?.mudda_name || "";
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogContent>
-        <form onSubmit={handleSubmit( onSubmit )}>
-          <Grid container spacing={2} mt={1}>
-            <input type="hidden" {...register( "payrole_id" )} value={data?.payrole_id || ""} />
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="कैदी नाम र ठेगाना"
-                value={`${ data?.bandi_name || "" }, ${ fullAddress }`}
-                InputProps={{ readOnly: true }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                select
-                label="प्यारोल पास / फेल"
-                fullWidth
-                {...register( "pyarole_rakhan_upayukat", { required: true } )}
-                error={!!errors.pyarole_rakhan_upayukat}
-                helperText={errors.pyarole_rakhan_upayukat ? "चयन गर्नुहोस्" : ""}
-              >
-                <MenuItem value="योग्य">योग्य</MenuItem>
-                <MenuItem value="अयोग्य">अयोग्य</MenuItem>
-                <MenuItem value="छलफल">छलफल</MenuItem>
-                <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
-                <MenuItem value="पास">पास</MenuItem>
-                <MenuItem value="फेल">फेल</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                {...register( "dopmremark" )}
-                label="कैफियत"
-                fullWidth
-                multiline
-                rows={3}
-                error={!!errors.dopmremark}
-              />
-            </Grid>
-          </Grid>
-          <DialogActions>
-            <Button onClick={onClose} color="secondary">रद्द गर्नुहोस्</Button>
-            <Button type="submit" variant="contained" color="success">
-              सेभ गर्नुहोस्
-            </Button>
-          </DialogActions>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <DialogTitle>अदालतको निर्णय</DialogTitle>
 
+      <DialogContent>
+        {/* <input type='text' value={`${ editingData?.id || "" }`} hidden />
+        <input type='text' name="payrole_id" value={`${ editingData?.payrole_id || "" }`} hidden />
+        <TextField
+          sx={{ mt: 1 }}
+          fullWidth
+          label="कैदी नाम र ठेगाना"
+          value={`${ editingData?.office_bandi_id || "" }, ${ editingData?.bandi_name || "" }, ${ fullAddress }`}
+          InputProps={{ readOnly: true }}
+        /> */}
+
+        {/* <Controller
+          name="payrole_granted_court"
+          control={control}
+          render={( { field } ) => (
+            <TextField {...field} label="अदालत" fullWidth margin="dense" />
+          )}
+        /> */}
+
+        <ReuseOffice
+          name="payrole_granted_court"
+          label="अदालत"
+          required={true}
+          control={control}
+        // error={errors.payrole_granted_court}
+        />
+
+        {/* <Controller
+          name="payrole_granted_aadesh_date"
+          control={control}
+          render={( { field } ) => (
+            <TextField {...field} label="आदेश मिति (BS)" fullWidth margin="dense" />
+          )}
+        /> */}
+
+        <ReuseDateField
+          name="payrole_granted_aadesh_date"
+          label="आदेश मिति (BS)"
+          placeholder='YYYY-MM-DD'
+          required={true}
+          control={control}
+        // error={errors.payrole_granted_aadesh_date}
+        />
+
+        <Controller
+          name="payrole_granted_letter_no"
+          control={control}
+          render={( { field } ) => (
+            <TextField {...field} label="अदालतको पत्रको च.नं." fullWidth margin="dense" />
+          )}
+        />
+
+        <Controller
+          name="payrole_granted_letter_date"
+          control={control}
+          render={( { field } ) => (
+            <TextField {...field} label="पत्र मिति (BS)" fullWidth margin="dense" />
+          )}
+        />
+
+        <Controller
+          name="payrole_result"
+          control={control}
+          render={( { field } ) => (
+            <TextField {...field} select label="निर्णय" fullWidth margin="dense">
+              <MenuItem value="पास">स्वीकृत</MenuItem>
+              <MenuItem value="फेल">अस्वीकृत</MenuItem>
+            </TextField>
+          )}
+        />
+
+        <Controller
+          name="court_remarks"
+          control={control}
+          render={( { field } ) => (
+            <TextField {...field} label="कैफियत" fullWidth multiline rows={3} />
+          )}
+        />
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>रद्द</Button>
+        <Button onClick={handleSubmit( submit )} variant="contained">
+          सुरक्षित गर्नुहोस्
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-
+export default CourtDecisionDialog;

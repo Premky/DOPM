@@ -16,16 +16,6 @@ import verifyToken from '../middlewares/verifyToken.js';
 import { verifyRole } from '../middlewares/verifyRole.js';
 // import verifyRole from '../middelwares/verifyRole.js';
 
-const userBasedStatusMap1 = {
-    clerk: [1, 2],
-    office_admin: [1, 2],
-    supervisor: [4, 5],
-    headoffice_approver: [6, 7],
-    branch_superadmin: [1, 2, 3, 4, 5, 6],
-    office_superadmin: [1, 2, 3, 4],
-    superadmin: 'all',
-};
-
 async function getUserBasedStatusMap() {
     const [rows] = await pool.query( `
     SELECT ur.id, ur.role_name, rsr.payrole_status_id, ps.payrole_status_name
@@ -68,6 +58,9 @@ const fy_date = fy + '-04-01';
 import { bs2ad } from '../utils/bs2ad.js';
 import * as paroleController from '../controllers/paroleController.js';
 import { verifyPermission } from '../middlewares/verifyPermissions.js';
+import { PAROLE_STATUS } from '../constants/paroleStatus.js';
+import { BANDI_STATUS } from '../constants/bandiStatus.js';
+import { updateBandiStatus } from '../services/bandiStatusService.js';
 
 async function calculateAge( birthDateBS ) {
     // Convert BS to AD
@@ -89,15 +82,43 @@ async function calculateAge( birthDateBS ) {
     return age;
 }
 
-// router.get("/get_parole_nos", verifyToken, paroleController.getParoleNos);
-//With VerifyRole 
-// router.get( "/get_parole_nos", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.getParoleNos );
-
 // With VerifyPermissions
-router.post( "/create_parole_nos", verifyToken, verifyPermission("parole_nos", "create"), paroleController.createParoleNos );
-router.get( "/get_parole_nos", verifyToken, verifyPermission("parole_nos", "read"), paroleController.getParoleNos );
-router.put( "/update_parole_nos/:id", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.updateParoleNos );
-router.delete("/delete_parole_nos/:id", verifyToken, verifyRole('superadmin', 'supervisor'), paroleController.deleteParoleNos);
+router.post( "/create_parole_nos", verifyToken, verifyPermission( "parole_nos", "create" ), paroleController.createParoleNos );
+router.get( "/get_parole_nos", verifyToken, verifyPermission( "parole_nos", "read" ), paroleController.getParoleNos );
+router.put( "/update_parole_nos/:id", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.updateParoleNos );
+router.delete( "/delete_parole_nos/:id", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.deleteParoleNos );
+
+router.post( "/:id/court-decision", async ( req, res ) => {
+    const { decision, bandiId, remarks } = req.body;
+    const userId = req.user.username;
+    if ( decision === 'APPROVED' ) {
+        //update parole workflow 
+        await pool.query( `UPDATE payroles SET status_id=? WHERE id=?`, [PAROLE_STATUS.COURT, req.params.id] );
+
+        //Update Prisoner life status 
+        await updateBandiStatus( {
+            bandiId,
+            newStatusId: BANDI_STATUS.RELEASED_ON_PAROLE,
+            historyCode: "COURT_APPROVED",
+            source: "COURT",
+            remarks,
+            decisionDate: new Date(),
+            userId,
+        } );
+        return res.json( { message: "Parole approved & prisoner released" } );
+    }
+    //Court Rejected
+    await updateBandiStatus( {
+        bandiId,
+        newStatusId: BANDI_STATUS.IN_CUSTODY,
+        historyCode: "COURT_REJECTED",
+        source: "COURT",
+        remarks,
+        decisionDate: new Date(),
+        userId,
+    } );
+    res.json( { message: "Parole rejected" } );
+} );
 
 router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -438,7 +459,6 @@ router.post( '/get_all_bandi_fines', async ( req, res ) => {
     }
 } );
 
-
 router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const active_user = req.user.username;
@@ -483,7 +503,6 @@ router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
-
 
 router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -797,6 +816,8 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
         } );
     }
 } );
+
+router.put( '/update_parole_court_decision/:id', verifyToken, paroleController.updateCourtDecision );
 
 router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
     const user_office_id = req.user.office_id;

@@ -41,6 +41,8 @@ const query = promisify( con.query ).bind( con );
 import { translate } from "google-translate-api-x";
 import { audit } from '../middlewares/auditMiddleware.js';
 import { logAudit } from '../services/auditService.js';
+import { updateBandiStatus } from '../services/bandiStatusService.js';
+import { BANDI_STATUS } from '../constants/bandiStatus.js';
 
 async function translateEscapedNames( limit = 4000 ) {
     try {
@@ -3470,6 +3472,26 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         // await pool.query( insertSql, values );
         await connection.beginTransaction();
         await connection.query( insertSql, values );
+        if ( reason_id === 8 ) {
+            await updateBandiStatus( {
+                bandiId: req.params.id,
+                newStatusId: BANDI_STATUS.DECEASED,
+                historyCode: "DECEASED",
+                source: "ADMIN",
+                remarks: req.body.remarks,
+                userId: req.user.id,
+            } );
+        }
+
+        if ( reason_id === 1 ) {
+            await updateBandiStatus( {
+                bandiId: req.params.id,
+                newStatusId: BANDI_STATUS.SENTENCE_COMPLETED,
+                historyCode: "SENTENCE_COMPLETED",
+                source: "SYSTEM",
+                userId: req.user?.username || null,
+            } );
+        }
 
         // await pool.query( `UPDATE bandi_person SET is_active=0 WHERE id=${ bandi_id }` );
         // await commitAsync();
@@ -4275,6 +4297,39 @@ ORDER BY rgp.reason_id, rgp.gender, rgp.period;
         res.status( 500 ).json( { Status: false, Error: "Query failed" } );
     }
 } );
+
+router.post( "/:id/parole-violation", async ( req, res ) => {
+    try {
+        updateBandiStatus( {
+            bandiId: req.params.id,
+            newStatusId: BANDI_STATUS.PAROLE_VIOLATION,
+            historyCode: "ABSCONDED",
+            source: "ADMIN",
+            remarks: req.body.remarks,
+            userId: req.user.username,
+        } );
+        res.json( { message: "Parole violation recorded" } );
+    } catch ( error ) {
+        res.status( 400 ).json( { error: err.message } );
+    }
+} );
+router.post( "/:id/death", async ( req, res ) => {
+    try {
+        updateBandiStatus( {
+            bandiId: req.params.id,
+            newStatusId: BANDI_STATUS.DECEASED,
+            historyCode: "DECEASED",
+            source: "ADMIN",
+            remarks: req.body.remarks,
+            userId: req.user.username,
+        } );
+
+        res.json( { message: "Bandi Marked as Deceased" } );
+    } catch ( error ) {
+        res.status( 400 ).json( { error: err.message } );
+    }
+} );
+
 
 router.post( '/create_mudda', verifyToken, async ( req, res ) => {
     const user_id = req.user.username;
