@@ -4,12 +4,15 @@ import {
   TableCell,
   Checkbox,
   IconButton,
-  Box
+  Box,
+  TableContainer
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import StatusChip from "./StatusChip";
 import NepaliDate from 'nepali-datetime';
 import { calculateBSDate } from "../../../../Utils/dateCalculator";
+import { maxHeight } from "@mui/system";
+import { resolveParoleStatus } from "./resolveParoleStatus";
 
 const PayroleTableRow = ( {
   data,
@@ -45,11 +48,37 @@ const PayroleTableRow = ( {
     totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
     totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
   }
+
+
+  const statusBgMap = {
+    success: "#acfcb3ff", // green
+    error: "#f8bbb5ff",   // red
+    warning: "#fcebc8ff", // yellow
+    info: "#badef8ff"     // blue
+  };
+
+  const status = resolveParoleStatus( data );
+  const rowBgColor = statusBgMap[status.color] || "transparent";
+
+  const stickyStyle = ( left, z = 3 ) => ( {
+    position: "sticky",
+    left,
+    zIndex: z,
+    background: rowBgColor
+  } );
+
   return (
     <Fragment>
-      <TableRow hover>
+
+      <TableRow
+        hover
+      >
+
         {!isCheckboxNotVisible && (
-          <TableCell rowSpan={rowSpan}>
+          <TableCell
+            rowSpan={rowSpan}
+            sx={stickyStyle( 0, 3 )}
+          >
             <Checkbox
               checked={Boolean( data.is_checked )}
               onChange={handleCheck}
@@ -57,13 +86,15 @@ const PayroleTableRow = ( {
           </TableCell>
         )}
 
-        <TableCell rowSpan={rowSpan}>{index}</TableCell>
-        <TableCell rowSpan={rowSpan}>        <StatusChip row={data} />        </TableCell>
-        <TableCell rowSpan={rowSpan}>{data.office_bandi_id}</TableCell>
-        {/* <TableCell rowSpan={rowSpan}>{data.payrole_no_id}</TableCell> */}
-        <TableCell rowSpan={rowSpan}>{data.letter_address}</TableCell>
 
-        <TableCell rowSpan={rowSpan}>
+        <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 0 : 50, 3 )}>{index}</TableCell>
+        <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 50 : 100, 3 )}> {resolveParoleStatus( data ).label}
+          {/* <StatusChip row={data} /> */}
+        </TableCell>
+        {/* <TableCell rowSpan={rowSpan}>{data.payrole_no_id}</TableCell> */}
+        <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 3 )}>{data.letter_address}</TableCell>
+
+        <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 160 : 250, 3 )}>
           <b>{data.bandi_name}</b>
           <Box fontSize="0.75rem">
             {data.nationality === "स्वदेशी"
@@ -71,13 +102,18 @@ const PayroleTableRow = ( {
               : `${ data.bidesh_nagarik_address_details }, ${ data.country_name_np }`}
           </Box>
         </TableCell>
+        <TableCell rowSpan={rowSpan} >{data.office_bandi_id}</TableCell>
 
-        <TableCell rowSpan={rowSpan}>{data.current_age}</TableCell>
         <TableCell rowSpan={rowSpan}>
+          {data.current_age}
+          <br />
           {data.gender === "Male" ? "पुरुष" :
             data.gender === "Female" ? "महिला" : "अन्य"}
         </TableCell>
-        <TableCell>{data.country_name_np} </TableCell>
+        {/* <TableCell rowSpan={rowSpan}>
+         
+        </TableCell> */}
+        <TableCell rowSpan={rowSpan}>{data.country_name_np} </TableCell>
 
         {/* Mudda (first row) */}
         <TableCell>{firstMudda.mudda_name} <br /> {firstMudda.mudda_no}</TableCell>
@@ -154,12 +190,12 @@ const PayroleTableRow = ( {
               </div>
             ) )}
         </TableCell>
-        <TableCell rowSpan={rowSpan}>{data.court_decision}</TableCell>
+        {/* <TableCell rowSpan={rowSpan}>{data.court_decision}</TableCell> */}
 
 
         <TableCell rowSpan={rowSpan}>
-          { data.remarks === '' && 'कारागारकोः'} {data.remarks} <br/>
-          { data.dopm_remarks === '' && 'विभागको:'} {data.dopm_remarks}
+          {data.remarks === '' && 'कारागारकोः'} {data.remarks} <br />
+          {data.dopm_remarks === '' && 'विभागको:'} {data.dopm_remarks}
         </TableCell>
 
         <TableCell rowSpan={rowSpan}>
@@ -182,8 +218,8 @@ const PayroleTableRow = ( {
       {/* extra muddas */}
       {kaidiMuddas.slice( 1 ).map( ( m, i ) => (
         <TableRow key={i} hover>
-          <TableCell>{m.mudda_name}</TableCell>
-          <TableCell>{m.mudda_no}</TableCell>
+          {/* <TableCell></TableCell> */}
+          <TableCell>{m.mudda_name} {m.mudda_no && ( m.mudda_no )}</TableCell>
           <TableCell>{m.vadi}</TableCell>
           <TableCell>{m.mudda_office}</TableCell>
         </TableRow>

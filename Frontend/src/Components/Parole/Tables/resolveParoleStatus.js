@@ -22,6 +22,20 @@ export const resolveParoleStatus = ( row ) => {
         };
     }
 
+    if ( row.court_decision === "पास" ) {
+        return {
+            label: "स्वीकृत",
+            color: "success"
+        };
+    }
+
+    if ( row.court_decision === "फेल" ) {
+        return {
+            label: "अस्वीकृत",
+            color: "error"
+        };
+    }
+
     if ( row.pyarole_rakhan_upayukat === "योग्य" ) {
         return {
             label: "प्यारोल योग्य",
@@ -48,14 +62,14 @@ export const resolveParoleStatus = ( row ) => {
     }
     if ( row.pyarole_rakhan_upayukat === "पास" ) {
         return {
-            label: "पास",
+            label: "बोर्डबाट पास",
             color: "success"
         };
     }
 
     if ( row.pyarole_rakhan_upayukat === "फेल" ) {
         return {
-            label: "फेल",
+            label: "बोर्डबाट फेल",
             color: "error"
         };
     }

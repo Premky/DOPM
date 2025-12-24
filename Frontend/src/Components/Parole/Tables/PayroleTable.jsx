@@ -23,20 +23,21 @@ import exportToExcel from "../Exports/ExcelPayrole";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { useAuth } from "../../../Context/AuthContext";
 import axios from "axios";
+import { grey } from "@mui/material/colors";
 
-const PayroleTable = ({ status }) => {
+const PayroleTable = ( { status } ) => {
     const BASE_URL = useBaseURL();
     const { state: authState } = useAuth();
 
-    const [filters, setFilters] = useState({});
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
+    const [filters, setFilters] = useState( {} );
+    const [page, setPage] = useState( 0 );
+    const [rowsPerPage, setRowsPerPage] = useState( 25 );
 
-    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
-    const [menuRowData, setMenuRowData] = useState(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState( null );
+    const [menuRowData, setMenuRowData] = useState( null );
 
     const isCheckboxNotVisible =
-        ["clerk", "office_admin"].includes(authState.role_name);
+        ["clerk", "office_admin"].includes( authState.role_name );
 
     const {
         data,
@@ -49,7 +50,7 @@ const PayroleTable = ({ status }) => {
         refetchPayrole,
         refetchMuddas,
         loading
-    } = useFetchPayroles(filters, page, rowsPerPage);
+    } = useFetchPayroles( filters, page, rowsPerPage );
 
     const refetchAll = async () => {
         await refetchNoPunarabedan();
@@ -58,37 +59,45 @@ const PayroleTable = ({ status }) => {
         await refetchMuddas();
     };
 
-    const handleMenuOpen = (e, row) => {
-        setMenuAnchorEl(e.currentTarget);
-        setMenuRowData(row);
+    const handleMenuOpen = ( e, row ) => {
+        setMenuAnchorEl( e.currentTarget );
+        setMenuRowData( row );
     };
 
     const handleMenuClose = () => {
-        setMenuAnchorEl(null);
-        setMenuRowData(null);
+        setMenuAnchorEl( null );
+        setMenuRowData( null );
     };
 
     // ✅ Checkbox handler
-    const handleCheckboxChange = useCallback(async (payroleId, newValue) => {
+    const handleCheckboxChange = useCallback( async ( payroleId, newValue ) => {
         try {
             // Optimistic update
-            data.forEach(d => {
-                if (d.payrole_id === payroleId) d.is_checked = newValue;
-            });
+            data.forEach( d => {
+                if ( d.payrole_id === payroleId ) d.is_checked = newValue;
+            } );
 
             // Call API to update server
             await axios.put(
-                `${BASE_URL}/payrole/update_is_payrole_checked/${payroleId}`,
+                `${ BASE_URL }/payrole/update_is_payrole_checked/${ payroleId }`,
                 { is_checked: newValue },
                 { withCredentials: true }
             );
 
             // Refetch the data for consistency
             refetchPayrole();
-        } catch (err) {
-            console.error("Failed to update checkbox:", err);
+        } catch ( err ) {
+            console.error( "Failed to update checkbox:", err );
         }
-    }, [BASE_URL, data, refetchPayrole]);
+    }, [BASE_URL, data, refetchPayrole] );
+
+    const stickyStyle = ( left, z = 3 ) => ( {
+        position: "sticky",
+        left,
+        zIndex: z,
+        background: "#fff"
+    } );
+
 
     return (
         <>
@@ -117,71 +126,100 @@ const PayroleTable = ({ status }) => {
 
             <Box>जम्मा: {totalKaidi}</Box>
 
-            <TableContainer component={Paper}>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            {!isCheckboxNotVisible && <TableCell>✓</TableCell>}
-                            <TableCell>सि.नं.</TableCell>
-                            <TableCell>स्थिति</TableCell>
-                            <TableCell>बन्दी ID</TableCell>
-                            {/* <TableCell>प्यारोल नं.</TableCell> */}
-                            <TableCell>कारागार</TableCell>
-                            <TableCell>कैदीको नाम</TableCell>
-                            <TableCell>उमेर</TableCell>
-                            <TableCell>लिङ्ग</TableCell>
-                            <TableCell>राष्ट्रियता</TableCell>
-                            <TableCell>मुद्दाको नाम/नं.</TableCell>
-                            <TableCell>जाहेरवाला</TableCell>
-                            <TableCell>अन्तिम फैसला </TableCell>
-                            <TableCell>थुना परेको मिति</TableCell>
-                            <TableCell>कैद अवधि</TableCell>
-                            <TableCell>कैद पुरा हुने मिति</TableCell>
-                            <TableCell>भुक्तान कैद</TableCell>
-                            <TableCell>प्यारोलमा राख्नुपर्ने अवधि</TableCell>
-                            <TableCell>पुनरावेदन प्रमाण</TableCell>
-                            <TableCell>जरिबाना</TableCell>
-                            <TableCell>कैफियत</TableCell>
-                            <TableCell>अदालतको निर्णय</TableCell>
-                            <TableCell>#</TableCell>
-                        </TableRow>
-                    </TableHead>
+            {/* <TableContainer component={Paper} sx={{ maxHeight: "70vh", overflowX: "auto" }}> */}
+            <Table size="small" sx={{ tableLayout: 'fixed', minWidth: 1800 }}>
+                <TableHead>
+                    <TableRow sx={{ backgroundColor: grey }}>
+                        {!isCheckboxNotVisible && (
+                            <TableCell
+                                sx={stickyStyle(0,5)}
+                            >
+                                ✓
+                            </TableCell>
+                        )}
 
-                    <TableBody>
-                        {!loading &&
-                            data.map((row, i) => (
-                                <PayroleRow
-                                    key={row.payrole_id}
-                                    data={row}
-                                    index={page * rowsPerPage + i + 1}
-                                    kaidiMuddas={fetchedMuddas[row.bandi_id] || []}
-                                    bandiFines={fetchedFines[row.bandi_id] || []}
-                                    bandiNoPunarabedan={fetchedNoPunarabedan[row.bandi_id] || []}
-                                    isCheckboxNotVisible={isCheckboxNotVisible}
-                                    onCheck={(id, value) => handleCheckboxChange(id, value)}
-                                    onMenuOpen={handleMenuOpen}
-                                />
-                            ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        <TableCell
+                            sx={stickyStyle( isCheckboxNotVisible ? 0 : 50, 5 )}
+                        >
+                            सि.नं.
+                        </TableCell>
+
+                        <TableCell
+                            sx={stickyStyle( isCheckboxNotVisible ? 50 : 100, 5 )}
+                        >
+                            स्थिति
+                        </TableCell>
+
+
+                        <TableCell
+                            sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 5 )}
+                        >
+                            कारागार
+                        </TableCell>
+
+                        <TableCell
+                            sx={stickyStyle( isCheckboxNotVisible ? 160 : 250, 5 )}
+                        >
+                            बन्दीको नाम
+                        </TableCell>
+                        <TableCell>
+                            बन्दी ID
+                        </TableCell>
+
+                        <TableCell>उमेर/लिङ्ग</TableCell>
+                        {/* <TableCell>लिङ्ग</TableCell> */}
+                        <TableCell>राष्ट्रियता</TableCell>
+                        <TableCell>मुद्दाको नाम/नं.</TableCell>
+                        <TableCell>जाहेरवाला</TableCell>
+                        <TableCell>अन्तिम फैसला</TableCell>
+                        <TableCell>थुना परेको मिति</TableCell>
+                        <TableCell>कैद अवधि</TableCell>
+                        <TableCell>कैद पुरा हुने मिति</TableCell>
+                        <TableCell>भुक्तान कैद</TableCell>
+                        <TableCell>प्यारोलमा राख्नुपर्ने अवधि</TableCell>
+                        <TableCell>पुनरावेदन प्रमाण</TableCell>
+                        <TableCell>जरिबाना</TableCell>
+                        <TableCell>कैफियत</TableCell>
+                        {/* <TableCell>अदालतको निर्णय</TableCell> */}
+                        <TableCell>#</TableCell>
+                    </TableRow>
+                </TableHead>
+
+                <TableBody>
+                    {!loading &&
+                        data.map( ( row, i ) => (
+                            <PayroleRow
+                                key={row.payrole_id}
+                                data={row}
+                                index={page * rowsPerPage + i + 1}
+                                kaidiMuddas={fetchedMuddas[row.bandi_id] || []}
+                                bandiFines={fetchedFines[row.bandi_id] || []}
+                                bandiNoPunarabedan={fetchedNoPunarabedan[row.bandi_id] || []}
+                                isCheckboxNotVisible={isCheckboxNotVisible}
+                                onCheck={( id, value ) => handleCheckboxChange( id, value )}
+                                onMenuOpen={handleMenuOpen}
+                            />
+                        ) )}
+                </TableBody>
+            </Table>
+            {/* </TableContainer> */}
 
             <TablePagination
                 component="div"
                 count={totalKaidi}
                 page={page}
                 rowsPerPage={rowsPerPage}
-                onPageChange={(_, p) => setPage(p)}
-                onRowsPerPageChange={(e) => {
-                    setRowsPerPage(parseInt(e.target.value, 10));
-                    setPage(0);
+                onPageChange={( _, p ) => setPage( p )}
+                onRowsPerPageChange={( e ) => {
+                    setRowsPerPage( parseInt( e.target.value, 10 ) );
+                    setPage( 0 );
                 }}
                 rowsPerPageOptions={[25, 50, 100]}
             />
 
             <Menu
                 anchorEl={menuAnchorEl}
-                open={Boolean(menuAnchorEl)}
+                open={Boolean( menuAnchorEl )}
                 onClose={handleMenuClose}
             >
                 {menuRowData && (
