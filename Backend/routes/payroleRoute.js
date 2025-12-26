@@ -88,6 +88,12 @@ router.get( "/get_parole_nos", verifyToken, verifyPermission( "parole_nos", "rea
 router.put( "/update_parole_nos/:id", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.updateParoleNos );
 router.delete( "/delete_parole_nos/:id", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.deleteParoleNos );
 
+router.get( "/summary/mudda_wise", paroleController.getMuddaWiseParoleSummary );
+router.get( "/summary/mudda_wise/export", paroleController.exportMuddaWiseParoleSummary );
+
+router.get( "/summary/office_wise", paroleController.getOfficeWiseParoleSummary );
+router.get( "/summary/office_wise/export", paroleController.exportOfficeWiseParoleSummary );
+
 router.post( "/:id/court-decision", async ( req, res ) => {
     const { decision, bandiId, remarks } = req.body;
     const userId = req.user.username;
