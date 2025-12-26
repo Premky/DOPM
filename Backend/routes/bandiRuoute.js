@@ -3473,7 +3473,8 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         await connection.beginTransaction();
         await connection.query( insertSql, values );
         if ( reason_id === 8 ) {
-            await updateBandiStatus( {
+            await updateBandiStatus(
+                connection, {
                 bandiId: bandi_id,
                 newStatusId: BANDI_STATUS.DECEASED,
                 historyCode: "DECEASED",
@@ -3484,7 +3485,8 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         }
 
         if ( reason_id === 1 ) {
-            await updateBandiStatus( {
+            await updateBandiStatus( 
+                connection, {
                 bandiId: bandi_id,
                 newStatusId: BANDI_STATUS.SENTENCE_COMPLETED,
                 historyCode: "SENTENCE_COMPLETED",
