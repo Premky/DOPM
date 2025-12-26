@@ -86,12 +86,12 @@ export const getMuddaWiseParoleSummary = async ( req, res ) => {
 
     const groupBy =
       type === "gender"
-        ? "GROUP BY m.mudda_name, bp.gender"
-        : "GROUP BY m.mudda_name";
+        ? "GROUP BY mg.mudda_group_name, bp.gender"
+        : "GROUP BY mg.mudda_group_name";
 
     const sql = `
       SELECT 
-        m.mudda_name
+        mg.mudda_group_name AS mudda_name
         ${ type === "gender" ? ", bp.gender" : "" }
         ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'योग्य' THEN 1 ELSE 0 END) AS parole_yogya
         ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'अयोग्य' THEN 1 ELSE 0 END) AS parole_ayogya
@@ -103,10 +103,11 @@ export const getMuddaWiseParoleSummary = async ( req, res ) => {
       FROM payroles p
       JOIN bandi_person bp ON bp.id = p.bandi_id            
       JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
-      JOIN muddas m ON m.id = bmd.mudda_id      
+      JOIN muddas m ON m.id = bmd.mudda_id   
+      JOIN muddas_groups mg ON mg.id=m.muddas_group_id   
       ${ whereClause }
       ${ groupBy }
-      ORDER BY m.mudda_name
+      ORDER BY mg.mudda_group_name
     `;
 
     const [rows] = await pool.query( sql, values );
@@ -143,12 +144,12 @@ export const exportMuddaWiseParoleSummary = async ( req, res ) => {
 
     const groupBy =
       type === "gender"
-        ? "GROUP BY m.mudda_name, bp.gender"
-        : "GROUP BY m.mudda_name";
+        ? "GROUP BY mg.mudda_group_name, bp.gender"
+        : "GROUP BY mg.mudda_group_name";
 
     const sql = `
       SELECT 
-        m.mudda_name
+        mg.mudda_group_name AS mudda_name
         ${ type === "gender" ? ", bp.gender" : "" }
         ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'योग्य' THEN 1 ELSE 0 END) AS parole_yogya
         ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'अयोग्य' THEN 1 ELSE 0 END) AS parole_ayogya
@@ -161,9 +162,10 @@ export const exportMuddaWiseParoleSummary = async ( req, res ) => {
       JOIN bandi_person bp ON bp.id = p.bandi_id
       JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
       JOIN muddas m ON m.id = bmd.mudda_id
+      JOIN muddas_groups mg ON mg.id=m.muddas_group_id
       ${ whereClause }
       ${ groupBy }
-      ORDER BY m.mudda_name
+      ORDER BY mg.mudda_group_name
     `;
 
     const [rows] = await pool.query( sql, values );
@@ -292,16 +294,16 @@ export const getOfficeWiseParoleSummary = async ( req, res ) => {
   }
 };
 
-export const exportOfficeWiseParoleSummary = async (req, res) => {
+export const exportOfficeWiseParoleSummary = async ( req, res ) => {
   try {
     const { type, payrole_no_id } = req.query;
 
     // Build WHERE clause
     let whereClause = "";
     const values = [];
-    if (payrole_no_id) {
+    if ( payrole_no_id ) {
       whereClause = " WHERE p.payrole_no_id = ? ";
-      values.push(payrole_no_id);
+      values.push( payrole_no_id );
     }
 
     // Grouping
@@ -314,7 +316,7 @@ export const exportOfficeWiseParoleSummary = async (req, res) => {
     const sql = `
       SELECT 
         o.letter_address
-        ${type === "gender" ? ", bp.gender" : ""},
+        ${ type === "gender" ? ", bp.gender" : "" },
         SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'योग्य' THEN 1 ELSE 0 END) AS parole_yogya,
         SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'अयोग्य' THEN 1 ELSE 0 END) AS parole_ayogya,
         SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'छलफल' THEN 1 ELSE 0 END) AS parole_chalfal,
@@ -326,21 +328,21 @@ export const exportOfficeWiseParoleSummary = async (req, res) => {
       FROM payroles p
       JOIN bandi_person bp ON bp.id = p.bandi_id
       JOIN offices o ON o.id = bp.current_office_id
-      ${whereClause}
-      ${groupBy}
+      ${ whereClause }
+      ${ groupBy }
       ORDER BY o.letter_address
     `;
 
-    const [rows] = await pool.query(sql, values);
+    const [rows] = await pool.query( sql, values );
 
     // Create workbook
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Office Wise Summary");
+    const sheet = workbook.addWorksheet( "Office Wise Summary" );
 
     // Add header
     const headers = [
       "कार्यालय",
-      ...(type === "gender" ? ["लिङ्ग"] : []),
+      ...( type === "gender" ? ["लिङ्ग"] : [] ),
       "योग्य",
       "छलफल",
       "अयोग्य",
@@ -349,7 +351,7 @@ export const exportOfficeWiseParoleSummary = async (req, res) => {
       "अदालतबाट पास",
       "अदालतबाट फेल",
     ];
-    sheet.addRow(headers);
+    sheet.addRow( headers );
 
     // Gender mapping
     const genderMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
@@ -366,35 +368,35 @@ export const exportOfficeWiseParoleSummary = async (req, res) => {
     };
 
     // Add data rows
-    rows.forEach((row) => {
+    rows.forEach( ( row ) => {
       const dataRow = [
         row.letter_address,
-        ...(type === "gender" ? [genderMap[row.gender] || "अन्य"] : []),
-        Number(row.parole_yogya),
-        Number(row.parole_chalfal),
-        Number(row.parole_ayogya),
-        Number(row.parole_pass),
-        Number(row.parole_fail),
-        Number(row.court_pass),
-        Number(row.court_fail),
+        ...( type === "gender" ? [genderMap[row.gender] || "अन्य"] : [] ),
+        Number( row.parole_yogya ),
+        Number( row.parole_chalfal ),
+        Number( row.parole_ayogya ),
+        Number( row.parole_pass ),
+        Number( row.parole_fail ),
+        Number( row.court_pass ),
+        Number( row.court_fail ),
       ];
 
       // Update totals
-      totals.parole_yogya += Number(row.parole_yogya);
-      totals.parole_chalfal += Number(row.parole_chalfal);
-      totals.parole_ayogya += Number(row.parole_ayogya);
-      totals.parole_pass += Number(row.parole_pass);
-      totals.parole_fail += Number(row.parole_fail);
-      totals.court_pass += Number(row.court_pass);
-      totals.court_fail += Number(row.court_fail);
+      totals.parole_yogya += Number( row.parole_yogya );
+      totals.parole_chalfal += Number( row.parole_chalfal );
+      totals.parole_ayogya += Number( row.parole_ayogya );
+      totals.parole_pass += Number( row.parole_pass );
+      totals.parole_fail += Number( row.parole_fail );
+      totals.court_pass += Number( row.court_pass );
+      totals.court_fail += Number( row.court_fail );
 
-      sheet.addRow(dataRow);
-    });
+      sheet.addRow( dataRow );
+    } );
 
     // Add total row
     const totalRow = [
       "जम्मा",
-      ...(type === "gender" ? [""] : []),
+      ...( type === "gender" ? [""] : [] ),
       totals.parole_yogya,
       totals.parole_chalfal,
       totals.parole_ayogya,
@@ -403,16 +405,15 @@ export const exportOfficeWiseParoleSummary = async (req, res) => {
       totals.court_pass,
       totals.court_fail,
     ];
-    const lastRow = sheet.addRow(totalRow);
+    const lastRow = sheet.addRow( totalRow );
     lastRow.font = { bold: true };
 
     // Set headers
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=${
-        type === "gender"
-          ? "office_wise_summary_with_gender.xlsx"
-          : "office_wise_summary.xlsx"
+      `attachment; filename=${ type === "gender"
+        ? "office_wise_summary_with_gender.xlsx"
+        : "office_wise_summary.xlsx"
       }`
     );
     res.setHeader(
@@ -421,10 +422,10 @@ export const exportOfficeWiseParoleSummary = async (req, res) => {
     );
 
     // Write to response
-    await workbook.xlsx.write(res);
+    await workbook.xlsx.write( res );
     res.end();
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to export office wise summary" });
+  } catch ( err ) {
+    console.error( err );
+    res.status( 500 ).json( { message: "Failed to export office wise summary" } );
   }
 };
