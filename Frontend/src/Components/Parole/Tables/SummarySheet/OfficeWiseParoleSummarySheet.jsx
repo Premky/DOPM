@@ -22,6 +22,7 @@ const OfficeWiseParoleSummarySheet = () => {
   const BASE_URL = useBaseURL();
   const [summaryType, setSummaryType] = useState( "office" ); // office | gender
   const [rows, setRows] = useState( [] );
+  const [totals, setTotals] = useState( [] );
   const [loading, setLoading] = useState( false );
 
   const { control, watch } = useForm();
@@ -35,6 +36,7 @@ const OfficeWiseParoleSummarySheet = () => {
       setLoading( true );
 
       const params = new URLSearchParams( {
+        mode: 'office',
         type: summaryType,
         ...( payrole_no_id && { payrole_no_id } ),
       } );
@@ -43,7 +45,8 @@ const OfficeWiseParoleSummarySheet = () => {
         `${ BASE_URL }/payrole/summary/office_wise?${ params.toString() }`
       );
 
-      setRows( res.data || [] );
+      setRows( res.data.rows || [] );
+      setTotals( res.data.totals || [] );
     } catch ( err ) {
       console.error( "Failed to fetch summary", err );
     } finally {
@@ -58,6 +61,7 @@ const OfficeWiseParoleSummarySheet = () => {
   // Export Excel
   const handleExport = () => {
     const params = new URLSearchParams( {
+      mode: 'office',
       type: summaryType,
       ...( payrole_no_id && { payrole_no_id } ),
     } );
@@ -89,8 +93,8 @@ const OfficeWiseParoleSummarySheet = () => {
           size="small"
           onChange={( e, val ) => val && setSummaryType( val )}
         >
-          <ToggleButton value="office">Office Summary</ToggleButton>
-          <ToggleButton value="gender">Gender-wise Summary</ToggleButton>
+          {/* <ToggleButton value="office">Office Summary</ToggleButton>
+          <ToggleButton value="gender">Gender-wise Summary</ToggleButton> */}
         </ToggleButtonGroup>
 
         <Button variant="contained" color="success" onClick={handleExport}>
@@ -105,9 +109,12 @@ const OfficeWiseParoleSummarySheet = () => {
             <TableRow>
               <TableCell><b>कार्यालय</b></TableCell>
               {summaryType === "gender" && <TableCell><b>लिङ्ग</b></TableCell>}
+              <TableCell align="right">सिफारिस संख्या</TableCell>
+              <TableCell align="right">हेर्न बाँकी</TableCell>
               <TableCell align="right">योग्य</TableCell>
-              <TableCell align="right">छलफल</TableCell>
               <TableCell align="right">अयोग्य</TableCell>
+              <TableCell align="right">कागजात अपुग</TableCell>
+              <TableCell align="right">छलफल</TableCell>
               <TableCell align="right">पास</TableCell>
               <TableCell align="right">फेल</TableCell>
               <TableCell align="right">अदालतबाट पास</TableCell>
@@ -126,21 +133,40 @@ const OfficeWiseParoleSummarySheet = () => {
 
             {rows.map( ( row, index ) => (
               <TableRow key={index}>
-                <TableCell>{row.letter_address}</TableCell>
+                <TableCell>{row.group_name}</TableCell>
 
                 {summaryType === "gender" && (
                   <TableCell>{genderMap[row.gender] || "अन्य"}</TableCell>
                 )}
 
+                <TableCell align="right">{row.parole_sifaris}</TableCell>
+                <TableCell align="right">{row.parole_unseen}</TableCell>
                 <TableCell align="right">{row.parole_yogya}</TableCell>
-                <TableCell align="right">{row.parole_chalfal}</TableCell>
                 <TableCell align="right">{row.parole_ayogya}</TableCell>
+                <TableCell align="right">{row.parole_lack_of_paper_work}</TableCell>
+                <TableCell align="right">{row.parole_chalfal}</TableCell>
                 <TableCell align="right">{row.parole_pass}</TableCell>
                 <TableCell align="right">{row.parole_fail}</TableCell>
+
                 <TableCell align="right">{row.court_pass}</TableCell>
                 <TableCell align="right">{row.court_fail}</TableCell>
               </TableRow>
             ) )}
+
+            <TableRow>
+              <TableCell><b>जम्मा</b></TableCell>
+              {summaryType === "gender" && <TableCell><b>लिङ्ग</b></TableCell>}
+              <TableCell align="right">{totals.total_parole}</TableCell>
+              <TableCell align="right">{totals.parole_unseen}</TableCell>
+              <TableCell align="right">{totals.parole_yogya}</TableCell>
+              <TableCell align="right">{totals.parole_ayogya}</TableCell>
+              <TableCell align="right">{totals.parole_lack_of_paper_work}</TableCell>
+              <TableCell align="right">{totals.parole_chalfal}</TableCell>
+              <TableCell align="right">{totals.parole_pass}</TableCell>
+              <TableCell align="right">{totals.parole_fail}</TableCell>
+              <TableCell align="right">{totals.court_pass}</TableCell>
+              <TableCell align="right">{totals.court_fail}</TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>

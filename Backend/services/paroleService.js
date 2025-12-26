@@ -109,7 +109,7 @@ export const saveCourtDecisionService = async ( {
 
 
         // Update Bandi Current Status:
-        if(data.payrole_result === "पास"){
+        if ( data.payrole_result === "पास" ) {
             await conn.query( `UPDATE bandi_person SET bandi_status=?, is_under_payrole=? WHERE id=?`, [bandiStatusId, 1, parole.bandi_id] );
         }
 
@@ -130,3 +130,129 @@ export const saveCourtDecisionService = async ( {
         conn.release();
     }
 };
+
+// utils/paroleConfig.js
+export const SUMMARY_CONFIG = {
+    mudda: {
+        label: "मुद्दा",
+        select: "mg.mudda_group_name",
+        alias: "group_name",
+        joins: `
+      JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
+      JOIN muddas m ON m.id = bmd.mudda_id
+      JOIN muddas_groups mg ON mg.id = m.muddas_group_id
+    `,
+        orderBy: "mg.mudda_group_name",
+        sheetName: "Mudda Wise Summary",
+        filename: "mudda_wise_summary",
+    },
+
+    office: {
+        label: "कार्यालय",
+        select: "o.letter_address",
+        alias: "group_name",
+        joins: `
+      JOIN offices o ON o.id = bp.current_office_id
+    `,
+        orderBy: "o.letter_address",
+        sheetName: "Office Wise Summary",
+        filename: "office_wise_summary",
+    },
+};
+
+export const buildParoleSummaryQuery = ( { mode, type, payrole_no_id } ) => {
+    const cfg = SUMMARY_CONFIG[mode];
+
+    let whereClause = "";
+    const values = [];
+
+    if ( payrole_no_id ) {
+        whereClause = "WHERE p.payrole_no_id = ?";
+        values.push( payrole_no_id );
+    }
+
+    const groupBy =
+        type === "gender"
+            ? `GROUP BY ${ cfg.select }, bp.gender`
+            : `GROUP BY ${ cfg.select }`;
+
+    const sql = `
+    SELECT
+      ${ cfg.select } AS group_name
+      ${ type === "gender" ? ", bp.gender" : "" }
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'योग्य' THEN 1 ELSE 0 END) AS parole_yogya
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'अयोग्य' THEN 1 ELSE 0 END) AS parole_ayogya
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'छलफल' THEN 1 ELSE 0 END) AS parole_chalfal
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'कागजात अपुग' THEN 1 ELSE 0 END) AS parole_lack_of_paper_work
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'पास' THEN 1 ELSE 0 END) AS parole_pass
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'फेल' THEN 1 ELSE 0 END) AS parole_fail
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat IS NULL OR p.pyarole_rakhan_upayukat = '' THEN 1 ELSE 0 END) AS parole_unseen
+      ,SUM(CASE WHEN p.court_decision = 'पास' THEN 1 ELSE 0 END) AS court_pass
+      ,SUM(CASE WHEN p.court_decision = 'फेल' THEN 1 ELSE 0 END) AS court_fail
+    FROM payroles p
+    JOIN bandi_person bp ON bp.id = p.bandi_id
+    ${ cfg.joins }
+    ${ whereClause }
+    ${ groupBy }
+    ORDER BY ${ cfg.orderBy }
+  `;
+
+    return { sql, values };
+};
+
+export const fetchParoleSummary = async ( pool, options ) => {
+    const { sql, values } = buildParoleSummaryQuery( options );
+    const [rows] = await pool.query( sql, values );
+
+    const totals = {
+        parole_sifaris: 0,
+        parole_unseen: 0,
+        parole_yogya: 0,
+        parole_ayogya: 0,
+        parole_chalfal: 0,
+        parole_lack_of_paper_work: 0,
+        parole_pass: 0,
+        parole_fail: 0,
+        court_pass: 0,
+        court_fail: 0,
+    };
+
+    rows.forEach( row => {
+        totals.parole_unseen += Number( row.parole_unseen || 0 );
+        totals.parole_yogya += Number( row.parole_yogya || 0 );
+        totals.parole_ayogya += Number( row.parole_ayogya || 0 );
+        totals.parole_chalfal += Number( row.parole_chalfal || 0 );
+        totals.parole_lack_of_paper_work += Number( row.parole_lack_of_paper_work || 0 );
+        totals.parole_pass += Number( row.parole_pass || 0 );
+        totals.parole_fail += Number( row.parole_fail || 0 );
+        totals.court_pass += Number( row.court_pass || 0 );
+        totals.court_fail += Number( row.court_fail || 0 );
+    } );
+
+    totals.parole_sifaris =
+        totals.parole_yogya +
+        totals.parole_ayogya +
+        totals.parole_chalfal +
+        totals.parole_lack_of_paper_work +
+        totals.parole_pass +
+        totals.parole_fail +
+        totals.parole_unseen;
+
+    const enrichedRows = rows.map( r => ( {
+        ...r,
+        total_parole:
+            Number( r.parole_yogya || 0 ) +
+            Number( r.parole_ayogya || 0 ) +
+            Number( r.parole_chalfal || 0 ) +
+            Number( r.parole_lack_of_paper_work || 0 ) +
+            Number( r.parole_pass || 0 ) +
+            Number( r.parole_fail || 0 ) +
+            Number( r.parole_unseen || 0 ),
+    } ) );
+
+    return {
+        rows: enrichedRows,
+        totals,
+    };
+};
+

@@ -20,50 +20,54 @@ import { useForm } from "react-hook-form";
 
 const MuddaWiseParoleSummarySheet = () => {
   const BASE_URL = useBaseURL();
-  const [summaryType, setSummaryType] = useState("mudda"); // mudda | gender
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [summaryType, setSummaryType] = useState( "mudda" ); // mudda | gender
+  const [rows, setRows] = useState( [] );
+  const [totals, setTotals] = useState( [] );
+  const [loading, setLoading] = useState( false );
 
   const { control, watch } = useForm();
-  const payrole_no_id = watch("payrole_no_id");
+  const payrole_no_id = watch( "payrole_no_id" );
 
   const genderMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
 
   // Fetch summary
-  const fetchSummary = useCallback(async () => {
+  const fetchSummary = useCallback( async () => {
     try {
-      setLoading(true);
+      setLoading( true );
 
-      const params = new URLSearchParams({
+      const params = new URLSearchParams( {
+        mode: 'mudda',
         type: summaryType,
-        ...(payrole_no_id && { payrole_no_id }),
-      });
+        ...( payrole_no_id && { payrole_no_id } ),
+      } );
 
       const res = await axios.get(
-        `${BASE_URL}/payrole/summary/mudda_wise?${params.toString()}`
+        `${ BASE_URL }/payrole/summary/mudda_wise?${ params.toString() }`
       );
 
-      setRows(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch summary", err);
+      setRows( res.data.rows || [] );
+      setTotals( res.data.totals || [] );
+    } catch ( err ) {
+      console.error( "Failed to fetch summary", err );
     } finally {
-      setLoading(false);
+      setLoading( false );
     }
-  }, [summaryType, payrole_no_id, BASE_URL]);
+  }, [summaryType, payrole_no_id, BASE_URL] );
 
-  useEffect(() => {
+  useEffect( () => {
     fetchSummary();
-  }, [summaryType, fetchSummary]);
+  }, [summaryType, fetchSummary] );
 
   // Export Excel
   const handleExport = () => {
-    const params = new URLSearchParams({
+    const params = new URLSearchParams( {
+      mode: 'mudda',
       type: summaryType,
-      ...(payrole_no_id && { payrole_no_id }),
-    });
+      ...( payrole_no_id && { payrole_no_id } ),
+    } );
 
     window.open(
-      `${BASE_URL}/payrole/summary/mudda_wise/export?${params.toString()}`,
+      `${ BASE_URL }/payrole/summary/mudda_wise/export?${ params.toString() }`,
       "_blank"
     );
   };
@@ -86,10 +90,10 @@ const MuddaWiseParoleSummarySheet = () => {
           value={summaryType}
           exclusive
           size="small"
-          onChange={(e, val) => val && setSummaryType(val)}
+          onChange={( e, val ) => val && setSummaryType( val )}
         >
-          <ToggleButton value="mudda">Mudda Summary</ToggleButton>
-          <ToggleButton value="gender">Gender-wise Summary</ToggleButton>
+          {/* <ToggleButton value="mudda">Mudda Summary</ToggleButton> */}
+          {/* <ToggleButton value="gender">Gender-wise Summary</ToggleButton> */}
         </ToggleButtonGroup>
 
         <Button variant="contained" color="success" onClick={handleExport}>
@@ -104,9 +108,12 @@ const MuddaWiseParoleSummarySheet = () => {
             <TableRow>
               <TableCell><b>मुद्दा</b></TableCell>
               {summaryType === "gender" && <TableCell><b>लिङ्ग</b></TableCell>}
+              <TableCell align="right">सिफारिस संख्या</TableCell>
+              <TableCell align="right">हेर्न बाँकी</TableCell>
               <TableCell align="right">योग्य</TableCell>
-              <TableCell align="right">छलफल</TableCell>
               <TableCell align="right">अयोग्य</TableCell>
+              <TableCell align="right">कागजात अपुग</TableCell>
+              <TableCell align="right">छलफल</TableCell>
               <TableCell align="right">पास</TableCell>
               <TableCell align="right">फेल</TableCell>
               <TableCell align="right">अदालतबाट पास</TableCell>
@@ -123,23 +130,42 @@ const MuddaWiseParoleSummarySheet = () => {
               </TableRow>
             )}
 
-            {rows.map((row, index) => (
+            {rows.map( ( row, index ) => (
               <TableRow key={index}>
-                <TableCell>{row.mudda_name}</TableCell>
+                <TableCell>{row.group_name}</TableCell>
 
                 {summaryType === "gender" && (
                   <TableCell>{genderMap[row.gender] || "अन्य"}</TableCell>
                 )}
 
+                <TableCell align="right">{row.total_parole}</TableCell>
+                <TableCell align="right">{row.parole_unseen}</TableCell>
                 <TableCell align="right">{row.parole_yogya}</TableCell>
-                <TableCell align="right">{row.parole_chalfal}</TableCell>
                 <TableCell align="right">{row.parole_ayogya}</TableCell>
+                <TableCell align="right">{row.parole_lack_of_paper_work}</TableCell>
+                <TableCell align="right">{row.parole_chalfal}</TableCell>
                 <TableCell align="right">{row.parole_pass}</TableCell>
                 <TableCell align="right">{row.parole_fail}</TableCell>
+
                 <TableCell align="right">{row.court_pass}</TableCell>
                 <TableCell align="right">{row.court_fail}</TableCell>
               </TableRow>
-            ))}
+            ) )}
+
+            <TableRow>
+              <TableCell><b>जम्मा</b></TableCell>
+              {summaryType === "gender" && <TableCell><b>लिङ्ग</b></TableCell>}
+              <TableCell align="right">{totals.parole_sifaris}</TableCell>
+              <TableCell align="right">{totals.parole_unseen}</TableCell>
+              <TableCell align="right">{totals.parole_yogya}</TableCell>
+              <TableCell align="right">{totals.parole_ayogya}</TableCell>
+              <TableCell align="right">{totals.parole_lack_of_paper_work}</TableCell>
+              <TableCell align="right">{totals.parole_chalfal}</TableCell>
+              <TableCell align="right">{totals.parole_pass}</TableCell>
+              <TableCell align="right">{totals.parole_fail}</TableCell>
+              <TableCell align="right">{totals.court_pass}</TableCell>
+              <TableCell align="right">{totals.court_fail}</TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
