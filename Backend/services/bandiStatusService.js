@@ -10,9 +10,9 @@ export async function updateBandiStatus({
 }) {
   await pool.query(
     `UPDATE bandi_person
-     SET bandi_status = ?, status_updated_at = NOW(), status_updated_by = ?
+     SET bandi_status = ?, status_updated_at =?, status_updated_by = ?
      WHERE id = ?`,
-    [newStatusId, userId, bandiId]
+    [newStatusId, new Date(), userId, bandiId]
   );
 
   await pool.query(
