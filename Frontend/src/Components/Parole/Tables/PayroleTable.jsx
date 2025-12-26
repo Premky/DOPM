@@ -40,6 +40,7 @@ const PayroleTable = ( { status } ) => {
         ["clerk", "office_admin"].includes( authState.role_name );
 
     const {
+        allData,
         data,
         totalKaidi,
         fetchedMuddas,
@@ -112,7 +113,8 @@ const PayroleTable = ( { status } ) => {
                 sx={{ mb: 1 }}
                 onClick={() =>
                     exportToExcel(
-                        data,
+
+                        allData,
                         fetchedMuddas,
                         fetchedFines,
                         fetchedNoPunarabedan,
@@ -132,7 +134,7 @@ const PayroleTable = ( { status } ) => {
                     <TableRow sx={{ backgroundColor: grey }}>
                         {!isCheckboxNotVisible && (
                             <TableCell
-                                sx={stickyStyle(0,5)}
+                                sx={stickyStyle( 0, 5 )}
                             >
                                 ✓
                             </TableCell>
@@ -214,7 +216,7 @@ const PayroleTable = ( { status } ) => {
                     setRowsPerPage( parseInt( e.target.value, 10 ) );
                     setPage( 0 );
                 }}
-                rowsPerPageOptions={[25, 50, 100]}
+                rowsPerPageOptions={[25, 50, 100, 200, 500, 1000]}
             />
 
             <Menu
