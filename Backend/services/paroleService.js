@@ -135,14 +135,41 @@ export const saveCourtDecisionService = async ( {
 export const SUMMARY_CONFIG = {
     mudda: {
         label: "मुद्दा",
-        select: "mg.mudda_group_name",
+        select: "bmd_combined.mudda_name",
         alias: "group_name",
         joins: `
-      JOIN bandi_mudda_details bmd ON bp.id = bmd.bandi_id
-      JOIN muddas m ON m.id = bmd.mudda_id
-      JOIN muddas_groups mg ON mg.id = m.muddas_group_id
+     LEFT JOIN (
+                    SELECT *
+                    FROM (
+                        SELECT 
+                            bmd.bandi_id,
+                            bmd.mudda_id,
+                            m.mudda_name,
+                            bmd.mudda_no,
+                            bmd.thuna_date_bs,
+                            bmd.release_date_bs,
+                            bmd.vadi,
+                            bmd.is_main_mudda,
+                            bmd.is_last_mudda,
+                            bmd.mudda_phesala_antim_office_id,
+                            bmd.mudda_phesala_antim_office_date,
+                            o.office_name_with_letter_address AS mudda_phesala_antim_office,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY bmd.bandi_id 
+                                ORDER BY 
+                                    (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) DESC,
+                                    bmd.is_main_mudda DESC,
+                                    bmd.is_last_mudda DESC,
+                                    bmd.id DESC
+                            ) AS rn
+                        FROM bandi_mudda_details bmd
+                        LEFT JOIN muddas m ON bmd.mudda_id = m.id
+                        LEFT JOIN offices o ON bmd.mudda_phesala_antim_office_id = o.id
+                    ) ranked
+                    WHERE ranked.rn = 1
+                ) AS bmd_combined ON bp.id = bmd_combined.bandi_id
     `,
-        orderBy: "mg.mudda_group_name",
+        orderBy: "bmd_combined.mudda_name",
         sheetName: "Mudda Wise Summary",
         filename: "mudda_wise_summary",
     },
