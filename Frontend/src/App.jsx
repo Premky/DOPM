@@ -54,6 +54,8 @@ import PermissionsPage from './Pages/Audit/Admin/PermissionsPage';
 import Forbidden from './Pages/Errors/Forbidden';
 import ProtectedRoute from './Components/Auth/middlewares/ProtectedRoute';
 import NotFound from './Pages/Errors/NotFound';
+import MuddaWiseParoleSummarySheet from './Components/Parole/Tables/SummarySheet/MuddaWiseParoleSummarySheet';
+import OfficeWiseParoleSummarySheet from './Components/Parole/Tables/SummarySheet/OfficeWiseParoleSummarySheet';
 
 // Axios interceptor for 401
 axios.interceptors.response.use(
@@ -129,6 +131,9 @@ function App() {
                   <Route path="parole" element={<Outlet />}>
                     <Route index element={<PayroleMakebari />} />
                     <Route path="maskebari" element={<PayroleMakebari />} />
+                    <Route path="mudda_wise_summary" element={<MuddaWiseParoleSummarySheet />} />
+                    <Route path="office_wise_summary" element={<OfficeWiseParoleSummarySheet />} />
+
                     <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
                     <Route path="create_previous_parole" element={<PreviousParoleForm status='under_parole' />} />
                     <Route path="create_payrole" element={<PayroleForm />} />
