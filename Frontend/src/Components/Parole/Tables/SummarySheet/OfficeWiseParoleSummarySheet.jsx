@@ -139,7 +139,7 @@ const OfficeWiseParoleSummarySheet = () => {
                   <TableCell>{genderMap[row.gender] || "अन्य"}</TableCell>
                 )}
 
-                <TableCell align="right">{row.parole_sifaris}</TableCell>
+                <TableCell align="right">{row.total_parole}</TableCell>
                 <TableCell align="right">{row.parole_unseen}</TableCell>
                 <TableCell align="right">{row.parole_yogya}</TableCell>
                 <TableCell align="right">{row.parole_ayogya}</TableCell>
@@ -156,7 +156,7 @@ const OfficeWiseParoleSummarySheet = () => {
             <TableRow>
               <TableCell><b>जम्मा</b></TableCell>
               {summaryType === "gender" && <TableCell><b>लिङ्ग</b></TableCell>}
-              <TableCell align="right">{totals.total_parole}</TableCell>
+              <TableCell align="right">{totals.parole_sifaris}</TableCell>
               <TableCell align="right">{totals.parole_unseen}</TableCell>
               <TableCell align="right">{totals.parole_yogya}</TableCell>
               <TableCell align="right">{totals.parole_ayogya}</TableCell>
