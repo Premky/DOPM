@@ -693,7 +693,7 @@ const getBandiQuery = `
     b.dob,
     b.dob_ad,
     TIMESTAMPDIFF(YEAR, b.dob_ad, CURDATE()) AS current_age,
-    b.status AS bandi_status,
+    b.bandi_status,
     b.bandi_education,
     b.bandi_huliya,
     b.married_status,
@@ -800,41 +800,67 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
 } );
 
 router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
+    const toInt = ( v ) => ( v === undefined || v === "0" || v === "" ? null : Number( v ) );
     const active_office = req.user.office_id;
-    const {
-        selected_office = 0,
-        bandi_status = 0,
-        searchOffice = 0,
-        nationality = 0,
-        country = 0,
-        gender = 0,
-        bandi_type = 0,
-        search_name = '',
-        is_active = 1,
-        is_dependent,
-        mudda_group_id,
-        is_escape,
-        is_under_payrole = 0
-    } = req.query;
+
+    // const {
+    //     selected_office = 0,
+    //     bandi_status = 0,
+    //     searchOffice = 0,
+    //     nationality = 0,
+    //     country = 0,
+    //     gender = 0,
+    //     bandi_type = 0,
+    //     search_name = '',
+    //     is_active = 1,
+    //     is_dependent,
+    //     mudda_group_id,
+    //     is_escape,
+    //     is_under_payrole = 0
+    // } = req.query;
+
+    const selected_office = toInt( req.query.selected_office );
+    const searchOffice = toInt( req.query.searchOffice );
+    const bandi_status = toInt( req.query.bandi_status );
+    const nationality = toInt( req.query.nationality );
+    const country = toInt( req.query.country );
+    const gender = toInt( req.query.gender );
+    const bandi_type = toInt( req.query.bandi_type );
+    const mudda_group_id = toInt( req.query.mudda_group_id );
+    const is_escape = toInt( req.query.is_escape );
+    const is_dependent = toInt( req.query.is_dependent );
+    const is_active = req.query.is_active !== undefined ? Number( req.query.is_active ) : 1;
+    const is_under_payrole =
+        req.query.is_under_payrole !== undefined ? Number( req.query.is_under_payrole ) : 0;
+
+    const search_name = req.query.search_name?.trim() || "";
+
 
     let conditions = ['1=1'];
     let params = [];
 
-    if ( selected_office ) { conditions.push( 'current_office_id = ?' ); params.push( selected_office ); }
-    else if ( searchOffice ) { conditions.push( 'current_office_id = ?' ); params.push( searchOffice ); }
+    // if ( selected_office ) { conditions.push( 'current_office_id = ?' ); params.push( selected_office ); }
+    // else if ( searchOffice ) { conditions.push( 'current_office_id = ?' ); params.push( searchOffice ); }
     // else if ( active_office ) { conditions.push( 'current_office_id = ?' ); params.push( active_office ); }
 
+    if ( selected_office !== null ) {
+        conditions.push( "current_office_id = ?" );
+        params.push( selected_office );
+    } else if ( searchOffice !== null ) {
+        conditions.push( "current_office_id = ?" );
+        params.push( searchOffice );
+    }
 
 
-    if ( bandi_status ) conditions.push( 'bandi_status = ?' ), params.push( bandi_status );
-    if ( nationality ) conditions.push( 'nationality = ?' ), params.push( nationality );
-    if ( country ) conditions.push( 'country_id = ?' ), params.push( country );
-    if ( gender ) conditions.push( 'gender = ?' ), params.push( gender );
-    if ( bandi_type ) conditions.push( 'bandi_type = ?' ), params.push( bandi_type );
-    if ( search_name ) conditions.push( '(bandi_name LIKE ? OR office_bandi_id = ?)' ), params.push( `%${ search_name }%`, search_name );
-    if ( mudda_group_id ) conditions.push( 'muddas_group_id = ?' ), params.push( mudda_group_id );
-    if ( is_escape ) conditions.push( 'escape_status = ?' ), params.push( is_escape );
-    if ( is_dependent ) conditions.push( 'is_dependent = ?' ), params.push( is_dependent );
+    if ( bandi_status != null ) conditions.push( 'bandi_status = ?' ), params.push( bandi_status );
+    if ( nationality != null ) conditions.push( 'nationality = ?' ), params.push( nationality );
+    if ( country != null ) conditions.push( 'country_id = ?' ), params.push( country );
+    if ( gender != null ) conditions.push( 'gender = ?' ), params.push( gender );
+    if ( bandi_type != null ) conditions.push( 'bandi_type = ?' ), params.push( bandi_type );
+    if ( search_name != null ) conditions.push( '(bandi_name LIKE ? OR office_bandi_id = ?)' ), params.push( `%${ search_name }%`, search_name );
+    if ( mudda_group_id != null ) conditions.push( 'muddas_group_id = ?' ), params.push( mudda_group_id );
+    if ( is_escape != null ) conditions.push( 'escape_status = ?' ), params.push( is_escape );
+    if ( is_dependent != null ) conditions.push( 'is_dependent = ?' ), params.push( is_dependent );
     if ( is_active !== undefined ) conditions.push( 'is_active = ?' ), params.push( is_active );
     if ( is_under_payrole !== undefined ) conditions.push( 'is_under_payrole = ?' ), params.push( is_under_payrole );
 
@@ -879,6 +905,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 } );
 
 router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
+
     // res.set( 'Cache-Control', 'no-store' );
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
