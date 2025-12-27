@@ -824,7 +824,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const is_under_payrole =
         req.query.is_under_payrole !== undefined
             ? Number( req.query.is_under_payrole )
-            : 0;
+            : null;
+
 
     const search_name = req.query.search_name?.trim() || "";
 
