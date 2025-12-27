@@ -306,6 +306,17 @@ router.get( '/muddas_groups', async ( req, res ) => {
     }
 } );
 
+router.get( '/bandi_status', async ( req, res ) => {
+    const sql = `SELECT * from bandi_status_master ORDER BY id`;
+    try {
+        const [result] = await pool.query( sql );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
 // const queryAsync = promisify( con.query ).bind( con );
 
 

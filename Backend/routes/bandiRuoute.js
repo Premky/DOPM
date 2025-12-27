@@ -436,6 +436,15 @@ router.post( '/create_bandi', verifyToken, upload.single( 'photo' ), async ( req
         }
 
         const bandi_id = await insertBandiPerson( { ...req.body, user_id, office_id, photo_path }, connection );
+        updateBandiStatus( {
+            bandiId: bandi_id,
+            newStatusId: BANDI_STATUS.IN_CUSTODY,
+            historyCode: "IN_CUSTODY",
+            source: "ADMIN",
+            remarks: req.body.remarks,
+            userId: req.user.username,
+        } );
+
         await insertKaidDetails( bandi_id, { ...req.body, user_id, office_id }, connection );
         await insertCardDetails( bandi_id, { ...req.body, user_id, office_id }, connection );
         await insertAddress( bandi_id, { ...req.body, user_id, office_id }, connection );
@@ -794,6 +803,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const {
         selected_office = 0,
+        bandi_status = 0,
         searchOffice = 0,
         nationality = 0,
         country = 0,
@@ -816,6 +826,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
 
 
+    if ( bandi_status ) conditions.push( 'bandi_status = ?' ), params.push( bandi_status );
     if ( nationality ) conditions.push( 'nationality = ?' ), params.push( nationality );
     if ( country ) conditions.push( 'country_id = ?' ), params.push( country );
     if ( gender ) conditions.push( 'gender = ?' ), params.push( gender );
@@ -871,6 +882,7 @@ router.get( '/get_all_office_bandi1', verifyToken, async ( req, res ) => {
     // res.set( 'Cache-Control', 'no-store' );
     const active_office = req.user.office_id;
     const selectedOffice = req.query.selected_office || 0;
+    const bandi_status = req.query.bandi_status || 1;
     const searchOffice = req.query.searchOffice || 0;
     const nationality = req.query.nationality || 0;
     const country = req.query.country || 0;
@@ -3485,7 +3497,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
         }
 
         if ( reason_id === 1 ) {
-            await updateBandiStatus( 
+            await updateBandiStatus(
                 connection, {
                 bandiId: bandi_id,
                 newStatusId: BANDI_STATUS.SENTENCE_COMPLETED,
@@ -3558,8 +3570,24 @@ router.post( "/create_escape_bandi", verifyToken, async ( req, res ) => {
         await connection.query( insertSql, values );
         if ( status == 'escaped' ) {
             await connection.query( `UPDATE bandi_person SET is_escaped=1 WHERE id=${ bandi_id }` );
+            updateBandiStatus( {
+                bandiId: bandi_id,
+                newStatusId: BANDI_STATUS.ESCAPED,
+                historyCode: "ESCAPED",
+                source: "ADMIN",
+                remarks: req.body.remarks,
+                userId: req.user.username,
+            } );
         } else {
             await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ bandi_id }` );
+            updateBandiStatus( {
+                bandiId: bandi_id,
+                newStatusId: BANDI_STATUS.IN_CUSTODY,
+                historyCode: "RE_ARRESTED",
+                source: "ADMIN",
+                remarks: req.body.remarks,
+                userId: req.user.username,
+            } );
         }
         await connection.commit();
         res.json( { Status: true, Message: "Inserted successfully" } );

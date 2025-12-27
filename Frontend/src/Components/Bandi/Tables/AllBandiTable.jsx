@@ -13,6 +13,7 @@ import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGrou
 import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { event } from 'jquery';
+import fetchBandiStatus from '../../ReuseableComponents/FetchApis/fetchBandiStatus';
 const ReuseKaragarOffice = React.lazy( () => import( '../../ReuseableComponents/ReuseKaragarOffice' ) );
 const ReuseSelect = React.lazy( () => import( '../../ReuseableComponents/ReuseSelect' ) );
 const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInput' ) );
@@ -26,6 +27,7 @@ const AllBandiTable = () => {
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const { records: muddaGroups, optrecords: mudaGroupsOpt, loading: muddaGroupsLoading } = fetchMuddaGroups();
+    const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
     useEffect( () => {
         setValue( 'searchOffice', authState.office_id | '' );
     }, [authState] );
@@ -68,12 +70,13 @@ const AllBandiTable = () => {
 
     //Watch Variables:
     const searchOffice = watch( 'searchOffice' );
+    const bandi_status = watch( 'bandi_status' );
     const nationality = watch( 'nationality' );
     const country = watch( 'country' );
     const search_name = watch( 'search_name' );
     const gender = watch( 'gender' );
     const bandi_type = watch( 'bandi_type' );
-    const is_active = watch( 'is_active' );
+    let is_active = watch( 'is_active' );
     const is_dependent = watch( 'is_dependent' );
     const mudda_group_id = watch( 'mudda_group_id' );
     const is_escape = watch( 'is_escape' );
@@ -85,11 +88,12 @@ const AllBandiTable = () => {
 
     const fetchKaidi = async () => {
         setLoading( true );
+        // is_active ? is_active : is_active = 1;
         try {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
                 // page, limit: rowsPerPage,
                 params: {
-                    searchOffice, nationality, country,
+                    searchOffice, bandi_status, nationality, country,
                     gender, bandi_type, search_name,
                     is_active, is_dependent, mudda_group_id, is_escape
                 },
@@ -142,7 +146,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         // fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id, is_escape] );
+    }, [page, rowsPerPage, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id, is_escape] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -438,6 +442,15 @@ const AllBandiTable = () => {
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="bandi_status"
+                            label='बन्दीको अवस्था'
+                            control={control}
+                            options={bandiStatusOpt}
+                        />
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseInput
                             name="search_name"
                             label="नाम/संकेत नं."
@@ -533,6 +546,7 @@ const AllBandiTable = () => {
                             options={mudaGroupsOpt}
                         />
                     </Grid>
+
 
                     <Grid size={{ xs: 6 }} mt={3}>
                         <Button
