@@ -56,6 +56,7 @@ import ProtectedRoute from './Components/Auth/middlewares/ProtectedRoute';
 import NotFound from './Pages/Errors/NotFound';
 import MuddaWiseParoleSummarySheet from './Components/Parole/Tables/SummarySheet/MuddaWiseParoleSummarySheet';
 import OfficeWiseParoleSummarySheet from './Components/Parole/Tables/SummarySheet/OfficeWiseParoleSummarySheet';
+import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
 
 // Axios interceptor for 401
 axios.interceptors.response.use(
@@ -115,7 +116,7 @@ function App() {
                     <Route index element={<CountReport />} />
                     <Route path="dashboard" element={<CountReport />} />
                     <Route path="count_ac_office" element={<BandiMaskebari />} />
-                    <Route path="count_ac_country" element={<BandiMaskebari />} />
+                    <Route path="count_ac_country" element={<CountAcOfficenCountry />} />
                     <Route path="maskebari" element={<KaragarMaskebari />} />
                     <Route path="bandi_details" element={<AllBandiTable />} />
                     <Route path="create_bandi" element={<BandiPersonForm />} />
