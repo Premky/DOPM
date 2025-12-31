@@ -16,6 +16,7 @@ import Swal from 'sweetalert2';
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import fetchBandiTransferHistory from '../../../ReuseableComponents/FetchApis/fetchBandiTransferHistory';
 import BandiTransfer from '../../Dialogs/BandiTransferModal';
+import fetchBandiReleaseDetails from '../../../ReuseableComponents/FetchApis/fetchBandiReleaseDetails';
 
 const BandiReleaseTable = ( { bandi_id } ) => {
     const BASE_URL = useBaseURL();
@@ -26,7 +27,7 @@ const BandiReleaseTable = ( { bandi_id } ) => {
 
     // ✅ Fetch data
 
-    const { records: bandiTransferHistory, loading: bandiTransferHistoryLoading, refetch } = fetchBandiTransferHistory( bandi_id );
+    const { records: bandiReleaseData, loading: bandiReleaseDataLoading, refetch } = fetchBandiReleaseDetails( bandi_id );
     // console.log(bandiTransferHistory)
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
@@ -67,7 +68,7 @@ const BandiReleaseTable = ( { bandi_id } ) => {
                 // Update existing contact
                 response = await axios.put(
                     `${ BASE_URL }/bandi/update_bandi_release/${ id }`,
-                    {bandi_transfer_details: [formData]},
+                    { bandi_transfer_details: [formData] },
                     { withCredentials: true }
                 );
 
@@ -76,6 +77,7 @@ const BandiReleaseTable = ( { bandi_id } ) => {
                 } else {
                     throw new Error( response.data.message || 'अपडेट गर्न सकिएन ।' );
                 }
+
             } else {
                 // Create new contact
                 response = await axios.post(
@@ -131,16 +133,16 @@ const BandiReleaseTable = ( { bandi_id } ) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {bandiTransferHistory.map( ( opt, index ) => (
+                            {bandiReleaseData.map( ( opt, index ) => (
                                 <TableRow key={opt.id || index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.transfer_to_office_fn}</TableCell>
-                                    <TableCell align="center">{opt.transfer_from_date}</TableCell>
-                                    <TableCell align="center">{opt.transfer_to_date}</TableCell>
-                                    <TableCell align="center">{opt.transfer_reason_np}</TableCell>
-                                    <TableCell align="center">{opt.transfer_reason}</TableCell>
+                                    <TableCell align="center">{opt.reasons_np}</TableCell>
+                                    <TableCell align="center">{opt.karnayan_miti}</TableCell>
+                                    <TableCell align="center">{opt.nirnay_officer}</TableCell>
+                                    <TableCell align="center">{opt.relative_name}</TableCell>
+                                    <TableCell align="center">{opt.remarks}</TableCell>
 
-                                    <TableCell align="center">
+                                    {/* <TableCell align="center">
                                         <Grid item container alignContent='center' spacing={2}>
                                             <Grid item>
                                                 <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
@@ -149,7 +151,8 @@ const BandiReleaseTable = ( { bandi_id } ) => {
                                                 <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
                                             </Grid>
                                         </Grid>
-                                    </TableCell>
+                                    </TableCell> */}
+
                                 </TableRow>
                             ) )}
                         </TableBody>

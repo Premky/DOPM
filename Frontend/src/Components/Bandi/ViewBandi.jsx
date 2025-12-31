@@ -16,6 +16,7 @@ import BandiTransferHistoryTable from './Tables/For View/BandiTransferHistoryTab
 import PayroleDetailsTable from '../Parole/View/PayroleDetailsTable.jsx';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import BandiEscapeTable from './Tables/For View/BandiEscapeTable.jsx';
+import BandiReleaseTable from './Tables/For View/BandiReleaseTable.jsx';
 
 const ViewBandi = ( { bandi } ) => {
     const params = useParams();
@@ -88,11 +89,11 @@ const ViewBandi = ( { bandi } ) => {
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <BandiEscapeTable bandi_id={bandi_id} />
-                </Grid>
+                </Grid> 
 
-                {/* <Grid size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }}>
                     <BandiReleaseTable bandi_id={bandi_id} />
-                </Grid> */}
+                </Grid>
             </Grid>
         </>
     );

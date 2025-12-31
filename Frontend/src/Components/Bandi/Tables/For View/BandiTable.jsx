@@ -36,6 +36,7 @@ const BandiTable = ( { bandi_id } ) => {
             setLoading( false );
         }
     };
+
     useEffect( () => {
         if ( bandi_id ) {
             fetchBandies();
@@ -49,6 +50,7 @@ const BandiTable = ( { bandi_id } ) => {
         setEditingData( data );
         setModalOpen( true );
     };
+    
     const handleAdd = ( bandi_id ) => {
         setEditingData( { bandi_id } );
         setModalOpen( true );

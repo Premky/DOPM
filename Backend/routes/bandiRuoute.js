@@ -775,9 +775,9 @@ LEFT JOIN (
     LEFT JOIN offices bfdo ON bfdo.id=bfd.deposit_office 
     GROUP BY bandi_id
 ) AS fine_summary_table ON fine_summary_table.bandi_id = b.id
-
-WHERE b.is_active = 1
+WHERE 1 = 1
 `;
+// WHERE b.is_active = 1
 
 router.get( '/get_bandi1', async ( req, res ) => {
     pool.query( getBandiQuery, ( err, result ) => {
@@ -815,8 +815,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const gender = toInt( req.query.gender );
     const bandi_type = toInt( req.query.bandi_type );
     const mudda_group_id = toInt( req.query.mudda_group_id );
-    const is_escape = toInt( req.query.is_escape );
     const is_dependent = toInt( req.query.is_dependent );
+    const is_escape = req.query.is_escape || '';
 
     const is_active =
         req.query.is_active !== undefined ? Number( req.query.is_active ) : 1;
@@ -845,7 +845,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
     if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
     if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
-    if ( is_escape !== null ) conditions.push( "escape_status = ?" ), params.push( is_escape );
+    if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
     if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
 
     if ( search_name ) {
@@ -869,7 +869,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
             params
         );
 
-    const grouped = {};
+        const grouped = {};
         rows.forEach( row => {
             const bandiId = row.bandi_id;
             if ( !grouped[bandiId] ) {
@@ -2907,15 +2907,18 @@ router.get( '/get_bandi_contact_person/:id', async ( req, res ) => {
 router.get( '/get_bandi_release/:id', async ( req, res ) => {
     const { id } = req.params;
     const sql = `
-        SELECT bkd.*, bp.bandi_type FROM bandi_kaid_details bkd 
-        LEFT JOIN bandi_person bp ON bkd.bandi_id=bp.id 
-        WHERE bandi_id = ?
+        SELECT brd.*, brr.reasons_np, bri.relative_name
+        FROM bandi_release_details brd 
+        LEFT JOIN bandi_person bp ON brd.bandi_id=bp.id 
+        LEFT JOIN bandi_release_reasons brr ON brd.reason_id = brr.id
+        LEFT JOIN bandi_relative_info bri ON brd.aafanta_id = bri.id
+        WHERE brd.bandi_id = ?
     `;
     try {
         const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
         // console.log(result)
         if ( result.length === 0 ) {
-            return res.json( { Status: false, Error: "Bandi Kaid Details not found" } );
+            return res.json( { Status: false, Error: "Bandi Release Details not found" } );
         }
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
