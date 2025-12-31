@@ -38,7 +38,6 @@ const PayroleTableFilters = ( { onChange } ) => {
             searchchecked: false,
             searchis_checked: false,
         },
-
     } );
 
     const searchOffice = watch( 'searchOffice' );
@@ -81,9 +80,11 @@ const PayroleTableFilters = ( { onChange } ) => {
     ] );
 
     const { data: filteredKaidi, totalKaidi, loading, error, fetchedMuddas, refetchMuddas, refetchData } = useFetchPayroles( memoFilters ); // page, rowsPerPage
+
     const onSubmit = ( data ) => {
         onChange( data );
     };
+
     useEffect( () => {
         const currentFilters = {
             searchOffice,
@@ -147,7 +148,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     return (
         <form onSubmit={handleSubmit( onSubmit )}>
             <Grid container spacing={1} alignItems="flex-end">
-                {(authState.office_id == 1 || authState.office_id == 2) && (
+                {( authState.office_id == 1 || authState.office_id == 2 ) && (
                     <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
@@ -225,10 +226,10 @@ const PayroleTableFilters = ( { onChange } ) => {
                     <ReuseSelect
                         name='court_decision'
                         label='अदालतको निर्णय'
-                        options={[            
-                            { label: 'सबै', value: '' },               
+                        options={[
+                            { label: 'सबै', value: '' },
                             { label: 'पास', value: 'पास' },
-                            { label: 'फेल', value: 'फेल' },                          
+                            { label: 'फेल', value: 'फेल' },
                         ]}
                         control={control}
                     />

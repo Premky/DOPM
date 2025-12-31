@@ -120,7 +120,7 @@ const PayroleTableRow = ( {
         <TableCell>{firstMudda.vadi}</TableCell>
         <TableCell>{firstMudda.mudda_office}</TableCell>
 
-        <TableCell rowSpan={rowSpan}>{data.kaid_start_date_bs}</TableCell>
+        <TableCell rowSpan={rowSpan}>{data.thuna_date_bs}</TableCell>
         <TableCell rowSpan={rowSpan}>
           {/* कैद अवधि */}
           {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
@@ -136,7 +136,7 @@ const PayroleTableRow = ( {
           ) : null}
           {kaidDuration?.formattedDuration}
         </TableCell>
-        <TableCell rowSpan={rowSpan}>{data.kaid_end_date_bs}</TableCell>
+        <TableCell rowSpan={rowSpan}>{data.release_date_bs}</TableCell>
         <TableCell rowSpan={rowSpan}>
           {/*भुक्तान अवधी*/}
           {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
