@@ -469,7 +469,20 @@ const ReusableBandiTable = ( {
                         {t( "फोटो समावेश गर्नुहोस्", "Include Photo" )}
                     </label>
 
-                    <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
+                    < a href={`${ BASE_URL }/bandi/export_office_bandi_excel?selected_office=${ authState.office_id }&language=${ language }&includePhoto=${ includePhoto ? 1 : 0 }`}>
+                        <Button variant="outlined" disabled={exporting}>
+                            {exporting ? (
+                                <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                                    <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
+                                </span>
+                            ) : (
+                                t( "एक्सेल निर्यात", "Export to Excel" )
+                            )}
+                        </Button>
+                    </a>
+
+
+                    {/* <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
                         {exporting ? (
                             <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
                                 <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
@@ -477,7 +490,7 @@ const ReusableBandiTable = ( {
                         ) : (
                             t( "एक्सेल निर्यात", "Export to Excel" )
                         )}
-                    </Button>
+                    </Button> */}
                 </Box>
             </Box>
 
