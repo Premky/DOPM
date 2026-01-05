@@ -22,27 +22,12 @@ import {
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { finalReleaseDateWithFine } from "../../../../Utils/dateCalculator";
 import { useAuth } from "../../../Context/AuthContext";
-
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
-
-/**
- * ReusableBandiTable
- *
- * - Splits responsibilities: rendering vs export helpers
- * - Performance notes:
- *   * ExcelJS and file-saver are imported at top-level (no dynamic import on each click)
- *   * Export image fetching happens only when includePhoto === true
- *   * Images are fetched in parallel (Promise.allSettled) and only buffers used
- *   * Merge ranges are collected and applied after rows are added (fewer expensive ops)
- *   * Export shows a loading state & basic progress
- *
- * Props:
- *  - language, rows, columns, primaryMergeKey, title, showView/showEdit/showDelete, onView/onEdit/onDelete
- */
+import axios from "axios";
+import { set } from "react-hook-form";
 
 const ReusableBandiTable = ( {
     language = "",
+    filters = {},
     rows = [],
     columns = [],
     primaryMergeKey = "bandi_id",
@@ -156,296 +141,31 @@ const ReusableBandiTable = ( {
         []
     );
 
-    // ---------- EXPORT HELPERS ----------
-    // returns extension string from content-type or URL
-    const getImgExtFromResponseOrUrl = ( res, url ) => {
+
+    //Export Handler
+    const handleExport = async () => {
         try {
-            const ct = res?.headers?.get?.( "content-type" ) || "";
-            if ( ct.includes( "png" ) ) return "png";
-            if ( ct.includes( "jpeg" ) || ct.includes( "jpg" ) ) return "jpeg";
-        } catch ( e ) { }
-        if ( url?.toLowerCase().endsWith( ".png" ) ) return "png";
-        return "jpeg";
+            setExporting( true );
+
+            const response = await axios.get( `${ BASE_URL }/bandi/export_office_bandi_excel`, { params: filters, responseType: 'blob', withCredentials: true } );
+            const blob = new Blob( [response.data] );
+            const url = window.URL.createObjectURL( blob );
+            const link = document.createElement( 'a' );
+            link.href = url;
+            link.download = `${ language === "en" ? "Bandi_Details.xlsx" : "बन्दी_विवरण.xlsx" }`;
+            document.body.appendChild( link );
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL( url );
+        } catch ( error ) {
+            console.error( 'Export failed:', error );
+            Swal.fire( 'Error', 'Export failed', 'error' );
+            setExporting( false );
+        } finally {
+            setExporting( false );
+        }
     };
 
-    // fetch images in parallel and return a map url -> { buffer, ext }.
-    // resilient: returns only fulfilled ones.
-    const fetchImages = async ( urls = [], onProgress ) => {
-        if ( !urls || urls.length === 0 ) return {};
-        const results = await Promise.allSettled(
-            urls.map( async ( u, i ) => {
-                // don't fetch falsy urls
-                if ( !u ) return { url: u, ok: false, reason: "empty" };
-                // attempt fetch
-                const res = await fetch( u );
-                if ( !res.ok ) throw new Error( `HTTP ${ res.status }` );
-                const arrayBuffer = await res.arrayBuffer();
-                const ext = getImgExtFromResponseOrUrl( res, u );
-                onProgress?.( i );
-                return { url: u, ok: true, buffer: arrayBuffer, ext };
-            } )
-        );
-
-        const map = {};
-        results.forEach( ( r ) => {
-            if ( r.status === "fulfilled" ) {
-                const v = r.value;
-                if ( v && v.ok ) map[v.url] = { buffer: v.buffer, ext: v.ext };
-            }
-        } );
-        return map;
-    };
-
-    /**
-     * handleExport
-     * - includePhoto is read from component state (includePhoto)
-     * - optimized: prepares headers, adds rows, collects merge ranges, applies merges once,
-     *   and inserts images after rows are added (image buffers fetched ahead-of-time)
-     */
-    const handleExport = useCallback(
-        async ( opts = {} ) => {
-            try {
-                setExporting( true );
-                setExportProgress( { done: 0, total: 0 } );
-
-                // use the component state includePhoto (so user checkbox affects export)
-                const addPhotos = Boolean( includePhoto );
-
-                const workbook = new ExcelJS.Workbook();
-                const worksheet = workbook.addWorksheet( t( "बन्दी विवरण", "Bandi Details" ) );
-
-                // Build headers (exclude internal photo_path column, we add separate Photo column if requested)
-                const headerCols = columns.filter( ( c ) => c.field !== "photo_path" );
-                const bandiHeaders = headerCols.map( ( c ) => c.headerName );
-
-                const baseFooterCols = [
-                    t( "देश", "Country" ),
-                    t( "जन्म मिति(ई.सं.)", "Date of Birth(A.D.)" ),
-                    t( "जन्म मिति(वि.सं.)", "Date of Birth(B.S.)" ),
-                    t( "मुद्दा समूह", "Mudda Group" ),
-                    t( "मुद्दा", "Case" ),
-                    t( "मुद्दा नं.", "Case No." ),
-                    t( "जाहेरवाला", "Complainant" ),
-                    t( "फैसला गर्ने कार्यालय", "Decision Office" ),
-                    t( "फैसला मिति", "Decision Date" ),
-                ];
-
-                // final header row
-                const headerRow = [t( "सि.नं.", "S.N." ), ...bandiHeaders, ...baseFooterCols];
-                if ( addPhotos ) headerRow.push( t( "फोटो", "Photo" ) );
-
-                worksheet.addRow( headerRow );
-                // style header row
-                worksheet.getRow( 1 ).font = { name: "Kalimati", size: 14, bold: true };
-
-                // Pre-calc image URLs only if addPhotos
-                // We'll collect image URLs for bandi rows (only once per bandi)
-                const imageUrls = [];
-                const bandiIndexToImageUrl = new Map(); // map bandiIndex -> url or null
-                if ( addPhotos ) {
-                    filteredRows.forEach( ( b, idx ) => {
-                        const url = b.photo_path ? `${ BASE_URL }${ b.photo_path }` : null;
-                        bandiIndexToImageUrl.set( idx, url );
-                        if ( url ) imageUrls.push( url );
-                    } );
-                }
-
-                // Fetch images in parallel (if any). Keep progress
-                let imgBuffers = {};
-                if ( addPhotos && imageUrls.length > 0 ) {
-                    setExportProgress( { done: 0, total: imageUrls.length } );
-                    // fetchImages will call onProgress with index of url being processed
-                    imgBuffers = await fetchImages( imageUrls, ( i ) => {
-                        setExportProgress( ( p ) => ( { ...p, done: p.done + 1 } ) );
-                    } );
-                }
-
-                // We'll gather merge ranges and image placements to run after rows insertion
-                const mergeRanges = [];
-                const imagePlacements = []; // { bandiIndexRowStart, bandiRowCount, imgUrl }
-
-                // Start inserting rows
-                let currentRowNumber = 2; // excel row index (1-based), headers occupy row 1
-
-                for ( let bIdx = 0; bIdx < filteredRows.length; bIdx++ ) {
-                    const bandi = filteredRows[bIdx];
-                    const muddaList = bandi.muddas?.length ? bandi.muddas : [{}];
-                    const muddaCount = muddaList.length;
-
-                    for ( let mIdx = 0; mIdx < muddaCount; mIdx++ ) {
-                        const mudda = muddaList[mIdx];
-
-                        // populate columns (respect order in headerCols)
-                        const bandiValues = headerCols.map( ( col ) => {
-                            // special-case fields:
-                            if ( col.field === "bandi_address" ) {
-                                if ( bandi.nationality === "स्वदेशी" ) {
-                                    return language === "en"
-                                        ? `${ bandi.state_name_en || "" }, ${ bandi.district_name_en || "" }, ${ bandi.city_name_en || "" } - ${ bandi.wardno || "" }, ${ bandi.country_name_en || "" }`
-                                        : `${ bandi.state_name_np || "" }, ${ bandi.district_name_np || "" }, ${ bandi.city_name_np || "" } - ${ bandi.wardno || "" }, ${ bandi.country_name_np || "" }`;
-                                } else {
-                                    return language === "en"
-                                        ? `${ bandi.bidesh_nagarik_address_details || "" }, ${ bandi.country_name_en || "" }`
-                                        : `${ bandi.bidesh_nagarik_address_details || "" }, ${ bandi.country_name_np || "" }`;
-                                }
-                            }
-
-                            if ( col.field === "bandi_type" ) {
-                                return language === "en"
-                                    ? bandiTypeMap[bandi[col.field]] || bandi[col.field] || ""
-                                    : bandiTypeMapReverse[bandi[col.field]] || bandi[col.field] || "";
-                            }
-                            return mIdx === 0 ? bandi[col.field] ?? "" : "";
-                        } );
-
-                        const finalRow = [
-                            mIdx === 0 ? bIdx + 1 : "",
-                            ...bandiValues,
-                            language === "en" ? bandi.country_name_en || "" : bandi.country_name_np || "",
-                            bandi.dob_ad ? new Date( bandi.dob_ad ) : "",
-                            bandi.dob || "",
-                            language === "en" ? mudda?.mudda_group_name_en || "" : mudda?.mudda_group_name || "",
-                            language === "en" ? mudda?.mudda_name_en || "" : mudda?.mudda_name || "",
-                            mudda?.mudda_no || "",
-                            language === "en" ? mudda?.vadi_en || "" : mudda?.vadi || "",
-                            language === "en" ? mudda?.mudda_phesala_antim_office_en || "" : mudda?.mudda_phesala_antim_office || "",
-                            mudda?.mudda_phesala_antim_office_date || "",
-                        ];
-
-                        if ( addPhotos ) finalRow.push( "" ); // placeholder cell for photo column
-
-                        worksheet.addRow( finalRow );
-
-                        currentRowNumber++;
-                    } // end mudda loop
-
-                    // if multiple mudda rows for this bandi, collect merge ranges
-                    if ( muddaCount > 1 ) {
-                        // merge SN column
-                        mergeRanges.push( `A${ currentRowNumber - muddaCount }:${ "A" }${ currentRowNumber - 1 }` ); // placeholder - we'll compute exact string below
-                        // merge bandi column blocks (headerCols)
-                        const startRow = currentRowNumber - muddaCount;
-                        const endRow = currentRowNumber - 1;
-                        headerCols.forEach( ( col, colIdx ) => {
-                            const colNumber = colIdx + 2; // SN is column 1
-                            mergeRanges.push(
-                                `${ worksheet.getCell( startRow, colNumber ).address }:${ worksheet.getCell( endRow, colNumber ).address }`
-                            );
-                        } );
-
-                        // merge Country, DOB AD, DOB BS
-                        const footerStartCol = 1 + bandiHeaders.length + 1; // column index of Country
-                        const footerColsToMerge = [footerStartCol, footerStartCol + 1, footerStartCol + 2];
-
-                        footerColsToMerge.forEach( ( colNumber ) => {
-                            mergeRanges.push(
-                                `${ worksheet.getCell( startRow, colNumber ).address }:${ worksheet.getCell( endRow, colNumber ).address }`
-                            );
-                        } );
-
-                        // if photo column exists, we'll merge that later too
-                        if ( addPhotos ) {
-                            const photoColIndex = headerRow.length; // last column index
-                            mergeRanges.push(
-                                `${ worksheet.getCell( currentRowNumber - muddaCount, photoColIndex ).address }:${ worksheet.getCell(
-                                    currentRowNumber - 1,
-                                    photoColIndex
-                                ).address }`
-                            );
-                        }
-                    }
-
-                    // queue image placement for this bandi (if addPhotos and image exists)
-                    if ( addPhotos ) {
-                        const imgUrl = bandi.photo_path ? `${ BASE_URL }${ bandi.photo_path }` : null;
-                        if ( imgUrl ) {
-                            // row index in excel where this bandi starts:
-                            const bandiStartRow = currentRowNumber - muddaCount;
-                            imagePlacements.push( {
-                                url: imgUrl,
-                                startRow: bandiStartRow,
-                                rowCount: muddaCount,
-                            } );
-                        }
-                    }
-                } // end bandi loop
-
-                // APPLY merges (unique and valid)
-                // filter duplicates and invalid ranges
-                // Note: some merge ranges were added as "Astart:Aend" strings already; keep as-is
-                const uniqueMerges = Array.from( new Set( mergeRanges ) ).filter( Boolean );
-                uniqueMerges.forEach( ( r ) => {
-                    try {
-                        worksheet.mergeCells( r );
-                    } catch ( e ) {
-                        // ignore invalid merge formats (defensive)
-                        // console.warn("merge failed", r, e);
-                    }
-                } );
-
-                // ADD IMAGES (we already fetched buffers above)
-                if ( addPhotos && imagePlacements.length > 0 ) {
-                    for ( const placement of imagePlacements ) {
-                        const url = placement.url;
-                        const info = imgBuffers[url];
-                        if ( !info ) continue;
-                        // add image
-                        const ext = info.ext || "jpeg";
-                        const imageId = workbook.addImage( {
-                            buffer: info.buffer,
-                            extension: ext,
-                        } );
-                        // compute column to place the photo: last column
-                        const photoColIndex = headerRow.length; // 1-based
-                        // place image in bounding box covering the merged rows
-                        worksheet.addImage( imageId, {
-                            tl: { col: photoColIndex - 1, row: placement.startRow - 1 },
-                            ext: { width: 120, height: 150 },
-                        } );
-
-                        // set column width and row heights for rows spanned
-                        worksheet.getColumn( photoColIndex ).width = 25;
-                        for ( let r = 0; r < placement.rowCount; r++ ) {
-                            worksheet.getRow( placement.startRow + r ).height = 110;
-                        }
-                    }
-                }
-
-                // Auto-fit column widths (careful: running eachCell on huge sheets may be heavy)
-                // For medium datasets this is fine. If you have thousands of rows, consider skipping this block.
-                worksheet.columns.forEach( ( col ) => {
-                    let max = 10;
-                    col.eachCell( { includeEmpty: true }, ( cell ) => {
-                        const v = cell.value;
-                        const len = v ? v.toString().length : 0;
-                        if ( len > max ) max = len;
-                    } );
-                    col.width = max + 2;
-                } );
-
-                // Styling for all cells
-                worksheet.eachRow( ( row ) => {
-                    row.eachCell( ( cell ) => {
-                        cell.font = { name: "Kalimati", size: 12 };
-                        cell.alignment = { wrapText: true, vertical: "middle", horizontal: "center" };
-                    } );
-                } );
-
-                worksheet.views = [{ state: "frozen", ySplit: 1 }];
-
-                const buffer = await workbook.xlsx.writeBuffer();
-                saveAs( new Blob( [buffer] ), language === "en" ? "Bandi_Records.xlsx" : "बन्दी_विवरण.xlsx" );
-            } catch ( err ) {
-                console.error( "Export failed:", err );
-                // you may want to show toast here
-            } finally {
-                setExporting( false );
-                setExportProgress( { done: 0, total: 0 } );
-            }
-        },
-        // dependencies: careful to include only primitives or stable references
-        [filteredRows, columns, includePhoto, language, BASE_URL, bandiTypeMap, bandiTypeMapReverse]
-    );
 
     // --------- Render ---------
     return (
@@ -469,7 +189,7 @@ const ReusableBandiTable = ( {
                         {t( "फोटो समावेश गर्नुहोस्", "Include Photo" )}
                     </label>
 
-                    < a href={`${ BASE_URL }/bandi/export_office_bandi_excel?selected_office=${ authState.office_id }&language=${ language }&includePhoto=${ includePhoto ? 1 : 0 }`}>
+                    {/* < a href={`${ BASE_URL }/bandi/export_office_bandi_excel?language=${ language }&includePhoto=${ includePhoto ? 1 : 0 }`}>
                         <Button variant="outlined" disabled={exporting}>
                             {exporting ? (
                                 <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
@@ -479,10 +199,10 @@ const ReusableBandiTable = ( {
                                 t( "एक्सेल निर्यात", "Export to Excel" )
                             )}
                         </Button>
-                    </a>
+                    </a> */}
 
 
-                    {/* <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
+                    <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
                         {exporting ? (
                             <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
                                 <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
@@ -490,7 +210,7 @@ const ReusableBandiTable = ( {
                         ) : (
                             t( "एक्सेल निर्यात", "Export to Excel" )
                         )}
-                    </Button> */}
+                    </Button>
                 </Box>
             </Box>
 
