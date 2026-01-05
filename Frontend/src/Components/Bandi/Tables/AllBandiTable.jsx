@@ -82,6 +82,13 @@ const AllBandiTable = () => {
     const is_escape = watch( 'is_escape' );
     //Watch Variables
 
+    //Params for API
+    const filters = {
+        searchOffice, bandi_status, nationality, country, search_name,
+        gender, bandi_type, is_active, is_dependent, mudda_group_id, is_escape
+    };
+
+
     const [allKaidi, setAllKaidi] = useState( [] );
     const [filteredKaidi, setFilteredKaidi] = useState( [] );
     const [totalKaidi, setTotalKaidi] = useState( 0 );
@@ -562,6 +569,7 @@ const AllBandiTable = () => {
 
             <ReusableBandiTable
                 language={language}
+                filters={filters}
                 columns={columns}
                 rows={filteredKaidi}
                 loading={loading}
@@ -571,6 +579,7 @@ const AllBandiTable = () => {
                 onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
                 onDelete={handleDelete}
                 showDelete={authState.role_name === 'supervisor' || authState.role_id === 99}
+
             />
 
         </>
