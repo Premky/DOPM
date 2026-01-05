@@ -1,16 +1,4 @@
-// services/bandiService.js
 
-//गाडीका विवरणहरुः नाम सुची
-// Promisify specific methods
-// const beginTransactionAsync = promisify( con.beginTransaction ).bind( con );
-// const commitAsync = promisify( con.commit ).bind( con );
-// const rollbackAsync = promisify( con.rollback ).bind( con );
-// const query = promisify( con.query ).bind( con );
-
-import con from '../utils/db.js';
-import pool from '../utils/db3.js';
-import { promisify } from 'util';
-const queryAsync = promisify( con.query ).bind( con );
 
 import { bs2ad } from '../utils/bs2ad.js';
 import { ageCalculator } from '../utils/ageCalculator.js';
@@ -146,6 +134,66 @@ async function insertAddress( bandi_id, data, connection ) {
 }
 
 async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, connection ) {
+  // console.log(muddas);
+  if ( !muddas.length ) return;
+  //Filter out muddas with missing mudda_id or mudda_no
+  const validMuddas = muddas.filter( m => m.mudda_id !== undefined && m.mudda_id !== '' && m.mudda_no !== undefined && m.mudda_no !== '' );
+  if ( !validMuddas.length ) {
+    console.warn( "No Valid muddas to insert(mudda_id missing" );
+    return 0;
+  };
+
+  const values = validMuddas.map( m => {
+    let is_life_time = Number( m.is_life_time );
+    if ( isNaN( is_life_time ) ) is_life_time = 0;
+    return [
+      bandi_id,
+      m.mudda_id,
+      m.mudda_no,
+      m.is_last || 0,
+      m.is_main || 0,
+      m.condition || null,
+      m.district || null,
+      m.office || null,
+      m.date || null,
+      m.vadi || null,
+      m.vadi_en || null,
+      m.thunuwa_or_kaidi_purji_path || null, // optional photo
+      m.hirasat_years || 0,
+      m.hirasat_months || 0,
+      m.hirasat_days || 0,
+      m.thuna_date_bs || null,
+      m.release_date_bs || null,
+      m.total_kaid_duration || 0,
+      is_life_time || 0,
+      user_id,
+      new Date(),
+      user_id,
+      new Date(),
+      office_id
+    ];
+  } );
+
+  const sql = `INSERT INTO bandi_mudda_details (
+    bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
+    mudda_condition, mudda_phesala_antim_office_district,
+    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date,
+    vadi, vadi_en, thunuwa_or_kaidi_purji,
+    hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs, total_kaid, is_life_time,
+    created_by, created_at, updated_by, updated_at, current_office_id
+  ) VALUES ?`;
+
+  try {
+    const [result] = await connection.query( sql, [values] );
+    console.log( `✅ ${ result.affectedRows } mudda(s) inserted` );
+    return result.affectedRows || 0;
+  } catch ( err ) {
+    console.error( "❌ Mudda insert error:", err );
+    throw err;
+  }
+}
+
+async function insertMuddaDetails1( bandi_id, muddas = [], user_id, office_id, connection ) {
   const sql = `INSERT INTO bandi_mudda_details (
     bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
     mudda_condition, mudda_phesala_antim_office_district,
@@ -178,7 +226,7 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
       m.thuna_date_bs || null,
       m.release_date_bs || null,
       m.total_kaid_duration || 0,
-      is_life_time,
+      is_life_time || 0,
       user_id,
       new Date(),
       user_id,
@@ -190,40 +238,6 @@ async function insertMuddaDetails( bandi_id, muddas = [], user_id, office_id, co
   }
 }
 
-
-async function insertMuddaDetails1( bandi_id, muddas = [], user_id, office_id, connection ) {
-  const sql = `INSERT INTO bandi_mudda_details (
-    bandi_id, mudda_id, mudda_no, is_last_mudda, is_main_mudda,
-    mudda_condition, mudda_phesala_antim_office_district,
-    mudda_phesala_antim_office_id, mudda_phesala_antim_office_date, vadi, vadi_en, 
-    thunuwa_or_kaidi_purji,
-    hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, release_date_bs, total_kaid, is_life_time,
-    created_by, created_at, updated_by, updated_at, current_office_id
-  ) VALUES (?)`;
-
-  for ( const m of muddas ) {
-    // 🛑 Skip this mudda if mudda_id is missing or empty
-    let is_life_time = Number( m.is_life_time );
-    if ( isNaN( is_life_time ) ) is_life_time = 0;
-
-    const values = [
-      bandi_id,
-      m.mudda_id,
-      m.mudda_no,
-      m.is_last,
-      m.is_main,
-      m.condition,
-      m.district,
-      m.office,
-      m.date,
-      m.vadi, m.vadi_en, m.thunuwa_or_kaidi_purji,
-      m.hirasat_years, m.hirasat_months, m.hirasat_days, m.thuna_date_bs, m.release_date_bs, m.total_kaid_duration, is_life_time,
-      user_id, new Date(), user_id, new Date(), office_id
-    ];
-    // await queryAsync( sql, [values] );
-    const [result] = await connection.query( sql, [values] );
-  }
-}
 
 async function insertFineDetails( bandi_id, fines, user_id, office_id, connection ) {
   for ( const fine of fines ) {
@@ -614,10 +628,12 @@ async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, o
       return 0;
     }
 
-    const filteredDisabilities = disabilities.filter( c =>
-      ( typeof c.disability_id === 'string' && c.disability_id.trim() !== '' ) ||
-      ( typeof c.disability_id === 'number' && !isNaN( c.disability_id ) )
+    const filteredDisabilities = disabilities.filter( d =>
+      Number( d.is_disabled ) === 1 &&
+      d.disability_id !== undefined &&
+      d.disability_id !== ''
     );
+
 
     console.log( 'filteredDiabities', filteredDisabilities );
 
@@ -806,7 +822,39 @@ async function updateTransferDetails( transfer_id, data, user_id, active_office,
   return result.affectedRows || 0;
 }
 
+async function* getBandiForExport(filters) {
+  let lastId = 0;
+  const limit = 500;
 
+  while (true) {
+    const [rows] = await pool.query(
+      `
+      SELECT b.*, m.*
+      FROM bandi_person b
+      LEFT JOIN bandi_mudda_details m ON m.bandi_id = b.id
+      WHERE b.id > ?
+      ORDER BY b.id
+      LIMIT ?
+      `,
+      [lastId, limit]
+    );
+
+    if (!rows.length) break;
+
+    const grouped = {};
+    rows.forEach(r => {
+      if (!grouped[r.id]) {
+        grouped[r.id] = { ...r, muddas: [] };
+      }
+      if (r.mudda_id) grouped[r.id].muddas.push(r);
+    });
+
+    for (const bandi of Object.values(grouped)) {
+      yield bandi;
+      lastId = bandi.id;
+    }
+  }
+}
 
 export {
   insertBandiPerson,
@@ -827,5 +875,6 @@ export {
   insertHealthInsurance,
   insertTransferDetails,
   insertTransferRequest,
-  updateTransferDetails
+  updateTransferDetails,
+  getBandiForExport
 };

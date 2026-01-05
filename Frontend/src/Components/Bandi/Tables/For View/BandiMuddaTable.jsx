@@ -87,7 +87,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                 const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_mudda_details/${ id }`, { withCredentials: true } );
                 if ( res.data.Status ) {
                     Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
-                    setFetchedBandies(prev => prev.filter(item => item.id !== id));
+                    setFetchedBandies( prev => prev.filter( item => item.id !== id ) );
                 } else {
                     Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
                 }
@@ -161,6 +161,7 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                 <TableCell align="center">कैद अवधी</TableCell>
                                 <TableCell align="center">मुख्य मुद्दा हो?</TableCell>
                                 <TableCell align="center">अन्तिम मुद्दा हो?</TableCell>
+                                <TableCell align="center">कैदी/थुनुवा पुर्जी</TableCell>
                                 {/* <TableCell align="center">कैदी/थुनुवा पूर्जी</TableCell> */}
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
@@ -184,6 +185,17 @@ const BandiMuddaTable = ( { bandi_id } ) => {
                                     <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
                                     <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
                                     {/* <TableCell align="center">File</TableCell> */}
+
+                                    <TableCell align="center">
+                                        {opt.thunuwa_or_kaidi_purji ?
+                                            ( <a
+                                                href={`${ BASE_URL }${ opt.thunuwa_or_kaidi_purji }`}
+                                                download
+                                            >
+                                                डउनलोड गर्नुहोस्
+                                            </a> ) : ( 'कुनै फाइल छैन।' )
+                                        }
+                                    </TableCell>
 
                                     <TableCell align="center">
                                         <Grid container spacing={2}>
