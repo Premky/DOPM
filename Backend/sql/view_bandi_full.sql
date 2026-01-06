@@ -141,7 +141,7 @@ LEFT JOIN (
         bcp.bandi_id,
         GROUP_CONCAT(
             CONCAT(
-                bcp.contact_name,
+                bcp.contact_name,', ',
                 bcp.contact_address,
                 ' (',
                 rt.relation_np,

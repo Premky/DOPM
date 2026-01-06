@@ -3586,6 +3586,15 @@ router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
 
         if ( data.status == 'recaptured' || data.status == 'self_present' ) {
             await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ data.bandi_id }` );
+            updateBandiStatus(
+                connection, {
+                bandiId: bandi_id,
+                newStatusId: BANDI_STATUS.IN_CUSTODY,
+                historyCode: "RE_ARRESTED",
+                source: "ADMIN",
+                remarks: req.body.remarks,
+                userId: req.user.username,
+            } );
         }
         await connection.commit();
         console.log( result );
