@@ -362,7 +362,7 @@ router.post( '/create_bandi', verifyToken,
     , async ( req, res ) => {
         console.log( "FILES RECEIVED:", Object.keys( req.files || {} ) );
 
-        if ( user_id === undefined ) { return 0; };
+        // if ( user_id === undefined ) { return 0; };
 
         const user_id = req.user.username;
         const office_id = req.user.office_id;
@@ -1124,7 +1124,6 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
             "Content-Disposition",
             `attachment; filename="${ safeFileName }"; filename*=UTF-8''${ encodedFileName }`
         );
-
 
         await workbook.xlsx.write( res );
         res.end();
