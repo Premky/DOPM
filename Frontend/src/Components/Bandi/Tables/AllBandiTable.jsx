@@ -454,6 +454,7 @@ const AllBandiTable = () => {
                             label='बन्दीको अवस्था'
                             control={control}
                             options={bandiStatusOpt}
+                            defaultValue={1}
                         />
                     </Grid>
 

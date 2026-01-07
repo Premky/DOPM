@@ -789,8 +789,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const is_dependent = toInt( req.query.is_dependent );
     const is_escape = req.query.is_escape || '';
 
-    const is_active =
-        req.query.is_active !== undefined ? Number( req.query.is_active ) : 1;
+    // const is_active =
+    //     req.query.is_active !== undefined ? Number( req.query.is_active ) : 1;
 
     const is_under_payrole =
         req.query.is_under_payrole !== undefined
@@ -824,8 +824,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         params.push( `%${ search_name }%`, search_name );
     }
 
-    conditions.push( "is_active = ?" );
-    params.push( is_active );
+    // conditions.push( "is_active = ?" );
+    // params.push( is_active );
 
     conditions.push( "is_under_payrole = ?" );
     params.push( is_under_payrole );
