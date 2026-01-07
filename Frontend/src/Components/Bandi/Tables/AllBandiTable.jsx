@@ -511,7 +511,7 @@ const AllBandiTable = () => {
                             control={control}
                         />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 2 }}>
+                    {/* <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="is_active"
                             label='छुटेर गएको/नगएको'
@@ -522,7 +522,7 @@ const AllBandiTable = () => {
                             defaultValue='1'
                             control={control}
                         />
-                    </Grid>
+                    </Grid> */}
                     <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="is_dependent"

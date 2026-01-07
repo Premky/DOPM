@@ -307,7 +307,7 @@ router.get( '/muddas_groups', async ( req, res ) => {
 } );
 
 router.get( '/bandi_status', async ( req, res ) => {
-    const sql = `SELECT * from bandi_status_master ORDER BY id`;
+    const sql = `SELECT * from bandi_status_master WHERE is_hidden=0 ORDER BY id`;
     try {
         const [result] = await pool.query( sql );
         return res.json( { Status: true, Result: result } );
@@ -318,7 +318,6 @@ router.get( '/bandi_status', async ( req, res ) => {
 } );
 
 // const queryAsync = promisify( con.query ).bind( con );
-
 
 router.get( '/get_countries', async ( req, res ) => {
     const sql = `SELECT * from np_country ORDER BY id`;
