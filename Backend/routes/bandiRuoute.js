@@ -811,6 +811,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     }
 
     if ( bandi_status !== null ) conditions.push( "bandi_status = ?" ), params.push( bandi_status );
+
     if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
     if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
     if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
@@ -911,6 +912,7 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
     }
 
     if ( bandi_status !== null ) conditions.push( "bandi_status = ?" ), params.push( bandi_status );
+        // console.log( "bandi_status:", bandi_status );
     if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
     if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
     if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
@@ -1005,7 +1007,7 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
             language === "en" ? "Contact Person" : "सम्पर्क व्यक्ति",
         ];
         if ( includePhoto ) headers.push( language === "en" ? "Photo" : "फोटो" );
-        if(includePhoto) console.log("Photo mago")  
+        if ( includePhoto ) console.log( "Photo mago" );
         if ( bandi_status === 9 ) {
             headers.push( "छुट्ने मिति" );
             headers.push( "छुट्ने कारण" );
