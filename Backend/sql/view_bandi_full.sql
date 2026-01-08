@@ -92,7 +92,15 @@ SELECT
     -- ID Card
     bicd.card_no,
     git.govt_id_name_np,
-    git.govt_id_name_en
+    git.govt_id_name_en,
+
+    -- Release Details
+    brr.reasons_np AS release_reason,
+    brd.karnayan_miti AS release_date,
+    brri.relative_name AS release_relative_name,
+    brri.relative_address AS release_relative_address,
+    brri.contact_no AS release_relative_contact_no,
+    brd.remarks AS release_remarks
 
 FROM bandi_person b
 LEFT JOIN bandi_address ba ON b.id = ba.bandi_id
@@ -113,6 +121,9 @@ LEFT JOIN offices bo ON b.current_office_id = bo.id
 LEFT JOIN prison_blocks pb ON b.block_no = pb.id
 LEFT JOIN bandi_escape_details bed ON b.id = bed.bandi_id
 LEFT JOIN bandi_relative_info bri ON b.id = bri.bandi_id
+LEFT JOIN bandi_release_details brd ON b.id = brd.bandi_id
+LEFT JOIN bandi_release_reasons brr ON brd.reason_id=brr.id
+LEFT JOIN bandi_relative_info brri ON brd.aafanta_id=brri.id
 
 -- Spouse
 LEFT JOIN (

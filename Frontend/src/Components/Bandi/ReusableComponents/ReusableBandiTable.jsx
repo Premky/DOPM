@@ -146,13 +146,16 @@ const ReusableBandiTable = ( {
     const handleExport = async () => {
         try {
             setExporting( true );
-
-            const response = await axios.get( `${ BASE_URL }/bandi/export_office_bandi_excel`, { params: filters, responseType: 'blob', withCredentials: true } );
+            const params = { ...filters, includePhoto: includePhoto ? 1 : 0, language };
+            const response = await axios.get( `${ BASE_URL }/bandi/export_office_bandi_excel`, { params, responseType: 'blob', withCredentials: true } );
             const blob = new Blob( [response.data] );
             const url = window.URL.createObjectURL( blob );
             const link = document.createElement( 'a' );
             link.href = url;
-            link.download = `${ language === "en" ? "Bandi_Details.xlsx" : "बन्दी_विवरण.xlsx" }`;
+            const fileNameEn = `Bandi_Details_for_${ authState.office_en } ${ includePhoto ? '_With_Photo.xlsx' : '.xlsx' }`;
+            const fileNameNp = `${ authState.office_np } ${ includePhoto ? '_को_लागी_फोटो_सहितको_बन्दीहरुको_विवरण.xlsx' : '_को_बन्दीहरुको_विवरण.xlsx' }`;
+            link.download = `${ language === "en" ? fileNameEn : fileNameNp }`;
+            // link.download = `${ language === "en" ? "Bandi_Details.xlsx" : "बन्दी_विवरण.xlsx" }`;
             document.body.appendChild( link );
             link.click();
             link.remove();

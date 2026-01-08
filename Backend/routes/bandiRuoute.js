@@ -1004,8 +1004,16 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
             language === "en" ? "Decision Date" : "फैसला मिति",
             language === "en" ? "Contact Person" : "सम्पर्क व्यक्ति",
         ];
-
         if ( includePhoto ) headers.push( language === "en" ? "Photo" : "फोटो" );
+        if(includePhoto) console.log("Photo mago")  
+        if ( bandi_status === 9 ) {
+            headers.push( "छुट्ने मिति" );
+            headers.push( "छुट्ने कारण" );
+            headers.push( "बुझ्ने मान्छे" );
+            headers.push( "बुझ्नेको ठेगाना" );
+            headers.push( "बुझ्नेको सम्पर्क नं." );
+            headers.push( "छुट्दाको कैफियत" );
+        }
 
         sheet.addRow( headers );
         sheet.getRow( 1 ).font = { bold: true };
@@ -1050,7 +1058,13 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
                     language === "en" ? m.mudda_phesala_antim_office_en : m.mudda_phesala_antim_office,
                     m.mudda_phesala_antim_office_date,
                     b.other_relatives || "",
-                    includePhoto ? "" : undefined
+                    includePhoto ? "" : undefined,
+                    b.release_date || "",
+                    b.release_reason || "",
+                    b.release_relative_name || "",
+                    b.release_relative_address || "",
+                    b.release_relative_contact_no || "",
+                    b.release_remarks || "",
                 ] );
                 rowIndex++;
             } );
@@ -3588,7 +3602,7 @@ router.put( '/update_recapture_bandi/:id', verifyToken, async ( req, res ) => {
             await connection.query( `UPDATE bandi_person SET is_escaped=0 WHERE id=${ data.bandi_id }` );
             updateBandiStatus(
                 connection, {
-                bandiId: bandi_id,
+                bandiId: data.bandi_id,
                 newStatusId: BANDI_STATUS.IN_CUSTODY,
                 historyCode: "RE_ARRESTED",
                 source: "ADMIN",

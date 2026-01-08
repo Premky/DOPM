@@ -211,6 +211,7 @@ const AllBandiTable = () => {
             }
         },
         { field: "office_bandi_id", headerName: "बन्दी आईडी", width: 100 },
+        { field: "enrollment_date_bs", headerName: "दाखिला मिति", width: 100 },
         { field: "lagat_no", headerName: "लगत नं.", width: 100 },
         { field: "bandi_type", headerName: "बन्दी प्रकार", width: 100 },
         { field: "bandi_name", headerName: "बन्दीको नामथर", width: 100 },
@@ -319,6 +320,7 @@ const AllBandiTable = () => {
             }
         },
         { field: "office_bandi_id", headerName: "Bandi Id", width: 100 },
+        { field: "enrollment_date_bs", headerName: "Enrollment Date", width: 100 },
         { field: "lagat_no", headerName: "Log No.", width: 100 },
         {
             field: "bandi_type", headerName: "Prisoner Type", width: 100,

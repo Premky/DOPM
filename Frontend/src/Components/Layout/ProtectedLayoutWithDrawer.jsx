@@ -22,6 +22,7 @@ import { useBaseURL } from "../../Context/BaseURLProvider";
 import { useAuth } from "../../Context/AuthContext";
 import Swal from "sweetalert2";
 import ResetPasswordDialog from "../Auth/ResetPasswordDialog";
+import { AdminPanelSettings, ManageAccounts, MeetingRoom } from "@mui/icons-material";
 
 const drawerWidth = 5;
 const miniDrawerWidth = 5;
@@ -153,27 +154,36 @@ export default function ProtectedLayoutWithDrawer() {
                 </IconButton>
 
                 <Menu anchorEl={anchorEl} open={openMenu} onClose={handleClose} PaperProps={{ elevation: 3, sx: { width: 220, mt: 1 } }}>
-                  <MenuItem disabled>
+                  <MenuItem>
                     <ListItemIcon>
-                      <PersonIcon fontSize="small" />
+                      <PersonIcon fontSize="small" sx={{color:'red'}} />
                     </ListItemIcon>
-                    {authState.username}
+                    {authState.user}
                   </MenuItem>
+                  <Divider />
 
-                  <MenuItem disabled sx={{ pl: 6, opacity: 0.7 }}>
+                  <MenuItem >
+                    <ListItemIcon> <AdminPanelSettings fontSize="small" sx={{color:'red'}}/> </ListItemIcon>
                     {authState.role_name}
+                  </MenuItem>
+                  <Divider />
+
+                  <MenuItem >
+                    <ListItemIcon> <MeetingRoom fontSize="small" sx={{color:'red'}} /> </ListItemIcon>
+                    {authState.office_np}
                   </MenuItem>
 
                   <Divider />
-                  <MenuItem sx={{ pl: 6 }} onClick={changePassword} >
+                  <MenuItem onClick={changePassword} >
+                    <ListItemIcon><ManageAccounts fontSize="small" sx={{color:'red'}}/></ListItemIcon>
                     Change Password
                   </MenuItem>
 
                   <Divider />
 
-                  <MenuItem onClick={handleLogout}>
+                  <MenuItem onClick={handleLogout} >
                     <ListItemIcon>
-                      <LogoutIcon fontSize="small" />
+                      <LogoutIcon fontSize="small" sx={{color:'red'}} />
                     </ListItemIcon>
                     Logout
                   </MenuItem>
@@ -184,8 +194,8 @@ export default function ProtectedLayoutWithDrawer() {
         </AppBar>
 
         {/* MAIN PAGE CONTENT */}
-        <MainContent open={drawerOpen}>          
-            <Outlet />          
+        <MainContent open={drawerOpen}>
+          <Outlet />
         </MainContent>
 
       </div>

@@ -307,15 +307,18 @@ router.get( '/muddas_groups', async ( req, res ) => {
 } );
 
 router.get( '/bandi_status', async ( req, res ) => {
-    const sql = `SELECT * from bandi_status_master WHERE is_hidden=0 ORDER BY id`;
+    const sql = `SELECT * FROM bandi_status_master WHERE is_hidden = ? ORDER BY id`;
+    const isHidden = 0;
+
     try {
-        const [result] = await pool.query( sql );
+        const [result] = await pool.query( sql, [isHidden] );
         return res.json( { Status: true, Result: result } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
+
 
 // const queryAsync = promisify( con.query ).bind( con );
 
