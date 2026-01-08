@@ -925,8 +925,8 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
         params.push( `%${ search_name }%`, search_name );
     }
 
-    conditions.push( "is_active = ?" );
-    params.push( is_active );
+    // conditions.push( "is_active = ?" );
+    // params.push( is_active );
     conditions.push( "is_under_payrole = ?" );
     params.push( is_under_payrole );
 
