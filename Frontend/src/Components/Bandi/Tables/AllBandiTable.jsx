@@ -455,7 +455,11 @@ const AllBandiTable = () => {
                             name="bandi_status"
                             label='बन्दीको अवस्था'
                             control={control}
-                            options={bandiStatusOpt}
+                            options={[
+                                ...bandiStatusOpt,
+                                { label: "कारागारमा", value: 1 }
+                            ]}
+
                             defaultValue={1}
                         />
                     </Grid>
@@ -478,6 +482,7 @@ const AllBandiTable = () => {
                                 { label: 'विदेशी', value: 'विदेशी' }
                             ]}
                             control={control}
+                            defaultValue={''}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>
@@ -486,6 +491,7 @@ const AllBandiTable = () => {
                             label='देश'
                             control={control}
                             currentOfficeId={authState.office_id}
+                            defaultvalue={''}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>
@@ -499,6 +505,7 @@ const AllBandiTable = () => {
                                 { label: 'अन्य', value: 'Other' }
                             ]}
                             control={control}
+                            defaultValue={''}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>
@@ -511,6 +518,7 @@ const AllBandiTable = () => {
                                 { label: 'थुनुवा', value: 'थुनुवा' }
                             ]}
                             control={control}
+                            defaultValue={''}
                         />
                     </Grid>
                     {/* <Grid size={{ xs: 12, sm: 2 }}>

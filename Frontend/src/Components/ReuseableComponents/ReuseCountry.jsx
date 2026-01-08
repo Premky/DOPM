@@ -5,52 +5,52 @@ import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 import { useBaseURL } from '../../Context/BaseURLProvider'; // Import the custom hook for base URL
 
-const ReuseCountry = ({ name, label, required, readonly, control, error, defaultvalue, currentOfficeId }) => {
+const ReuseCountry = ( { name, label, required, readonly, control, error, defaultvalue, currentOfficeId } ) => {
     // const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     // const BASE_URL = localStorage.getItem('BASE_URL');
     const BASE_URL = useBaseURL();
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem( 'token' );
 
     // State to store district options
-    const [formattedOptions, setFormattedOptions] = useState([]);
+    const [formattedOptions, setFormattedOptions] = useState( [] );
 
 
     const fetchCountry = async () => {
         try {
             let url;
-            if(currentOfficeId){                
-                url = `${BASE_URL}/public/get_countries_ac_to_office`;
-            }else{
-                url = `${BASE_URL}/public/get_countries`;
+            if ( currentOfficeId ) {
+                url = `${ BASE_URL }/public/get_countries_ac_to_office`;
+            } else {
+                url = `${ BASE_URL }/public/get_countries`;
             }
-            const response = await axios.get(url, {
-                headers: { Authorization: `Bearer ${token}` },
-                withCredentials:true
-            });
+            const response = await axios.get( url, {
+                headers: { Authorization: `Bearer ${ token }` },
+                withCredentials: true
+            } );
 
             const { Status, Result, Error } = response.data;
 
-            if (Status) {
-                if (Array.isArray(Result) && Result.length > 0) {
-                    const formatted = Result.map((opt, index) => ({
+            if ( Status ) {
+                if ( Array.isArray( Result ) && Result.length > 0 ) {
+                    const formatted = Result.map( ( opt, index ) => ( {
                         label: opt.country_name_np, // Use Nepali name
                         value: opt.id, // Use ID as value
-                    }));
-                    setFormattedOptions(formatted);
+                    } ) );
+                    setFormattedOptions( formatted );
                 } else {
-                    console.log('No country records found.');
+                    console.log( 'No country records found.' );
                 }
             } else {
-                console.log(Error || 'Failed to fetch countries.');
+                console.log( Error || 'Failed to fetch countries.' );
             }
-        } catch (error) {
-            console.error('Error fetching records:', error);
+        } catch ( error ) {
+            console.error( 'Error fetching records:', error );
         }
     };
 
-    useEffect(() => {
+    useEffect( () => {
         fetchCountry();
-    }, []);
+    }, [] );
 
     return (
         <>
@@ -65,21 +65,29 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
                 defaultValue={defaultvalue}
 
                 rules={{
-                    ...(required && {
+                    ...( required && {
                         required: {
                             value: true,
                             message: 'यो फिल्ड अनिवार्य छ',
                         },
-                    })
+                    } )
                 }}
-                render={({ field: { onChange, value, ref } }) => (
+                render={( { field: { onChange, value, ref } } ) => (
                     <Autocomplete
                         id={name}
                         options={formattedOptions} // Use fetched districts
                         autoHighlight
-                        getOptionLabel={(option) => option.label || ''} // Prevents crashes if `label` is missing
-                        value={formattedOptions.find((option) => option.value === value) || null} // Ensure selected value matches
-                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
+                        getOptionLabel={( option ) => option.label || ''} // Prevents crashes if `label` is missing
+                        value={formattedOptions.find( ( option ) => option.value === value ) || null} // Ensure selected value matches
+                        // onChange={(_, newValue) => onChange(newValue ? newValue.value : '')} // Store only value
+                        onChange={( _, newValue ) => {
+                            if ( newValue ) {
+                                onChange( newValue.value );
+                            } else {
+                                onChange( defaultvalue ); // 👈 auto reset to "सबै"
+                            }
+                        }}
+
                         sx={{ width: '100%' }}
                         // renderOption={(props, option) => (
                         //     <Box key={option.value} component="li" {...props}>
@@ -88,7 +96,7 @@ const ReuseCountry = ({ name, label, required, readonly, control, error, default
                         // )}
                         disabled={readonly}
 
-                        renderInput={(params) => (
+                        renderInput={( params ) => (
                             <TextField
                                 {...params}
                                 inputRef={ref}

@@ -3,7 +3,7 @@ import { InputLabel, TextField, Autocomplete } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import { Box } from '@mui/material';
 
-const ReuseSelect = ({ name, label, required, control, error, options = [], defaultValue, readOnly }) => {
+const ReuseSelect = ( { name, label, required, control, error, options = [], defaultValue, readOnly } ) => {
     const defaultOptions = [
         { code: '', label: 'No Options Available', phone: '', value: '' }
     ];
@@ -19,27 +19,34 @@ const ReuseSelect = ({ name, label, required, control, error, options = [], defa
                 name={name}
                 control={control}
                 defaultValue={defaultValue}
-                
+
                 rules={{
-                    ...(required && {
+                    ...( required && {
                         required: {
                             value: true,
                             message: 'यो फिल्ड अनिवार्य छ',
                         },
-                    })
+                    } )
                 }}
 
-                render={({ field: { onChange, value, ref } }) => (
+                render={( { field: { onChange, value, ref } } ) => (
                     <Autocomplete
                         id={name}
-                        options={Array.isArray(options) ? options : []}  // Ensure options is always an array
+                        options={Array.isArray( options ) ? options : []}  // Ensure options is always an array
                         autoHighlight
-                        getOptionLabel={(option) => option.label}
-                        value={options.find((option) => option.value === value) || null}  // Match using value
-                        onChange={(_, newValue) => onChange(newValue ? newValue.value : '')}  // Store only value
+                        getOptionLabel={( option ) => option.label}
+                        value={options.find( ( option ) => option.value === value ) || null}  // Match using value
+                        // onChange={(_, newValue) => onChange(newValue ? newValue.value : '')}  // Store only value
+                        onChange={( _, newValue ) => {
+                            if ( newValue ) {
+                                onChange( newValue.value );
+                            } else {
+                                onChange( defaultValue ); // 👈 fallback to default
+                            }
+                        }}
                         sx={{ width: '100%' }}
 
-                        renderInput={(params) => (
+                        renderInput={( params ) => (
                             <TextField
                                 {...params}
                                 inputRef={ref}
@@ -49,7 +56,7 @@ const ReuseSelect = ({ name, label, required, control, error, options = [], defa
                                 margin="normal"
                                 error={!!error}
                                 helperText={error?.message || ""}
-                                required={required}      
+                                required={required}
                                 disabled={readOnly}  // Disable if readOnly is true                          
                             />
                         )}

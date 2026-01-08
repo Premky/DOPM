@@ -811,6 +811,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     }
 
     if ( bandi_status !== null ) conditions.push( "bandi_status = ?" ), params.push( bandi_status );
+    if ( bandi_status == null ) conditions.push( "bandi_status = ?" ), params.push( 1 );
 
     if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
     if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
@@ -912,6 +913,7 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
     }
 
     if ( bandi_status !== null ) conditions.push( "bandi_status = ?" ), params.push( bandi_status );
+    if ( bandi_status == null ) conditions.push( "bandi_status = ?" ), params.push( 1 );
     // console.log( "bandi_status:", bandi_status );
     if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
     if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );

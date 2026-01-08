@@ -45,7 +45,7 @@ const ReuseKaragarOffice = ( { name, label, required, control, error, defaultVal
 
                     // to include all option 
                     if ( includeAll ) {
-                        formatted.unshift( { sn: 0, label: 'सबै', value: 'all' } );
+                        formatted.unshift( { sn: 0, label: 'सबै', value: '' } );
                     }
                     setFormattedOptions( formatted );
                 } else {
@@ -105,7 +105,15 @@ const ReuseKaragarOffice = ( { name, label, required, control, error, defaultVal
                             autoHighlight
                             getOptionLabel={( option ) => option.label || ''} // Prevents crashes if `label` is missing
                             value={formattedOptions.find( ( option ) => option.value === value ) || null} // Ensure selected value matches
-                            onChange={( _, newValue ) => onChange( newValue ? newValue.value : '' )} // Store only value
+                            // onChange={( _, newValue ) => onChange( newValue ? newValue.value : '' )} // Store only value
+                            onChange={( _, newValue ) => {
+                                if ( newValue ) {
+                                    onChange( newValue.value );
+                                } else {
+                                    onChange( '' ); // 👈 auto reset to "सबै"
+                                }
+                            }}
+
                             sx={{ width: '100%' }}
                             disabled={disabled}
                             renderOption={( props, option ) => (
