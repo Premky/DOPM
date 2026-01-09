@@ -261,14 +261,14 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 
     try {
         // Step 1: Get matching bandi IDs
-        const idQuery = `
+        let idQuery = `
             SELECT bp.id FROM bandi_person bp 
             LEFT JOIN payroles p ON bp.id = p.bandi_id
             LEFT JOIN payrole_decisions pd ON p.id=pd.id         
             ${ baseWhere }
             ORDER BY bp.id DESC
         `;
-        const idParams = [...params];
+        let idParams = [...params];
         if ( !is_export ) {
             idQuery += ` LIMIT ? OFFSET ? `;
             idParams.push( limit, offset );
