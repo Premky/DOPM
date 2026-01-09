@@ -270,7 +270,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         `;
         const idParams = [...params];
         if ( !is_export ) {
-            idQuery += `LIMIT ? OFFSET ? `;
+            idQuery += ` LIMIT ? OFFSET ? `;
             idParams.push( limit, offset );
         }
         const [idRows] = await pool.query( idQuery, params );
