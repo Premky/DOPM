@@ -40,7 +40,7 @@ const PayroleTable = ( { status } ) => {
         ["clerk", "office_admin"].includes( authState.role_name );
 
     const {
-        allData,
+        
         data,
         totalKaidi,
         fetchedMuddas,

@@ -5,7 +5,7 @@ import { useBaseURL } from "../../../Context/BaseURLProvider";
 const useFetchPayroles = ( filters, page, rowsPerPage ) => {
   const BASE_URL = useBaseURL();
   const [data, setData] = useState( [] );
-  const [allData, setAllData] = useState( [] );
+
   const [totalKaidi, setTotalKaidi] = useState( 0 );
   const [loading, setLoading] = useState( false );
   const [error, setError] = useState( null );
@@ -148,7 +148,7 @@ const useFetchPayroles = ( filters, page, rowsPerPage ) => {
   }, [fetchNoPunrabedan] );
 
   return {
-    allData, data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, fetchedNoPunarabedan,
+    data, totalKaidi, loading, error, fetchedMuddas, fetchedFines, fetchedNoPunarabedan,
     refetchNoPunarabedan: fetchNoPunrabedan, refetchPayrole: fetchData, refetchMuddas: fetchMuddas, refetchFines: fetchFines
   };
 };
