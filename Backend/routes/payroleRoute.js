@@ -142,6 +142,8 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         searchis_checked = '',
         searchcourt_decision = '',
     } = req.query;
+    const is_export = Number( req.query.export ) === 1;
+
     const mudda_group_id = searchmudda_id;
 
     const [searchedStatusKeyRow] = await pool.query( `SELECT id FROM payrole_status WHERE status_key=?`, [searchpayroleStatus] );
@@ -265,9 +267,13 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             LEFT JOIN payrole_decisions pd ON p.id=pd.id         
             ${ baseWhere }
             ORDER BY bp.id DESC
-            LIMIT ? OFFSET ?
         `;
-        const [idRows] = await pool.query( idQuery, [...params, limit, offset] );
+        const idParams = [...params];
+        if ( !is_export ) {
+            idQuery += `LIMIT ? OFFSET ? `;
+            idParams.push( limit, offset );
+        }
+        const [idRows] = await pool.query( idQuery, params );
 
         const bandiIds = idRows.map( row => row.id );
         if ( bandiIds.length === 0 ) {
@@ -467,7 +473,7 @@ router.get( '/get_payroles2', verifyToken, async ( req, res ) => {
             nationality,
             searchOffice,
             searchpyarole_rakhan_upayukat = 0,
-            is_export= 0,
+            is_export = 0,
             page = 0,
             limit = 25
         } = req.query;
@@ -521,17 +527,17 @@ router.get( '/get_payroles2', verifyToken, async ( req, res ) => {
             ORDER BY payrole_id DESC`,
             [...params]
         );
-        let rows
-        is_export ? rows=dataRows:rows=exportRows;
+        let rows;
+        is_export ? rows = dataRows : rows = exportRows;
 
-        return res.json({
-            Status:true,
-            Result:rows,
-            TotalCount:total
-        });
-    }catch(err){
-        console.error(err);
-        res.status(500).json({Status:false, Error:'Server error'});
+        return res.json( {
+            Status: true,
+            Result: rows,
+            TotalCount: total
+        } );
+    } catch ( err ) {
+        console.error( err );
+        res.status( 500 ).json( { Status: false, Error: 'Server error' } );
     }
 } );
 

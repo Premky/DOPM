@@ -40,7 +40,7 @@ const PayroleTable = ( { status } ) => {
         ["clerk", "office_admin"].includes( authState.role_name );
 
     const {
-        
+
         data,
         totalKaidi,
         fetchedMuddas,
@@ -70,18 +70,25 @@ const PayroleTable = ( { status } ) => {
         setMenuRowData( null );
     };
 
-    const fetchAllforExport = async () => {
-        const res = await axios.get( `${ BASE_URL }/payrole/get_payroles`, { params: { ...filters, export: 1 }, withCredentials: true } );
+    const fetchAllForExport = useCallback( async () => {
+        const res = await axios.get(
+            `${ BASE_URL }/payrole/get_payroles`,
+            {
+                params: { ...filters, export: 1 },
+                withCredentials: true
+            }
+        );
         return res.data.Result || [];
-    };
+    }, [BASE_URL, filters] );
+
 
     // ✅ Checkbox handler
     const handleCheckboxChange = useCallback( async ( payroleId, newValue ) => {
         try {
             // Optimistic update
-            data.forEach( d => {
-                if ( d.payrole_id === payroleId ) d.is_checked = newValue;
-            } );
+            // data.forEach( d => {
+            //     if ( d.payrole_id === payroleId ) d.is_checked = newValue;
+            // } );
 
             // setData( prev =>
             //     prev.map( d =>
@@ -125,9 +132,8 @@ const PayroleTable = ( { status } ) => {
                 variant="outlined"
                 sx={{ mb: 1 }}
                 onClick={async () => {
-                    const allData = await fetchAllforExport();
+                    const allData = await fetchAllForExport();
                     exportToExcel(
-
                         allData,
                         fetchedMuddas,
                         fetchedFines,
