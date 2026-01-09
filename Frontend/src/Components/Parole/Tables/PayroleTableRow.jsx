@@ -33,7 +33,6 @@ const PayroleTableRow = ( {
     onCheck( data.payrole_id, !data.is_checked );
   }, [data.payrole_id, data.is_checked, onCheck] );
 
-
   const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
   const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
   const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
@@ -92,7 +91,7 @@ const PayroleTableRow = ( {
           {/* <StatusChip row={data} /> */}
         </TableCell>
         {/* <TableCell rowSpan={rowSpan}>{data.payrole_no_id}</TableCell> */}
-        <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 3 )}>{data.letter_address}</TableCell>
+        <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 3 )}>{data.current_office_name}</TableCell>
 
         <TableCell rowSpan={rowSpan} sx={stickyStyle( isCheckboxNotVisible ? 160 : 250, 3 )}>
           <b>{data.bandi_name}</b>
@@ -194,8 +193,8 @@ const PayroleTableRow = ( {
 
 
         <TableCell rowSpan={rowSpan}>
-          {data.remarks === '' && 'कारागारकोः'} {data.remarks} <br />
-          {data.dopm_remarks === '' && 'विभागको:'} {data.dopm_remarks}
+          {( data.remarks !== '' || data.remarks !== null ) && 'कारागारकोः'} {data.remarks} <br />
+          {( data.dopm_remarks !== '' || data.remarks !== null ) && 'विभागको:'} {data.dopm_remarks}
         </TableCell>
 
         <TableCell rowSpan={rowSpan}>

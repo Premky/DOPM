@@ -292,26 +292,31 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 bp.*,
                 bp.nationality,
                 TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS current_age,
+
                 ba.wardno,
                 ba.bidesh_nagarik_address_details,
+
                 nc.country_name_np,
                 ns.state_name_np,
                 nd.district_name_np,
                 nci.city_name_np,
+
                 bmd_combined.mudda_id,
-                bmd_combined.mudda_name,
                 bmd_combined.mudda_no,
+                bmd_combined.mudda_name,
                 bmd_combined.is_main_mudda,
                 bmd_combined.is_last_mudda,
-                bmd_combined.mudda_phesala_antim_office_id,
-                -- bmd_combined.office_name_with_letter_address,
                 bmd_combined.vadi,
                 bmd_combined.thuna_date_bs AS bmd_thuna_date,
                 bmd_combined.release_date_bs AS bmd_release_date,
+                bmd_combined.mudda_phesala_antim_office_id,
+                -- bmd_combined.office_name_with_letter_address,
                 bmd_combined.mudda_phesala_antim_office,
                 bmd_combined.mudda_phesala_antim_office_date,
+
                 bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
                 bkd.thuna_date_bs, bkd.release_date_bs,
+
                 p.id AS payrole_id,
                 p.status AS payrole_status,
                 p.payrole_no_id,
@@ -321,12 +326,16 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 p.remark,
                 p.is_checked,
                 p.pyarole_rakhan_upayukat,
-                p.dopm_remarks,                
+                p.dopm_remarks,    
+
                 ncr.city_name_np AS recommended_city, ndr.district_name_np AS recommended_district,
                 p.recommended_tole_ward,
+
                 ro.office_name_with_letter_address AS recommended_court,
-                pm.mudda_name AS payrole_mudda_name,
                 o.letter_address,
+
+                pm.mudda_name AS payrole_mudda_name,
+
                 pd.payrole_result,
                 
                 bpdOffice.office_name_with_letter_address AS punarabedan_office_name,                
@@ -443,6 +452,86 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     } catch ( err ) {
         console.error( 'Query Error:', err );
         return res.status( 500 ).json( { Status: false, Error: 'Query Error' } );
+    }
+} );
+
+router.get( '/get_payroles2', verifyToken, async ( req, res ) => {
+    try {
+        const { office_id, role_name } = req.user;
+        const {
+            searchpayroleStatus,
+            searchpayrole_no_id,
+            searchbandi_name,
+            searchcourt_decision,
+            searchis_checked,
+            nationality,
+            searchOffice,
+            searchpyarole_rakhan_upayukat = 0,
+            is_export= 0,
+            page = 0,
+            limit = 25
+        } = req.query;
+
+        const offset = page * limit;
+        let where = `WHERE 1=1`;
+        const params = [];
+
+        //Role Based Status
+        const roleMap = await getUserBasedStatusMap();
+        let allowedStatuses = roleMap[role_name] ?? [];
+
+        if ( allowedStatuses !== 'all' ) {
+            where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
+            params.push( ...allowedStatuses );
+        }
+
+        //Filters
+        if ( searchpayroleStatus ) { where += ` AND payrole_status = ?`; params.push( searchpayroleStatus ); }
+        if ( searchpayrole_no_id ) { where += ` AND payrole_no_id = ?`; params.push( searchpayrole_no_id ); }
+        if ( searchbandi_name ) { where += ` AND bandi_name LIKE ?`; params.push( `%${ searchbandi_name }%` ); }
+        if ( searchcourt_decision ) { where += ` AND payrole_result = ?`; params.push( searchcourt_decision ); }
+        if ( searchis_checked ) { where += ` AND is_checked = ?`; params.push( searchis_checked ); }
+        if ( nationality ) { where += ` AND nationality = ?`; params.push( `%${ nationality }%` ); }
+        if ( searchpyarole_rakhan_upayukat ) { where += ` AND p.pyarole_rakhan_upayukat = ? `; params.push( searchpyarole_rakhan_upayukat ); }
+
+        //Office Logic
+        if ( ![1, 2].includes( office_id ) ) {
+            where += ` AND current_office_id=?`;
+            params.push( office_id );
+        } else if ( searchOffice ) {
+            where += ` AND current_office_id=?`;
+            params.push( searchOffice );
+        }
+
+        //Total count
+        const [[{ total }]] = await pool.query( `
+            SELECT COUNT(*) total FROM view_full_parole ${ where }`, params );
+
+        //Data for table
+        const [dataRows] = await pool.query(
+            `SELECT * FROM view_full_parole ${ where }
+            ORDER BY payrole_id DESC
+            LIMIT ? OFFSET ?`,
+            [...params, Number( limit ), Number( offset )]
+        );
+
+        //Data for export
+        const [exportRows] = await pool.query(
+            `SELECT * FROM view_full_parole ${ where }
+            ORDER BY payrole_id DESC`,
+            [...params]
+        );
+        let rows
+        is_export ? rows=dataRows:rows=exportRows;
+
+        return res.json({
+            Status:true,
+            Result:rows,
+            TotalCount:total
+        });
+    }catch(err){
+        console.error(err);
+        res.status(500).json({Status:false, Error:'Server error'});
     }
 } );
 

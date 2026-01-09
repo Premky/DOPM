@@ -3,11 +3,11 @@ import NepaliDate from 'nepali-datetime';
 import axios from 'axios';
 
 const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL ) => {
-    const ExcelJS = await import('exceljs');
+    const ExcelJS = await import( 'exceljs' );
     const npToday = new NepaliDate();
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
-    const { saveAs } = await import("file-saver");
+    const { saveAs } = await import( "file-saver" );
 
 
     const worksheet = workbook.addWorksheet( 'Payrole Export' );
@@ -40,7 +40,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                 withCredentials: true,
             } );
             // console.log( data);            
-            office = data?.Result[0].letter_address || "अज्ञात कार्यालय";
+            office = data?.Result[0].current_office_name || "अज्ञात कार्यालय";
         } catch ( err ) {
             console.error( "Office fetch failed:", err );
         }
@@ -126,7 +126,7 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
             // console.log(mudda.mudda_office)
             const row = worksheet.addRow( [
                 mIndex === 0 ? index + 1 : '',
-                mIndex === 0 ? data.letter_address : '',
+                mIndex === 0 ? data.current_office_name : '',
                 mIndex === 0 ? data.office_bandi_id : '',
                 mIndex === 0
                     ? `${ data.bandi_name }\n\n${ data.nationality === 'स्वदेशी'
@@ -202,8 +202,8 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
         manualWidth2Cols.forEach( ( colIndex ) => {
             worksheet.getColumn( colIndex ).width = 21; // Set width for specific columns
         } );
-        worksheet.getColumn(11).width=27;
-        worksheet.getColumn(17).width=51;
+        worksheet.getColumn( 11 ).width = 27;
+        worksheet.getColumn( 17 ).width = 51;
         const manualWidth3Cols = [8, 12, 13, 14, 15, 16];
         manualWidth3Cols.forEach( ( colIndex ) => {
             worksheet.getColumn( colIndex ).width = 15; // Set width for specific columns
@@ -263,6 +263,6 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob( [buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' } );
-    saveAs( blob,  `${ mudda }` );
+    saveAs( blob, `${ mudda }` );
 };
 export default exportToExcel;

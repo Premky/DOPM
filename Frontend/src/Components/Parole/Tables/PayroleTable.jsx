@@ -70,6 +70,11 @@ const PayroleTable = ( { status } ) => {
         setMenuRowData( null );
     };
 
+    const fetchAllforExport = async () => {
+        const res = await axios.get( `${ BASE_URL }/payrole/get_payroles`, { params: { ...filters, export: 1 }, withCredentials: true } );
+        return res.data.Result || [];
+    };
+
     // ✅ Checkbox handler
     const handleCheckboxChange = useCallback( async ( payroleId, newValue ) => {
         try {
@@ -77,6 +82,14 @@ const PayroleTable = ( { status } ) => {
             data.forEach( d => {
                 if ( d.payrole_id === payroleId ) d.is_checked = newValue;
             } );
+
+            // setData( prev =>
+            //     prev.map( d =>
+            //         d.payrole_id === payroleId
+            //             ? { ...d, is_checked: newValue }
+            //             : d
+            //     )
+            // );
 
             // Call API to update server
             await axios.put(
@@ -111,7 +124,8 @@ const PayroleTable = ( { status } ) => {
             <Button
                 variant="outlined"
                 sx={{ mb: 1 }}
-                onClick={() =>
+                onClick={async () => {
+                    const allData = await fetchAllforExport();
                     exportToExcel(
 
                         allData,
@@ -120,7 +134,8 @@ const PayroleTable = ( { status } ) => {
                         fetchedNoPunarabedan,
                         filters,
                         BASE_URL
-                    )
+                    );
+                }
                 }
             >
                 एक्सेल निर्यात

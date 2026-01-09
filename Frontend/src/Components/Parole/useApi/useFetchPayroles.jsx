@@ -55,29 +55,6 @@ const useFetchPayroles = ( filters, page, rowsPerPage ) => {
       setData( res.data.Result || [] );
       setTotalKaidi( res.data.TotalCount || 0 );
       setError( null );
-
-      const allRes = await axios.get( `${ BASE_URL }/payrole/get_payroles`, {
-        params: {
-          searchOffice,
-          nationality,
-          searchpayroleStatus,
-          searchpyarole_rakhan_upayukat,
-          searchcourt_decision,
-          searchpayrole_no_id,
-          searchmudda_id,
-          searchbandi_name,
-          searchchecked,
-          searchis_checked,
-        },
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-        withCredentials: true,
-      } );
-      setAllData( allRes.data.Result || [] );
-
     } catch ( err ) {
       console.error( 'Fetch error', err );
       setError( err );
