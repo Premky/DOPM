@@ -273,7 +273,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             idQuery += ` LIMIT ? OFFSET ? `;
             idParams.push( limit, offset );
         }
-        const [idRows] = await pool.query( idQuery, params );
+        const [idRows] = await pool.query( idQuery, idParams );
 
         const bandiIds = idRows.map( row => row.id );
         if ( bandiIds.length === 0 ) {
