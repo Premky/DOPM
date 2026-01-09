@@ -338,7 +338,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 p.recommended_tole_ward,
 
                 ro.office_name_with_letter_address AS recommended_court,
-                o.letter_address,
+                o.letter_address AS current_office_name,
 
                 pm.mudda_name AS payrole_mudda_name,
 
