@@ -110,10 +110,9 @@ const ReuseKaragarOffice = ( { name, label, required, control, error, defaultVal
                                 if ( newValue ) {
                                     onChange( newValue.value );
                                 } else {
-                                    onChange( '' ); // 👈 auto reset to "सबै"
+                                    onChange( defaultValue ); // 👈 fallback to default
                                 }
                             }}
-
                             sx={{ width: '100%' }}
                             disabled={disabled}
                             renderOption={( props, option ) => (

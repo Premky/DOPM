@@ -126,7 +126,7 @@ router.post( "/:id/court-decision", async ( req, res ) => {
     res.json( { message: "Parole rejected" } );
 } );
 
-router.get( '/get_payroles', verifyToken, async ( req, res ) => {
+router.get( '/get_payroles1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const userRole = req.user.role_name;
     // console.log( req.query );
@@ -461,7 +461,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get( '/get_payroles2', verifyToken, async ( req, res ) => {
+router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     try {
         const { office_id, role_name } = req.user;
         const {
@@ -493,7 +493,16 @@ router.get( '/get_payroles2', verifyToken, async ( req, res ) => {
 
         //Filters
         if ( searchpayroleStatus ) { where += ` AND payrole_status = ?`; params.push( searchpayroleStatus ); }
-        if ( searchpayrole_no_id ) { where += ` AND payrole_no_id = ?`; params.push( searchpayrole_no_id ); }
+        // if ( searchpayrole_no_id ) { where += ` AND payrole_no_id = ?`; params.push( searchpayrole_no_id ); }
+        if (
+            searchpayrole_no_id &&
+            searchpayrole_no_id !== 'all' &&
+            searchpayrole_no_id !== '0'
+        ) {
+            where += ` AND payrole_no_id = ? `;
+            params.push( searchpayrole_no_id );
+        }
+
         if ( searchbandi_name ) { where += ` AND bandi_name LIKE ?`; params.push( `%${ searchbandi_name }%` ); }
         if ( searchcourt_decision ) { where += ` AND payrole_result = ?`; params.push( searchcourt_decision ); }
         if ( searchis_checked ) { where += ` AND is_checked = ?`; params.push( searchis_checked ); }

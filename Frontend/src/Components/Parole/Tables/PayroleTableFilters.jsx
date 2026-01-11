@@ -25,6 +25,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         control,
         reset,
         formState: { errors },
+        setValue,
     } = useForm( {
         defaultValues: {
             searchOffice: "",
@@ -155,6 +156,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                             label="कारागार कार्यालय"
                             control={control}
                             error={errors.searchOffice}
+                            defaultValue={''}
                         />
                     </Grid>
                 )}
@@ -176,6 +178,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                             { value: "स्वदेशी", label: "स्वदेशी" },
                             { value: "विदेशी", label: "विदेशी" },
                         ]}
+                        defaultValue={"स्वदेशी"}
                         control={control}
                         error={errors.nationality}
                     />
@@ -195,6 +198,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                         label='चेक भए/नभएको'
                         options={[{ label: 'सबै', value: '' }, { label: 'छ', value: '1' }, { label: 'छैन', value: '0' }]}
                         control={control}
+                        defaultValue={''}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 1 }}>
@@ -202,6 +206,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                         name='payrole_no_id'
                         label='प्यारोल संख्या'
                         control={control}
+                        setValue={setValue}
                     />
                 </Grid>
 
@@ -218,6 +223,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                             { label: 'छलफल', value: 'छलफल' },
                             { label: 'कागजात अपुग', value: 'कागजात अपुग' }
                         ]}
+                        defaultValue={''}
                         control={control}
                     />
                 </Grid>
@@ -231,6 +237,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                             { label: 'पास', value: 'पास' },
                             { label: 'फेल', value: 'फेल' },
                         ]}
+                        defaultValue={''}
                         control={control}
                     />
                 </Grid>

@@ -1,5 +1,5 @@
 CREATE
-OR REPLACE VIEW v_payroles_full AS
+OR REPLACE VIEW view_full_parole AS
 SELECT
     bp.id AS bandi_id,
     bp.office_bandi_id,

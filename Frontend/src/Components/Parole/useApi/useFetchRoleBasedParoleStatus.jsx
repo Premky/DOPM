@@ -10,23 +10,27 @@ const useFetchRoleBasedParoleStatus = ( bandi_id ) => {
     const [optrecords, setOptRecords] = useState( [] );
     const [loading, setLoading] = useState( true );
 
-    const fetchRoleBasedParoleStatus= async () => {
+    const fetchRoleBasedParoleStatus = async () => {
         try {
-            setLoading(true);
+            setLoading( true );
             const response = await axios.get( `${ BASE_URL }/payrole/get_allowed_statuses`,
                 { withCredentials: true } );
-                const { Status, Result, Error } = response.data;
-                // console.log( Result );
+            const { Status, Result, Error } = response.data;
+            // console.log( Result );
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
 
                     const formatted = resultArray.map( ( opt, index ) => ( {
-                        label: `${opt.id}-${opt.payrole_status_name}`,
+                        label: `${ opt.id }-${ opt.payrole_status_name }`,
                         value: opt.status_key  // fallback for value if id is missing
                     } ) );
-
-                    setOptRecords( formatted );
+                    // ➕ prepend "सबै"
+                    const withAllOption = [
+                        { label: 'सबै', value: '', is_active: false },
+                        ...formatted
+                    ];
+                    setOptRecords( withAllOption );
                     setRecords( resultArray );
                     // console.log(records)
                 } else {
@@ -42,11 +46,11 @@ const useFetchRoleBasedParoleStatus = ( bandi_id ) => {
         }
     };
 
-    useEffect( () => {        
+    useEffect( () => {
         fetchRoleBasedParoleStatus();
     }, [BASE_URL, bandi_id] );
 
-    return { records, optrecords, loading, refetchRoleBasedParoleStatus:fetchRoleBasedParoleStatus };
+    return { records, optrecords, loading, refetchRoleBasedParoleStatus: fetchRoleBasedParoleStatus };
 };
 
 export default useFetchRoleBasedParoleStatus;
