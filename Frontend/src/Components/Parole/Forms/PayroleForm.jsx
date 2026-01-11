@@ -25,7 +25,7 @@ const PayroleForm = ( { status } ) => {
   const { state: authState } = useAuth();
 
   const {
-    handleSubmit, watch, setValue, register, reset, control, formState: { errors } } = useForm( {
+    handleSubmit, watch, setValue, register, reset, control, formState: { errors }, } = useForm( {
       defaultValues: {
         office_bandi_id: '',
         // other fields...
@@ -146,6 +146,7 @@ const PayroleForm = ( { status } ) => {
                 control={control}
                 error={errors.payrole_no}
                 is_only_active={true}
+                setValue={setValue}
               />
             </Grid>
             {/* <Grid size={{ xs: 12, sm: 6, md: 3 }}>

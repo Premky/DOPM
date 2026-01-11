@@ -12,7 +12,7 @@ SELECT
     b.gender,
     b.dob,
     b.dob_ad,
-    TIMESTAMPDIFF(YEAR, b.dob_ad, CURDATE()) AS current_age,
+    TIMESTAMPDIFF (YEAR, b.dob_ad, CURDATE()) AS current_age,
     b.bandi_education,
     b.bandi_huliya,
     b.married_status,
