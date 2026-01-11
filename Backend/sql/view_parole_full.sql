@@ -6,7 +6,7 @@ SELECT
     bp.bandi_name,
     bp.gender,
     bp.nationality,
-    TIMESTAMPDIFF (YEAR, bp.dob_ad, CURDATE ()) AS current_age,
+    TIMESTAMPDIFF (YEAR, bp.dob_ad, CURDATE()) AS current_age,
     bp.current_office_id,
     p.id AS payrole_id,
     p.status AS payrole_status,

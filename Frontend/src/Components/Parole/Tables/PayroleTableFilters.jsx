@@ -170,7 +170,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                {/* <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseSelect
                         name="nationality"
                         label="राष्ट्रियता"
@@ -182,7 +182,8 @@ const PayroleTableFilters = ( { onChange } ) => {
                         control={control}
                         error={errors.nationality}
                     />
-                </Grid>
+                </Grid> */}
+
                 <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                     <ReuseMuddaGroup
                         name="searchmudda_id"
