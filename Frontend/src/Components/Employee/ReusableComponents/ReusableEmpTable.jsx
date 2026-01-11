@@ -113,7 +113,7 @@ const ReusableEmpTable = ( {
                 <Button variant="outlined" onClick={handleExport}>एक्सेल निर्यात</Button>
             </Box>
 
-            <Box mb={2}>
+            {/* <Box mb={2}>
                 <TextField
                     label="कर्मचारीको नाम खोज्नुहोस्"
                     variant="outlined"
@@ -121,7 +121,7 @@ const ReusableEmpTable = ( {
                     value={filterText}
                     onChange={( e ) => setFilterText( e.target.value )}
                 />
-            </Box>
+            </Box> */}
 
             <Dialog open={photoPreviewOpen} onClose={() => setPhotoPreviewOpen( false )} maxWidth="sm" fullWidth>
                 <DialogTitle>फोटो</DialogTitle>
