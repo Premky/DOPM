@@ -58,6 +58,7 @@ import MuddaWiseParoleSummarySheet from './Components/Parole/Tables/SummarySheet
 import OfficeWiseParoleSummarySheet from './Components/Parole/Tables/SummarySheet/OfficeWiseParoleSummarySheet';
 import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
 import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
+import CurrentDarbandi from './Components/Employee/Tables/CurrentDarbandi';
 
 // Axios interceptor for 401
 axios.interceptors.response.use(
@@ -170,6 +171,7 @@ function App() {
                     {/* <Route index element={<AllEmployeTable />} />
                     <Route path="view_employee" element={<AllEmployeTable />} /> */}
                     <Route index element={<AllEmpTable />} />
+                    <Route path="view_darbandi" element={<CurrentDarbandi />} />
                     <Route path="view_employee" element={<AllEmpTable />} />
                     <Route path="create_employee" element={<EmployeeForm />} />
                   </Route>

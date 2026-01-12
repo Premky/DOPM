@@ -83,7 +83,7 @@ async function calculateAge( birthDateBS ) {
 }
 
 // With VerifyPermissions
-router.post( "/create_parole_nos", verifyToken, verifyPermission( "parole_nos", "create" ), paroleController.createParoleNos );
+router.post( "/create_parole_nos", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.createParoleNos );
 router.get( "/get_parole_nos", verifyToken, verifyPermission( "parole_nos", "read" ), paroleController.getParoleNos );
 router.put( "/update_parole_nos/:id", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.updateParoleNos );
 router.delete( "/delete_parole_nos/:id", verifyToken, verifyRole( 'superadmin', 'supervisor' ), paroleController.deleteParoleNos );
