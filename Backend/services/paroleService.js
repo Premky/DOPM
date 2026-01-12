@@ -22,7 +22,7 @@ export const createParoleNos = async ( data, active_user ) => {
         `;
     const params = [
         data.payrole_no_name, data.payrole_calculation_date, parole_calculation_date_ad, data.payrole_decision_date, parole_decision_date_ad,
-        data.parole_granted_letter_no, data.parole_granted_letter_date, parole_granted_letter_date_ad, data.parole_no_bandi_granted, data.is_active,
+        data.parole_granted_letter_no, data.parole_granted_letter_date, parole_granted_letter_date_ad, data.parole_no_bandi_granted||0, data.is_active,
         active_user, data.created_at || new Date(), active_user, data.updated_at || new Date()
     ];
 
