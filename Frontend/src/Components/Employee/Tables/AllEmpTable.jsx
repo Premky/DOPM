@@ -14,6 +14,7 @@ const AllEmpTable = () => {
     isChief: "all",
     search: "",
     sanket_no: "",
+    post: "",
   } );
 
   const columns = useMemo(
@@ -36,6 +37,7 @@ const AllEmpTable = () => {
   );
 
   const normalizedRows = useMemo( () => {
+    console.log(empRecords)
     return empRecords.map( ( emp ) => {
       const firstAppointment = emp.post_history?.find(
         ( p ) => p.jd_type === "नयाँ नियुक्ती"
@@ -70,6 +72,7 @@ const AllEmpTable = () => {
     } );
   }, [empRecords] );
 
+  
   const filteredRows = useMemo( () => {
     const searchLower = filters.search?.toLowerCase() || "";
     return normalizedRows.filter( ( row ) => {
@@ -78,7 +81,8 @@ const AllEmpTable = () => {
       if ( filters.jd !== "all" && row.jd !== filters.jd ) return false;
       if ( filters.isChief !== "all" && String( row.is_office_chief ) !== String( filters.isChief ) ) return false;
       if ( searchLower && !row._nameLower.includes( searchLower ) ) return false;
-      if (filters.sanket_no && !row.sanket_no?.toString().includes(filters.sanket_no)) return false;
+      if ( filters.sanket_no && !row.sanket_no?.toString().includes( filters.sanket_no ) ) return false;      
+      if ( filters.post && row.post_history[0].post_id !== filters.post ) return false;
       return true;
     } );
   }, [normalizedRows, filters] );

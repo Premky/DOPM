@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
 import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
+import usePosts from "../APIs/usePosts";
 
 const EmpTableFilters = ( { onChange } ) => {
     const {
@@ -18,7 +19,8 @@ const EmpTableFilters = ( { onChange } ) => {
             jd: "all",
             is_chief: "all",
             search: "",
-            sanket_no:"",
+            sanket_no: "",
+            post: "",
         },
     } );
 
@@ -28,7 +30,8 @@ const EmpTableFilters = ( { onChange } ) => {
     const jd = watch( "jd" );
     const is_chief = watch( "is_chief" );
     const search = watch( "search" );
-    const sanket_no=watch("sanket_no")
+    const sanket_no = watch( "sanket_no" );
+    const post = watch( "post" );
 
     // Notify parent on change
     useEffect( () => {
@@ -39,8 +42,11 @@ const EmpTableFilters = ( { onChange } ) => {
             isChief: is_chief || "all",
             search: search || "",
             sanket_no: sanket_no || "",
+            post: post || "",
         } );
-    }, [office_id, emp_type, jd, is_chief, search, sanket_no, onChange] );
+    }, [office_id, emp_type, jd, is_chief, search, sanket_no, post, onChange] );
+
+    const { optLevel, optPosts, optServiceGroups } = usePosts();
 
     return (
         <Box mb={2}>
@@ -81,6 +87,15 @@ const EmpTableFilters = ( { onChange } ) => {
                             { label: "अस्थायी", value: "अस्थायी" },
                             { label: "करार", value: "करार" },
                         ]}
+                    />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 2 }}>
+                    <ReuseSelect
+                        name="post"
+                        label="पद"
+                        control={control}
+                        options={optPosts}
                     />
                 </Grid>
 

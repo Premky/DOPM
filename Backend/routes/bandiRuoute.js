@@ -3469,9 +3469,7 @@ router.post( "/create_release_bandi", verifyToken, async ( req, res ) => {
                 remarks: req.body.remarks,
                 userId: req.user.id,
             } );
-        }
-
-        if ( reason_id === 1 ) {
+        } else {
             await updateBandiStatus(
                 connection, {
                 bandiId: bandi_id,

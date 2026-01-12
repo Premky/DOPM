@@ -221,6 +221,7 @@ router.get( "/get_employees", verifyToken, async ( req, res ) => {
                 level_name_np,
                 emp_rank_np,
                 post_name_np,
+                post_id,
                 service_name_np,
                 group_name_np,
             } = row;
@@ -254,6 +255,7 @@ router.get( "/get_employees", verifyToken, async ( req, res ) => {
                     level_name_np,
                     emp_rank_np,
                     post_name_np,
+                    post_id,
                     service_name_np,
                     group_name_np,
                 };
