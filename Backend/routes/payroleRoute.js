@@ -126,7 +126,7 @@ router.post( "/:id/court-decision", async ( req, res ) => {
     res.json( { message: "Parole rejected" } );
 } );
 
-router.get( '/get_payroles1', verifyToken, async ( req, res ) => {
+router.get( '/get_payroles', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const userRole = req.user.role_name;
     // console.log( req.query );
@@ -461,7 +461,7 @@ router.get( '/get_payroles1', verifyToken, async ( req, res ) => {
     }
 } );
 
-router.get( '/get_payroles', verifyToken, async ( req, res ) => {
+router.get( '/get_payroles2', verifyToken, async ( req, res ) => {
     try {
         const { office_id, role_name } = req.user;
         const {
