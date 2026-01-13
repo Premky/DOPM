@@ -1097,6 +1097,7 @@ const BandiPersonForm = () => {
                     name={`family[${ index }].bandi_relative_address`}
                     label="ठेगाना"
                     control={control}
+                    maxLength={180}
                     error={errors?.family?.[index]?.bandi_relative_address}
                   />
                 </Grid>
