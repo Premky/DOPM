@@ -1206,6 +1206,7 @@ const BandiPersonForm = () => {
                     label="ठेगाना"
                     required={true}
                     control={control}
+                    maxLength={180}
                     error={errors?.conatact_person?.[index]?.contact_address}
                   />
                 </Grid>
