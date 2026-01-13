@@ -99,7 +99,7 @@ export const exportParoleSummary = async ( req, res ) => {
     const headers = [cfg.label];
     if ( type === "gender" ) headers.push( "लिङ्ग" );
     headers.push(
-      "सिफारिस संख्या", "हेर्न बाँकी", "योग्य", "छलफल", "अयोग्य", "कागजात अपुग",
+      "सिफारिस संख्या", "हेर्न बाँकी", "योग्य", "अयोग्य", "छलफल", "कागजात अपुग",
       "बोर्डबाट पास", "बोर्डबाट फेल", "अदालतबाट पास", "अदालतबाट फेल"
     );
     sheet.addRow( headers );
@@ -112,8 +112,8 @@ export const exportParoleSummary = async ( req, res ) => {
         Number( r.parole_unseen ),
         Number( r.parole_yogya ),
         Number( r.parole_ayogya ),
-        Number( r.parole_lack_of_paper_work ),
         Number( r.parole_chalfal ),
+        Number( r.parole_lack_of_paper_work ),
         Number( r.parole_pass ),
         Number( r.parole_fail ),
         Number( r.court_pass ),
@@ -128,8 +128,8 @@ export const exportParoleSummary = async ( req, res ) => {
       Number( totals.parole_unseen ),
       Number( totals.parole_yogya ),
       Number( totals.parole_ayogya ),
-      Number( totals.parole_lack_of_paper_work ),
       Number( totals.parole_chalfal ),
+      Number( totals.parole_lack_of_paper_work ),
       Number( totals.parole_pass ),
       Number( totals.parole_fail ),
       Number( totals.court_pass ),
