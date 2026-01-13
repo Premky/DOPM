@@ -25,7 +25,7 @@ const MuddaWiseParoleSummarySheet = () => {
   const [totals, setTotals] = useState( [] );
   const [loading, setLoading] = useState( false );
 
-  const { control, watch } = useForm();
+  const { control, watch, setValue } = useForm();
   const payrole_no_id = watch( "payrole_no_id" );
 
   const genderMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
@@ -80,7 +80,7 @@ const MuddaWiseParoleSummarySheet = () => {
 
       {/* Filters */}
       <Box display="flex" flexWrap="wrap" gap={2} alignItems="center" mb={2}>
-        <ReusePayroleNos name="payrole_no_id" label="प्यारोल संख्या" control={control} />
+        <ReusePayroleNos name="payrole_no_id" label="प्यारोल संख्या" control={control} setValue={setValue}/>
 
         <Button variant="outlined" onClick={fetchSummary}>
           Search
