@@ -146,7 +146,7 @@ const ViewBandiWordStyle = ( { bandi } ) => {
             <Button
               color="inherit"
               startIcon={<PrintIcon />}
-              onClick={handlePrint}
+              // onClick={handlePrint}
             >
               Print
             </Button>
