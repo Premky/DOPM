@@ -136,14 +136,15 @@ export const generateBandiExcel = async ( job, filters ) => {
 
     // Optional: estimate total rows for progress (rough)
     const [[{ total }]] = await pool.query(
-        `SELECT COUNT(*) as total FROM view_bandi_full ${ whereClause }`
+        `SELECT COUNT(*) as total FROM view_bandi_full ${ whereClause }`, params
     );
 
     while ( true ) {
         const [rows] = await pool.query(
             `SELECT * FROM view_bandi_full ${ whereClause } ORDER BY bandi_id DESC LIMIT ? OFFSET ?`,
-            [PAGE_SIZE, offset]
+            [...params, PAGE_SIZE, offset]
         );
+
 
         if ( !rows.length ) break;
         const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
