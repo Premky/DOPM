@@ -6,6 +6,20 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { insertEmpRoute, insertJd } from '../services/empService.js';
+import {
+    createEmployee,
+    createNewEmployee,
+    getEmployees,
+    getEmployeeById,
+    updateEmployee,
+    createJobDetail,
+    updateJobDetail,
+    deleteJobDetail,
+    deleteEmployee,
+    restoreEmployee,
+    getEmployeeStats,
+    bulkImportEmployees
+} from '../controllers/empController.js';
 
 const router = express.Router();
 const query = promisify( pool.query ).bind( pool );
@@ -18,37 +32,50 @@ const query = promisify( pool.query ).bind( pool );
 // });
 
 const storage = multer.diskStorage( {
-    destination: function ( req, file, cb ) {
-        const uploadDir = './uploads/emp_photos';
-        // console.log(uploadDir)
+    destination( req, file, cb ) {
+        const field = file.fieldname || "";
+        let uploadDir = "./uploads/emp_photo";
+
         if ( !fs.existsSync( uploadDir ) ) {
             fs.mkdirSync( uploadDir, { recursive: true } );
         }
         cb( null, uploadDir );
     },
 
-    filename: function ( req, file, cb ) {
-        const { sanket_no, name_in_english } = req.body;
-        if ( !sanket_no || !name_in_english ) {
-            return cb( new Error( 'sanket_no and name_in_english are required' ), null );
-        }
+    filename( req, file, cb ) {
+        const sanket_no = req.body.sanket_no || "UNKNOWN";
         const ext = path.extname( file.originalname );
-        const dateStr = new Date().toISOString().split( 'T' )[0];
-        const safeName = name_in_english.replace( /\s+/g, '_' ); //sanitize spaces
 
-        const uniqueName = `${ sanket_no }_${ safeName }_${ dateStr }${ ext }`;
-        cb( null, uniqueName );
+        const unique = `${ file.fieldname }_of_${ sanket_no }_${ Math.random()
+            .toString( 36 )
+            .slice( 2 ) }${ ext }`;
+        cb( null, unique );
     }
+    // const unique = `${ file.fieldname }_of_${ office_bandi_id }_${ Date.now() }
+    // .toString( 36 )
+    // .slice( 2 ) }${ ext }`;
 } );
 
 // File filter (only images allowed)
 const fileFilter = ( req, file, cb ) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp|jfif/;
-    const extname = allowedTypes.test( path.extname( file.originalname ).toLowerCase() );
-    const mimetype = allowedTypes.test( file.mimetype );
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/jfif',
+        'image/pjpeg',
+        'image/x-png'
+    ];
 
-    if ( extname && mimetype ) return cb( null, true );
-    cb( new Error( 'Only image files are allowed!' ) );
+    // Allow blobs (no name) if MIME is valid
+    const isMimeAllowed = allowedMimeTypes.includes( file.mimetype.toLowerCase() );
+
+    if ( isMimeAllowed ) {
+        cb( null, true );
+    } else {
+        cb( new Error( `Only image files are allowed! (${ file.originalname }, type: ${ file.mimetype })` ) );
+    }
 };
 
 //Size limit (1 MB max For now)
@@ -147,40 +174,8 @@ router.put( '/update_current_darbandi/:id', verifyToken, async ( req, res ) => {
 } );
 
 
-router.post( '/create_employee', verifyToken, upload.single( 'photo' ), async ( req, res ) => {
-    const user_id = req.user.id;
-    const active_office = req.user.office_id;
-    const photo_path = req.file ? `/uploads/emp_photo/${ req.file.filename }` : null;
-    const data = req.body;
-
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
-
-        console.log( '🟢 Transaction started for', req.user.office_np );
-
-        const emp_id = await insertEmpRoute( { ...data, user_id, active_office, photo_path }, connection );
-        console.log( "✅ Employee ID:", emp_id );
-        if ( emp_id ) {
-            await insertJd( emp_id, { ...data, user_id, active_office }, user_id, active_office, connection );
-        } else {
-            await connection.rollback();
-            return res.status( 400 ).json( { Status: false, message: 'Failed to create employee.' } );
-        }
-
-        await connection.commit();
-        console.log( '✅ Transaction committed for', req.user.office_np );
-
-        res.json( { Status: true, message: 'Employee created successfully.', Result: emp_id } );
-    } catch ( error ) {
-        if ( connection ) await connection.rollback();
-        console.error( '❌ Transaction error:', error );
-        res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
-    } finally {
-        if ( connection ) connection.release();
-    }
-} );
+router.post( '/create_employee', verifyToken, upload.single( 'photo' ), createEmployee );
+router.post( '/create_new_employee', verifyToken, upload.single( 'photo' ), createNewEmployee );
 
 router.get( "/get_employees", verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
@@ -205,7 +200,8 @@ router.get( "/get_employees", verifyToken, async ( req, res ) => {
         rows.forEach( row => {
             const {
                 emp_id,
-                name,
+                name_in_nepali,
+                name_in_english,
                 dob,
                 emp_type,
                 sanket_no,
@@ -229,7 +225,8 @@ router.get( "/get_employees", verifyToken, async ( req, res ) => {
             if ( !grouped[emp_id] ) {
                 grouped[emp_id] = {
                     id: emp_id,
-                    name,
+                    name_in_nepali,
+                    name_in_english,
                     dob,
                     emp_type,
                     current_office_np,
@@ -488,7 +485,38 @@ router.get( "/next_sanket_no_for_karar", verifyToken, async ( req, res ) => {
     }
 } );
 
+// ===== NEW STANDARDIZED API ENDPOINTS =====
 
+// GET /emp/list - Get all employees with pagination and search
+router.get( '/list', verifyToken, getEmployees );
 
+// GET /emp/:id - Get employee by ID
+router.get( '/:id', verifyToken, getEmployeeById );
+
+// PUT /emp/:id - Update employee
+router.put( '/:id', verifyToken, upload.single( 'photo' ), updateEmployee );
+
+// POST /emp/:id/job - Create job detail for employee
+router.post( '/:id/job', verifyToken, createJobDetail );
+
+// PUT /emp/job/:id - Update job detail row
+router.put( '/job/:id', verifyToken, updateJobDetail );
+
+// DELETE /emp/job/:id - Delete job detail row
+router.delete( '/job/:id', verifyToken, deleteJobDetail );
+
+// DELETE /emp/:id - Delete employee (soft delete)
+router.delete( '/:id', verifyToken, deleteEmployee );
+
+// PATCH /emp/:id/restore - Restore deleted employee
+router.patch( '/:id/restore', verifyToken, restoreEmployee );
+
+// GET /emp/stats - Get employee statistics
+router.get( '/api/stats', getEmployeeStats );
+
+// POST /emp/bulk-import - Bulk import employees
+router.post( '/bulk-import', verifyToken, bulkImportEmployees );
+
+// ===== END NEW ENDPOINTS =====
 
 export { router as employeRouter };
