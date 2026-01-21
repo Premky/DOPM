@@ -7,8 +7,15 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Box,
+    Typography,
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -19,7 +26,7 @@ import fetchContactPerson from '../../Apis_to_fetch/fetchContactPerson';
 import FamilyModal from '../../Dialogs/FamilyModal';
 import ContactPersonModal from '../../Dialogs/ContactPersonModal';
 
-const BandiContactPersonTable = ( { bandi_id } ) => {
+const BandiContactPersonTable = ( { bandi_id, print = false } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -27,7 +34,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-    const { records: contactPersons, loading: contactPersonLoading, refetch } = fetchContactPerson(bandi_id);
+    const { records: contactPersons, loading: contactPersonLoading, refetch } = fetchContactPerson( bandi_id );
 
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
@@ -44,7 +51,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
                 const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_contact_person/${ id }`, { withCredentials: true } );
                 if ( res.data.Status ) {
                     Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
-                    fetchBandies(id); // Re-fetch updated data
+                    fetchBandies( id ); // Re-fetch updated data
                 } else {
                     Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
                 }
@@ -60,7 +67,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
         // console.log(editingData)
         setModalOpen( true );
     };
-    
+
     const handleAdd = ( bandi_id ) => {
         setEditingData( { bandi_id } );
         setModalOpen( true );
@@ -68,7 +75,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
 
     const handleSave = async ( formData, id ) => {
         // const id = editingData?.id; // ✅ Get the ID if editing
-        console.log(id)
+        console.log( id );
         try {
 
             if ( id ) {
@@ -93,7 +100,7 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
             }
 
             await refetch();
-            setModalOpen(false);
+            setModalOpen( false );
 
         } catch ( error ) {
             console.error( "❌ Axios Error:", error ); // Helpful for debugging
@@ -102,51 +109,149 @@ const BandiContactPersonTable = ( { bandi_id } ) => {
     };
 
     return (
-        <Grid container spacing={2}>
-            <Grid container size={{xs:12}}>
-                <Grid>
-                    <h3>सम्पर्क व्यक्तिको विवरणः</h3>
-                </Grid>
-                <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
-                </Grid>
+        <Grid container spacing={2.5}>
+            <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{
+                    fontWeight: 600,
+                    color: '#2c3e50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                }}>
+                    👥 सम्पर्क व्यक्तिको विवरण
+                </Typography>
+                <Tooltip title="नयाँ सम्पर्क थप्नुहोस्">
+                    <Button
+                        variant='contained'
+                        size='small'
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAdd( bandi_id )}
+                        sx={{ borderRadius: 1, textTransform: 'none' }}
+                    >
+                        थप्नुहोस्
+                    </Button>
+                </Tooltip>
             </Grid>
-            <Grid size={{xs:12}}>
-                <TableContainer component={Paper}>
-                    <Table size='small' border={2}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">नाता</TableCell>
-                                <TableCell align="center">नामथर</TableCell>
-                                <TableCell align="center">ठेगाना</TableCell>
-                                <TableCell align="center">सम्पर्क नं.</TableCell>
-                                <TableCell align="center">#</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {contactPersons.map( ( opt, index ) => (
-                                <TableRow key={opt.id || index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.relation_np || ''}</TableCell>
-                                    <TableCell align="center">{opt.contact_name || ''}</TableCell>
-                                    <TableCell align="center">{opt.contact_address || ''}</TableCell>
-                                    <TableCell align="center">{opt.contact_contact_details || ''}</TableCell>
-                                    <TableCell align="center">
-                                        <Grid item container alignContent='center' spacing={2}>
-                                            <Grid item>
-                                                <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                            </Grid>
-                                        </Grid>
-                                    </TableCell>
+
+            <Grid size={{ xs: 12 }}>
+                {contactPersonLoading ? (
+                    <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress size={40} />
+                    </Box>
+                ) : contactPersons.length === 0 ? (
+                    <Box sx={{
+                        py: 3,
+                        textAlign: 'center',
+                        color: '#95a5a6',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 1
+                    }}>
+                        कुनै सम्पर्क व्यक्तिको विवरण उपलब्ध छैन
+                    </Box>
+                ) : (
+                    <TableContainer component={Paper} sx={{
+                        width: '100%',
+                        borderRadius: 1,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                        border: '1px solid #e0e0e0',
+                        overflow: 'auto'
+                    }}>
+                        <Table size='small' sx={{ tableLayout: 'fixed', width: '100%', minWidth: 650 }}>
+                            <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>सि.नं.</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>नाता</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>नामथर</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>ठेगाना</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>सम्पर्क नं.</TableCell>
+                                    ${!print(
+                                        <TableCell align="center" sx={{
+                                            fontWeight: 600,
+                                            color: '#2c3e50',
+                                            padding: '12px 8px',
+                                            fontSize: '0.9rem',
+                                            borderColor: '#e0e0e0'
+                                        }}>#</TableCell>
+                                    )}
                                 </TableRow>
-                            ) )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {contactPersons.map( ( opt, index ) => (
+                                    <TableRow key={opt.id || index} sx={{
+                                        '&:hover': {
+                                            backgroundColor: '#f8f9fa',
+                                            transition: '0.2s'
+                                        }
+                                    }}>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.relation_np || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.contact_name || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.contact_address || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.contact_contact_details || ''}</TableCell>
+                                        ${!print(
+                                            <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                                <Tooltip title="संपादन गर्नुहोस्">
+                                                    <Button
+                                                        variant="contained"
+                                                        color='success'
+                                                        size='small'
+                                                        startIcon={<EditIcon />}
+                                                        onClick={() => handleEdit( opt )}
+                                                        sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}
+                                                    >
+                                                        संपादन
+                                                    </Button>
+                                                </Tooltip>
+                                                <Tooltip title="मेटाउनुहोस्">
+                                                    <Button
+                                                        variant="contained"
+                                                        color='error'
+                                                        size='small'
+                                                        startIcon={<DeleteIcon />}
+                                                        onClick={() => handleDelete( opt.id )}
+                                                        sx={{ borderRadius: 0.5, textTransform: 'none' }}
+                                                    >
+                                                        मेटाउनुहोस्
+                                                    </Button>
+                                                </Tooltip>
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                ) )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
             </Grid>
             <ContactPersonModal
                 open={modalOpen}

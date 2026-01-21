@@ -7,8 +7,15 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Box,
+    Typography,
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -21,9 +28,9 @@ import BandiTransfer from '../../Dialogs/BandiTransferModal';
 import { useAuth } from '../../../../Context/AuthContext';
 
 
-const BandiTransferHistoryTable = ( { bandi_id } ) => {
+const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
     const BASE_URL = useBaseURL();
-    const { state: authState } = useAuth();
+    const { state: authState } = useAuth()||{};
 
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -31,9 +38,8 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data
-
     const { records: bandiTransferHistory, loading: bandiTransferHistoryLoading, refetch } = fetchBandiTransferHistory( bandi_id );
-    // console.log(bandiTransferHistory)
+
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -48,7 +54,6 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
         if ( confirm.isConfirmed ) {
             try {
                 await axios.delete( `${ BASE_URL }/bandi/delete_bandi_family/${ id }` );
-                // fetchBandies();
                 Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
             } catch ( error ) {
                 Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
@@ -58,7 +63,6 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
 
     const handleEdit = ( data ) => {
         setEditingData( data );
-        // console.log(editingData)
         setModalOpen( true );
     };
     const handleAdd = ( bandi_id ) => {
@@ -98,7 +102,6 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
                     throw new Error( response.data.message || 'थप्न सकिएन ।' );
                 }
             }
-            // await refetch();
             setModalOpen( false );
         } catch ( error ) {
             console.error( "❌ Axios Error:", error );
@@ -110,81 +113,67 @@ const BandiTransferHistoryTable = ( { bandi_id } ) => {
         return opt.is_completed === 'Pending' || role_Id === 99;
     };
 
-
     return (
-        <Grid container spacing={2}>
-            <BandiTransfer
-                open={modalOpen}
-                onClose={() => setModalOpen( false )}
-                onSave={handleSave}
-                editingData={editingData}
-            />
-            <Grid container size={{ xs: 12 }}>
-                <Grid>
-                    <h3> यस अघि सरुवा विवरणः</h3>
-                </Grid>
-                <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
-                </Grid>
+        <Grid container spacing={2.5}>
+            <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    ➡️ स्थानान्तरण इतिहास
+                </Typography>
+                <Tooltip title="नयाँ स्थानान्तरण थप्नुहोस्">
+                    <Button variant='contained' size='small' startIcon={<AddIcon />} onClick={() => handleAdd(bandi_id)} sx={{ borderRadius: 1, textTransform: 'none' }}>थप्नुहोस्</Button>
+                </Tooltip>
             </Grid>
+
             <Grid size={{ xs: 12 }}>
-                <TableContainer component={Paper}>
-                    <Table size='small' border={2}>
+                {bandiTransferHistoryLoading ? (
+                    <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}><CircularProgress size={40} /></Box>
+                ) : bandiTransferHistory.length === 0 ? (
+                    <Box sx={{ py: 3, textAlign: 'center', color: '#95a5a6', backgroundColor: '#f8f9fa', borderRadius: 1 }}>कुनै स्थानान्तरण विवरण उपलब्ध छैन</Box>
+                ) : (
+                <TableContainer component={Paper} sx={{ width: '100%', borderRadius: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #e0e0e0', overflow: 'auto' }}>
+                    <Table size='small' sx={{ tableLayout: 'fixed', width: '100%' }}>
                         <TableHead>
-                            <TableRow>
-                                <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">कारागार</TableCell>
-                                <TableCell align="center">देखी</TableCell>
-                                <TableCell align="center">सम्म</TableCell>
-                                <TableCell align="center">कारण</TableCell>
-                                <TableCell align="center">कैफियत</TableCell>
-                                <TableCell align="center">#</TableCell>
+                            <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>सि.नं.</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण गरेको कारागार</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण मिति</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण को कारण</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पत्र क्रमांक</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>अनुगमन अवस्था</TableCell>
+                                ${!print(<TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>)}
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {bandiTransferHistory.map( ( opt, index ) => (
-                                <TableRow key={opt.id || index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.transfer_to_office_fn}</TableCell>
-                                    <TableCell align="center">{opt.transfer_from_date}</TableCell>
-                                    <TableCell align="center">{opt.transfer_to_date}</TableCell>
-                                    <TableCell align="center">{opt.transfer_reason_np}</TableCell>
-                                    <TableCell align="center">{opt.transfer_reason}</TableCell>
-
-                                    <TableCell align="center">
-                                        <Grid item>
-                                            <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                        </Grid>
-                                        {/* Delete Button (Conditional) */}
-                                        {shouldShowDeleteButton( opt, authState.role_Id ) && (
-                                            <Grid item>
-                                                <Button variant="contained" color="error" onClick={() => handleDelete( opt.id )}>
-                                                    🗑️
-                                                </Button>
-                                            </Grid>
+                            {bandiTransferHistory.map((opt, index) => (
+                                <TableRow key={opt.id || index} sx={{ '&:hover': { backgroundColor: '#f8f9fa', transition: '0.2s' } }}>
+                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_from_office || ''}</TableCell>
+                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_date_bs || ''}</TableCell>
+                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_reason || ''}</TableCell>
+                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.letter_crn || ''}</TableCell>
+                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_completed || ''}</TableCell>
+                                    ${!print(
+                                    <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                        {shouldShowDeleteButton(opt, authState?.role_Id) && (
+                                            <>
+                                                <Tooltip title="संपादन गर्नुहोस्">
+                                                    <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit(opt)} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
+                                                </Tooltip>
+                                                <Tooltip title="मेटाउनुहोस्">
+                                                    <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete(opt.id)} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
+                                                </Tooltip>
+                                            </>
                                         )}
                                     </TableCell>
-                                    {/* <TableCell align="center">
-                                        <Grid item container alignContent='center' spacing={2}>
-                                            <Grid item>
-                                                <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                            </Grid>
-                                            {( opt.is_completed == 'Pending' ) ? ( <>
-                                                <Grid item>
-                                                    <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                                </Grid>
-                                            </> ):(authState.role_Id==99)?(<Grid item>
-                                                    <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                                </Grid>):<></>}
-                                        </Grid>
-                                    </TableCell> */}
+                                    )}
                                 </TableRow>
-                            ) )}
+                            ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
+                <BandiTransfer open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSave} editingData={editingData} />
             </Grid>
-
         </Grid>
     );
 };

@@ -39,7 +39,7 @@ const EmpTableFilters = ( { onChange } ) => {
             office: office_id || "all",
             empType: emp_type || "all",
             jd: jd || "all",
-            isChief: is_chief || "all",
+            is_chief: is_chief || "all",
             search: search || "",
             sanket_no: sanket_no || "",
             post: post || "",

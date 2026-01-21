@@ -59,6 +59,12 @@ import OfficeWiseParoleSummarySheet from './Components/Parole/Tables/SummaryShee
 import CountAcOfficenCountry from './Components/Bandi/Tables/ForMaskebari/CountAcOfficenCountry';
 import AllEmployeTable from './Components/Employee/Tables/AllEmployeTable';
 import CurrentDarbandi from './Components/Employee/Tables/CurrentDarbandi';
+import EmployeeDetailView from './Components/Employee/Views/EmployeeDetailView';
+import EmployeeList from './Components/Employee/Tables/EmployeeList';
+// import ViewBandiRedesigned from './Components/Bandi/ViewBandiRedesigned';
+import ViewBandiWordStyle from './Components/Bandi/ViewBandiWordStyle';
+
+import CreateEmployee from './Components/Employee/Forms/CreateEmployee';
 
 // Axios interceptor for 401
 axios.interceptors.response.use(
@@ -125,7 +131,7 @@ function App() {
                     <Route path="bandi_release" element={<BandiReleaseForm />} />
                     <Route path="bandi_escape" element={<BandiEscapeForm />} />
                     <Route path="bandi_recapture" element={<BandiRecaptureForm />} />
-                    <Route path="view_saved_record/:bandi_id" element={<ViewBandi />} />
+                    <Route path="view_saved_record/:bandi_id/:office_bandi_id" element={<ViewBandiWordStyle />} />
                     <Route path='details/:caseName' element={<AllBandiTable />} />
                     <Route path='details/:caseName/:type' element={<AllBandiTable />} />
                   </Route>
@@ -168,12 +174,14 @@ function App() {
 
                   {/* Employee */}
                   <Route path="emp" element={<Outlet />}>
-                    {/* <Route index element={<AllEmployeTable />} />
-                    <Route path="view_employee" element={<AllEmployeTable />} /> */}
-                    <Route index element={<AllEmpTable />} />
+                    {/* <Route index element={<AllEmployeTable />} /> */}
+                    <Route path="create_employee" element={<CreateEmployee />} />
+                    <Route path="view_employee" element={<AllEmployeTable />} />
+                    {/* <Route index element={<EmployeeList />} /> */}
                     <Route path="view_darbandi" element={<CurrentDarbandi />} />
-                    <Route path="view_employee" element={<AllEmpTable />} />
-                    <Route path="create_employee" element={<EmployeeForm />} />
+                    {/* <Route path="view_employee" element={<EmployeeList />} /> */}
+                    <Route path="view_employee/:id" element={<EmployeeDetailView />} />
+                    {/* <Route path="edit_employee/:id" element={<EditEmployeePage />} /> */}
                   </Route>
 
                   {/* Transliteration */}

@@ -294,7 +294,7 @@ const ReusableBandiTable = ( {
                                         <TableCell rowSpan={rowSpan} align="center">
                                             {( bandi.current_office_id === authState.office_id || authState.office_id === 2 ) &&
                                                 ( bandi.is_under_facility === 0 || bandi.is_under_facility === null ) && (
-                                                    <a href={`/bandi/view_saved_record/${ bandi.bandi_id }`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
+                                                    <a href={`/bandi/view_saved_record/${ bandi.bandi_id }/${ bandi.office_bandi_id }`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
                                                         <Button variant="outlined" size="small" color="primary">
                                                             VIEW
                                                         </Button>

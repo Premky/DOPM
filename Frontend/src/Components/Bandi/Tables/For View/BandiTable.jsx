@@ -1,194 +1,221 @@
 import React, { useEffect, useState } from 'react';
-import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import axios from 'axios';
-import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
-import BandiEditModal from '../../Dialogs/BandiEditModa';
-import UpdatePhotoModal from '../../Dialogs/UpdatePhotoModal';
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Avatar,
+  Divider,
+  CircularProgress,
+  Paper
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import PersonIcon from '@mui/icons-material/Person';
 import Swal from 'sweetalert2';
 
-const BandiTable = ( { bandi_id } ) => {
-    const BASE_URL = useBaseURL();
-    // const { bandi_id } = useParams();
+import { useBaseURL } from '../../../../Context/BaseURLProvider';
+import BandiEditModal from '../../Dialogs/BandiEditModa';
+import UpdatePhotoModal from '../../Dialogs/UpdatePhotoModal';
 
-    const [fetchedBandi, setFetchedBandies] = useState( [] );
-    const [loading, setLoading] = useState( false );
+/**
+ * UI-only conversion of BandiTable → Detail View layout
+ * (pattern inspired by EmployeeDetailView)
+ */
 
-    const fetchBandies = async () => {
-        try {
-            const url = `${ BASE_URL }/bandi/get_bandi/${ bandi_id }`;
-            const response = await axios.get( url );
-            const { Status, Result, Error } = response.data;
-            // console.log('URL:',url, Result)
-            if ( Status ) {
-                if ( Array.isArray( Result ) && Result.length > 0 ) {
-                    setFetchedBandies( Result[0] );
-                    console.log( fetchedBandi );
-                } else {
-                    console.log( 'No records found.' );
-                    setFetchedBandies( [] );
-                }
-            } else {
-                console.log( Error || 'Failed to fetch.' );
-            }
-        } catch ( error ) {
-            console.error( 'Error fetching records:', error );
-        } finally {
-            setLoading( false );
-        }
-    };
+const InfoBlock = ({ label, value }) => (
+  <Box>
+    <Typography variant="body2" color="text.secondary">
+      {label}
+    </Typography>
+    <Typography variant="body1" fontWeight={500}>
+      {value || 'N/A'}
+    </Typography>
+  </Box>
+);
 
-    useEffect( () => {
-        if ( bandi_id ) {
-            fetchBandies();
-        }
-    }, [bandi_id] );
+const BandiTable = ({ bandi_id }) => {
+  const BASE_URL = useBaseURL();
 
-    const [photoModalOpen, setPhotoModalOpen] = useState( false );
-    const [modalOpen, setModalOpen] = useState( false );
-    const [editingData, setEditingData] = useState( null );
-    const handleEdit = ( data, bandi_id ) => {
-        setEditingData( data );
-        setModalOpen( true );
-    };
-    
-    const handleAdd = ( bandi_id ) => {
-        setEditingData( { bandi_id } );
-        setModalOpen( true );
-    };
+  const [bandi, setBandi] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editOpen, setEditOpen] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
 
-    const handleSave = async ( formData, id ) => {
-        console.log(formData)
-        try {
-            if ( formData.bandi_id ) {
-                await axios.put(
-                    `${ BASE_URL }/bandi/update_bandi/${ formData.bandi_id }`,
-                    formData,
-                    { withCredentials: true }
-                );
-                Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
-            }
-            fetchBandies();
-        } catch ( error ) {
-            Swal.fire( 'त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error' );
-        }
-    };
+  const fetchBandi = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/bandi/get_bandi/${bandi_id}`);
+      if (res.data?.Status && res.data.Result?.length) {
+        setBandi(res.data.Result[0]);
+      } else {
+        setBandi(null);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (bandi_id) fetchBandi();
+  }, [bandi_id]);
+
+  const handleSave = async (formData) => {
+    try {
+      await axios.put(
+        `${BASE_URL}/bandi/update_bandi/${formData.bandi_id}`,
+        formData,
+        { withCredentials: true }
+      );
+      Swal.fire('सफल भयो!', 'डेटा अपडेट गरियो', 'success');
+      fetchBandi();
+    } catch {
+      Swal.fire('त्रुटि!', 'अपडेट गर्न सकिएन', 'error');
+    }
+  };
+
+  if (loading) {
     return (
-        <>
-            <BandiEditModal
-                open={modalOpen}
-                onClose={() => setModalOpen( false )}
-                onSave={handleSave}
-                editingData={editingData}
-            />
-            <UpdatePhotoModal
-                open={photoModalOpen}
-                onClose={() => setPhotoModalOpen( false )}
-                currentPhoto={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : ''}
-                onSave={async ( formData ) => {
-                    try {
-                        await axios.put(
-                            `${ BASE_URL }/bandi/update_bandi_photo/${ fetchedBandi.bandi_id }`,
-                            formData,
-                            {
-                                withCredentials: true,
-                                headers: { 'Content-Type': 'multipart/form-data' }
-                            }
-                        );
-                        fetchBandies(); // refresh photo
-                        Swal.fire( 'सफल भयो!', 'फोटो अपडेट गरियो', 'success' );
-                    } catch ( err ) {
-                        console.log( err );
-                        Swal.fire( 'त्रुटि!', 'फोटो अपलोड गर्न सकिएन', 'error' );
-                    }
-                }}
-                bandiMeta={{
-                    office_bandi_id: fetchedBandi.office_bandi_id,
-                    bandi_name: fetchedBandi.bandi_name
-                }}
-            />
-            <Grid item container spacing={2}>
-                <Grid container size={{ xs: 12 }}>
-                    <Grid>
-                        <h3>बन्दी विवरणः</h3>
-                    </Grid>
-                    <Grid marginTop={2}>
-                        <Button variant="contained" color='success' onClick={() => handleEdit( fetchedBandi )}>✏️</Button>                        
-                    </Grid>
-                </Grid>
-
-                <Grid size={{ xs: 12 }}>
-                    <TableContainer>
-                        <Table size='small' border={1}>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>बन्दी आई.डि.</TableCell>
-                                    <TableCell>{fetchedBandi.office_bandi_id}</TableCell>
-                                    <TableCell>बन्दी प्रकार</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_type} </TableCell>
-                                    <TableCell rowSpan={6} colSpan={2} align='center'>                                       
-                                        <img
-                                            src={fetchedBandi.photo_path ? `${ BASE_URL }${ fetchedBandi.photo_path }` : '/icons/male_icon-1.png'}
-                                            alt="Bandi"
-                                            onClick={() => setPhotoModalOpen( true )} // 👈 click to edit
-                                            style={{ height: 150, width: 150, objectFit: 'contain', borderRadius: 4, cursor: 'pointer' }}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>बन्दीको नामथर</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_name} </TableCell>
-                                    <TableCell>Prisoner's Name</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_name_en}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>लगत नं.</TableCell>
-                                    <TableCell>{fetchedBandi.lagat_no} </TableCell>
-                                    <TableCell>ब्लक नं.</TableCell>
-                                    <TableCell>{fetchedBandi.block_name}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>दाखिला मिति</TableCell>
-                                    <TableCell>{fetchedBandi.enrollment_date_bs}</TableCell>
-                                    <TableCell>लिङ्ग</TableCell>
-                                    <TableCell>{fetchedBandi.gender == 'Male' ? 'पुरुष' : fetchedBandi.gender == 'Female' ? 'महिला' : 'अन्य'}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>जन्म मिति/उमेरः</TableCell>
-                                    <TableCell>{fetchedBandi.dob} ({fetchedBandi.current_age} वर्ष)</TableCell>
-                                    <TableCell>वैवाहिक अवस्था</TableCell>
-                                    <TableCell>
-                                        {fetchedBandi.married_status == 'Unmarried' ? 'अविवाहित' :
-                                            fetchedBandi.married_status == 'Married' ? 'विवाहित' :
-                                                fetchedBandi.married_status
-                                        }
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>शेक्षिक योग्यता</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_education}</TableCell>
-                                    <TableCell>हुलिया</TableCell>
-                                    <TableCell>{fetchedBandi.bandi_huliya}</TableCell>
-                                </TableRow>
-                                {fetchedBandi.remarks && (
-                                    <TableRow>
-                                        <TableCell colSpan={4}>
-                                            {fetchedBandi.remarks}
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                                {/* <TableRow>
-                                <TableCell>उचाई</TableCell>
-                                <TableCell>{fetchedBandi.height}</TableCell>
-                                <TableCell>तौल</TableCell>
-                                <TableCell>{fetchedBandi.weight}</TableCell>
-                            </TableRow> */}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Grid>
-            </Grid>
-        </>
+      <Box sx={{ display: 'flex', justifyContent: 'center', minHeight: 300 }}>
+        <CircularProgress />
+      </Box>
     );
+  }
+
+  if (!bandi) {
+    return (
+      <Typography align="center" color="error">
+        बन्दी विवरण भेटिएन
+      </Typography>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3, width: '100%' }}>
+      <BandiEditModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        editingData={bandi}
+        onSave={handleSave}
+      />
+
+      <UpdatePhotoModal
+        open={photoOpen}
+        onClose={() => setPhotoOpen(false)}
+        currentPhoto={bandi.photo_path ? `${BASE_URL}${bandi.photo_path}` : ''}
+        bandiMeta={{
+          office_bandi_id: bandi.office_bandi_id,
+          bandi_name: bandi.bandi_name
+        }}
+        onSave={async (formData) => {
+          try {
+            await axios.put(
+              `${BASE_URL}/bandi/update_bandi_photo/${bandi.bandi_id}`,
+              formData,
+              { withCredentials: true }
+            );
+            Swal.fire('सफल भयो!', 'फोटो अपडेट गरियो', 'success');
+            fetchBandi();
+          } catch {
+            Swal.fire('त्रुटि!', 'फोटो अपडेट असफल', 'error');
+          }
+        }}
+      />
+
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h5" fontWeight={600}>
+          बन्दी विवरण
+        </Typography>
+        <Button
+          startIcon={<EditIcon />}
+          variant="contained"
+          onClick={() => setEditOpen(true)}
+        >
+          सम्पादन
+        </Button>
+      </Box>
+
+      <Grid container spacing={3}>
+        {/* Profile */}
+        <Grid size={{xs:12, md:4}}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Avatar
+                src={bandi.photo_path ? `${BASE_URL}${bandi.photo_path}` : undefined}
+                sx={{ width: 140, height: 140, mx: 'auto', mb: 2, cursor: 'pointer' }}
+                onClick={() => setPhotoOpen(true)}
+                variant="rounded"
+              >
+                <PersonIcon sx={{ fontSize: 80 }} />
+              </Avatar>
+              <Typography variant="h6" fontWeight={600}>
+                {bandi.bandi_name}
+              </Typography>
+              <Typography color="text.secondary">
+                {bandi.bandi_name_en}
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <Typography sx={{ bgcolor: 'primary.light', p: 1, borderRadius: 1 }}>
+                ID: {bandi.office_bandi_id}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Details */}
+        <Grid size={{xs:12, md:8}} >
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" fontWeight={600} mb={2}>
+              व्यक्तिगत जानकारी
+            </Typography>
+
+            <Grid container spacing={2}>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="बन्दी प्रकार" value={bandi.bandi_type} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="लिङ्ग" value={bandi.gender === 'Male' ? 'पुरुष' : bandi.gender === 'Female' ? 'महिला' : 'अन्य'} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="जन्म मिति / उमेर" value={`${bandi.dob} (${bandi.current_age} वर्ष)`} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="वैवाहिक अवस्था" value={bandi.married_status} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="दाखिला मिति" value={bandi.enrollment_date_bs} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="ब्लक नं." value={bandi.block_name} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="शैक्षिक योग्यता" value={bandi.bandi_education} />
+              </Grid>
+              <Grid size={{xs:12, sm:6}}>
+                <InfoBlock label="हुलिया" value={bandi.bandi_huliya} />
+              </Grid>
+            </Grid>
+
+            {bandi.remarks && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" fontWeight={600} mb={1}>
+                  कैफियत
+                </Typography>
+                <Typography>{bandi.remarks}</Typography>
+              </>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
 };
 
 export default BandiTable;

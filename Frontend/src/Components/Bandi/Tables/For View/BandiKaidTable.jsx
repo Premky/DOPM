@@ -7,8 +7,15 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Box,
+    Typography,
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -19,7 +26,7 @@ import AddressModal from '../../Dialogs/AddressModal';
 import KaidModal from '../../Dialogs/KaidModal';
 import { calculateBSDate } from '../../../../../Utils/dateCalculator';
 
-const BandiKaidTable = ( { bandi_id } ) => {
+const BandiKaidTable = ( { bandi_id, print = false } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -72,7 +79,7 @@ const BandiKaidTable = ( { bandi_id } ) => {
                 const res = await axios.delete( `${ BASE_URL }/bandi/delete_bandi_kaid_details/${ id }`, { withCredentials: true } );
                 if ( res.data.Status ) {
                     Swal.fire( 'Deleted!', 'Record has been deleted.', 'success' );
-                    setFetchedBandies(prev => prev.filter(item => item.id !== id));
+                    setFetchedBandies( prev => prev.filter( item => item.id !== id ) );
                 } else {
                     Swal.fire( 'Error!', 'Failed to delete record.', 'error' );
                 }
@@ -116,65 +123,62 @@ const BandiKaidTable = ( { bandi_id } ) => {
     };
 
     return (
-        <Grid container spacing={2}>
-            <Grid container size={{ xs: 12 }}>
-                <Grid>
-                    <h3>कैदीबन्दीको कैद विवरणः</h3>
-                </Grid>
-                <Grid marginTop={2}>
-                    {/* &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd(bandi_id)}>Add</Button> */}
-                </Grid>
+        <Grid container spacing={2.5}>
+            <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    🔒 कैद विवरण
+                </Typography>
+                <Tooltip title="नयाँ कैद विवरण थप्नुहोस्">
+                    <Button variant='contained' size='small' startIcon={<AddIcon />} onClick={() => handleAdd( bandi_id )} sx={{ borderRadius: 1, textTransform: 'none' }}>थप्नुहोस्</Button>
+                </Tooltip>
             </Grid>
             <Grid size={{ xs: 12 }}>
-                <TableContainer component={Paper}>
-                    <Table size='small' border={2}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">बन्दी प्रकार</TableCell>
-                                <TableCell align="center">हिरासत अवधी</TableCell>
-                                <TableCell align="center">थुना/कैद परेको मिति</TableCell>
-                                <TableCell align="center">छुट्ने मिति</TableCell>
-                                <TableCell align="center">कैद अवधी</TableCell>
-                                <TableCell align="center">#</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {fetchedBandies.map( ( opt, index ) => (
-                                <TableRow key={opt.id || index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.bandi_type || ''}</TableCell>
-
-                                    <TableCell align="center">{opt.hirasat_years || '0'}|{opt.hirasat_months || '0'}|{opt.hirasat_days || '0'}</TableCell>
-                                    <TableCell align="center">{opt.thuna_date_bs || ''}</TableCell>
-                                    <TableCell align="center">
-                                        {opt.is_life_time == 1 ? 'आजिवन' : opt.bandi_type == "कैदी" ? opt.release_date_bs : ''}
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        {opt.is_life_time == 1 ? 'आजिवन' : opt.bandi_type == "कैदी" ? ( calculateBSDate( opt.thuna_date_bs, opt.release_date_bs, '', opt.hirasat_years, opt.hirasat_months, opt.hirasat_days ).formattedDuration ) : ''}
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Grid item container alignContent='center' spacing={2}>
-                                            <Grid item>
-                                                <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                            </Grid>
-                                        </Grid>
-                                    </TableCell>
+                {loading ? (
+                    <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}><CircularProgress size={40} /></Box>
+                ) : fetchedBandies.length === 0 ? (
+                    <Box sx={{ py: 3, textAlign: 'center', color: '#95a5a6', backgroundColor: '#f8f9fa', borderRadius: 1 }}>कुनै कैद विवरण उपलब्ध छैन</Box>
+                ) : (
+                    <TableContainer component={Paper} sx={{ width: '100%', borderRadius: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #e0e0e0', overflow: 'auto' }}>
+                        <Table size='small' sx={{ tableLayout: 'fixed', width: '100%' }}>
+                            <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>सि.नं.</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कारागार नाम</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>गिरफ्तारी मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कैद अवधी</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>थुना मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>छुट्ने मिति</TableCell>
+                                    {!print &&(
+                                        <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
+                                    )}
                                 </TableRow>
-                            ) )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {fetchedBandies.map( ( opt, index ) => (
+                                    <TableRow key={opt.id || index} sx={{ '&:hover': { backgroundColor: '#f8f9fa', transition: '0.2s' } }}>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.office_name || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.girfturi_miti || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.kaid_avadhi || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.thuna_miti || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.chhutne_miti || ''}</TableCell>
+                                        {!print &&(
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                            <Tooltip title="संपादन गर्नुहोस्">
+                                                <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit( opt, bandi_id )} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
+                                            </Tooltip>
+                                            <Tooltip title="मेटाउनुहोस्">
+                                                <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete( opt.id )} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
+                                            </Tooltip>
+                                        </TableCell>)}
+                                    </TableRow>
+                                ) )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+                <KaidModal open={modalOpen} onClose={() => setModalOpen( false )} editingData={editingData} onSave={handleSave} />
             </Grid>
-            <KaidModal
-                open={modalOpen}
-                onClose={() => setModalOpen( false )}
-                onSave={handleSave}
-                editingData={editingData}
-            />
         </Grid>
     );
 };

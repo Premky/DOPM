@@ -587,7 +587,7 @@ const AllBandiTable = () => {
                 primaryMergeKey="bandi_id"
                 title="बन्दीहरुको सूची"
                 showView
-                onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }` )}
+                onView={( row ) => navigate( `/bandi/view_saved_record/${ row.bandi_id }/${ row.office_bandi_id }` )}
                 onDelete={handleDelete}
                 showDelete={authState.role_name === 'supervisor' || authState.role_id === 99}
 

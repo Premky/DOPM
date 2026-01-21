@@ -7,8 +7,15 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Box,
+    Typography,
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -18,7 +25,7 @@ import { useBaseURL } from '../../../../Context/BaseURLProvider';
 import { calculateBSDate } from '../../../../../Utils/dateCalculator';
 
 
-const BandiMuddaTable = ( { bandi_id } ) => {
+const BandiMuddaTable = ( { bandi_id, print = false } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -135,95 +142,216 @@ const BandiMuddaTable = ( { bandi_id } ) => {
     };
 
     return (
-        <Grid container spacing={2}>
-            <Grid container size={{ xs: 12 }}>
-                <Grid>
-                    <h3>कैदीबन्दीको मुद्दाको विवरणः</h3>
-                </Grid>
-                <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
-                </Grid>
+        <Grid container spacing={2.5}>
+            <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{
+                    fontWeight: 600,
+                    color: '#2c3e50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                }}>
+                    ⚖️ कैदीबन्दीको मुद्दाको विवरण
+                </Typography>
+                <Tooltip title="नयाँ मुद्दा थप्नुहोस्">
+                    <Button
+                        variant='contained'
+                        size='small'
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAdd( bandi_id )}
+                        sx={{ borderRadius: 1, textTransform: 'none' }}
+                    >
+                        थप्नुहोस्
+                    </Button>
+                </Tooltip>
             </Grid>
 
             <Grid size={{ xs: 12 }}>
-                <TableContainer component={Paper}>
-                    <Table size='small' border={2}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">मुद्दा</TableCell>
-                                <TableCell align="center">मुद्दा नं.</TableCell>
-                                <TableCell align="center">मुद्दा अवस्था</TableCell>
-                                <TableCell align="center">मुद्दा फैसला गर्ने अन्तिम निकाय</TableCell>
-                                <TableCell align="center">मुद्दा फैसला मिती</TableCell>
-                                <TableCell align="center">थुना परेको मिति</TableCell>
-                                <TableCell align="center">छुट्ने मिति</TableCell>
-                                <TableCell align="center">कैद अवधी</TableCell>
-                                <TableCell align="center">मुख्य मुद्दा हो?</TableCell>
-                                <TableCell align="center">अन्तिम मुद्दा हो?</TableCell>
-                                <TableCell align="center">कैदी/थुनुवा पुर्जी</TableCell>
-                                {/* <TableCell align="center">कैदी/थुनुवा पूर्जी</TableCell> */}
-                                <TableCell align="center">#</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {fetchedBandies.map( ( opt, index ) => (
-                                <TableRow key={opt.id || index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.mudda_name || ''}</TableCell>
-                                    <TableCell align="center">{opt.mudda_no || ''}</TableCell>
-                                    <TableCell align="center">{opt.mudda_condition == 1 ? 'चालु' : 'अन्तिम भएको' || ''}</TableCell>
-                                    <TableCell align="center">{opt.office_name_with_letter_address}</TableCell>
-                                    <TableCell align="center">{opt.mudda_phesala_antim_office_date}</TableCell>
-                                    <TableCell align="center">{opt.thuna_date_bs}</TableCell>
-                                    <TableCell align="center">{
-                                        opt.is_life_time == 1 ? ( "आजिवन" ) : ( opt.release_date_bs )
-                                    }</TableCell>
-                                    <TableCell align="center">{
-                                        opt.is_life_time == 1 ? ( "आजिवन" ) : ( calculateBSDate( opt.thuna_date_bs, opt.release_date_bs, '', opt.hirasat_years, opt.hirasat_months, opt.hirasat_days ).formattedDuration )
-                                    }</TableCell>
-                                    <TableCell align="center">{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
-                                    <TableCell align="center">{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
-                                    {/* <TableCell align="center">File</TableCell> */}
-
-                                    <TableCell align="center">
-                                        {opt.thunuwa_or_kaidi_purji ?
-                                            ( <a
-                                                href={`${ BASE_URL }${ opt.thunuwa_or_kaidi_purji }`}
-                                                download
-                                            >
-                                                डउनलोड गर्नुहोस्
-                                            </a> ) : ( 'कुनै फाइल छैन।' )
-                                        }
-                                    </TableCell>
-
-                                    <TableCell align="center">
-                                        <Grid container spacing={2}>
-                                            <Grid item>
-                                                <Button
-                                                    variant="contained"
-                                                    color='success'
-                                                    onClick={() => handleEdit( opt )}
-                                                >
-                                                    ✏️
-                                                </Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button
-                                                    variant="contained"
-                                                    color='error'
-                                                    onClick={() => handleDelete( opt.id )}
-                                                >
-                                                    🗑️
-                                                </Button>
-                                            </Grid>
-                                        </Grid>
-                                    </TableCell>
+                {loading ? (
+                    <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress size={40} />
+                    </Box>
+                ) : fetchedBandies.length === 0 ? (
+                    <Box sx={{
+                        py: 3,
+                        textAlign: 'center',
+                        color: '#95a5a6',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 1
+                    }}>
+                        कुनै मुद्दा विवरण उपलब्ध छैन
+                    </Box>
+                ) : (
+                    <TableContainer component={Paper} sx={{
+                        width: '100%',
+                        borderRadius: 1,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                        border: '1px solid #e0e0e0',
+                        overflow: 'auto'
+                    }}>
+                        <Table size='small' sx={{ tableLayout: 'fixed', width: '100%', minWidth: 650 }}>
+                            <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>सि.नं.</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>मुद्दा</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>मुद्दा नं.</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>मुद्दा अवस्था</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>मुद्दा फैसला गर्ने अन्तिम निकाय</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>मुद्दा फैसला मिती</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>थुना परेको मिति</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>छुट्ने मिति</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>कैद अवधी</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>मुख्य मुद्दा हो?</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>अन्तिम मुद्दा हो?</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>कैदी/थुनुवा पुर्जी</TableCell>
+                                    {!print &&(
+                                        <TableCell align="center" sx={{
+                                            fontWeight: 600,
+                                            color: '#2c3e50',
+                                            padding: '12px 8px',
+                                            fontSize: '0.9rem',
+                                            borderColor: '#e0e0e0'
+                                        }}>#</TableCell> )}
                                 </TableRow>
-                            ) )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {fetchedBandies.map( ( opt, index ) => (
+                                    <TableRow key={opt.id || index} sx={{
+                                        '&:hover': {
+                                            backgroundColor: '#f8f9fa',
+                                            transition: '0.2s'
+                                        }
+                                    }}>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.mudda_name || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.mudda_no || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.mudda_condition == 1 ? 'चालु' : 'अन्तिम भएको' || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.office_name_with_letter_address}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.mudda_phesala_antim_office_date}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.thuna_date_bs}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{
+                                            opt.is_life_time == 1 ? ( "आजिवन" ) : ( opt.release_date_bs )
+                                        }</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{
+                                            opt.is_life_time == 1 ? ( "आजिवन" ) : ( calculateBSDate( opt.thuna_date_bs, opt.release_date_bs, '', opt.hirasat_years, opt.hirasat_months, opt.hirasat_days ).formattedDuration )
+                                        }</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_main_mudda ? 'हो' : 'होइन'}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_last_mudda ? 'हो' : 'होइन'}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>
+                                            {opt.thunuwa_or_kaidi_purji ?
+                                                ( <a
+                                                    href={`${ BASE_URL }${ opt.thunuwa_or_kaidi_purji }`}
+                                                    download
+                                                >
+                                                    डउनलोड गर्नुहोस्
+                                                </a> ) : ( 'कुनै फाइल छैन।' )
+                                            }
+                                        </TableCell>
+                                        {!print &&(
+                                            <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                                <Tooltip title="संपादन गर्नुहोस्">
+                                                    <Button
+                                                        variant="contained"
+                                                        color='success'
+                                                        size='small'
+                                                        startIcon={<EditIcon />}
+                                                        onClick={() => handleEdit( opt )}
+                                                        sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}
+                                                    >
+                                                        संपादन
+                                                    </Button>
+                                                </Tooltip>
+                                                <Tooltip title="मेटाउनुहोस्">
+                                                    <Button
+                                                        variant="contained"
+                                                        color='error'
+                                                        size='small'
+                                                        startIcon={<DeleteIcon />}
+                                                        onClick={() => handleDelete( opt.id )}
+                                                        sx={{ borderRadius: 0.5, textTransform: 'none' }}
+                                                    >
+                                                        मेटाउनुहोस्
+                                                    </Button>
+                                                </Tooltip>
+                                            </TableCell> )}
+                                    </TableRow>
+                                ) )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
                 {/* 🔽 Insert this right after your TableContainer or at the end of return */}
                 <MuddaEditDialog
                     open={modalOpen}

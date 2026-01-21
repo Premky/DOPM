@@ -73,6 +73,7 @@ const UpdatePhotoModal = ({ open, onClose, onSave, currentPhoto, bandiMeta }) =>
             src={previewURL || currentPhoto}
             alt="Preview"
             sx={{ width: 300, height: 300 }}
+            variant="rounded"
           />
 
           <Button variant="contained" component="label" disabled={loading}>

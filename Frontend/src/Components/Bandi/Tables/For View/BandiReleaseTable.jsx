@@ -7,8 +7,15 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Box,
+    Typography,
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -18,7 +25,7 @@ import fetchBandiTransferHistory from '../../../ReuseableComponents/FetchApis/fe
 import BandiTransfer from '../../Dialogs/BandiTransferModal';
 import fetchBandiReleaseDetails from '../../../ReuseableComponents/FetchApis/fetchBandiReleaseDetails';
 
-const BandiReleaseTable = ( { bandi_id } ) => {
+const BandiReleaseTable = ( { bandi_id, print = false } ) => {
     const BASE_URL = useBaseURL();
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -103,63 +110,137 @@ const BandiReleaseTable = ( { bandi_id } ) => {
     };
 
     return (
-        <Grid container spacing={2}>
+        <Grid container spacing={2.5}>
+            <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{
+                    fontWeight: 600,
+                    color: '#2c3e50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                }}>
+                    🔓 कैदीबन्दीको कैदमुक्त विवरण
+                </Typography>
+                <Tooltip title="नयाँ विवरण थप्नुहोस्">
+                    <Button
+                        variant='contained'
+                        size='small'
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAdd( bandi_id )}
+                        sx={{ borderRadius: 1, textTransform: 'none' }}
+                    >
+                        थप्नुहोस्
+                    </Button>
+                </Tooltip>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+                {bandiReleaseDataLoading ? (
+                    <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress size={40} />
+                    </Box>
+                ) : bandiReleaseData.length === 0 ? (
+                    <Box sx={{
+                        py: 3,
+                        textAlign: 'center',
+                        color: '#95a5a6',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 1
+                    }}>
+                        कुनै कैदमुक्त विवरण उपलब्ध छैन
+                    </Box>
+                ) : (
+                    <TableContainer component={Paper} sx={{
+                        width: '100%',
+                        borderRadius: 1,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                        border: '1px solid #e0e0e0',
+                        overflow: 'auto'
+                    }}>
+                        <Table size='small' border={2} sx={{ tableLayout: 'fixed', width: '100%' }}>
+                            <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>सि.नं.</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>कारण</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>कार्यान्वयन मिति</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>निर्णय गर्ने अधिकारी</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>बुझ्ने मान्छे</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>कैफियत</TableCell>
+                                    ${!print(
+                                        <TableCell align="center" sx={{
+                                            fontWeight: 600,
+                                            color: '#2c3e50',
+                                            padding: '12px 8px',
+                                            fontSize: '0.9rem',
+                                            borderColor: '#e0e0e0'
+                                        }}>#</TableCell> )}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {bandiReleaseData.map( ( opt, index ) => (
+                                    <TableRow key={opt.id || index} sx={{
+                                        '&:hover': {
+                                            backgroundColor: '#f8f9fa',
+                                            transition: '0.2s'
+                                        }
+                                    }}>
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.reasons_np}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.karnayan_miti}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.nirnay_officer}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.relative_name}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.remarks}</TableCell>
+                                        ${!print( <TableCell align="center" sx={{ padding: '10px 8px' }}>-</TableCell> )}
+                                    </TableRow>
+                                ) )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+            </Grid>
+
             <BandiTransfer
                 open={modalOpen}
                 onClose={() => setModalOpen( false )}
                 onSave={handleSave}
                 editingData={editingData}
             />
-            <Grid container size={{ xs: 12 }}>
-                <Grid>
-                    <h3> कैदीबन्दीको कैदमुक्त विवरणः</h3>
-                </Grid>
-                <Grid marginTop={2}>
-                    {/* &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button> */}
-                </Grid>
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-                <TableContainer component={Paper}>
-                    <Table size='small' border={2}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">कारण</TableCell>
-                                <TableCell align="center">कार्यान्वयन मिति</TableCell>
-                                <TableCell align="center">निर्णय गर्ने अधिकारी</TableCell>
-                                <TableCell align="center">बुझ्ने मान्छे</TableCell>
-                                <TableCell align="center">कैफियत</TableCell>
-                                <TableCell align="center">#</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {bandiReleaseData.map( ( opt, index ) => (
-                                <TableRow key={opt.id || index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.reasons_np}</TableCell>
-                                    <TableCell align="center">{opt.karnayan_miti}</TableCell>
-                                    <TableCell align="center">{opt.nirnay_officer}</TableCell>
-                                    <TableCell align="center">{opt.relative_name}</TableCell>
-                                    <TableCell align="center">{opt.remarks}</TableCell>
-
-                                    {/* <TableCell align="center">
-                                        <Grid item container alignContent='center' spacing={2}>
-                                            <Grid item>
-                                                <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                            </Grid>
-                                        </Grid>
-                                    </TableCell> */}
-
-                                </TableRow>
-                            ) )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Grid>
-
         </Grid>
     );
 };

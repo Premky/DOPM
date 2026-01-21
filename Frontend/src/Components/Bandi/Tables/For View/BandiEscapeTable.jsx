@@ -7,8 +7,15 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Box,
+    Typography,
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -21,9 +28,9 @@ import fetchBandiEscape from '../../Apis_to_fetch/useFetchBandiEscape';
 import BandiEscapeModal from '../../Dialogs/BandiEscapeModal';
 
 
-const BandiEscapeTable = ( { bandi_id } ) => {
+const BandiEscapeTable = ( { bandi_id, print = false } ) => {
     const BASE_URL = useBaseURL();
-    const { state: authState } = useAuth();
+    const { state: authState } = useAuth()||{};;
 
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -31,8 +38,8 @@ const BandiEscapeTable = ( { bandi_id } ) => {
     const [editingData, setEditingData] = useState( null );
 
     // ✅ Fetch data    
-    const {records: bandiEscapeDetails, loading:EscapeDetailsLoading, refetch}=fetchBandiEscape(bandi_id);
-    // console.log(bandiTransferHistory)
+    const { records: bandiEscapeDetails, loading: EscapeDetailsLoading, refetch } = fetchBandiEscape( bandi_id );
+
     // ✅ DELETE handler
     const handleDelete = async ( id ) => {
         const confirm = await Swal.fire( {
@@ -47,7 +54,6 @@ const BandiEscapeTable = ( { bandi_id } ) => {
         if ( confirm.isConfirmed ) {
             try {
                 await axios.delete( `${ BASE_URL }/bandi/delete_bandi_escape_details/${ id }` );
-                // fetchBandies();
                 Swal.fire( 'हटाइयो!', 'रिकर्ड सफलतापूर्वक मेटाइयो।', 'success' );
             } catch ( error ) {
                 Swal.fire( 'त्रुटि!', 'डेटा मेटाउँदा समस्या आयो।', 'error' );
@@ -57,7 +63,6 @@ const BandiEscapeTable = ( { bandi_id } ) => {
 
     const handleEdit = ( data ) => {
         setEditingData( data );
-        // console.log(editingData)
         setModalOpen( true );
     };
     const handleAdd = ( bandi_id ) => {
@@ -69,7 +74,6 @@ const BandiEscapeTable = ( { bandi_id } ) => {
         try {
             let response;
             if ( id ) {
-                // Update existing contact
                 response = await axios.put(
                     `${ BASE_URL }/bandiTransfer/update_bandi_escape_details/${ id }`,
                     { bandi_transfer_details: [formData] },
@@ -82,7 +86,6 @@ const BandiEscapeTable = ( { bandi_id } ) => {
                     throw new Error( response.data.message || 'अपडेट गर्न सकिएन ।' );
                 }
             } else {
-                // Create new contact
                 response = await axios.post(
                     `${ BASE_URL }/bandiTransfer/create_bandi_escape_details`,
                     {
@@ -97,7 +100,6 @@ const BandiEscapeTable = ( { bandi_id } ) => {
                     throw new Error( response.data.message || 'थप्न सकिएन ।' );
                 }
             }
-            // await refetch();
             setModalOpen( false );
         } catch ( error ) {
             console.error( "❌ Axios Error:", error );
@@ -109,88 +111,69 @@ const BandiEscapeTable = ( { bandi_id } ) => {
         return opt.is_completed === 'Pending' || role_Id === 99;
     };
 
-
     return (
-        <Grid container spacing={2}>
-            <BandiEscapeModal
-                open={modalOpen}
-                onClose={() => setModalOpen( false )}
-                onSave={handleSave}
-                editingData={editingData}
-            />
-            <Grid container size={{ xs: 12 }}>
-                <Grid>
-                    <h3> अहिले सम्म भागेको विवरणः</h3>
-                </Grid>
-                <Grid marginTop={2}>
-                    &nbsp; <Button variant='contained' size='small' onClick={() => handleAdd( bandi_id )}>Add</Button>
-                </Grid>
+        <Grid container spacing={2.5}>
+            <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    🚨 अहिले सम्म भागेको विवरण
+                </Typography>
+                <Tooltip title="नयाँ विवरण थप्नुहोस्">
+                    <Button variant='contained' size='small' startIcon={<AddIcon />} onClick={() => handleAdd( bandi_id )} sx={{ borderRadius: 1, textTransform: 'none' }}>थप्नुहोस्</Button>
+                </Tooltip>
             </Grid>
+
             <Grid size={{ xs: 12 }}>
-                <TableContainer component={Paper}>
-                    <Table size='small' border={2}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="center">सि.नं.</TableCell>
-                                <TableCell align="center">कारागार</TableCell>
-                                <TableCell align="center">भागेको मिति</TableCell>
-                                <TableCell align="center">भाग्न प्रयोग गरेको विधि/तरिका</TableCell>
-                                <TableCell align="center">हालको अवस्था</TableCell>
-                                <TableCell align="center">पक्राउ/हाजिर मिति</TableCell>
-                                <TableCell align="center">पक्राउ गर्ने निकाय</TableCell>
-                                <TableCell align="center">पक्राउ परेको स्थान</TableCell>
-                                <TableCell align="center">हाल रहेको कारागार</TableCell>
-                                <TableCell align="center">कैफियत</TableCell>
-                                <TableCell align="center">#</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {bandiEscapeDetails.map( ( opt, index ) => (
-                                <TableRow key={opt.id || index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="center">{opt.escaped_from_office}</TableCell>
-                                    <TableCell align="center">{opt.escape_date_bs}</TableCell>
-                                    <TableCell align="center">{opt.escape_method}</TableCell>
-                                    <TableCell align="center">{opt.status}</TableCell>
-                                    <TableCell align="center">{opt.recapture_date_bs}</TableCell>
-                                    <TableCell align="center">{opt.recapture_by}</TableCell>
-                                    <TableCell align="center">{opt.recapture_location}</TableCell>
-                                    <TableCell align="center">{opt.recapture_notes}</TableCell>
-
-                                    <TableCell align="center">
-                                        <Grid item>
-                                            <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                        </Grid>
-                                        {/* Delete Button (Conditional) */}
-                                        {shouldShowDeleteButton( opt, authState.role_Id ) && (
-                                            <Grid item>
-                                                <Button variant="contained" color="error" onClick={() => handleDelete( opt.id )}>
-                                                    🗑️
-                                                </Button>
-                                            </Grid>
-                                        )}
-                                    </TableCell>
-                                    {/* <TableCell align="center">
-                                        <Grid item container alignContent='center' spacing={2}>
-                                            <Grid item>
-                                                <Button variant="contained" color='success' onClick={() => handleEdit( opt )}>✏️</Button>
-                                            </Grid>
-                                            {( opt.is_completed == 'Pending' ) ? ( <>
-                                                <Grid item>
-                                                    <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                                </Grid>
-                                            </> ):(authState.role_Id==99)?(<Grid item>
-                                                    <Button variant="contained" color='error' onClick={() => handleDelete( opt.id )}>🗑️</Button>
-                                                </Grid>):<></>}
-                                        </Grid>
-                                    </TableCell> */}
+                {EscapeDetailsLoading ? (
+                    <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}><CircularProgress size={40} /></Box>
+                ) : bandiEscapeDetails.length === 0 ? (
+                    <Box sx={{ py: 3, textAlign: 'center', color: '#95a5a6', backgroundColor: '#f8f9fa', borderRadius: 1 }}>कुनै भागेको विवरण उपलब्ध छैन</Box>
+                ) : (
+                    <TableContainer component={Paper} sx={{ width: '100%', borderRadius: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #e0e0e0', overflow: 'auto' }}>
+                        <Table size='small' sx={{ tableLayout: 'fixed', width: '100%' }}>
+                            <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>सि.नं.</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कारागार</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>भागेको मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>विधि</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>अवस्था</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पक्राउ मिति</TableCell>
+                                    ${!print(
+                                        <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
+                                    )}
                                 </TableRow>
-                            ) )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {bandiEscapeDetails.map( ( opt, index ) => (
+                                    <TableRow key={opt.id || index} sx={{ '&:hover': { backgroundColor: '#f8f9fa', transition: '0.2s' } }}>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.escaped_from_office || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.escape_date_bs || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.escape_method || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.status || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.recapture_date_bs || ''}</TableCell>
+                                        ${!print(
+                                            <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                                {shouldShowDeleteButton( opt, authState?.role_Id ) && (
+                                                    <>
+                                                        <Tooltip title="संपादन गर्नुहोस्">
+                                                            <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit( opt )} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
+                                                        </Tooltip>
+                                                        <Tooltip title="मेटाउनुहोस्">
+                                                            <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete( opt.id )} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
+                                                        </Tooltip>
+                                                    </>
+                                                )}
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                ) )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+                <BandiEscapeModal open={modalOpen} onClose={() => setModalOpen( false )} onSave={handleSave} editingData={editingData} />
             </Grid>
-
         </Grid>
     );
 };

@@ -2,222 +2,87 @@ import React, { useState } from "react";
 import { MenuItem, Button } from "@mui/material";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { useAuth } from "../../../Context/AuthContext";
-// import ForwardToKapraDialog from "../Dialogs/ForwardToKapraDialog";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { deleteEmployee } from "../services/employeeService";
+import { saveAs } from "file-saver";
+// import EmployeeProfilePDF from "../PDF/EmployeeProfilePDF";
 
-
-const handleViewPayrole = async ( row ) => {
-  // import { pdf } from "@react-pdf/renderer";
-  const pdf = await import('@react-pdf/renderer')
-  const doc = <BandiFullReportPDF bandiData={row} />;
-  const blob = await pdf( doc ).toBlob();
-  saveAs( blob, `bandi_report_${ row.bandi_id }.pdf` );
-};
-
-const EmpActionMenu = ( { oldStatus, data,  onResultClick, onClose, refetchAll } ) => {
+const EmpActionMenu = ({
+  currentStatus,
+  employee,
+  onClose,
+  refetchAll,
+  onEdit,
+  onTransfer,
+}) => {
+  // console.log(employee)
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
 
-  const status = data?.payrole_status;
-  const officeId = data?.current_office_id;
-
-  const handleAction = ( action ) => {
-    switch ( action ) {
-      case "result":
-        onResultClick();
-        break;
-      case "view":
-        // console.log("View clicked for", data.bandi_name);
-        <PDFDownloadLink
-          document={<BandiFullReportPDF
-            bandiData={data}
-          />}
-          fileName={`bandi_${ selectedBandi?.id }_report.pdf`}
-        />;
-        break;
-      case "forward":
-        console.log( "Forward clicked" );
-        break;
-      default:
-        break;
-    }
-    onClose();
+  const handleViewProfilePDF = async () => {
+    const { pdf } = await import("@react-pdf/renderer");
+    const doc = <EmployeeProfilePDF employee={employee} />;
+    const blob = await pdf(doc).toBlob();
+    saveAs(blob, `employee_${employee.emp_id}_profile.pdf`);
+    onClose?.();
   };
 
-  const [forwardModalOpen, setForwardModalOpen] = useState( false );
-  const [forwardModalOpen4dopm, setForwardModalOpen4dopm] = useState( false );
-  const handleForward = () => {
-    setForwardModalOpen( true );
-  };
+  const handleDelete = async () => {
+    const res = await Swal.fire({
+      title: "Confirm Delete",
+      text: "Are you sure you want to delete this employee?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete",
+    });
 
-  const handleForward4dopm = () => {
-    setForwardModalOpen4dopm( true );
-  };
-  const [approvalModalOpen, setApprovalModalOpen] = useState( false );
-  const handleApproval = () => {
-    setApprovalModalOpen( true );
-  };
+    if (!res.isConfirmed) return;
 
-  const handleForwardSave = async ( updatedData ) => {
-    // console.log(updatedData)
     try {
-      await axios.put(
-        `${ BASE_URL }/payrole/update_payrole/${ updatedData.payrole_id }`,
-        updatedData,
-        { withCredentials: true } // ✅ Fix: put this inside an object
-      );
-      refetchAll();
-      Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
-    } catch ( err ) {
-      console.error( err );
-      Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
+      await deleteEmployee(employee.emp_id);
+      Swal.fire("Deleted", "Employee deleted successfully", "success");
+      refetchAll?.();
+      onClose?.();
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Delete failed", "error");
     }
   };
-
-  const handleApprovalSave = async ( updatedData ) => {
-    console.log( updatedData );
-    try {
-      await axios.put(
-        `${ BASE_URL }/payrole/update_payrole_status/${ updatedData.payrole_id }`,
-        updatedData,
-        { withCredentials: true } // ✅ Fix: put this inside an object
-      );
-      refetchAll();
-      Swal.fire( 'सफल भयो!', 'डेटा सफलतापूर्वक अपडेट गरियो।', 'success' );
-    } catch ( err ) {
-      console.error( err );
-      Swal.fire( 'त्रुटि!', 'डेटा अपडेट गर्न सकिएन।', 'error' );
-    }
-  };
-
 
   return (
     <>
-      {/* <ForwardToKapraDialog
-        open={forwardModalOpen}
-        onClose={() => setForwardModalOpen( false )}
-        onSave={handleForwardSave}
-        editingData={data}
-      /> */}
-      {/* <ForwardDialog4Bibhag
-        open={forwardModalOpen4dopm}
-        onClose={() => setForwardModalOpen4dopm( false )}
-        onSave={handleForwardSave}
-        editingData={data}
-      />
-      <PayroleResultModal
-        oldStatus={oldStatus}
-        open={approvalModalOpen}
-        onClose={() => setApprovalModalOpen( false )}
-        onSave={handleApprovalSave}
-        data={data}
-      /> */}
-      {/* <Paro
-        oldStatus={oldStatus}
-        open={approvalModalOpen}
-        onClose={() => setApprovalModalOpen( false )}
-        onSave={handleApprovalSave}
-        data={data}
-      /> */}
-      <a
-        href={`/payrole/view_saved_record/${ data?.bandi_id }`}
+      <MenuItem
+        component="a"
+        href={`/emp/view_employee/${employee.emp_id}`}
         target="_blank"
-        rel="noopener noreferrer"
-        style={{ textDecoration: "none", color: "inherit" }}
       >
-        <MenuItem>विवरण हेर्नुहोस् </MenuItem>
-        {/* <MenuItem>{data.payrole_status}</MenuItem> */}
-      </a>
+        विवरण हेर्नुहोस्
+      </MenuItem>
 
-      {
-        authState.role_id <= 2 && ( <>
-          {/* <MenuItem><PayroleApplicationDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleFileCoverDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleNoPunrabedanDocx data={data} /> </MenuItem>
-          <MenuItem><PayroleCharacterDocx data={data} /> </MenuItem> */}
-        </> )
+      <MenuItem onClick={handleViewProfilePDF}>
+        PDF प्रोफाइल
+      </MenuItem>
 
-      }
+      {/* <MenuItem onClick={() => { onEdit?.(employee); onClose?.(); }}>
+        Edit
+      </MenuItem> */}
 
-      {
-        status === 2 && ( officeId === 1 || officeId === 2 ) && (
-          <MenuItem onClick={onResultClick}>निर्णय राख्ने</MenuItem>
-        )
-      }
+      {/* <MenuItem onClick={handleDelete}>
+        Delete
+      </MenuItem> */}
 
-      {
-        authState.role_name === "clerk" && (
-          <>
-            {data.status_id >= 10 ? (
-              <>
-                {/* <MenuItem onClick={handleSend}>पठाउनुहोस्</MenuItem> */}
-              </>
-            ) : (
-              <>
-                <MenuItem onClick={handleForward}>
-                  <Button variant='outline'>कार्यालय प्रमुखमा पेश गर्नुहोस्</Button>
-                </MenuItem>
-                
-                {oldStatus === "under_parole" && (
-                  <MenuItem onClick={handleApproval}>
-                    <Button variant="outlined" color="success">
-                      Approve
-                    </Button>
-                  </MenuItem>
-                )}
-              </>
-            )
-            }
-          </>
-        )
-      }
+      <MenuItem onClick={() => { onTransfer?.(employee); onClose?.(); }}>
+        Transfer
+      </MenuItem>
 
-      {
-        authState.role_name === "office_admin" ? ( <>
-          <MenuItem onClick={handleForward}>Forward</MenuItem>
-          {oldStatus === 'under_parole' && ( <MenuItem onClick={handleApproval}>
-            <Button variant="outlined" color="success">
-              Approve
-            </Button></MenuItem> )}
-
-          {( data.status_id == 10 ) ? ( <>
-            <MenuItem onClick={handleTransferDialog}>Transfer</MenuItem>
-          </> ) : ( data.status_id == 11 ) ? ( <>
-            <MenuItem onClick={handleAcceptReject}>Approve/Reject</MenuItem>
-          </> ) : ( data.payrole_status == 10 ) &&
-          ( <>
-            <MenuItem onClick={handleForward}>Forward</MenuItem>
-            {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-          </> )}
-        </> ) :
-          ( <></>
-            // authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (
-            //    <>
-            //   <MenuItem onClick={handleForward}>Forward</MenuItem>
-            //   {/* <MenuItem onClick={handleReject}>Backward</MenuItem> */}
-            // </> ) : ( <>
-            // </> )
-          )
-      }
-
-      {
-        authState.role_name === "supervisor" || authState.role_name === "headoffice_approver" ? (
-          <>
-            <MenuItem onClick={handleForward4dopm} >
-              <Button variant="outlined" color="warning">
-                Forward/Backward
-              </Button>
-            </MenuItem>
-            <MenuItem onClick={handleApproval}>
-              <Button variant="outlined" color="success">
-                Approve
-              </Button></MenuItem>
-          </> ) : ( <>
-          </> )
-      }
-
-
+      {authState.role_name === "office_admin" && currentStatus === "pending" && (
+        <MenuItem>
+          <Button variant="outlined" color="success">
+            Approve
+          </Button>
+        </MenuItem>
+      )}
     </>
   );
 };

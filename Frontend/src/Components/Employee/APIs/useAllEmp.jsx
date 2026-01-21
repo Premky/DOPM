@@ -9,10 +9,9 @@ const useAllEmployes = ( ) => {
     const [optrecords, setOptRecords] = useState( [] );
     const [loading, setLoading] = useState( true );
 
-    useEffect( () => {
-        const fetchRecords = async () => {
-            try {                
-                const response = await axios.get( `${ BASE_URL }/emp/get_employees`, { withCredentials: true } );
+    const fetchRecords = async () => {
+        try {
+            const response = await axios.get( `${ BASE_URL }/emp/get_employees`, { withCredentials: true } );
                 // console.log( response );
                 const { Status, Result, Error } = response.data;
                 if ( Status ) {
@@ -36,13 +35,14 @@ const useAllEmployes = ( ) => {
                 console.error( "Failed to fetch ranks:", error );
             } finally {
                 setLoading( false );
-            }
-        };
+            };
+    };
 
+    useEffect( () => {
         fetchRecords();
     }, [BASE_URL] );
 
-    return { records, optrecords, loading };
+    return { records, optrecords, loading, refetch: fetchRecords };
 };
 
 export default useAllEmployes;

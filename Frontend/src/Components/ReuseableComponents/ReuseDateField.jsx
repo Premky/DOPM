@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
+import NepaliDate from 'nepali-datetime';
 
 const ReuseDateField = ( { name, label, required, control, error, placeholder, onChange: propsOnChange, defaultValue, maxDate } ) => {
+    const npToday = new NepaliDate();
+    const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     // console.log(defaultValue)
     return (
         <>
@@ -30,13 +33,13 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                             return pattern.test( value ) || 'मिति YYYY-MM-DD ढाँचामा हुनुपर्छ';
                         }
                         // check max date: 
-                        if(maxDate){
-                            const inputDate = new Date(value);
-                            const limitDate = new Date(maxDate);
-                            if(inputDate>limitDate){
-                                return `मिति आज(${maxDate}) भन्दा ठुलो हुनु हुँदैन ;`
-                            }
-                        }
+                        // if ( maxDate ) {
+                        //     const inputDate = new Date( value );
+                        //     const limitDate = new Date( maxDate );
+                        //     if ( inputDate > limitDate ) {
+                        //         return `यो मिति आज(${ maxDate }) भन्दा ठुलो हुनु हुँदैन ;`;
+                        //     }
+                        // }
                         return true;
                     },
                 }}
@@ -49,14 +52,39 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                     }, [value] );
 
                     const handleInputChange = ( e ) => {
+                        let maxYear, maxMonth, maxDay;
+                        if ( maxDate === null || maxDate === "" || maxDate === undefined ) {
+                            maxDate = "9999-12-32";
+                        } else if ( maxDate === 'today' ) {
+                            maxDate = formattedDateNp;
+                        } else {
+                            maxDate = maxDate;
+                        }
+                        [maxYear, maxMonth, maxDay] = maxDate.split( "-" ).map( Number );
+                        // console.log( maxYear, maxMonth, maxDay );
+
                         const inputValue = e.target.value.replace( /[^0-9]/g, "" ); // Allow only numbers
                         let formatted = inputValue;
+
 
                         if ( inputValue.length > 4 ) {
                             const year = inputValue.slice( 0, 4 );
                             const month = inputValue.slice( 4, 6 );
-                            formatted = `${ year }-${ month }`;
+                            if ( maxYear >= year ) {
+                                formatted = `${ year }`;
+                            }
+                            else {
+                                return;
+                            }
+                            if ( maxMonth >= month && maxYear >= year ) {
+                                formatted = `${ year }-${ month }`;
+                            }
+                            else {
+                                return;
+                            }
+
                         }
+
                         if ( inputValue.length > 6 ) {
                             const year = inputValue.slice( 0, 4 );
                             let month = inputValue.slice( 4, 6 );
@@ -71,10 +99,31 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                                 day = "32";
                             }
 
-                            formatted = `${ year }-${ month }-${ day }`;
+                            if ( maxYear >= year ) {
+                                formatted = `${ year }`;
+                            }
+                            else {
+                                return;
+                            }
+
+                            if ( maxMonth >= month && maxYear >= year ) {
+                                formatted = `${ year }-${ month }`;
+                            }
+                            else {
+                                return;
+                            }
+
+                            if ( maxDay >= day && maxMonth >= month && maxYear >= year ) {
+                                formatted = `${ year }-${ month }-${ day }`;
+                            }
+                            else {
+                                return;
+                            }
+
                         }
 
                         formatted = formatted.slice( 0, 10 ); // Limit to yyyy-mm-dd
+
                         setFormattedValue( formatted );
                         onChange( formatted ); // internal RHF update
                         if ( typeof propsOnChange === 'function' ) {
