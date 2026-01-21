@@ -189,14 +189,14 @@ const ViewBandiWordStyle = ( { bandi } ) => {
       </Box>
 
       {/* ---------------- PRINT CONTENT ONLY ---------------- */}
-      {isPrinting && (
+      {/* {isPrinting && (
         <div className="print-only">
           <ViewBandiPrintLayout
             bandi_id={bandi_id}
             office_bandi_id={office_bandi_id}
           />
         </div>
-      )}
+      )} */}
 
     </>
   );
