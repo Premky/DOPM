@@ -202,7 +202,7 @@ const BandiReleaseTable = ( { bandi_id, print = false } ) => {
                                         fontSize: '0.9rem',
                                         borderColor: '#e0e0e0'
                                     }}>कैफियत</TableCell>
-                                    ${!print(
+                                    {!print && (
                                         <TableCell align="center" sx={{
                                             fontWeight: 600,
                                             color: '#2c3e50',
@@ -226,7 +226,7 @@ const BandiReleaseTable = ( { bandi_id, print = false } ) => {
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.nirnay_officer}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.relative_name}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.remarks}</TableCell>
-                                        ${!print( <TableCell align="center" sx={{ padding: '10px 8px' }}>-</TableCell> )}
+                                        {!print && ( <TableCell align="center" sx={{ padding: '10px 8px' }}>-</TableCell> )}
                                     </TableRow>
                                 ) )}
                             </TableBody>

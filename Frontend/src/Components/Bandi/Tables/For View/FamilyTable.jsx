@@ -239,7 +239,7 @@ const FamilyTable = ( { bandi_id } ) => {
                                     >
                                         आश्रीत (जन्म मिति)
                                     </TableCell>
-                                    ${!print(
+                                    {!print && (
                                         <TableCell
                                             align="center"
                                             sx={{
@@ -332,7 +332,7 @@ const FamilyTable = ( { bandi_id } ) => {
                                         >
                                             {opt.is_dependent === 1 ? opt.dob : '-'}
                                         </TableCell>
-                                        ${!print(
+                                        {!print && (
                                             <TableCell
                                                 align="center"
                                                 sx={{

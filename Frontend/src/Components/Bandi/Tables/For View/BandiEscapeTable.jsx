@@ -138,7 +138,7 @@ const BandiEscapeTable = ( { bandi_id, print = false } ) => {
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>विधि</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>अवस्था</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पक्राउ मिति</TableCell>
-                                    ${!print(
+                                    {!print && (
                                         <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
                                     )}
                                 </TableRow>
@@ -152,7 +152,7 @@ const BandiEscapeTable = ( { bandi_id, print = false } ) => {
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.escape_method || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.status || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.recapture_date_bs || ''}</TableCell>
-                                        ${!print(
+                                        {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 {shouldShowDeleteButton( opt, authState?.role_Id ) && (
                                                     <>

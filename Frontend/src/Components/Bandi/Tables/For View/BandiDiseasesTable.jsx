@@ -191,7 +191,7 @@ const BandiDiseasesTable = ( { bandi_id, print = false } ) => {
                                     }}>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.disease_id == 100 ? <>{`(${ opt.disease_name_np }) ${ opt.disease_name_if_other }`} </> : opt.disease_name_np}</TableCell>
-                                        ${!print && (
+                                        {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 <Tooltip title="संपादन गर्नुहोस्">
                                                     <Button

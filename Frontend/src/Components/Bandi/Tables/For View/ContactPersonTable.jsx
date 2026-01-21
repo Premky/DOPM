@@ -194,7 +194,7 @@ const BandiContactPersonTable = ( { bandi_id, print = false } ) => {
                                         fontSize: '0.9rem',
                                         borderColor: '#e0e0e0'
                                     }}>सम्पर्क नं.</TableCell>
-                                    ${!print(
+                                    {!print && (
                                         <TableCell align="center" sx={{
                                             fontWeight: 600,
                                             color: '#2c3e50',
@@ -218,7 +218,7 @@ const BandiContactPersonTable = ( { bandi_id, print = false } ) => {
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.contact_name || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.contact_address || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.contact_contact_details || ''}</TableCell>
-                                        ${!print(
+                                        {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 <Tooltip title="संपादन गर्नुहोस्">
                                                     <Button
