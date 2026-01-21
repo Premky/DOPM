@@ -140,7 +140,7 @@ const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण को कारण</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पत्र क्रमांक</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>अनुगमन अवस्था</TableCell>
-                                ${!print(<TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>)}
+                                {!print && (<TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>)}
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -152,7 +152,7 @@ const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
                                     <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_reason || ''}</TableCell>
                                     <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.letter_crn || ''}</TableCell>
                                     <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_completed || ''}</TableCell>
-                                    ${!print(
+                                    {!print && (
                                     <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                         {shouldShowDeleteButton(opt, authState?.role_Id) && (
                                             <>

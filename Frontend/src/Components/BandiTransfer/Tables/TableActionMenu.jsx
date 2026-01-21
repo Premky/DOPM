@@ -204,7 +204,7 @@ const TableActionMenu = ( { data, onResultClick, onClose, refetchAll } ) => {
 
       {/* <MenuItem onClick={handleViewBandi}>PDF</MenuItem>; */}
       <a
-        href={`/bandi/view_saved_record/${ data?.bandi_id }`}
+        href={`/bandi/view_saved_record/${ data?.bandi_id }/${ data?.office_bandi_id }`}
         target="_blank"
         rel="noopener noreferrer"
         style={{ textDecoration: "none", color: "inherit" }}
