@@ -11,7 +11,70 @@ export const generateBandiExcel = async ( job, filters ) => {
     const PAGE_SIZE = 1000;
     let offset = 0;
     let sn = 1;
+
+    const { filters } = job.data;
+
+    const toInt = ( v ) => {
+        if ( v === undefined || v === "0" || v === "" ) return null;
+        const n = Number( v );
+        return Number.isNaN( n ) ? null : n;
+    };
+
+    /* ---------------- FILTERS ---------------- */
+    const selected_office = toInt( filters.selected_office );
+    const searchOffice = toInt( filters.searchOffice );
+    const bandi_status = toInt( filters.bandi_status ) ?? 1;
+    const nationality = toInt( filters.nationality );
+    const country = toInt( filters.country );
+    const gender = toInt( filters.gender );
+    const bandi_type = toInt( filters.bandi_type );
+    const mudda_group_id = toInt( filters.mudda_group_id );
+    const is_dependent = toInt( filters.is_dependent );
+    const is_escape = filters.is_escape || "";
     const language = filters.language || "np";
+    const includePhoto = filters.includePhoto === "1";
+    const is_under_payrole =
+        filters.is_under_payrole !== undefined
+            ? Number( filters.is_under_payrole )
+            : 0;
+    const search_name = filters.search_name?.trim() || "";
+
+    /* ---------------- WHERE CLAUSE ---------------- */
+    let conditions = [];
+    let params = [];
+
+    if ( selected_office !== null ) {
+        conditions.push( "current_office_id = ?" );
+        params.push( selected_office );
+    } else if ( searchOffice !== null ) {
+        conditions.push( "current_office_id = ?" );
+        params.push( searchOffice );
+    }
+
+    if ( bandi_status !== null ) {
+        conditions.push( "bandi_status = ?" );
+        params.push( bandi_status );
+    }
+
+    if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
+    if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
+    if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
+    if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
+    if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
+    if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
+    if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
+
+    if ( search_name ) {
+        conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
+        params.push( `%${ search_name }%`, search_name );
+    }
+
+    conditions.push( "is_under_payrole = ?" );
+    params.push( is_under_payrole );
+
+    const whereClause = conditions.length
+        ? `WHERE ${ conditions.join( " AND " ) }`
+        : "";
 
     const fileName = `Bandi_Records_${ Date.now() }.xlsx`;
     const filePath = path.join( TEMP_DIR, fileName );
@@ -73,12 +136,12 @@ export const generateBandiExcel = async ( job, filters ) => {
 
     // Optional: estimate total rows for progress (rough)
     const [[{ total }]] = await pool.query(
-        "SELECT COUNT(*) as total FROM view_bandi_full"
+        `SELECT COUNT(*) as total FROM view_bandi_full ${ whereClause }`
     );
 
     while ( true ) {
         const [rows] = await pool.query(
-            `SELECT * FROM view_bandi_full ORDER BY bandi_id DESC LIMIT ? OFFSET ?`,
+            `SELECT * FROM view_bandi_full ${ whereClause } ORDER BY bandi_id DESC LIMIT ? OFFSET ?`,
             [PAGE_SIZE, offset]
         );
 
