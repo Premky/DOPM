@@ -201,7 +201,7 @@ const BandiPunrabednTable = ( { bandi_id, print = false } ) => {
                                         fontSize: '0.9rem',
                                         borderColor: '#e0e0e0'
                                     }}>पत्र मिति</TableCell>
-                                    ${!print(
+                                    {!print && (
                                         <TableCell align="center" sx={{
                                             fontWeight: 600,
                                             color: '#2c3e50',
@@ -223,7 +223,7 @@ const BandiPunrabednTable = ( { bandi_id, print = false } ) => {
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.office_name_with_letter_address || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.punarabedan_office_ch_no || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>{opt.punarabedan_office_date || ''}</TableCell>
-                                        ${!print(
+                                        {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 <Grid container spacing={1} sx={{ justifyContent: 'center' }}>
                                                     <Grid item>

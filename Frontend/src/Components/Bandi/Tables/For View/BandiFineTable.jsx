@@ -154,9 +154,15 @@ const BandiFineTable = ( { bandi_id, print = false } ) => {
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>च.नं.</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>मिति</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>रकम</TableCell>
-                                    ${!print(
-                                        <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
+                                    {!print && (
+                                        <TableCell
+                                            align="center"
+                                            sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}
+                                        >
+                                            #
+                                        </TableCell>
                                     )}
+
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -171,15 +177,36 @@ const BandiFineTable = ( { bandi_id, print = false } ) => {
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.deposit_ch_no || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.deposit_date || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.deposit_amount || ''}</TableCell>
-                                        ${!print(
+                                        {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 <Tooltip title="संपादन गर्नुहोस्">
-                                                    <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit( opt )} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="success"
+                                                        size="small"
+                                                        startIcon={<EditIcon />}
+                                                        onClick={() => handleEdit( opt )}
+                                                        sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}
+                                                    >
+                                                        संपादन
+                                                    </Button>
                                                 </Tooltip>
+
                                                 <Tooltip title="मेटाउनुहोस्">
-                                                    <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete( opt.id )} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="error"
+                                                        size="small"
+                                                        startIcon={<DeleteIcon />}
+                                                        onClick={() => handleDelete( opt.id )}
+                                                        sx={{ borderRadius: 0.5, textTransform: 'none' }}
+                                                    >
+                                                        मेटाउनुहोस्
+                                                    </Button>
                                                 </Tooltip>
-                                            </TableCell> )}
+                                            </TableCell>
+                                        )}
+
                                     </TableRow>
                                 ) )}
                             </TableBody>

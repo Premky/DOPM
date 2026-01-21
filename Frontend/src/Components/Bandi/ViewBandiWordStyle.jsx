@@ -78,37 +78,45 @@ const PRINT_CSS = `
 }
 `;
 
-const SectionBox = ({ children, fullWidth = true }) => (
-  <Grid size={{xs: 12, sm: fullWidth ? 12 : 6}}>
+const SectionBox = ( { children, fullWidth = true } ) => (
+  <Grid size={{ xs: 12, sm: fullWidth ? 12 : 6 }}>
     <Paper sx={{ p: 2, border: '1px solid #e0e0e0' }}>
       {children}
     </Paper>
   </Grid>
 );
 
-const ViewBandiWordStyle = ({ bandi }) => {
+const ViewBandiWordStyle = ( { bandi } ) => {
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [urlLocation, setUrlLocation] = useState('bandi');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [urlLocation, setUrlLocation] = useState( 'bandi' );
+  const [isLoading, setIsLoading] = useState( false );
+  const [error, setError] = useState( null );
 
-  useEffect(() => {
+  useEffect( () => {
     setUrlLocation(
-      location.pathname.startsWith('/parole') ? 'parole' : 'bandi'
+      location.pathname.startsWith( '/parole' ) ? 'parole' : 'bandi'
     );
-  }, [location.pathname]);
+  }, [location.pathname] );
 
   const bandi_id = bandi || params.bandi_id;
   const office_bandi_id = bandi || params.office_bandi_id;
 
+  const [isPrinting, setIsPrinting] = useState( false );
+
   /* ---------------- PRINT HANDLER ---------------- */
   const handlePrint = () => {
-    document.title = `बन्दी विवरण - ${office_bandi_id}`;
-    window.print();
+    document.title = `बन्दी विवरण - ${ office_bandi_id }`;
+    setIsPrinting( true );
+
+    setTimeout( () => {
+      window.print();
+      setIsPrinting( false );
+    }, 100 );
   };
+
 
   return (
     <>
@@ -125,7 +133,7 @@ const ViewBandiWordStyle = ({ bandi }) => {
           <Button
             color="inherit"
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate( -1 )}
           >
             Back
           </Button>
@@ -181,12 +189,15 @@ const ViewBandiWordStyle = ({ bandi }) => {
       </Box>
 
       {/* ---------------- PRINT CONTENT ONLY ---------------- */}
-      <div className="print-only">
-        <ViewBandiPrintLayout
-          bandi_id={bandi_id}
-          office_bandi_id={office_bandi_id}
-        />
-      </div>
+      {isPrinting && (
+        <div className="print-only">
+          <ViewBandiPrintLayout
+            bandi_id={bandi_id}
+            office_bandi_id={office_bandi_id}
+          />
+        </div>
+      )}
+
     </>
   );
 };
