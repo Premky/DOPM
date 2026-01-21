@@ -42,7 +42,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
             const { Status, Result, Error } = response.data;
 
             if ( Status ) {
-                if ( Array.isArray( Result ) && Result.length > 0 ) {                    
+                if ( Array.isArray( Result ) && Result.length > 0 ) {
                     setFetchedBandies( Result );
                 } else {
                     console.log( 'No address record found.' );
@@ -148,7 +148,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कैद अवधी</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>छुट्ने मिति</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>आजिवन सजाय हो/होइन?</TableCell>
-                                    {!print &&(
+                                    {!print && (
                                         <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
                                     )}
                                 </TableRow>
@@ -159,18 +159,22 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.bandi_type || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.thuna_date_bs || ''}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.hirasat_years || 0}|{opt.hirasat_months || 0}|{opt.hirasat_days || 0}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>
+                                            {
+                                                calculateBSDate( opt.thuna_date_bs, opt.release_date_bs, '', opt.hirasat_years, opt.hirasat_months, opt.hirasat_days ).formattedDuration
+                                            }
+                                        </TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.release_date_bs || ''}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_life_time==='1' ? 'हो' : 'होइन'}</TableCell>
-                                        {!print &&(
-                                        <TableCell align="center" sx={{ padding: '10px 8px' }}>
-                                            <Tooltip title="संपादन गर्नुहोस्">
-                                                <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit( opt, bandi_id )} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
-                                            </Tooltip>
-                                            <Tooltip title="मेटाउनुहोस्">
-                                                <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete( opt.id )} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
-                                            </Tooltip>
-                                        </TableCell>)}
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_life_time === '1' ? 'हो' : 'होइन'}</TableCell>
+                                        {!print && (
+                                            <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                                <Tooltip title="संपादन गर्नुहोस्">
+                                                    <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit( opt, bandi_id )} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
+                                                </Tooltip>
+                                                <Tooltip title="मेटाउनुहोस्">
+                                                    <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete( opt.id )} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
+                                                </Tooltip>
+                                            </TableCell> )}
                                     </TableRow>
                                 ) )}
                             </TableBody>
