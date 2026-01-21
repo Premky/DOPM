@@ -1,39 +1,23 @@
 import React from "react";
-import { Button, LinearProgress, Typography, Box } from "@mui/material";
+import { Button, LinearProgress, Typography } from "@mui/material";
 import useBandiExport from "../Apis_to_fetch/useBandiExport";
 
 const ExportBandiButton = ({ BASE_URL, authState, filters, includePhoto, language }) => {
-  const { handleExport, cancelExport, exporting, progress } = useBandiExport(
-    BASE_URL,
-    authState,
-    filters,
-    includePhoto,
-    language
-  );
+  const { handleExport, exporting, progress } = useBandiExport(BASE_URL, authState, filters, includePhoto, language);
 
   return (
-    <Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleExport}
-        disabled={exporting}
-      >
-        Export Bandi Excel
+    <div>
+      <Button variant="contained" onClick={handleExport} disabled={exporting}>
+        {exporting ? "Exporting..." : "Export Bandi Excel"}
       </Button>
 
       {exporting && (
-        <>
-          <Box mt={1} display="flex" gap={1} alignItems="center">
-            <Typography variant="body2">Progress: {progress}%</Typography>
-            <Button variant="outlined" color="error" size="small" onClick={cancelExport}>
-              Cancel Export
-            </Button>
-          </Box>
+        <div style={{ marginTop: 10 }}>
+          <Typography variant="body2">Progress: {progress}%</Typography>
           <LinearProgress variant="determinate" value={progress} />
-        </>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
