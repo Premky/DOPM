@@ -2,6 +2,7 @@
 
 import { bs2ad } from '../utils/bs2ad.js';
 import { ageCalculator } from '../utils/ageCalculator.js';
+import { getBandiChunk } from '../repositories/bandiRepo.js';
 // let connection;
 // connection = await pool.getConnection();
 
@@ -822,11 +823,11 @@ async function updateTransferDetails( transfer_id, data, user_id, active_office,
   return result.affectedRows || 0;
 }
 
-async function* getBandiForExport(filters) {
+async function* getBandiForExport( filters ) {
   let lastId = 0;
   const limit = 500;
 
-  while (true) {
+  while ( true ) {
     const [rows] = await pool.query(
       `
       SELECT b.*, m.*
@@ -839,22 +840,212 @@ async function* getBandiForExport(filters) {
       [lastId, limit]
     );
 
-    if (!rows.length) break;
+    if ( !rows.length ) break;
 
     const grouped = {};
-    rows.forEach(r => {
-      if (!grouped[r.id]) {
+    rows.forEach( r => {
+      if ( !grouped[r.id] ) {
         grouped[r.id] = { ...r, muddas: [] };
       }
-      if (r.mudda_id) grouped[r.id].muddas.push(r);
-    });
+      if ( r.mudda_id ) grouped[r.id].muddas.push( r );
+    } );
 
-    for (const bandi of Object.values(grouped)) {
+    for ( const bandi of Object.values( grouped ) ) {
       yield bandi;
       lastId = bandi.id;
     }
   }
 }
+
+export const generateBandiExcel = async ( job ) => {
+  const { filters } = job.data;
+
+  const toInt = ( v ) => {
+    if ( v === undefined || v === "0" || v === "" ) return null;
+    const n = Number( v );
+    return Number.isNaN( n ) ? null : n;
+  };
+
+  /* ---------------- FILTERS ---------------- */
+  const selected_office = toInt( filters.selected_office );
+  const searchOffice = toInt( filters.searchOffice );
+  const bandi_status = toInt( filters.bandi_status ) ?? 1;
+  const nationality = toInt( filters.nationality );
+  const country = toInt( filters.country );
+  const gender = toInt( filters.gender );
+  const bandi_type = toInt( filters.bandi_type );
+  const mudda_group_id = toInt( filters.mudda_group_id );
+  const is_dependent = toInt( filters.is_dependent );
+  const is_escape = filters.is_escape || "";
+  const language = filters.language || "np";
+  const includePhoto = filters.includePhoto === "1";
+  const is_under_payrole =
+    filters.is_under_payrole !== undefined
+      ? Number( filters.is_under_payrole )
+      : 0;
+  const search_name = filters.search_name?.trim() || "";
+
+  /* ---------------- WHERE CLAUSE ---------------- */
+  let conditions = [];
+  let params = [];
+
+  if ( selected_office !== null ) {
+    conditions.push( "current_office_id = ?" );
+    params.push( selected_office );
+  } else if ( searchOffice !== null ) {
+    conditions.push( "current_office_id = ?" );
+    params.push( searchOffice );
+  }
+
+  if ( bandi_status !== null ) {
+    conditions.push( "bandi_status = ?" );
+    params.push( bandi_status );
+  }
+
+  if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
+  if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
+  if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
+  if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
+  if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
+  if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
+  if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
+
+  if ( search_name ) {
+    conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
+    params.push( `%${ search_name }%`, search_name );
+  }
+
+  conditions.push( "is_under_payrole = ?" );
+  params.push( is_under_payrole );
+
+  const whereClause = conditions.length
+    ? `WHERE ${ conditions.join( " AND " ) }`
+    : "";
+
+  /* ---------------- FILE SETUP ---------------- */
+  const exportDir = path.join( "exports" );
+  if ( !fs.existsSync( exportDir ) ) fs.mkdirSync( exportDir );
+
+  const filePath = path.join(
+    exportDir,
+    `Bandi_Records_${ job.id }.xlsx`
+  );
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(
+    language === "en" ? "Bandi Details" : "बन्दी विवरण"
+  );
+
+  /* ---------------- HEADERS (UNCHANGED) ---------------- */
+  const headers = [
+    language === "en" ? "S.N." : "क्र.सं.",
+    language === "en" ? "Prison Office" : "कारागार कार्यालय",
+    language === "en" ? "Office Bandi ID" : "बन्दी ID",
+    language === "en" ? "Lagat No." : "लगत नं.",
+    language === "en" ? "Block" : "ब्लक",
+    language === "en" ? "Bandi Type" : "बन्दी प्रकार",
+    language === "en" ? "Bandi Name" : "बन्दीको नाम",
+    language === "en" ? "Country" : "देश",
+    language === "en" ? "Address" : "ठेगाना",
+    language === "en" ? "ID Type & Number" : "परिचय पत्रको प्रकार र नम्बर",
+    language === "en" ? "DOB (B.S.)" : "जन्म मिति(बि.सं.)",
+    language === "en" ? "DOB (A.D.)" : "जन्म मिति(ई.सं.)",
+    language === "en" ? "Age" : "उमेर",
+    language === "en" ? "Gender" : "लिङ्ग",
+    language === "en" ? "Spouse Name" : "पति/पत्नीको नाम",
+    language === "en" ? "Spouse Contact No." : "पति/पत्नीको सम्पर्क नं.",
+    language === "en" ? "Father Name" : "बुबाको नाम",
+    language === "en" ? "Father Contact No." : "बुबाको सम्पर्क नं.",
+    language === "en" ? "Mother Name" : "आमाको नाम",
+    language === "en" ? "Mother Contact No." : "आमाको सम्पर्क नं.",
+    language === "en" ? "Date of imprisonment (B.S.)" : "थुना परेको मिति(बि.सं.)",
+    language === "en" ? "Release Date (B.S.)" : "कैद मुक्त मिति",
+    language === "en" ? "Mudda Group" : "मुद्दा समूह",
+    language === "en" ? "Mudda" : "मुद्दा",
+    language === "en" ? "Mudda No." : "मुद्दा नं.",
+    language === "en" ? "Vadi" : "वादी",
+    language === "en" ? "Decision Office" : "फैसला गर्ने निकाय",
+    language === "en" ? "Decision Date" : "फैसला मिति",
+    language === "en" ? "Contact Person" : "सम्पर्क व्यक्ति",
+  ];
+
+  sheet.addRow( headers );
+  sheet.getRow( 1 ).font = { bold: true };
+
+  /* ---------------- CHUNKING ---------------- */
+  const PAGE_SIZE = 1000;
+  let offset = 0;
+  let sn = 1;
+  let lastBandiId = null;
+  let bandiBuffer = null;
+
+  while ( true ) {
+    const rows = await getBandiChunk( whereClause, params, PAGE_SIZE, offset );
+    if ( !rows.length ) break;
+
+    for ( const row of rows ) {
+      if ( row.bandi_id !== lastBandiId ) {
+        if ( bandiBuffer ) writeBandi( sheet, bandiBuffer, language, sn++ );
+        bandiBuffer = { ...row, muddas: [] };
+        lastBandiId = row.bandi_id;
+      }
+
+      if ( row.mudda_id ) bandiBuffer.muddas.push( row );
+    }
+
+    offset += PAGE_SIZE;
+    await new Promise( r => setImmediate( r ) );
+  }
+
+  if ( bandiBuffer ) writeBandi( sheet, bandiBuffer, language, sn++ );
+
+  sheet.columns.forEach( col => col.width = 22 );
+  await workbook.xlsx.writeFile( filePath );
+
+  return { filePath };
+};
+
+/* ---------------- ROW WRITER ---------------- */
+function writeBandi( sheet, b, language, sn ) {
+  const muddas = b.muddas.length ? b.muddas : [{}];
+
+  for ( const m of muddas ) {
+    sheet.addRow( [
+      sn,
+      b.current_office_np,
+      b.office_bandi_id,
+      b.lagat_no,
+      b.block_name,
+      b.bandi_type_name,
+      b.bandi_name,
+      b.country_name,
+      b.full_address,
+      b.id_type_no,
+      b.dob_bs,
+      b.dob_ad,
+      b.age,
+      language === "en" ? b.gender : b.gender_np,
+      b.spouse_name,
+      b.spouse_contact,
+      b.father_name,
+      b.father_contact,
+      b.mother_name,
+      b.mother_contact,
+      b.imprison_date_bs,
+      b.release_date_bs,
+      language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
+      language === "en" ? m.mudda_name_en : m.mudda_name,
+      m.mudda_no,
+      language === "en" ? m.vadi_en : m.vadi,
+      language === "en"
+        ? m.mudda_phesala_antim_office_en
+        : m.mudda_phesala_antim_office,
+      m.mudda_phesala_antim_office_date,
+      b.contact_person,
+    ] );
+  }
+}
+
 
 export {
   insertBandiPerson,

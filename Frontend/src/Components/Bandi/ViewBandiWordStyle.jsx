@@ -146,7 +146,7 @@ const ViewBandiWordStyle = ( { bandi } ) => {
             <Button
               color="inherit"
               startIcon={<PrintIcon />}
-              // onClick={handlePrint}
+              onClick={handlePrint}
             >
               Print
             </Button>
@@ -170,7 +170,7 @@ const ViewBandiWordStyle = ( { bandi } ) => {
               <PayroleDetailsTable bandi_id={bandi_id} />
             </SectionBox>
           )}
-
+          {/* {bandi_id}, {office_bandi_id} */}
           <SectionBox><BandiTable bandi_id={bandi_id} /></SectionBox>
           <SectionBox><BandiMuddaTable bandi_id={bandi_id} /></SectionBox>
           <SectionBox><BandiKaidTable bandi_id={bandi_id} /></SectionBox>
@@ -189,14 +189,14 @@ const ViewBandiWordStyle = ( { bandi } ) => {
       </Box>
 
       {/* ---------------- PRINT CONTENT ONLY ---------------- */}
-      {/* {isPrinting && (
+      {isPrinting && (
         <div className="print-only">
           <ViewBandiPrintLayout
             bandi_id={bandi_id}
             office_bandi_id={office_bandi_id}
           />
         </div>
-      )} */}
+      )}
 
     </>
   );

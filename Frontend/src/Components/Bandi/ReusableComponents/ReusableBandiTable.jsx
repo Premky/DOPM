@@ -19,11 +19,15 @@ import {
     Typography,
 } from "@mui/material";
 
+
+
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { finalReleaseDateWithFine } from "../../../../Utils/dateCalculator";
 import { useAuth } from "../../../Context/AuthContext";
 import axios from "axios";
 import { set } from "react-hook-form";
+import Swal from "sweetalert2";
+import ExportBandiButton from "./ExportBandiButton";
 
 const ReusableBandiTable = ( {
     language = "",
@@ -192,20 +196,8 @@ const ReusableBandiTable = ( {
                         {t( "फोटो समावेश गर्नुहोस्", "Include Photo" )}
                     </label>
 
-                    {/* < a href={`${ BASE_URL }/bandi/export_office_bandi_excel?language=${ language }&includePhoto=${ includePhoto ? 1 : 0 }`}>
-                        <Button variant="outlined" disabled={exporting}>
-                            {exporting ? (
-                                <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                                    <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
-                                </span>
-                            ) : (
-                                t( "एक्सेल निर्यात", "Export to Excel" )
-                            )}
-                        </Button>
-                    </a> */}
-
-
-                    <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
+        {/* Untouched still working */}
+                    {/* <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
                         {exporting ? (
                             <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
                                 <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
@@ -213,7 +205,16 @@ const ReusableBandiTable = ( {
                         ) : (
                             t( "एक्सेल निर्यात", "Export to Excel" )
                         )}
-                    </Button>
+                    </Button> */}
+
+                    <ExportBandiButton
+                        BASE_URL={BASE_URL}
+                        authState={authState}
+                        filters={filters}
+                        includePhoto={includePhoto}
+                        language={language}
+                    />
+
                 </Box>
             </Box>
 
