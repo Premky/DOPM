@@ -28,9 +28,9 @@ import BandiTransfer from '../../Dialogs/BandiTransferModal';
 import { useAuth } from '../../../../Context/AuthContext';
 
 
-const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
+const BandiTransferHistoryTable = ( { bandi_id, print = false } ) => {
     const BASE_URL = useBaseURL();
-    const { state: authState } = useAuth()||{};
+    const { state: authState } = useAuth() || {};
 
     const [fetchedBandies, setFetchedBandies] = useState( [] );
     const [loading, setLoading] = useState( false );
@@ -76,10 +76,12 @@ const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
             if ( id ) {
                 // Update existing contact
                 response = await axios.put(
-                    `${ BASE_URL }/bandiTransfer/update_bandi_old_transfer_history/${ id }`,
+                    // `${ BASE_URL }/bandiTransfer/update_bandi_old_transfer_history/${ id }`,
+                    `${ BASE_URL }/bandiTransfer/update_bandi_transfer_history/${ id }`,
                     { bandi_transfer_details: [formData] },
                     { withCredentials: true }
                 );
+                // refetch();
 
                 if ( response.data.Status ) {
                     Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
@@ -113,6 +115,8 @@ const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
         return opt.is_completed === 'Pending' || role_Id === 99;
     };
 
+    console.log( bandiTransferHistory );
+
     return (
         <Grid container spacing={2.5}>
             <Grid container size={{ xs: 12 }} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -120,7 +124,7 @@ const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
                     ➡️ स्थानान्तरण इतिहास
                 </Typography>
                 <Tooltip title="नयाँ स्थानान्तरण थप्नुहोस्">
-                    <Button variant='contained' size='small' startIcon={<AddIcon />} onClick={() => handleAdd(bandi_id)} sx={{ borderRadius: 1, textTransform: 'none' }}>थप्नुहोस्</Button>
+                    <Button variant='contained' size='small' startIcon={<AddIcon />} onClick={() => handleAdd( bandi_id )} sx={{ borderRadius: 1, textTransform: 'none' }}>थप्नुहोस्</Button>
                 </Tooltip>
             </Grid>
 
@@ -130,49 +134,53 @@ const BandiTransferHistoryTable = ( { bandi_id, print=false } ) => {
                 ) : bandiTransferHistory.length === 0 ? (
                     <Box sx={{ py: 3, textAlign: 'center', color: '#95a5a6', backgroundColor: '#f8f9fa', borderRadius: 1 }}>कुनै स्थानान्तरण विवरण उपलब्ध छैन</Box>
                 ) : (
-                <TableContainer component={Paper} sx={{ width: '100%', borderRadius: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #e0e0e0', overflow: 'auto' }}>
-                    <Table size='small' sx={{ tableLayout: 'fixed', width: '100%' }}>
-                        <TableHead>
-                            <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>सि.नं.</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण गरेको कारागार</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण मिति</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण को कारण</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पत्र क्रमांक</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>अनुगमन अवस्था</TableCell>
-                                {!print && (<TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>)}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {bandiTransferHistory.map((opt, index) => (
-                                <TableRow key={opt.id || index} sx={{ '&:hover': { backgroundColor: '#f8f9fa', transition: '0.2s' } }}>
-                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
-                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_from_office || ''}</TableCell>
-                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_date_bs || ''}</TableCell>
-                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_reason || ''}</TableCell>
-                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.letter_crn || ''}</TableCell>
-                                    <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_completed || ''}</TableCell>
-                                    {!print && (
-                                    <TableCell align="center" sx={{ padding: '10px 8px' }}>
-                                        {shouldShowDeleteButton(opt, authState?.role_Id) && (
-                                            <>
-                                                <Tooltip title="संपादन गर्नुहोस्">
-                                                    <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit(opt)} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
-                                                </Tooltip>
-                                                <Tooltip title="मेटाउनुहोस्">
-                                                    <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete(opt.id)} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
-                                                </Tooltip>
-                                            </>
-                                        )}
-                                    </TableCell>
-                                    )}
+                    <TableContainer component={Paper} sx={{ width: '100%', borderRadius: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #e0e0e0', overflow: 'auto' }}>
+                        <Table size='small' sx={{ tableLayout: 'fixed', width: '100%' }}>
+                            <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>सि.नं.</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण गरेको कारागार</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण भएको कारागार</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>स्थानान्तरण को कारण</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पत्र च.नं.</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>पत्र मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>अनुगमन अवस्था</TableCell>
+                                    {!print && ( <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell> )}
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {bandiTransferHistory.map( ( opt, index ) => (
+                                    <TableRow key={opt.id || index} sx={{ '&:hover': { backgroundColor: '#f8f9fa', transition: '0.2s' } }}>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_from_office_fn || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_to_office_fn || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_from_date || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.transfer_reason || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.letter_cn || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.letter_date || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_completed || ''}</TableCell>
+                                        {!print && (
+                                            <TableCell align="center" sx={{ padding: '10px 8px' }}>
+                                                {shouldShowDeleteButton( opt, authState?.role_Id ) && (
+                                                    <>
+                                                        <Tooltip title="संपादन गर्नुहोस्">
+                                                            <Button variant="contained" color='success' size='small' startIcon={<EditIcon />} onClick={() => handleEdit( opt )} sx={{ borderRadius: 0.5, textTransform: 'none', mr: 1 }}>संपादन</Button>
+                                                        </Tooltip>
+                                                        <Tooltip title="मेटाउनुहोस्">
+                                                            <Button variant="contained" color='error' size='small' startIcon={<DeleteIcon />} onClick={() => handleDelete( opt.id )} sx={{ borderRadius: 0.5, textTransform: 'none' }}>मेटाउनुहोस्</Button>
+                                                        </Tooltip>
+                                                    </>
+                                                )}
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                ) )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 )}
-                <BandiTransfer open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSave} editingData={editingData} />
+                <BandiTransfer open={modalOpen} onClose={() => setModalOpen( false )} onSave={handleSave} editingData={editingData} />
             </Grid>
         </Grid>
     );
