@@ -12,7 +12,7 @@ export const generateBandiExcel = async ( job, filters ) => {
     let offset = 0;
     let sn = 1;
 
-    const { filters } = job.data;
+    // const { filters } = job.data;
 
     const toInt = ( v ) => {
         if ( v === undefined || v === "0" || v === "" ) return null;
