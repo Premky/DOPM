@@ -42,7 +42,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
             const { Status, Result, Error } = response.data;
 
             if ( Status ) {
-                if ( Array.isArray( Result ) && Result.length > 0 ) {
+                if ( Array.isArray( Result ) && Result.length > 0 ) {                    
                     setFetchedBandies( Result );
                 } else {
                     console.log( 'No address record found.' );
@@ -143,11 +143,11 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                             <TableHead>
                                 <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>सि.नं.</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कारागार नाम</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>गिरफ्तारी मिति</TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कैद अवधी</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>थुनुवा/कैदी</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>थुना मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कैद अवधी</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>छुट्ने मिति</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>आजिवन सजाय हो/होइन?</TableCell>
                                     {!print &&(
                                         <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
                                     )}
@@ -157,11 +157,11 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                 {fetchedBandies.map( ( opt, index ) => (
                                     <TableRow key={opt.id || index} sx={{ '&:hover': { backgroundColor: '#f8f9fa', transition: '0.2s' } }}>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.office_name || ''}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.girfturi_miti || ''}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.kaid_avadhi || ''}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.thuna_miti || ''}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.chhutne_miti || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.bandi_type || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.thuna_date_bs || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.hirasat_years || 0}|{opt.hirasat_months || 0}|{opt.hirasat_days || 0}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.release_date_bs || ''}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_life_time==='1' ? 'हो' : 'होइन'}</TableCell>
                                         {!print &&(
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                             <Tooltip title="संपादन गर्नुहोस्">

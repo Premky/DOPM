@@ -1858,6 +1858,7 @@ router.get( '/get_bandi_address/:id', async ( req, res ) => {
             nc.country_name_np,
             ns.state_id,
             ns.state_name_np,
+            
             nd.did AS district_id,
             nd.district_name_np,
             ng.cid AS city_id,

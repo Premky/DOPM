@@ -41,6 +41,7 @@ const BandiAddressTable = ( { bandi_id, print = false } ) => {
 
             if ( Status ) {
                 if ( Array.isArray( Result ) && Result.length > 0 ) {
+                    console.log( 'Fetched Details:', Result );
                     setFetchedBandies( Result );
                 } else {
                     console.log( 'No address record found.' );
@@ -101,8 +102,8 @@ const BandiAddressTable = ( { bandi_id, print = false } ) => {
     };
 
     const handleSave = async ( formData, id ) => {
-        console.log( 'formdata', formData );
-        console.log( id );
+        // console.log( 'formdata', formData );
+        // console.log( id );
         try {
             if ( id ) {
                 await axios.put(
