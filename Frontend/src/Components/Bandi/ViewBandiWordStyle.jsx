@@ -130,13 +130,13 @@ const ViewBandiWordStyle = ( { bandi } ) => {
       {/* ---------------- APP BAR ---------------- */}
       <AppBar position="sticky" className="no-print">
         <Toolbar>
-          <Button
+          {/* <Button
             color="inherit"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate( -1 )}
           >
             Back
-          </Button>
+          </Button> */}
 
           <Typography sx={{ flexGrow: 1 }}>
             बन्दी विवरण प्रणाली
