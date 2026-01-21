@@ -1031,10 +1031,6 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
             Other: "अन्य",
         };
 
-        language === "en"
-            ? b.gender
-            : genderNpMap[b.gender] || "अन्य";
-
 
         for ( let i = 0; i < bandiList.length; i++ ) {
             const b = bandiList[i];
@@ -1058,7 +1054,7 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
                     b.current_age || "",
                     language === "en"
                         ? b.gender
-                        : genderNpMap[b.gender] || "अन्य",
+                        : genderNpMap[b.gender] || "",
                     b.spouse_name || "",
                     b.spouse_contact_no || "",
                     b.father_name || "",
