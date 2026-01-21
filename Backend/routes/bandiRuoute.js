@@ -1025,6 +1025,17 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
 
         let rowIndex = 2;
 
+        const genderNpMap = {
+            Male: "पुरुष",
+            Female: "महिला",
+            Other: "अन्य",
+        };
+
+        language === "en"
+            ? b.gender
+            : genderNpMap[b.gender] || "अन्य";
+
+
         for ( let i = 0; i < bandiList.length; i++ ) {
             const b = bandiList[i];
             const muddas = b.muddas.length ? b.muddas : [{}];
@@ -1045,7 +1056,9 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
                     b.dob,
                     b.dob_ad,
                     b.current_age || "",
-                    language === "en" ? b.gender : b.gender === "Male" ? "पुरुष" : b.gender === "Female" ? "महिला" : "अन्य",
+                    language === "en"
+                        ? b.gender
+                        : genderNpMap[b.gender] || "अन्य",
                     b.spouse_name || "",
                     b.spouse_contact_no || "",
                     b.father_name || "",
