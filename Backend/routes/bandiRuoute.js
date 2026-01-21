@@ -1164,101 +1164,83 @@ router.get( "/export_office_bandi_excel1", verifyToken, async ( req, res ) => {
 } );
 
 router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
-
-    const toInt = ( v ) => {
-        if ( v === undefined || v === "0" || v === "" ) return null;
-        const n = Number( v );
-        return Number.isNaN( n ) ? null : n;
-    };
-
-    const selected_office = toInt( req.query.selected_office );
-    const searchOffice = toInt( req.query.searchOffice );
-    const bandi_status = toInt( req.query.bandi_status );
-    const nationality = toInt( req.query.nationality );
-    const country = toInt( req.query.country );
-    const gender = toInt( req.query.gender );
-    const bandi_type = toInt( req.query.bandi_type );
-    const mudda_group_id = toInt( req.query.mudda_group_id );
-    const is_dependent = toInt( req.query.is_dependent );
-    const is_escape = req.query.is_escape || "";
-    const language = req.query.language || "np";
-    const includePhoto = req.query.includePhoto === "1";
-
-    const is_active = req.query.is_active !== undefined ? Number( req.query.is_active ) : 1;
-    const is_under_payrole = req.query.is_under_payrole !== undefined ? Number( req.query.is_under_payrole ) : 0;
-    const search_name = req.query.search_name?.trim() || "";
-
-    let conditions = [];
-    let params = [];
-
-    if ( selected_office !== null ) {
-        conditions.push( "current_office_id = ?" );
-        params.push( selected_office );
-    } else if ( searchOffice !== null ) {
-        conditions.push( "current_office_id = ?" );
-        params.push( searchOffice );
-    }
-
-    if ( bandi_status !== null ) conditions.push( "bandi_status = ?" ), params.push( bandi_status );
-    if ( bandi_status == null ) conditions.push( "bandi_status = ?" ), params.push( 1 );
-    // console.log( "bandi_status:", bandi_status );
-    if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
-    if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
-    if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
-    if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
-    if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
-    if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
-    if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
-    if ( search_name ) {
-        conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
-        params.push( `%${ search_name }%`, search_name );
-    }
-
-    // conditions.push( "is_active = ?" );
-    // params.push( is_active );
-    conditions.push( "is_under_payrole = ?" );
-    params.push( is_under_payrole );
-
-    const whereClause = conditions.length ? " WHERE " + conditions.join( " AND " ) : "";
-
     try {
-        const [rows] = await pool.query(
-            `SELECT * FROM view_bandi_full ${ whereClause } ORDER BY bandi_id DESC`,
-            params
+        const toInt = ( v ) => {
+            if ( v === undefined || v === "0" || v === "" ) return null;
+            const n = Number( v );
+            return Number.isNaN( n ) ? null : n;
+        };
+
+        const selected_office = toInt( req.query.selected_office );
+        const searchOffice = toInt( req.query.searchOffice );
+        const bandi_status = toInt( req.query.bandi_status ) ?? 1;
+        const nationality = toInt( req.query.nationality );
+        const country = toInt( req.query.country );
+        const gender = toInt( req.query.gender );
+        const bandi_type = toInt( req.query.bandi_type );
+        const mudda_group_id = toInt( req.query.mudda_group_id );
+        const is_dependent = toInt( req.query.is_dependent );
+        const is_escape = req.query.is_escape || "";
+        const language = req.query.language || "np";
+        const includePhoto = req.query.includePhoto === "1";
+        const is_under_payrole = req.query.is_under_payrole !== undefined
+            ? Number( req.query.is_under_payrole )
+            : 0;
+        const search_name = req.query.search_name?.trim() || "";
+
+        /* ---------------- WHERE CLAUSE ---------------- */
+        let conditions = [];
+        let params = [];
+
+        if ( selected_office !== null ) {
+            conditions.push( "current_office_id = ?" );
+            params.push( selected_office );
+        } else if ( searchOffice !== null ) {
+            conditions.push( "current_office_id = ?" );
+            params.push( searchOffice );
+        }
+
+        if ( bandi_status !== null ) {
+            conditions.push( "bandi_status = ?" );
+            params.push( bandi_status );
+        }
+
+        if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
+        if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
+        if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
+        if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
+        if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
+        if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
+        if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
+
+        if ( search_name ) {
+            conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
+            params.push( `%${ search_name }%`, search_name );
+        }
+
+        conditions.push( "is_under_payrole = ?" );
+        params.push( is_under_payrole );
+
+        const whereClause = conditions.length ? `WHERE ${ conditions.join( " AND " ) }` : "";
+
+        /* ---------------- EXCEL STREAM ---------------- */
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         );
 
-        // ================== GROUP DATA ==================
-        const grouped = {};
-        rows.forEach( row => {
-            if ( !grouped[row.bandi_id] ) {
-                grouped[row.bandi_id] = { ...row, muddas: [] };
-            }
-            if ( row.mudda_id ) {
-                grouped[row.bandi_id].muddas.push( {
-                    mudda_no: row.mudda_no,
-                    mudda_id: row.mudda_id,
-                    is_main_mudda: row.is_main_mudda,
-                    mudda_condition: row.mudda_condition,
-                    muddas_group_id: row.muddas_group_id,
-                    mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
+        res.setHeader(
+            "Content-Disposition",
+            'attachment; filename="Bandi_Records.xlsx"'
+        );
 
-                    vadi: row.vadi,
-                    mudda_name: row.mudda_name,
-                    mudda_group_name: row.mudda_group_name,
-                    mudda_phesala_antim_office: row.mudda_phesala_antim_office,
 
-                    vadi_en: row.vadi_en,
-                    mudda_name_en: row.mudda_name_en,
-                    mudda_group_name_en: row.mudda_group_name_en,
-                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,
-                } );
-            }
+        const workbook = new ExcelJS.stream.xlsx.WorkbookWriter( {
+            stream: res,
+            useStyles: true,
+            useSharedStrings: true
         } );
 
-        const bandiList = Object.values( grouped );
-
-        // ================== CREATE EXCEL ==================
-        const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet(
             language === "en" ? "Bandi Details" : "बन्दी विवरण"
         );
@@ -1284,10 +1266,8 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
             language === "en" ? "Father Contact No." : "बुबाको सम्पर्क नं.",
             language === "en" ? "Mother Name" : "आमाको नाम",
             language === "en" ? "Mother Contact No." : "आमाको सम्पर्क नं.",
-            // language === "en" ? "Deu Fines" : "तिर्न बाँकी जरिवाना",
             language === "en" ? "Date of imprisonment (B.S.)" : "थुना परेको मिति(बि.सं.)",
             language === "en" ? "Release Date (B.S.)" : "कैद मुक्त मिति",
-            // language === "en" ? "Release Date (B.S.) with Fines" : "कैदमुक्त हुन बाँकी दिन (जरिवाना समेत)",
             language === "en" ? "Mudda Group" : "मुद्दा समूह",
             language === "en" ? "Mudda" : "मुद्दा",
             language === "en" ? "Mudda No." : "मुद्दा नं.",
@@ -1297,158 +1277,130 @@ router.get( "/export_office_bandi_excel", verifyToken, async ( req, res ) => {
             language === "en" ? "Contact Person" : "सम्पर्क व्यक्ति",
         ];
 
-        if ( bandi_status === 9 ) {
-            headers.push( "छुट्ने मिति" );
-            headers.push( "छुट्ने कारण" );
-            headers.push( "बुझ्ने मान्छे" );
-            headers.push( "बुझ्नेको ठेगाना" );
-            headers.push( "बुझ्नेको सम्पर्क नं." );
-            headers.push( "छुट्दाको कैफियत" );
-        }
-        if ( includePhoto ) headers.push( language === "en" ? "Photo" : "फोटो" );
-
         sheet.addRow( headers );
         sheet.getRow( 1 ).font = { bold: true };
 
+        /* ---------------- STREAM DB IN CHUNKS ---------------- */
+        const PAGE_SIZE = 1000;
+        let offset = 0;
+        let sn = 1;
         let rowIndex = 2;
 
-        const genderNpMap = {
-            Male: "पुरुष",
-            Female: "महिला",
-            Other: "अन्य",
-        };
+        let lastBandiId = null;
+        let bandiBuffer = null;
 
+        const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
 
-        for ( let i = 0; i < bandiList.length; i++ ) {
-            const b = bandiList[i];
-            const muddas = b.muddas.length ? b.muddas : [{}];
-            const startRow = rowIndex;
+        while ( true ) {
+            const [rows] = await pool.query(
+                `SELECT * FROM view_bandi_full ${ whereClause }
+         ORDER BY bandi_id DESC
+         LIMIT ? OFFSET ?`,
+                [...params, PAGE_SIZE, offset]
+            );
 
-            muddas.forEach( ( m, idx ) => {
-                sheet.addRow( [
-                    idx === 0 ? i + 1 : "",
-                    language === "en" ? b.bandi_office_en : b.bandi_office,
-                    b.office_bandi_id || "",
-                    b.lagat_no || "",
-                    b.block_name || "",
-                    language === "en" ? b.bandi_type : b.bandi_type,
-                    language === "en" ? b.bandi_name_en : b.bandi_name,
-                    language === "en" ? b.country_name_en : b.country_name_np,
-                    language === "en" ? `${ b.city_name_en }-${ b.wardno },${ b.district_name_en }, ${ b.state_name_en }` : `${ b.city_name_np }-${ b.wardno },${ b.district_name_np }, ${ b.state_name_np }`,
-                    language === "en" ? `${ b?.govt_id_name_en || '' }, ${ b?.card_no || '' }` : `${ b?.govt_id_name_np || '' }, ${ b?.card_no || '' }`,
-                    b.dob,
-                    b.dob_ad,
-                    b.current_age || "",
-                    language === "en"
-                        ? b.gender
-                        : genderNpMap[b.gender] || "",
-                    b.spouse_name || "",
-                    b.spouse_contact_no || "",
-                    b.father_name || "",
-                    b.father_contact_no || "",
-                    b.mother_name || "",
-                    b.mother_contact_no || "",
-                    // b.fine_summary || "",
-                    // b.fine || "",
-                    b.thuna_date_bs || "",
-                    b.release_date_bs || "",
-                    // b.total_kaid_duration || "",
-                    language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
-                    language === "en" ? m.mudda_name_en : m.mudda_name,
-                    m.mudda_no,
-                    language === "en" ? m.vadi_en : m.vadi,
-                    language === "en" ? m.mudda_phesala_antim_office_en : m.mudda_phesala_antim_office,
-                    m.mudda_phesala_antim_office_date,
-                    b.other_relatives || "",
-                    b.release_date || "",
-                    b.release_reason || "",
-                    b.release_relative_name || "",
-                    b.release_relative_address || "",
-                    b.release_relative_contact_no || "",
-                    b.release_remarks || "",
-                    includePhoto ? "" : undefined,
-                ] );
-                rowIndex++;
-            } );
+            if ( !rows.length ) break;
 
-            if ( muddas.length > 1 ) {
-                sheet.mergeCells( `A${ startRow }:A${ rowIndex - 1 }` );
-                sheet.mergeCells( `B${ startRow }:B${ rowIndex - 1 }` );
-                sheet.mergeCells( `C${ startRow }:C${ rowIndex - 1 }` );
-                sheet.mergeCells( `D${ startRow }:D${ rowIndex - 1 }` );
-                sheet.mergeCells( `E${ startRow }:E${ rowIndex - 1 }` );
-                sheet.mergeCells( `F${ startRow }:F${ rowIndex - 1 }` );
-                sheet.mergeCells( `G${ startRow }:G${ rowIndex - 1 }` );
-                sheet.mergeCells( `H${ startRow }:H${ rowIndex - 1 }` );
-                sheet.mergeCells( `I${ startRow }:I${ rowIndex - 1 }` );
-                sheet.mergeCells( `J${ startRow }:J${ rowIndex - 1 }` );
-                sheet.mergeCells( `K${ startRow }:K${ rowIndex - 1 }` );
-                sheet.mergeCells( `L${ startRow }:L${ rowIndex - 1 }` );
-                sheet.mergeCells( `M${ startRow }:M${ rowIndex - 1 }` );
-                sheet.mergeCells( `N${ startRow }:N${ rowIndex - 1 }` );
-                sheet.mergeCells( `O${ startRow }:O${ rowIndex - 1 }` );
-                sheet.mergeCells( `P${ startRow }:P${ rowIndex - 1 }` );
-                sheet.mergeCells( `Q${ startRow }:Q${ rowIndex - 1 }` );
-                sheet.mergeCells( `R${ startRow }:R${ rowIndex - 1 }` );
-                sheet.mergeCells( `S${ startRow }:S${ rowIndex - 1 }` );
-                sheet.mergeCells( `T${ startRow }:T${ rowIndex - 1 }` );
-                sheet.mergeCells( `U${ startRow }:U${ rowIndex - 1 }` );
-            }
+            for ( const row of rows ) {
+                if ( row.bandi_id !== lastBandiId ) {
+                    if ( bandiBuffer ) {
+                        writeBandi( sheet, bandiBuffer, language, genderNpMap, sn++ );
+                        rowIndex += Math.max( 1, bandiBuffer.muddas.length );
+                    }
 
-            // ADD PHOTO
-            if ( includePhoto && b.photo_path ) {
-                sheet.getColumn( headers.length ).width = 18;
-                sheet.getRow( startRow ).height = 115;
-                const photoPath = path.join(
-                    process.cwd(),
-                    b.photo_path.replace( /^\/+/, "" )
-                );
+                    bandiBuffer = { ...row, muddas: [] };
+                    lastBandiId = row.bandi_id;
+                }
 
-                if ( fs.existsSync( photoPath ) ) {
-                    const buffer = fs.readFileSync( photoPath );
-                    const imageId = workbook.addImage( {
-                        buffer,
-                        extension: "jpeg"
+                if ( row.mudda_id ) {
+                    bandiBuffer.muddas.push( {
+                        mudda_no: row.mudda_no,
+                        mudda_name: row.mudda_name,
+                        mudda_name_en: row.mudda_name_en,
+                        mudda_group_name: row.mudda_group_name,
+                        mudda_group_name_en: row.mudda_group_name_en,
+                        vadi: row.vadi,
+                        vadi_en: row.vadi_en,
+                        mudda_phesala_antim_office: row.mudda_phesala_antim_office,
+                        mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,
+                        mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
                     } );
-
-                    sheet.addImage( imageId, {
-                        tl: { col: headers.length - 1, row: startRow - 1 },
-                        br: { col: headers.length, row: startRow },
-                        editAs: "oneCell"
-                    } );
-
                 }
             }
+
+            offset += PAGE_SIZE;
+        }
+
+        if ( bandiBuffer ) {
+            writeBandi( sheet, bandiBuffer, language, genderNpMap, sn++ );
         }
 
         sheet.columns.forEach( col => col.width = 22 );
 
-        // ================== STREAM RESPONSE ==================
-        res.setHeader(
-            "Content-Type",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        );
-        const fileNameNp = "बन्दी_विवरण.xlsx";
-        const fileNameEn = "Bandi_Records.xlsx";
-
-        const safeFileName = language === "en" ? fileNameEn : fileNameEn; // ASCII only
-        const encodedFileName = encodeURIComponent(
-            language === "en" ? fileNameEn : fileNameNp
-        );
-
-        res.setHeader(
-            "Content-Disposition",
-            `attachment; filename="${ safeFileName }"; filename*=UTF-8''${ encodedFileName }`
-        );
-
-        await workbook.xlsx.write( res );
+        await workbook.commit();
         res.end();
 
     } catch ( err ) {
-        console.error( err );
-        res.status( 500 ).json( { Status: false, Error: "Export failed" } );
+        console.error( "Excel export failed:", err );
+
+        // If headers already sent, just destroy connection
+        if ( res.headersSent ) {
+            res.destroy();
+        } else {
+            res.status( 500 ).send( "Export failed" );
+        }
     }
+
 } );
+
+/* ---------------- HELPER ---------------- */
+function writeBandi( sheet, b, language, genderNpMap, sn ) {
+    const muddas = b.muddas.length ? b.muddas : [{}];
+    const startRow = sheet.lastRow.number + 1;
+
+    muddas.forEach( ( m, idx ) => {
+        sheet.addRow( [
+            idx === 0 ? sn : "",
+            language === "en" ? b.bandi_office_en : b.bandi_office,
+            b.office_bandi_id || "",
+            b.lagat_no || "",
+            b.block_name || "",
+            b.bandi_type || "",
+            language === "en" ? b.bandi_name_en : b.bandi_name,
+            language === "en" ? b.country_name_en : b.country_name_np,
+            language === "en"
+                ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
+                : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
+            `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
+            b.dob,
+            b.dob_ad,
+            b.current_age,
+            language === "en" ? b.gender : genderNpMap[b.gender] || "",
+            b.spouse_name,
+            b.spouse_contact_no,
+            b.father_name,
+            b.father_contact_no,
+            b.mother_name,
+            b.mother_contact_no,
+            b.thuna_date_bs,
+            b.release_date_bs,
+            language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
+            language === "en" ? m.mudda_name_en : m.mudda_name,
+            m.mudda_no,
+            language === "en" ? m.vadi_en : m.vadi,
+            language === "en" ? m.mudda_phesala_antim_office_en : m.mudda_phesala_antim_office,
+            m.mudda_phesala_antim_office_date,
+            b.other_relatives || ""
+        ] );
+    } );
+
+    if ( muddas.length > 1 ) {
+        ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
+            sheet.mergeCells( `${ col }${ startRow }:${ col }${ startRow + muddas.length - 1 }` );
+        } );
+    }
+}
+
 
 router.get( '/get_all_office_bandi/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
