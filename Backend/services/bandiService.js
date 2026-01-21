@@ -2,7 +2,7 @@
 
 import { bs2ad } from '../utils/bs2ad.js';
 import { ageCalculator } from '../utils/ageCalculator.js';
-import { getBandiChunk } from '../repositories/bandiRepo.js';
+// import { getBandiChunk } from '../repositories/bandiRepo.js';
 // let connection;
 // connection = await pool.getConnection();
 
@@ -857,7 +857,7 @@ async function* getBandiForExport( filters ) {
   }
 }
 
-export const generateBandiExcel = async ( job ) => {
+export const generateBandiExcel1 = async ( job ) => {
   const { filters } = job.data;
 
   const toInt = ( v ) => {
