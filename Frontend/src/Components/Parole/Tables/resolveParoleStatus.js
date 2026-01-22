@@ -45,7 +45,7 @@ export const resolveParoleStatus = ( row ) => {
     if ( row.pyarole_rakhan_upayukat === "अयोग्य" ) {
         return {
             label: "प्यारोल अयोग्य",
-            color: "ayogya"
+            color: "aayogya"
         };
     }
     if ( row.pyarole_rakhan_upayukat === "छलफल" ) {
