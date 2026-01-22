@@ -49,7 +49,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     const searchpayrole_no_id = watch( 'payrole_no_id' );
     const searchmudda_id = watch( 'searchmudda_id' );
     const searchbandi_name = watch( 'searchbandi_name' );
-    // const searchchecked = watch( 'searchchecked' );
+    const searchchecked = watch( 'searchchecked' );
     const searchis_checked = watch( 'searchis_checked' );
 
     //Watch Variables
