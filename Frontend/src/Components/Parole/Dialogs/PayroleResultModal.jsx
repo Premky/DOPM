@@ -75,13 +75,20 @@ const PayroleResultModal = ( { open, onClose, data, kaidimuddas, onSave, oldStat
                 error={!!errors.pyarole_rakhan_upayukat}
                 helperText={errors.pyarole_rakhan_upayukat ? "चयन गर्नुहोस्" : ""}
               >
-                <MenuItem value="योग्य">योग्य</MenuItem>
+                <MenuItem value="eligible">योग्य</MenuItem>
+                <MenuItem value="ineligible">अयोग्य</MenuItem>
+                <MenuItem value="discussion">छलफल</MenuItem>
+                <MenuItem value="incomplete_docs">कागजात अपुग</MenuItem>
+                <MenuItem value="pass">पास</MenuItem>
+                <MenuItem value="fail">फेल</MenuItem>
+                <MenuItem value="">खाली</MenuItem>
+                {/* <MenuItem value="योग्य">योग्य</MenuItem>
                 <MenuItem value="अयोग्य">अयोग्य</MenuItem>
                 <MenuItem value="छलफल">छलफल</MenuItem>
                 <MenuItem value="कागजात अपुग">कागजात अपुग</MenuItem>
                 <MenuItem value="पास">पास</MenuItem>
                 <MenuItem value="फेल">फेल</MenuItem>
-                <MenuItem value="">खाली</MenuItem>
+                <MenuItem value="">खाली</MenuItem> */}
               </TextField>
             </Grid>
             <Grid size={{ xs: 12 }}>

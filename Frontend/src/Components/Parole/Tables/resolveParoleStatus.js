@@ -36,6 +36,88 @@ export const resolveParoleStatus = ( row ) => {
         };
     }
 
+    if ( row.pyarole_rakhan_upayukat === "eligible" ) {
+        return {
+            label: "योग्य",
+            color: "yogya"
+        };
+    }
+    if ( row.pyarole_rakhan_upayukat === "ineligible" ) {
+        return {
+            label: "अयोग्य",
+            color: "aayogya"
+        };
+    }
+    if ( row.pyarole_rakhan_upayukat === "discussion" ) {
+        return {
+            label: "छलफल",
+            color: "chalfal"
+        };
+    }
+    if ( row.pyarole_rakhan_upayukat === "incomplete_docs" ) {
+        return {
+            label: "कागजात अपुग",
+            color: "incomplete_docs"
+        };
+    }
+    if ( row.pyarole_rakhan_upayukat === "pass" ) {
+        return {
+            label: "बोर्डबाट पास",
+            color: "pass"
+        };
+    }
+
+    if ( row.pyarole_rakhan_upayukat === "fail" ) {
+        return {
+            label: "बोर्डबाट फेल",
+            color: "fail"
+        };
+    }
+
+    return {
+        label: "विचाराधीन",
+        color: "info"
+    };
+};
+
+export const resolveParoleStatus__OLD = ( row ) => {
+    // priority-based resolution
+    // console.log( row );
+    if ( row.is_forwarded ) {
+        return {
+            label: "पठाइएको",
+            color: "info"
+        };
+    }
+
+    if ( row.court_decision === "स्वीकृत" ) {
+        return {
+            label: "स्वीकृत",
+            color: "pass"
+        };
+    }
+
+    if ( row.court_decision === "अस्वीकृत" ) {
+        return {
+            label: "अस्वीकृत",
+            color: "fail"
+        };
+    }
+
+    if ( row.court_decision === "पास" ) {
+        return {
+            label: "स्वीकृत",
+            color: "pass"
+        };
+    }
+
+    if ( row.court_decision === "फेल" ) {
+        return {
+            label: "अस्वीकृत",
+            color: "fail"
+        };
+    }
+
     if ( row.pyarole_rakhan_upayukat === "योग्य" ) {
         return {
             label: "प्यारोल योग्य",
@@ -79,7 +161,6 @@ export const resolveParoleStatus = ( row ) => {
         color: "info"
     };
 };
-
 
 // Red (#DA1E28 - Error/Critical): Indicates a critical error, high-risk, or blocked status that requires immediate attention.
 // Orange (#FF832B - Warning/At Risk): Represents a warning, "at-risk" project status, or a serious, non-critical issue.

@@ -30,7 +30,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         defaultValues: {
             searchOffice: "",
             searchpayroleStatus: "",
-            nationality: "",
+            // nationality: "",
             searchbandi_name: "",
             searchmudda_id: "",
             searchpyarole_rakhan_upayukat: "",
@@ -42,7 +42,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     } );
 
     const searchOffice = watch( 'searchOffice' );
-    const nationality = watch( 'nationality' );
+    // const nationality = watch( 'nationality' );
     const searchpayroleStatus = watch( 'searchpayroleStatus' );
     const searchpyarole_rakhan_upayukat = watch( 'pyarole_rakhan_upayukat' );
     const searchcourt_decision = watch( 'court_decision' );
@@ -56,7 +56,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     // Build filters object
     const filters = {
         searchOffice,
-        nationality,
+        // nationality,
         searchpayroleStatus,
         searchpyarole_rakhan_upayukat,
         searchcourt_decision,
@@ -69,7 +69,7 @@ const PayroleTableFilters = ( { onChange } ) => {
 
     const memoFilters = useMemo( () => filters, [
         filters?.searchOffice,
-        filters?.nationality,
+        // filters?.nationality,
         filters?.searchpayroleStatus,
         filters?.searchpyarole_rakhan_upayukat,
         filters?.searchcourt_decision,
@@ -89,7 +89,7 @@ const PayroleTableFilters = ( { onChange } ) => {
     useEffect( () => {
         const currentFilters = {
             searchOffice,
-            nationality,
+            // nationality,
             searchpayroleStatus,
             searchpyarole_rakhan_upayukat,
             searchcourt_decision,
@@ -102,7 +102,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         onChange( currentFilters );
     }, [
         searchOffice,
-        nationality,
+        // nationality,
         searchpayroleStatus,
         searchpyarole_rakhan_upayukat,
         searchcourt_decision,
@@ -132,7 +132,7 @@ const PayroleTableFilters = ( { onChange } ) => {
 
             reset( {
                 searchOffice: '',
-                nationality: '',
+                // nationality: '',
                 searchpayroleStatus: defaultOption?.value || '',
                 searchpyarole_rakhan_upayukat: '',
                 searchcourt_decision: '',
@@ -217,13 +217,22 @@ const PayroleTableFilters = ( { onChange } ) => {
                         label='प्यारोल बोर्डको निर्णय'
                         options={[
                             { label: 'सबै', value: '' },
-                            { label: 'योग्य', value: 'योग्य' },
-                            { label: 'अयोग्य', value: 'अयोग्य' },
-                            { label: 'पास', value: 'पास' },
-                            { label: 'फेल', value: 'फेल' },
-                            { label: 'छलफल', value: 'छलफल' },
-                            { label: 'कागजात अपुग', value: 'कागजात अपुग' }
+                            { label: 'योग्य', value: 'eligible' },
+                            { label: 'अयोग्य', value: 'ineligible' },
+                            { label: 'पास', value: 'pass' },
+                            { label: 'फेल', value: 'fail' },
+                            { label: 'छलफल', value: 'discussion' },
+                            { label: 'कागजात अपुग', value: 'incomplete_docs' }
                         ]}
+                        // options={[
+                        //     { label: 'सबै', value: '' },
+                        //     { label: 'योग्य', value: 'योग्य' },
+                        //     { label: 'अयोग्य', value: 'अयोग्य' },
+                        //     { label: 'पास', value: 'पास' },
+                        //     { label: 'फेल', value: 'फेल' },
+                        //     { label: 'छलफल', value: 'छलफल' },
+                        //     { label: 'कागजात अपुग', value: 'कागजात अपुग' }
+                        // ]}
                         defaultValue={''}
                         control={control}
                     />

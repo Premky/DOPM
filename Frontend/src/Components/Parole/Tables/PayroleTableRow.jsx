@@ -50,13 +50,13 @@ const PayroleTableRow = ( {
 
 
   const statusBgMap = {
-    info: "#f9f3f3", 
+    info: "#f3dfdf", 
     yogya: "#badef8ff",    // blue
     aayogya: "rgb(247, 168, 160)",   // red
     pass: "#acfcb3ff", // green
     fail: "rgb(255, 133, 121)",     // orange
     chalfal: "rgb(248, 219, 163)", // yellow
-    lackofpaper: "#6F6F6F ", // grey
+    incomplete_docs: "#ac9595 ", // grey
   };
 
   const status = resolveParoleStatus( data );
