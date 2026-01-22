@@ -52,10 +52,10 @@ const PayroleTableRow = ( {
   const statusBgMap = {
     info: "#f9f3f3", 
     yogya: "#badef8ff",    // blue
-    aayogya: "#f8bbb5ff",   // red
+    aayogya: "rgb(247, 168, 160)",   // red
     pass: "#acfcb3ff", // green
-    fail: "rgb(248, 144, 135)",     // orange
-    chalfal: "rgb(92, 91, 89)", // yellow
+    fail: "rgb(255, 133, 121)",     // orange
+    chalfal: "rgb(248, 219, 163)", // yellow
     lackofpaper: "#6F6F6F ", // grey
   };
 
