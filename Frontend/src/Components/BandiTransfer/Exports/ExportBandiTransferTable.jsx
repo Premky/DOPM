@@ -65,7 +65,7 @@ const exportToExcel = async (
     mergeFullWidthRow( "कारागार व्यवस्थापन विभाग" );
     mergeFullWidthRow( `${ authState.office_np }` );
     mergeFullWidthRow( `${ authState.office_district }` );
-    mergeFullWidthRow( "विषयः बन्दीको स्थानान्तरण सम्बन्धमा" );
+    
 
     const sn_dobRow = worksheet.addRow( [
         "पत्र सङ्ख्याः",
@@ -82,14 +82,19 @@ const exportToExcel = async (
         "",
         `मितिः ${ formattedDateNp }`,
     ] );
+    
     worksheet.mergeCells( sn_dobRow.number, 1, sn_dobRow.number, 2 );
     worksheet.mergeCells( sn_dobRow.number, 13, sn_dobRow.number, 15 );
 
     const cnRow = worksheet.addRow( ["चलानी नम्बरः"] );
     worksheet.mergeCells( cnRow.number, 1, cnRow.number, 2 );
+    
     letterHeadStyleRow( sn_dobRow );
     letterHeadStyleRow( cnRow );
-
+    
+    const chiefRow = worksheet.addRow( ["श्री कारागार व्यवस्थापन विभाग,"] );
+    const office_location = worksheet.addRow( ["कालिकास्थान, काठमाडौं।"] );
+    mergeFullWidthRow( "विषयः बन्दीको स्थानान्तरण सम्बन्धमा" );
     //   const dopmAddrRow = mergeFullWidthRow("श्री कारागार व्यवस्थापन विभाग,");
     //   const dopmAddress = mergeFullWidthRow("कालीकास्थान, काठमाण्डौ ।");
     const rowDetails = mergeFullWidthRow(
@@ -274,9 +279,9 @@ const exportToExcel = async (
     // Add signature section
     worksheet.addRow( [""] );
     worksheet.addRow( [""] );
-    worksheet.addRow( ["", "", ".........................", "", "", "", "", "", "", "", "", "........................."] );
+    worksheet.addRow( ["", "", ".................................", "", "", "", "", "", "", "", "", "................................."] );
     worksheet.addRow( ["", "", "कारागार प्रशासक", "", "", "", "", "", "", "", "", "प्रमुख जिल्ला अधिकारी"] );
-    worksheet.addRow( ["", "", "(.......)", "", "", "", "", "", "", "", "", "(.........)"] );
+    // worksheet.addRow( ["", "", "(.......)", "", "", "", "", "", "", "", "", "(.........)"] );
     worksheet.addRow( ["", "", `${ authState.office_np }`, "", "", "", "", "", "", "", "", `जिल्ला प्रशासन कार्यालय, ${ authState.office_district }`] );
     worksheet.addRow( [""] );
     worksheet.addRow( [""] );
