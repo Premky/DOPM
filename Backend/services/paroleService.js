@@ -207,12 +207,12 @@ export const buildParoleSummaryQuery = ( { mode, type, payrole_no_id } ) => {
     SELECT
       ${ cfg.select } AS group_name
       ${ type === "gender" ? ", bp.gender" : "" }
-      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'योग्य' THEN 1 ELSE 0 END) AS parole_yogya
-      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'अयोग्य' THEN 1 ELSE 0 END) AS parole_ayogya
-      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'छलफल' THEN 1 ELSE 0 END) AS parole_chalfal
-      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'कागजात अपुग' THEN 1 ELSE 0 END) AS parole_lack_of_paper_work
-      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'पास' THEN 1 ELSE 0 END) AS parole_pass
-      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'फेल' THEN 1 ELSE 0 END) AS parole_fail
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'eligible' THEN 1 ELSE 0 END) AS parole_yogya
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'ineligible' THEN 1 ELSE 0 END) AS parole_ayogya
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'discussion' THEN 1 ELSE 0 END) AS parole_chalfal
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'incomplete_docs' THEN 1 ELSE 0 END) AS parole_lack_of_paper_work
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'pass' THEN 1 ELSE 0 END) AS parole_pass
+      ,SUM(CASE WHEN p.pyarole_rakhan_upayukat = 'fail' THEN 1 ELSE 0 END) AS parole_fail
       ,SUM(CASE WHEN p.pyarole_rakhan_upayukat IS NULL OR p.pyarole_rakhan_upayukat = '' THEN 1 ELSE 0 END) AS parole_unseen
       ,SUM(CASE WHEN p.court_decision = 'पास' THEN 1 ELSE 0 END) AS court_pass
       ,SUM(CASE WHEN p.court_decision = 'फेल' THEN 1 ELSE 0 END) AS court_fail
