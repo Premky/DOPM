@@ -512,7 +512,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         }
 
         if ( nationality ) { where += ` AND nationality = ?`; params.push( `%${ nationality }%` ); }
-        if ( searchpyarole_rakhan_upayukat ) { where += ` AND p.pyarole_rakhan_upayukat = ? `; params.push( searchpyarole_rakhan_upayukat ); }
+        if ( searchpyarole_rakhan_upayukat ) { where += ` AND pyarole_rakhan_upayukat = ? `; params.push( searchpyarole_rakhan_upayukat ); }
 
         //Office Logic
         if ( ![1, 2].includes( office_id ) ) {
