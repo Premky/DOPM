@@ -505,7 +505,12 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 
         if ( searchbandi_name ) { where += ` AND bandi_name LIKE ?`; params.push( `%${ searchbandi_name }%` ); }
         if ( searchcourt_decision ) { where += ` AND payrole_result = ?`; params.push( searchcourt_decision ); }
-        if ( searchis_checked ) { where += ` AND is_checked = ?`; params.push( searchis_checked ); }
+        // if ( searchis_checked ) { where += ` AND is_checked = ?`; params.push( searchis_checked ); }
+        if ( searchis_checked !== undefined && searchis_checked !== '' ) {
+            where += ` AND is_checked = ?`;
+            params.push( searchis_checked );
+        }
+
         if ( nationality ) { where += ` AND nationality = ?`; params.push( `%${ nationality }%` ); }
         if ( searchpyarole_rakhan_upayukat ) { where += ` AND p.pyarole_rakhan_upayukat = ? `; params.push( searchpyarole_rakhan_upayukat ); }
 
@@ -536,8 +541,9 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             ORDER BY payrole_id DESC`,
             [...params]
         );
-        let rows;
-        is_export ? rows = dataRows : rows = exportRows;
+        // let rows;
+        // is_export ? rows = dataRows : rows = exportRows;
+        const rows = is_export ? exportRows : dataRows;
 
         return res.json( {
             Status: true,

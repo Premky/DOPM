@@ -49,8 +49,8 @@ const PayroleTableFilters = ( { onChange } ) => {
     const searchpayrole_no_id = watch( 'payrole_no_id' );
     const searchmudda_id = watch( 'searchmudda_id' );
     const searchbandi_name = watch( 'searchbandi_name' );
-    const searchchecked = watch( 'searchchecked' );
-    const searchis_checked = watch( 'is_checked' );
+    // const searchchecked = watch( 'searchchecked' );
+    const searchis_checked = watch( 'searchis_checked' );
 
     //Watch Variables
     // Build filters object
@@ -80,7 +80,7 @@ const PayroleTableFilters = ( { onChange } ) => {
         filters?.searchis_checked,
     ] );
 
-    const { data: filteredKaidi, totalKaidi, loading, error, fetchedMuddas, refetchMuddas, refetchData } = useFetchPayroles( memoFilters ); // page, rowsPerPage
+    // const { data: filteredKaidi, totalKaidi, loading, error, fetchedMuddas, refetchMuddas, refetchData } = useFetchPayroles( memoFilters ); // page, rowsPerPage
 
     const onSubmit = ( data ) => {
         onChange( data );
@@ -195,7 +195,7 @@ const PayroleTableFilters = ( { onChange } ) => {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 1 }}>
                     <ReuseSelect
-                        name='is_checked'
+                        name='searchis_checked'
                         label='चेक भए/नभएको'
                         options={[{ label: 'सबै', value: '' }, { label: 'छ', value: '1' }, { label: 'छैन', value: '0' }]}
                         control={control}
