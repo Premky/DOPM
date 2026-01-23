@@ -106,7 +106,7 @@ export const createNewEmployee = async ( req, res ) => {
       VALUES (?, ?, ?,?,
               ?, ?, ?, ?,
               ?, ?, ?)`,
-      [employeeId, sanket_no, current_office_id,
+      [employeeId, sanket_no, current_office_id,current_office_id,
         appointment_date_bs, await bs2ad( appointment_date_bs ), hajir_miti_bs, await bs2ad( hajir_miti_bs ),
         is_current, current_user, new Date()
       ]
