@@ -71,6 +71,7 @@ const fetchMuddaGroupWiseCount = ( { filters } ) => {
                 startDate: filters.startDate || '',
                 endDate: filters.endDate || '',
                 office_id: filters.selectedOffice || '',
+                bandi_status: filters.bandi_status || '',
                 nationality: filters.nationality || '',
                 ageFrom: filters.ageFrom || '',
                 ageTo: filters.ageTo || '',

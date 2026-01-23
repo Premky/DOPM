@@ -11,7 +11,7 @@ const CountAcMuddaTable = ({ records, totals, startDate, endDate }) => {
                     <TableHead>
                         <TableRow className="bg-primary">
                             <TableCell align="center" rowSpan={2}>सि.नं.</TableCell>
-                            <TableCell align="center" rowSpan={2}>कार्यालय</TableCell>
+                            {/* <TableCell align="center" rowSpan={2}>कार्यालय</TableCell> */}
                             <TableCell align="center" rowSpan={2}>मुद्दा</TableCell>
                             <TableCell align="center" colSpan={4}>जम्मा</TableCell>
                             <TableCell align="center" colSpan={3}>कैदी</TableCell>
@@ -37,12 +37,12 @@ const CountAcMuddaTable = ({ records, totals, startDate, endDate }) => {
                         {records.map((record, index) => (
                             <TableRow key={index}>
                                 <TableCell align="center">{index + 1}</TableCell>
-                                <TableCell>
-                                    {/* Link to case details */}
+                                {/* <TableCell>
+                                    
                                     <Link to={`/bandi/details/${record.office_name}`}>
                                         {record.office_name}
                                     </Link>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>
                                     <Link to={`/bandi/details/${record.mudda_id}`}>
                                         {record.mudda_name}

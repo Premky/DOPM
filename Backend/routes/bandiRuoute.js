@@ -2894,7 +2894,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         const defaultAge = 65;
         const defaultOfficeCategory = 2;
 
-        let { nationality, ageFrom, ageTo, office_id, startDate, endDate, escaped } = req.query;
+        let { nationality, ageFrom, ageTo, office_id, startDate, endDate, bandi_status } = req.query;
 
         if ( !startDate && !endDate ) {
             startDate = '1000-01-01';
@@ -2920,10 +2920,8 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         }
 
         let extraSubqueryFilters = '';
-        if ( escaped ) {
-            extraSubqueryFilters = ` AND bed.status='${ escaped }'`;
-            extraSubqueryFilters = ` AND bed.escape_date_bs BETWEEN ${ startDate } AND ${ endDate }`;
-            extraSubqueryFilters = ` AND bed.recapture_date_bs BETWEEN ${ startDate } AND ${ endDate }`;
+        if ( bandi_status ) {
+            extraSubqueryFilters = ` AND bp.bandi_status='${ bandi_status }'`;
         }
 
         if ( nationality ) {
@@ -3633,6 +3631,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     const {
         startDate,
         endDate,
+        bandi_status,
         nationality,
         ageFrom,
         ageTo,
@@ -3705,6 +3704,11 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
         params.push( Number( ageFrom ), Number( ageTo ) );
     }
 
+    // Bandi status filter
+    if ( bandi_status ) {
+        filters.push( "bp.bandi_status = ?" );
+        params.push( bandi_status.trim() );
+    }
     // Nationality filter
     if ( nationality ) {
         filters.push( "bp.nationality = ?" );
@@ -3779,7 +3783,7 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
 
-    let { startDate, endDate, nationality, ageFrom, ageTo, office_id } = req.query;
+    let { startDate, endDate, nationality, ageFrom, ageTo, office_id, bandi_status } = req.query;
 
     const filters = ['bp.is_active = 1'];
     const params = [];
@@ -3804,6 +3808,10 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     if ( nationality && nationality.trim() !== '' ) {
         filters.push( `bp.nationality = ?` );
         params.push( nationality.trim() );
+    }
+    if ( bandi_status && bandi_status.trim() !== '' ) {
+        filters.push( `bp.bandi_status = ?` );
+        params.push( bandi_status.trim() );
     }
 
     // Office filter

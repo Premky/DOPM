@@ -10,6 +10,7 @@ import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice'
 import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 
 import { exportToExcel } from './ExportCountToExcel';
+import fetchBandiStatus from '../../../ReuseableComponents/FetchApis/fetchBandiStatus';
 
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 const fyy = new NepaliDate().format( 'YYYY' );
@@ -35,9 +36,12 @@ const CountReport = () => {
     } );
 
     const selectedOffice = watch( 'searchOffice' );
+    const bandi_status = watch( 'bandi_status' );
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
+
+    const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
 
     const fetchRecords = async ( data ) => {
         try {
@@ -48,6 +52,7 @@ const CountReport = () => {
                 endDate: data?.endDate || current_date,
                 office_id: selectedOffice || '', // Optional filter
                 // office_id: selectedOffice || '', // Optional filter
+                bandi_status: data?.bandi_status || '',     // Optional filter
                 nationality: data?.nationality || '',     // Optional filter
                 ageFrom: data?.ageFrom || '',             // Optional filter
                 ageTo: data?.ageTo || '',                 // Optional filter
@@ -107,9 +112,9 @@ const CountReport = () => {
 
     useEffect( () => {
         startTransition( () => {
-            fetchRecords( { startDate, endDate, selectedOffice, nationality } );
+            fetchRecords( { startDate, endDate, selectedOffice, bandi_status, nationality } );
         } );
-    }, [startDate, endDate, selectedOffice, nationality] );
+    }, [startDate, endDate, selectedOffice, bandi_status, nationality] );
 
     const onSubmit = ( formData ) => {
         fetchRecords( formData );
@@ -124,7 +129,7 @@ const CountReport = () => {
                     <meta name="description" content="बन्दी संख्या सम्बन्धि रिपोर्ट हेर्नुहोस्" />
                 </Helmet>
             </HelmetProvider>
-            
+
             <Grid container >
                 <Box sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
@@ -140,6 +145,20 @@ const CountReport = () => {
                                     control={control}
                                     name_type='short'
                                     disabled={authState.office_id >= 3}
+                                />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, sm: 4 }}>
+                                <ReuseSelect
+                                    name="bandi_status"
+                                    label='बन्दीको अवस्था'
+                                    control={control}
+                                    options={[
+                                        ...bandiStatusOpt,
+                                        { label: "कारागारमा", value: 1 }
+                                    ]}
+
+                                    defaultValue={1}
                                 />
                             </Grid>
 

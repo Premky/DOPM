@@ -10,6 +10,8 @@ import { exportToExcel } from '../Exports/ExcelMaskebariCount';
 import NepaliDate from 'nepali-datetime';
 import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import fetchBandiStatus from '../../ReuseableComponents/FetchApis/fetchBandiStatus';
+import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
@@ -25,6 +27,7 @@ const KaragarMaskebari = () => {
     // console.log( muddawisetotal );
     // console.log( releaseRecords );
     const selectedOffice = watch( 'searchOffice' );
+    const bandi_status = watch( 'bandi_status' );
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
@@ -33,8 +36,9 @@ const KaragarMaskebari = () => {
         startDate: startDate,
         endDate: endDate,
         nationality: nationality || '',
-        selectedOffice: selectedOffice || ''
-    } ), [startDate, endDate, nationality, selectedOffice, current_date] );
+        selectedOffice: selectedOffice || '',
+        bandi_status:bandi_status || ''
+    } ), [startDate, endDate, nationality, selectedOffice, bandi_status, current_date] );
 
     const validEndDate = endDate || current_date;
     const to_year = validEndDate.split( "-" )[0];
@@ -47,19 +51,23 @@ const KaragarMaskebari = () => {
         loading: muddawiseCountLoading
     } = fetchMuddaGroupWiseCount( { filters } );
 
+    const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
+
     const swadeshiFilters = useMemo( () => ( {
         startDate: startDate,
         endDate: endDate,
         nationality: 'स्वदेशी',
-        selectedOffice: selectedOffice || ''
-    } ), [startDate, endDate, selectedOffice, current_date] );
+        selectedOffice: selectedOffice || '',
+        bandi_status: bandi_status || ''
+    } ), [startDate, endDate, selectedOffice,bandi_status, current_date] );
 
     const bideshiFilters = useMemo( () => ( {
         startDate: startDate,
         endDate: endDate,
         nationality: 'विदेशी',
-        selectedOffice: selectedOffice || ''
-    } ), [startDate, endDate, selectedOffice, current_date] );
+        selectedOffice: selectedOffice || '',
+        bandi_status: bandi_status || ''
+    } ), [startDate, endDate, selectedOffice, bandi_status, current_date] );
 
     const {
         records: swadeshiCount,
@@ -147,7 +155,7 @@ const KaragarMaskebari = () => {
                                 </Grid>
                             )}
 
-                            <Grid container size={{ xs: 12, sm: 6 }}>
+                            <Grid container size={{ xs: 12 }} spacing={2}>
 
                                 <Grid size={{ xs: 12, sm: 4 }}>
                                     <ReuseDateField
@@ -165,11 +173,48 @@ const KaragarMaskebari = () => {
                                         label="–"
                                     />
                                 </Grid>
+
                                 <Grid size={{ xs: 12, sm: 4 }}>
-                                    <Button
-                                        variant='contained'
-                                        type='submit'
-                                    >Search</Button>
+                                    <ReuseSelect
+                                        name="bandi_status"
+                                        label='बन्दीको अवस्था'
+                                        control={control}
+                                        options={[
+                                            ...bandiStatusOpt,
+                                            { label: "कारागारमा", value: 1 }
+                                        ]}
+
+                                        defaultValue={1}
+                                    />
+                                </Grid>
+                                <Grid container size={{ xs: 12 }} spacing={2}>
+                                    <Grid size={{ xs: 12, sm: 4 }}>
+                                        <Button
+                                            variant='contained'
+                                            type='submit'
+                                        >Search</Button>
+                                    </Grid>
+                                    <Grid xs={12}>
+                                        {/* <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                                    रिपोर्ट लिई ल्याउनुहोस्
+                                </Button> */}
+                                        <Button onClick={() => exportToExcel(
+                                            releaseRecords,
+                                            swadeshiCount,
+                                            swadeshiTotal,
+                                            bideshiCount,
+                                            bideshiTotal,
+                                            // '2082/2083',
+                                            to_year,
+                                            monthName || '<महिना>',
+                                            current_date,
+                                            office_np
+                                        )}
+                                            variant='contained'
+                                            color='success'
+                                        >Download</Button>
+
+                                    </Grid>
                                 </Grid>
                             </Grid>
 
@@ -203,27 +248,7 @@ const KaragarMaskebari = () => {
                                 />
                             </Grid> */}
 
-                            <Grid xs={12}>
-                                {/* <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                                    रिपोर्ट लिई ल्याउनुहोस्
-                                </Button> */}
-                                <Button onClick={() => exportToExcel(
-                                    releaseRecords,
-                                    swadeshiCount,
-                                    swadeshiTotal,
-                                    bideshiCount,
-                                    bideshiTotal,
-                                    // '2082/2083',
-                                    to_year,
-                                    monthName || '<महिना>',
-                                    current_date,
-                                    office_np
-                                )}
-                                    variant='contained'
-                                    color='success'
-                                >Download</Button>
 
-                            </Grid>
                         </Grid>
                     </form>
                 </Box>
