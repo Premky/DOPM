@@ -221,7 +221,7 @@ const BandiTransferTable = () => {
                                     <TableRow sx={{ background: bgColor( data.status_id ) }}>
                                         <TableCell rowSpan={rowSpan}>{index + 1} {data.transfer_id}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.office_bandi_id}</TableCell>
-                                        <TableCell rowSpan={rowSpan}>{data.letter_address}</TableCell>
+                                        <TableCell rowSpan={rowSpan}>{data.current_office_name}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.bandi_name}</TableCell>
                                         <TableCell rowSpan={rowSpan}>
                                             {kaidiMuddas.map( ( m, i ) => (
@@ -247,7 +247,8 @@ const BandiTransferTable = () => {
                                             {data.transfer_reason || ''}
                                         </TableCell>
                                         <TableCell rowSpan={rowSpan}>
-
+                                            {/* पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण */}
+                                            {data.bandi_character || ''}
                                         </TableCell>
                                         <TableCell rowSpan={rowSpan}>{statusValue( data.status_id )}</TableCell>
                                         <TableCell rowSpan={rowSpan}>{data.remarks}</TableCell>

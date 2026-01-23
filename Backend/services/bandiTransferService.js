@@ -1,3 +1,4 @@
+import { addFilter } from '../queryUtils/sqlFilterBuilder.js';
 import pool from '../utils/db3.js';
 
 async function insertTransferDetails( bandi_id, transfer_details = [], role_id,InitialStatus, user_id, active_office, connection ) {
@@ -145,6 +146,76 @@ async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
         values: [roleId, statusId, metadata.remarks, userId, now, recordId]
     };
 }
+
+export const getTransferBandiByFilters = async ({
+    connection,
+    filters,
+    user
+}) => {
+    let where = `WHERE is_active = 1`;
+    let params = [];
+
+    const apply = (cond, val) => {
+        ({ where, params } = addFilter(where, params, cond, val));
+    };
+
+    // ------------------
+    // Basic filters
+    // ------------------
+    apply(`bandi_id = ?`, filters.bandiId);
+
+    if (filters.bandiName) {
+        apply(`bandi_name LIKE ?`, `%${filters.bandiName}%`);
+    }
+
+    apply(`current_office_id = ?`, filters.fromOffice);
+    apply(`final_to_office_id = ?`, filters.toOffice);
+    apply(`is_completed = ?`, filters.isCompleted);
+    apply(`role_id = ?`, filters.roleId);
+
+    // ------------------
+    // Status resolution
+    // ------------------
+    let statusId = null;
+
+    if (filters.statusKey) {
+        const [[row]] = await connection.query(
+            `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
+            [filters.statusKey]
+        );
+
+        if (!row) return [];
+
+        statusId = row.id;
+        apply(`status_id = ?`, statusId);
+    }
+
+    // ------------------
+    // Office visibility rules
+    // ------------------
+    const isSuperOffice = [1, 2].includes(user.office_id);
+
+    if (!isSuperOffice) {
+        if (statusId && statusId <= 16) {
+            apply(`final_to_office_id = ?`, user.office_id);
+        } else {
+            apply(`current_office_id = ?`, user.office_id);
+        }
+    }
+
+    // ------------------
+    // Query
+    // ------------------
+    const sql = `
+        SELECT *
+        FROM view_full_bandi_transfer
+        ${where}
+        ORDER BY transfer_id DESC
+    `;
+
+    const [rows] = await connection.query(sql, params);
+    return rows;
+};
 
 export {
     insertTransferDetails,

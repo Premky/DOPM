@@ -30,7 +30,7 @@ const JobTab = ( { employee, refresh } ) => {
                 </Button>
             ) )}
             {employee.jobDetails && employee.jobDetails.length > 0 && (
-                <Grid item xs={12}>
+                <Grid size={{xs:12}}>
                     <Paper sx={{ p: 3 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>

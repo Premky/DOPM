@@ -170,7 +170,7 @@ const BandiTransferForm = () => {
                         <Grid>
                             <ReuseInput
                                 name="transfer_reason"
-                                label="सरुवा विवरण"
+                                label="कैफियत/सरुवाको विस्तृत कारण"
                                 control={control}
                                 margin="dense"
                                 error={!!errors.transfer_reason}

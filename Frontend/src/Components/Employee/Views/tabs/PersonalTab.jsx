@@ -68,7 +68,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                         </Typography>
 
                         <Grid container spacing={2} sx={{ mb: 3 }}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Email
                                 </Typography>
@@ -76,7 +76,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {employee.email || 'N/A'}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Mobile Number
                                 </Typography>
@@ -84,7 +84,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {employee.mobile_no || 'N/A'}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Date of Birth
                                 </Typography>
@@ -92,7 +92,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {employee.dob || 'N/A'}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Gender
                                 </Typography>
@@ -100,7 +100,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {/* {genderMap[employee.gender] || 'N/A'} */}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Marital Status
                                 </Typography>
@@ -108,7 +108,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {employee.married_status || 'N/A'}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Citizenship Number
                                 </Typography>
@@ -125,7 +125,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                         </Typography>
 
                         <Grid container spacing={2} sx={{ mb: 3 }}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Ward Number
                                 </Typography>
@@ -133,7 +133,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {employee.ward_no || 'N/A'}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Issue District
                                 </Typography>
@@ -141,7 +141,7 @@ const PersonalTab = ( { employee, refresh } ) => {
                                     {employee.issue_district || 'N/A'}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{xs:12, sm:6}}>
                                 <Typography variant="body2" color="textSecondary">
                                     Issue Date
                                 </Typography>

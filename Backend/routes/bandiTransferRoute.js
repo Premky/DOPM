@@ -28,9 +28,11 @@ const fy_date = fy + '-04-01';
 import { bs2ad } from '../utils/bs2ad.js';
 import {
     getAllowedStatusesForRole,
+    getTransferBandiByFilters,
     insertFinalTransferDetails,
     insertTransferDetails
 } from '../services/bandiTransferService.js';
+import { normalizeFilters } from '../queryUtils/normalizeFilters.js';
 // console.log(current_date);
 // console.log(fy_date)
 // Approve
@@ -50,53 +52,307 @@ import {
 //   remarks: '21'
 // }
 
-router.get( '/get_bandi_for_transfer', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.username;
-    const office_id = req.query.office_id;
-    const bandi_id = req.query.bandi_id;
-    // console.log("bandi_id:",bandi_id)
+export const groupTransferResult = ( rows ) => {
+    const grouped = {};
 
-    // console.log(active_office,'active_office')
-    let filters = 'bp.is_active = 1';
-    const params = [];
+    for ( const row of rows ) {
+        const { bandi_id, mudda_id, mudda_name, bandi_character, 
+            transfer_id, role_id, status_id,
+            recommended_to_office_id, recommended_to_office_name,
+            final_to_office_id, final_to_office_name, decision_date,
+            transfer_from_date, transfer_to_date, remarks,
+            office_bandi_id, bandi_type, bandi_name, current_office_name,
+            current_age, country_name_np, bidesh_nagarik_address_details, nepali_address,
+            thuna_date_bs, release_date_bs } = row;
 
-    if ( active_office !== 1 && active_office !== 2 ) {
-        filters += ' AND bp.current_office_id = ?';
-        params.push( active_office );
+        if ( !grouped[bandi_id] ) {
+            grouped[bandi_id] = {
+                bandi_id,
+                bandi_character,
+                transfer_id,
+                office_bandi_id,
+                bandi_type,
+                bandi_name,
+                current_office_name,
+                recommended_to_office_id,
+                recommended_to_office_name,
+                final_to_office_id,
+                final_to_office_name,
+                decision_date,
+                current_age,
+                country_name_np,
+                bidesh_nagarik_address_details,
+                nepali_address,
+                role_id,
+                status_id,
+                thuna_date_bs,
+                release_date_bs,
+                remarks,
+                muddas: [],
+                transfers: []
+            };
+        }
+
+        // Add unique muddas
+        if ( mudda_id && !grouped[bandi_id].muddas.some( m => m.mudda_id === mudda_id ) ) {
+            grouped[bandi_id].muddas.push( { mudda_id, mudda_name } );
+        }
+
+        // Add unique transfers
+        if ( transfer_id && !grouped[bandi_id].transfers.some( t => t.transfer_id === transfer_id ) ) {
+            grouped[bandi_id].transfers.push( {
+                transfer_id,
+                role_id,
+                status_id,
+                recommended_to_office_id,
+                recommended_to_office_name,
+                decision_date,
+                transfer_from_date,
+                transfer_to_date,
+                remarks
+            } );
+        }
     }
 
-    if ( bandi_id ) {
-        filters += ' AND bp.office_bandi_id =?';
-        params.push( bandi_id );
-    }
+    return Object.values( grouped ).sort( ( a, b ) => b.transfer_id - a.transfer_id );
+};
 
-    const sql = `
-        SELECT 
-            bp.id, bp.office_bandi_id, bp.bandi_name, bp.bandi_type, 
-            bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
-            bkd.release_date_bs, bkd.release_date_ad, 
-            bkd.thuna_date_bs, bkd.thuna_date_ad 
-        FROM bandi_person bp
-        LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
-        LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
-        LEFT JOIN offices o ON o.id = bp.current_office_id
-        WHERE ${ filters } 
-    `;
 
-    console.log( 'Running SQL:', sql );
-    console.log( 'Params:', params );
+router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => {
+    let connection;
 
     try {
-        const [result] = await pool.query( sql, params );
-        res.json( { Status: true, Result: result } );
-    } catch ( err ) {
-        console.error( "Database Query Error:", err );
-        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+        connection = await pool.getConnection();
+
+        const filters = normalizeFilters( req.query );
+
+        const rows = await getTransferBandiByFilters( {
+            connection,
+            filters,
+            user: req.user,
+        } );
+
+        const result = groupTransferResult( rows );
+
+        return res.json( {
+            Status: true,
+            Result: result,
+            message: "बन्दी ट्रान्सफर विवरण सफलतापूर्वक प्राप्त भयो।"
+        } );
+
+    } catch ( error ) {
+        console.error( "❌ Transfer fetch error:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            message: "सर्भर त्रुटि भयो"
+        } );
+    } finally {
+        connection?.release();
     }
 } );
 
-router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => {
+
+router.get( '/get_transfer_bandi_ac_status2', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_role = req.user.role_name;
+
+    const {
+        searchOffice,
+        searchToOffice,
+        search_is_completed,
+        searchStatus: statusKey,
+        searchRoles: roleKey,
+        searchbandi_name,
+        bandi_id
+    } = req.query;
+
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+
+        let where = `WHERE is_active = 1`;
+        const params = [];
+
+        // -------------------------
+        // Basic filters
+        // -------------------------
+        if ( bandi_id ) {
+            where += ` AND bandi_id = ?`;
+            params.push( bandi_id );
+        }
+
+        if ( searchbandi_name ) {
+            where += ` AND bandi_name LIKE ?`;
+            params.push( `%${ searchbandi_name }%` );
+        }
+
+        if ( searchOffice ) {
+            where += ` AND current_office_id = ?`;
+            params.push( searchOffice );
+        }
+
+        if ( searchToOffice ) {
+            where += ` AND final_to_office_id = ?`;
+            params.push( searchToOffice );
+        }
+
+        if ( search_is_completed !== undefined && search_is_completed !== '' ) {
+            where += ` AND is_completed = ?`;
+            params.push( Number( search_is_completed ) );
+        }
+
+
+        // -------------------------
+        // Status filter
+        // -------------------------
+        let statusId = null;
+        if ( statusKey ) {
+            const [[row]] = await connection.query(
+                `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
+                [statusKey]
+            );
+
+            if ( !row ) {
+                return res.json( { Status: true, Result: [] } );
+            }
+
+            statusId = row.id;
+            where += ` AND status_id = ?`;
+            params.push( statusId );
+        }
+
+        // -------------------------
+        // Role filter (FIXED)
+        // -------------------------
+        if ( roleKey ) {
+            where += ` AND role_id = ?`;
+            params.push( roleKey );
+        }
+
+        // -------------------------
+        // Office permission rules
+        // -------------------------
+        const isSuperOffice = [1, 2].includes( active_office );
+
+        if ( !isSuperOffice ) {
+            if ( statusId && statusId <= 16 ) {
+                // Decision pending at this office
+                where += ` AND final_to_office_id = ?`;
+                params.push( active_office );
+            } else {
+                // Normal visibility
+                where += ` AND current_office_id = ?`;
+                params.push( active_office );
+            }
+        }
+
+        // -------------------------
+        // Query
+        // -------------------------
+        const sql = `
+            SELECT *
+            FROM view_full_bandi_transfer
+            ${ where }
+            ORDER BY transfer_id DESC
+        `;
+
+        const [rows] = await connection.query( sql, params );
+
+        // -------------------------
+        // Grouping
+        // -------------------------
+        const grouped = {};
+
+        for ( const row of rows ) {
+            const {
+                bandi_id, mudda_id, mudda_name,
+                transfer_id, office_bandi_id, bandi_type, bandi_name,
+                current_office_name, role_id, status_id,
+                recommended_to_office_id, recommended_to_office_name,
+                final_to_office_id, final_to_office_name,
+                decision_date, transfer_from_date, transfer_to_date, remarks,
+                thuna_date_bs, release_date_bs,
+                country_name_np, bidesh_nagarik_address_details, nepali_address,
+                current_age
+            } = row;
+
+            if ( !grouped[bandi_id] ) {
+                grouped[bandi_id] = {
+                    bandi_id,
+                    transfer_id,
+                    office_bandi_id,
+                    bandi_type,
+                    bandi_name,
+                    current_office_name,
+                    recommended_to_office_id,
+                    recommended_to_office_name,
+                    final_to_office_id,
+                    final_to_office_name,
+                    decision_date,
+                    current_age,
+                    country_name_np,
+                    bidesh_nagarik_address_details,
+                    nepali_address,
+                    role_id,
+                    status_id,
+                    thuna_date_bs,
+                    release_date_bs,
+                    remarks,
+                    muddas: [],
+                    transfers: []
+                };
+            }
+
+            if (
+                mudda_id &&
+                !grouped[bandi_id].muddas.some( m => m.mudda_id === mudda_id )
+            ) {
+                grouped[bandi_id].muddas.push( { mudda_id, mudda_name } );
+            }
+
+            if (
+                transfer_id &&
+                !grouped[bandi_id].transfers.some( t => t.transfer_id === transfer_id )
+            ) {
+                grouped[bandi_id].transfers.push( {
+                    transfer_id,
+                    role_id,
+                    status_id,
+                    recommended_to_office_id,
+                    recommended_to_office_name,
+                    decision_date,
+                    transfer_from_date,
+                    transfer_to_date,
+                    remarks
+                } );
+            }
+        }
+
+        const result = Object.values( grouped ).sort(
+            ( a, b ) => b.transfer_id - a.transfer_id
+        );
+
+        return res.json( {
+            Status: true,
+            Result: result,
+            message: "बन्दी ट्रान्सफर विवरण सफलतापूर्वक प्राप्त भयो।"
+        } );
+
+
+    } catch ( error ) {
+        console.error( "❌ Error fetching transfer bandi details:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            message: "सर्भर त्रुटि भयो, विवरण प्राप्त गर्न असफल।"
+        } );
+    } finally {
+        if ( connection ) connection.release();
+    }
+} );
+
+
+router.get( '/get_transfer_bandi_ac_status1', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
     const user_role = req.user.role_name;
@@ -147,7 +403,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
 
                 // If statusId >= 11, filter using final_to_office_id    
                 // Currently Disabled             
-                if ( statusId <= 16 ) {  
+                if ( statusId <= 16 ) {
                     queryFilter += ' AND bth.final_to_office_id = ?';
                     params.push( active_office );
                 } else {
@@ -294,6 +550,52 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
         } );
     } finally {
         if ( connection ) connection.release();
+    }
+} );
+
+router.get( '/get_bandi_for_transfer', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const office_id = req.query.office_id;
+    const bandi_id = req.query.bandi_id;
+    // console.log("bandi_id:",bandi_id)
+
+    // console.log(active_office,'active_office')
+    let filters = 'bp.is_active = 1';
+    const params = [];
+
+    if ( active_office !== 1 && active_office !== 2 ) {
+        filters += ' AND bp.current_office_id = ?';
+        params.push( active_office );
+    }
+
+    if ( bandi_id ) {
+        filters += ' AND bp.office_bandi_id =?';
+        params.push( bandi_id );
+    }
+
+    const sql = `
+        SELECT 
+            bp.id, bp.office_bandi_id, bp.bandi_name, bp.bandi_type, 
+            bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+            bkd.release_date_bs, bkd.release_date_ad, 
+            bkd.thuna_date_bs, bkd.thuna_date_ad 
+        FROM bandi_person bp
+        LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
+        LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
+        LEFT JOIN offices o ON o.id = bp.current_office_id
+        WHERE ${ filters } 
+    `;
+
+    console.log( 'Running SQL:', sql );
+    console.log( 'Params:', params );
+
+    try {
+        const [result] = await pool.query( sql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
     }
 } );
 
