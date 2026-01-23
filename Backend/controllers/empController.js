@@ -51,7 +51,7 @@ export const createNewEmployee = async ( req, res ) => {
       join_date, join_date_ad, designation_id,
       province_id, district_id, municipality_id,ward_no, is_office_chief, photo_path,
       created_by, created_at, updated_by, updated_at, current_office_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, 
               ?, ?, ?, 
               ?,?,?,?,?,?,
               ?, ?, ?, ?,?)`,
