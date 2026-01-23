@@ -18,10 +18,10 @@ import { verifyRole } from '../middlewares/verifyRole.js';
 
 async function getUserBasedStatusMap() {
     const [rows] = await pool.query( `
-    SELECT ur.id, ur.role_name, rsr.payrole_status_id, ps.payrole_status_name
-            FROM payrole_status_roles rsr 
-            LEFT JOIN user_roles ur ON rsr.role_id=ur.id
-            LEFT JOIN payrole_status ps ON rsr.payrole_status_id=ps.id
+        SELECT ur.id, ur.role_name, rsr.payrole_status_id, ps.payrole_status_name
+                FROM payrole_status_roles rsr 
+                LEFT JOIN user_roles ur ON rsr.role_id=ur.id
+                LEFT JOIN payrole_status ps ON rsr.payrole_status_id=ps.id
   `);
 
     const map = {};
@@ -35,7 +35,7 @@ async function getUserBasedStatusMap() {
         }
         map[role].push( statusId );
     }
-
+    // console.log( map );
     // Optionally, handle special cases
     map.superadmin = 'all';
 
@@ -484,12 +484,26 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 
         //Role Based Status
         const roleMap = await getUserBasedStatusMap();
-        let allowedStatuses = roleMap[id] ?? [];
+        const allowedStatuses = roleMap[role_name];
+        console.log(allowedStatuses)
 
         if ( allowedStatuses !== 'all' ) {
-            where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
+            if ( !allowedStatuses || allowedStatuses.length === 0 ) {
+                return res.json( { Status: true, Result: [], TotalCount: 0 } );
+            }
+
+            where += ` AND status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
             params.push( ...allowedStatuses );
         }
+
+
+        // const roleMap = await getUserBasedStatusMap();
+        // let allowedStatuses = roleMap[role_name] ?? [];
+
+        // if ( allowedStatuses !== 'all' ) {
+        //     where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
+        //     params.push( ...allowedStatuses );
+        // }
 
         //Filters
         if ( searchpayroleStatus ) { where += ` AND payrole_status = ?`; params.push( searchpayroleStatus ); }
