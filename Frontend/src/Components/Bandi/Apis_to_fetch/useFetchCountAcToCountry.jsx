@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const useFetchCountAcToCountry = ( bandi_id ) => {
+const useFetchCountAcToCountry = ( bandi_id, filters = {} ) => {
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
     const [optrecords, setOptRecords] = useState( [] );
@@ -11,11 +11,12 @@ const useFetchCountAcToCountry = ( bandi_id ) => {
 
     const fetchBandiRecords = async () => {
         try {
-            setLoading(true);
+            setLoading( true );
             const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_count_ac_to_country`,
+                { params: { bandi_status: filters?.bandi_status || '', _t: Date.now() }, },
                 { withCredentials: true } );
-                const { Status, Result, Error } = response.data;
-                // console.log( Result );
+            const { Status, Result, Error } = response.data;
+            // console.log( Result );
             if ( Status ) {
                 if ( Status && Result && typeof Result === 'object' ) {
                     const resultArray = Object.values( Result );
@@ -41,11 +42,11 @@ const useFetchCountAcToCountry = ( bandi_id ) => {
         }
     };
 
-    useEffect( () => {        
+    useEffect( () => {
         fetchBandiRecords();
-    }, [BASE_URL, bandi_id] );
+    }, [BASE_URL, bandi_id, filters?.bandi_status] );
 
-    return { records, optrecords, loading, refetch:fetchBandiRecords };
+    return { records, optrecords, loading, refetch: fetchBandiRecords };
 };
 
 export default useFetchCountAcToCountry;

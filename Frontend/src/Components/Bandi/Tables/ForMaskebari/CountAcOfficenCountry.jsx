@@ -4,12 +4,25 @@ import { useAuth } from '../../../../Context/AuthContext';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import useFetchCountryAcToOffice from '../../../Apis/useFetchCountryAcToOffice';
 import useFetchCountAcToCountry from '../../Apis_to_fetch/useFetchCountAcToCountry';
+import { useForm } from 'react-hook-form';
+import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
+import fetchBandiStatus from '../../../ReuseableComponents/FetchApis/fetchBandiStatus';
 
 const CountAcOfficenCountry = () => {
   const { state } = useAuth();
-  const { records: countries } = useFetchCountryAcToOffice();
-  const { records: count_ac_country } = useFetchCountAcToCountry();
+  const { control, watch } = useForm();
 
+  //Watch Variables//
+  const bandi_status = watch( 'bandi_status' );
+
+  const filters = useMemo( () => ( {
+    bandi_status
+  } ), [bandi_status] );
+
+  const { records: countries } = useFetchCountryAcToOffice( filters );
+  const { records: count_ac_country } = useFetchCountAcToCountry( bandi_status, filters );
+  const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
+//  console.log( count_ac_country );
   const [sortBy, setSortBy] = useState( 'office_name_np' );
   const [sortDir, setSortDir] = useState( 'asc' );
 
@@ -47,6 +60,8 @@ const CountAcOfficenCountry = () => {
       return sortDir === 'asc' ? aValue - bValue : bValue - aValue;
     } );
   }, [count_ac_country, sortBy, sortDir] );
+
+
 
   // Excel export
   const handleExport = async () => {
@@ -97,10 +112,29 @@ const CountAcOfficenCountry = () => {
       </HelmetProvider>
 
       <Grid container>
+
         <Box sx={{ width: '100%', overflowX: 'auto' }}>
-          <Button variant="contained" onClick={handleExport} sx={{ mb: 2 }}>
-            Export to Excel
-          </Button>
+          <Grid container size={{ xs: 12 }} spacing={2}>
+            <Grid size={{ xs: 3 }}>
+              <ReuseSelect
+                name="bandi_status"
+                label='बन्दीको अवस्था'
+                control={control}
+                options={[
+                  ...bandiStatusOpt,
+                  { label: "कारागारमा", value: 1 }
+                ]}
+
+                defaultValue={1}
+              />
+            </Grid>
+            <Grid size={{ xs: 4 }}>
+              <br /> <br />
+              <Button variant="contained" onClick={handleExport} sx={{ mb: 2 }}>
+                Export to Excel
+              </Button>
+            </Grid>
+          </Grid>
 
           <TableContainer component={Paper}>
             <Table size="small" border={1}>
@@ -170,7 +204,7 @@ const CountAcOfficenCountry = () => {
           </TableContainer>
         </Box>
       </Grid>
-    </div>
+    </div >
   );
 };
 
