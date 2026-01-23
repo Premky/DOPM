@@ -13,7 +13,7 @@ const CountAcOfficenCountry = () => {
   const { control, watch } = useForm();
 
   //Watch Variables//
-  const bandi_status = watch( 'bandi_status' );
+  const bandi_status = watch( 'bandi_status', 1 ); // default value
 
   const filters = useMemo( () => ( {
     bandi_status
@@ -22,7 +22,7 @@ const CountAcOfficenCountry = () => {
   const { records: countries } = useFetchCountryAcToOffice( filters );
   const { records: count_ac_country } = useFetchCountAcToCountry( bandi_status, filters );
   const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
-//  console.log( count_ac_country );
+  //  console.log( count_ac_country );
   const [sortBy, setSortBy] = useState( 'office_name_np' );
   const [sortDir, setSortDir] = useState( 'asc' );
 
