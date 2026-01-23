@@ -114,12 +114,12 @@ const PreviousParoleForm = ( { status } ) => {
   const { records: conditions, optrecords: conditionsOpt, loading: conditionsLoading } = useFetchPayroleConditions();
   return (
     <>
-    <Helmet>
-                <title>PMIS: पूर्व प्यारोल फारम</title>
-                <meta name="description" content="पूर्व प्यारोल सम्बन्धि फारम भर्नुहोस्" />
-                <meta name="keywords" content="प्यारोल, पूर्व प्यारोल, फारम, कैदी, कैदी विवरण, कैदी रेकर्ड" />
-                <meta name="author" content="कारागार व्यवस्थापन विभाग" />
-    </Helmet>
+      <Helmet>
+        <title>PMIS: पूर्व प्यारोल फारम</title>
+        <meta name="description" content="पूर्व प्यारोल सम्बन्धि फारम भर्नुहोस्" />
+        <meta name="keywords" content="प्यारोल, पूर्व प्यारोल, फारम, कैदी, कैदी विवरण, कैदी रेकर्ड" />
+        <meta name="author" content="कारागार व्यवस्थापन विभाग" />
+      </Helmet>
       <Box sx={{ flexGrow: 1 }}>
         <form onSubmit={handleSubmit( onFormSubmit )}>
           <Grid container spacing={1}>
@@ -136,13 +136,16 @@ const PreviousParoleForm = ( { status } ) => {
                 error={errors.bandi_id}
               />
             </Grid>
+
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <ReusePayroleNos
                 name='payrole_no'
                 label='प्यारोल बैठक नं.'
                 required={true}
                 control={control}
-                error={errors._no}
+                error={errors.payrole_no}
+                // is_only_active={true}
+                setValue={setValue}
               />
             </Grid>
 
