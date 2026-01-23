@@ -9,7 +9,8 @@ SELECT
     TIMESTAMPDIFF (YEAR, bp.dob_ad, CURDATE()) AS current_age,
     bp.current_office_id,
     p.id AS payrole_id,
-    p.status AS payrole_status,
+    p.status,
+    ps.status_key AS payrole_status,
     p.payrole_no_id,
     p.payrole_entry_date,
     p.payrole_count_date,
@@ -52,6 +53,7 @@ FROM
     LEFT JOIN offices o ON bp.current_office_id = o.id
     LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id
     LEFT JOIN payrole_decisions pd ON p.id = pd.id
+    LEFT JOIN payrole_status ps ON p.status = ps.id
     LEFT JOIN (
         SELECT
             *

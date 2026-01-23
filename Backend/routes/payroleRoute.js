@@ -484,7 +484,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 
         //Role Based Status
         const roleMap = await getUserBasedStatusMap();
-        let allowedStatuses = roleMap[role_name] ?? [];
+        let allowedStatuses = roleMap[id] ?? [];
 
         if ( allowedStatuses !== 'all' ) {
             where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
