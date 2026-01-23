@@ -91,11 +91,11 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                             let day = inputValue.slice( 6, 8 );
 
                             // Validate month
-                            if ( parseInt( month, 10 ) > 12 ) {
+                            if ( parseInt( month, 10 ) >= 12 ) {
                                 month = "12";
                             }
                             // Validate day
-                            if ( parseInt( day, 10 ) > 32 ) {
+                            if ( parseInt( day, 10 ) >= 32 ) {
                                 day = "32";
                             }
 
