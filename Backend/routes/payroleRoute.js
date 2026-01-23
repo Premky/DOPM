@@ -492,10 +492,9 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
                 return res.json( { Status: true, Result: [], TotalCount: 0 } );
             }
 
-            where += ` AND status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
+            where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
             params.push( ...allowedStatuses );
         }
-
 
         // const roleMap = await getUserBasedStatusMap();
         // let allowedStatuses = roleMap[role_name] ?? [];
@@ -506,7 +505,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         // }
 
         //Filters
-        if ( searchpayroleStatus ) { where += ` AND payrole_status = ?`; params.push( searchpayroleStatus ); }
+        if ( searchpayroleStatus ) { where += ` AND status = ?`; params.push( searchpayroleStatus ); }
         // if ( searchpayrole_no_id ) { where += ` AND payrole_no_id = ?`; params.push( searchpayrole_no_id ); }
         if (
             searchpayrole_no_id &&
