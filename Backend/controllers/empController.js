@@ -51,7 +51,7 @@ export const createNewEmployee = async ( req, res ) => {
       join_date, join_date_ad, designation_id,
       province_id, district_id, municipality_id,ward_no, is_office_chief, photo_path,
       created_by, created_at, updated_by, updated_at, current_office_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
               ?, ?, ?, 
               ?,?,?,?,?,?,
               ?, ?, ?, ?,?)`,
@@ -99,11 +99,11 @@ export const createNewEmployee = async ( req, res ) => {
     // 3️⃣ Insert into employee_transfer_history
     await conn.query(
       `INSERT INTO employee_transfer_history
-      (employee_id, sanket_no, to_office_id, 
+      (employee_id, sanket_no, from_office_id, to_office_id, 
       transfer_date_bs, transfer_date_ad, hajir_date_bs, hajir_date_ad, 
       is_current, updated_by, updated_at
         )
-      VALUES (?, ?, ?,
+      VALUES (?, ?, ?,?,
               ?, ?, ?, ?,
               ?, ?, ?)`,
       [employeeId, sanket_no, current_office_id,
