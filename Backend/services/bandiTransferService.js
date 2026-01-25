@@ -172,6 +172,7 @@ export const getTransferBandiByFilters = async ({
     apply(`final_to_office_id = ?`, filters.toOffice);
     apply(`is_completed = ?`, filters.isCompleted);
     apply(`role_id = ?`, filters.roleId);
+    apply(`transfer_reason_id = ?`, filters.transferReason);
 
     // ------------------
     // Status resolution
@@ -189,6 +190,8 @@ export const getTransferBandiByFilters = async ({
         statusId = row.id;
         apply(`status_id = ?`, statusId);
     }
+
+
 
     // ------------------
     // Office visibility rules

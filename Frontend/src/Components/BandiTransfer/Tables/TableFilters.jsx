@@ -12,6 +12,7 @@ import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import useFetchRoleBasedTransferStatus from "../Fetch_APIs/useFetchRoleBasedTransferStatus";
 import TransferCommonLetterDocx from "../Exports/TransferCommonLetterDocx";
+import fetchBandiTransferReasons from "../../ReuseableComponents/fetchBandiTransferReasons";
 // import exportToExcel from "../../Exports/ExcelPayrole";
 
 const TableFilters = ( { onChange } ) => {
@@ -31,6 +32,7 @@ const TableFilters = ( { onChange } ) => {
             searchOffice: "",
             searchToOffice: "",
             searchStatus: "",
+            transferReason:"",
             nationality: "",
             search_is_completed: "",
             searchbandi_name: "",
@@ -46,6 +48,7 @@ const TableFilters = ( { onChange } ) => {
     const nationality = watch( 'nationality' );
     const search_is_completed = watch( 'search_is_completed' );
     const searchStatus = watch( 'searchStatus' );
+    const transferReason = watch( 'transferReason' );
     const searchmudda_id = watch( 'searchmudda_id' );
     const searchbandi_name = watch( 'searchbandi_name' );
     const searchchecked = watch( 'searchchecked' );
@@ -59,6 +62,7 @@ const TableFilters = ( { onChange } ) => {
         nationality,
         search_is_completed,
         searchStatus,
+        transferReason,
         searchmudda_id,
         searchbandi_name,
         searchchecked,
@@ -71,6 +75,7 @@ const TableFilters = ( { onChange } ) => {
         filters?.nationality,
         filters?.search_is_completed,
         filters?.searchStatus,
+        filters?.transferReason,
         filters?.searchmudda_id,
         filters?.searchbandi_name,
         filters?.searchchecked,
@@ -88,6 +93,7 @@ const TableFilters = ( { onChange } ) => {
             nationality,
             search_is_completed,
             searchStatus,
+            transferReason,
             searchmudda_id,
             searchbandi_name,
             searchchecked,
@@ -100,6 +106,7 @@ const TableFilters = ( { onChange } ) => {
         nationality,
         search_is_completed,
         searchStatus,
+        transferReason,
         searchmudda_id,
         // searchbandi_name,
         searchchecked,
@@ -134,6 +141,7 @@ const TableFilters = ( { onChange } ) => {
     };
 
     const { optrecords: roleBasedStatus, refetchRoleBasedTransferStatus: fetchRoleBasedTransferStatus } = useFetchRoleBasedTransferStatus();
+    const { records: transferReasons, optrecords: transferReasonsOptions, loading: realeseReasonsLoading } = fetchBandiTransferReasons( );
     useEffect( () => {
         if ( roleBasedStatus?.length > 0 && authState?.role_name ) {
             const userDefault = {
@@ -194,6 +202,16 @@ const TableFilters = ( { onChange } ) => {
                         options={roleBasedStatus}
                         control={control}
                         error={errors.searchStatus}
+                    // defaultValue={rol}
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <ReuseSelect
+                        name="transferReason"
+                        label="सरुवाको कारण"                        
+                        options={transferReasonsOptions}
+                        control={control}
+                        error={errors.transferReason}
                     // defaultValue={rol}
                     />
                 </Grid>

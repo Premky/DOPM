@@ -15,6 +15,7 @@ export const normalizeFilters = (query) => {
                 ? null
                 : Number(query.search_is_completed),
         statusKey: query.searchStatus || null,
+        transferReason: toInt(query.transferReason),
         roleId: toInt(query.searchRoles),
     };
 };
