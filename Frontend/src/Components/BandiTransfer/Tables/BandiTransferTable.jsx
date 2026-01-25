@@ -15,7 +15,8 @@ import {
     Menu,
     MenuItem,
     Button,
-    Checkbox
+    Checkbox,
+    Typography
 } from "@mui/material";
 import NepaliDate from 'nepali-datetime';
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -178,6 +179,9 @@ const BandiTransferTable = () => {
                 )}
             </Menu>
             <TableFilters onChange={( newFilters ) => setFilters( newFilters )} />
+            <Typography variant="h6">
+                {filteredKaidi.length} {t( "वटा विवरण भेटियो", "Records Found" )}
+            </Typography>
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
                     <TableHead>
