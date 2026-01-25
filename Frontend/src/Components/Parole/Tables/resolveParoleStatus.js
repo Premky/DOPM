@@ -39,13 +39,13 @@ export const resolveParoleStatus = ( row ) => {
     if ( row.pyarole_rakhan_upayukat === "eligible" ) {
         return {
             label: "योग्य",
-            color: "yogya"
+            color: "eligible"
         };
     }
     if ( row.pyarole_rakhan_upayukat === "ineligible" ) {
         return {
             label: "अयोग्य",
-            color: "aayogya"
+            color: "ineligible"
         };
     }
     if ( row.pyarole_rakhan_upayukat === "discussion" ) {
