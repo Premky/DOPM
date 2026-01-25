@@ -124,7 +124,8 @@ export const generateBandiExcel = async ( job, filters ) => {
         language === "en" ? "Escape Status" : "फरार भए/नभएको अवस्था",
         language === "en" ? "Date of Escape (B.S.)" : "फरार भएको मिति (बि.सं.)",
         language === "en" ? "Escape Details" : "फरार विवरण",
-        language === "en" ? "Re-Admitted Details" : "पुनः समातिएको विवरण",
+        language === "en" ? "Re-Admitted Date" : "पुनः समातिएको मिति",
+        language === "en" ? "Re-Admitted Office" : "पुनः समातिएको कार्यालय",
     ];
 
     sheet.addRow( headers ).commit();
@@ -194,12 +195,12 @@ export const generateBandiExcel = async ( job, filters ) => {
 
     return filePath; // return path for download
 };
-function writeBandiToSheet(sheet, b, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn) {
+function writeBandiToSheet( sheet, b, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn ) {
     const muddas = b.muddas.length ? b.muddas : [{}];
 
     // 1️⃣ Add rows WITHOUT committing
-    const rows = muddas.map((m, idx) =>
-        sheet.addRow([
+    const rows = muddas.map( ( m, idx ) =>
+        sheet.addRow( [
             idx === 0 ? sn : "",
             language === "en" ? b.bandi_office_en : b.bandi_office,
             b.office_bandi_id || "",
@@ -209,16 +210,16 @@ function writeBandiToSheet(sheet, b, language, genderNpMap, escapeStatusNpMap, e
             language === "en" ? b.bandi_name_en : b.bandi_name,
             language === "en" ? b.country_name_en : b.country_name_np,
             language === "en"
-                ? `${b.city_name_en}-${b.wardno}, ${b.district_name_en}`
-                : `${b.city_name_np}-${b.wardno}, ${b.district_name_np}`,
-            `${b.govt_id_name_np || ""}, ${b.card_no || ""}`,
+                ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
+                : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
+            `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
             b.dob,
             b.current_age,
             language === "en" ? b.gender : genderNpMap[b.gender] || "",
             b.spouse_name,
             b.spouse_contact_no,
-            `${b.father_name}/${b.father_contact_no}`,
-            `${b.mother_name}/${b.mother_contact_no}`,
+            `${ b.father_name }/${ b.father_contact_no }`,
+            `${ b.mother_name }/${ b.mother_contact_no }`,
             b.thuna_date_bs,
             b.release_date_bs,
             language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
@@ -233,22 +234,23 @@ function writeBandiToSheet(sheet, b, language, genderNpMap, escapeStatusNpMap, e
             language === "en" ? escapeStatusEnMap[b.escape_status] : escapeStatusNpMap[b.escape_status] || "",
             b.escape_date_bs || "",
             b.escape_method || "",
-            b.readmit_details || "",
-        ])
+            b.recapture_date_bs || "",
+            b.recaptured_office || "",
+        ] )
     );
 
     // 2️⃣ Merge BEFORE commit
-    if (rows.length > 1) {
+    if ( rows.length > 1 ) {
         const start = rows[0].number;
         const end = rows[rows.length - 1].number;
 
-        ["A", "B", "C", "D", "E", "F", "G"].forEach(col => {
-            sheet.mergeCells(`${col}${start}:${col}${end}`);
-        });
+        ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
+            sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
+        } );
     }
 
     // 3️⃣ NOW commit rows
-    rows.forEach(r => r.commit());
+    rows.forEach( r => r.commit() );
 }
 
 

@@ -77,7 +77,9 @@ SELECT
     bed.escape_date_bs,
     bed.escape_method,
     bed.status AS escape_status,
+    bed.recapture_date_bs,
     bed.current_office_id AS current_office_id_after_recapture,
+    efo.letter_address AS recaptured_office,
 
     -- Relative Info
     bri.is_dependent,
@@ -120,6 +122,8 @@ LEFT JOIN offices bpdo ON bpd.punarabedan_office_id = bpdo.id
 LEFT JOIN offices bo ON b.current_office_id = bo.id
 LEFT JOIN prison_blocks pb ON b.block_no = pb.id
 LEFT JOIN bandi_escape_details bed ON b.id = bed.bandi_id
+LEFT JOIN offices efo ON bed.current_office_id = efo.id
+
 LEFT JOIN bandi_relative_info bri ON b.id = bri.bandi_id
 LEFT JOIN bandi_release_details brd ON b.id = brd.bandi_id
 LEFT JOIN bandi_release_reasons brr ON brd.reason_id=brr.id
