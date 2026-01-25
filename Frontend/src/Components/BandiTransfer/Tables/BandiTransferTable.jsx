@@ -180,7 +180,7 @@ const BandiTransferTable = () => {
             </Menu>
             <TableFilters onChange={( newFilters ) => setFilters( newFilters )} />
             <Typography variant="h6">
-                {filteredKaidi.length} {t( "वटा विवरण भेटियो", "Records Found" )}
+                {filteredKaidi.length} { "वटा विवरण भेटियो"}
             </Typography>
             <TableContainer>
                 <Table size="small" stickyHeader border={1}>
