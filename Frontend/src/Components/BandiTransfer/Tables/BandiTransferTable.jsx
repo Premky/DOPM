@@ -243,10 +243,13 @@ const BandiTransferTable = () => {
                                                 data.final_to_office_name ? ( <>{data.final_to_office_name}</> ) : ( <>{data.recommended_to_office_name || ''}</> )
                                             }<hr />
                                             <br />
-                                            {data.transfer_reason_np} <br />
-                                            <hr />
-                                            <br />
-                                            {data.transfer_reason || ''}
+                                            <strong>{data.transfer_reason_np} </strong><br />
+
+                                            {data.transfer_reason && ( <>
+                                                <hr />
+                                                <br />
+                                                <em>{data.transfer_reason}</em>
+                                            </> )}
                                         </TableCell>
                                         <TableCell rowSpan={rowSpan}>
                                             {/* पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण */}
