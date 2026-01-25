@@ -183,7 +183,7 @@ const BandiTransferTable = () => {
                 {filteredKaidi.length} { "वटा विवरण भेटियो"}
             </Typography>
             <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }} component={Paper}>
-                <Table size="small" stickyHeader border={1}>
+                <Table size="small" stickyHeader sx={{tableLayout:"fixed"}} border={1}>
                     <TableHead>
                         <TableRow sx={{ backgroundColor: '#1976d2' }}>
                             {/* <TableCell rowSpan={3} sx={{ position: "sticky", left: 0, zIndex: 3 }}>चेक</TableCell> */}
