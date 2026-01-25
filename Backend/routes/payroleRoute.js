@@ -1080,7 +1080,7 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
     if ( pyarole_rakhan_upayukat == 'passed' || pyarole_rakhan_upayukat == 'failed' ) {
         const [board_decision] = await pool.query( `SELECT id FROM payrole_status WHERE status_key=?`, ['board_decision'] );
         const status_id = board_decision[0].id;
-        sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?,status=?, dopm_remarks=? WHERE id=?`;
+        sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, status=?, dopm_remarks=? WHERE id=?`;
         values = [pyarole_rakhan_upayukat, status_id, dopmremark, payrole_id];
     } else {
         sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;

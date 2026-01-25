@@ -58,6 +58,7 @@ export const groupTransferResult = ( rows ) => {
     for ( const row of rows ) {
         const { bandi_id, mudda_id, mudda_name, bandi_character, 
             transfer_id, role_id, status_id,
+            transfer_reason_np, transfer_reason,
             recommended_to_office_id, recommended_to_office_name,
             final_to_office_id, final_to_office_name, decision_date,
             transfer_from_date, transfer_to_date, remarks,
@@ -74,6 +75,8 @@ export const groupTransferResult = ( rows ) => {
                 bandi_type,
                 bandi_name,
                 current_office_name,
+                transfer_reason_np,
+                transfer_reason,
                 recommended_to_office_id,
                 recommended_to_office_name,
                 final_to_office_id,

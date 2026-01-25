@@ -1,4 +1,4 @@
-CREATE VIEW view_full_bandi_transfer AS
+CREATE OR REPLACE VIEW view_full_bandi_transfer AS
 SELECT 
     bth.id AS transfer_id,
     bth.bandi_id,
@@ -8,6 +8,7 @@ SELECT
     bth.recommended_to_office_id,
     bth.final_to_office_id,
     bth.transfer_reason_id,
+    btr.transfer_reason_np,
     bth.transfer_reason,
     bth.decision_date,
     bth.transfer_from_date,
@@ -39,9 +40,9 @@ SELECT
     oooo.letter_address AS final_to_office_name,
 
     bmd.mudda_id,
-    m.mudda_name,
+    m.mudda_name
 
-    btr.transfer_reason_np
+    
 FROM bandi_transfer_history bth
 LEFT JOIN bandi_person bp ON bth.bandi_id = bp.id
 LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
