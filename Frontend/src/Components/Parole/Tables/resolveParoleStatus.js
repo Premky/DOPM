@@ -60,14 +60,14 @@ export const resolveParoleStatus = ( row ) => {
             color: "incomplete_docs"
         };
     }
-    if ( row.pyarole_rakhan_upayukat === "pass" ) {
+    if ( row.pyarole_rakhan_upayukat === "passed" ) {
         return {
             label: "बोर्डबाट पास",
             color: "passed"
         };
     }
 
-    if ( row.pyarole_rakhan_upayukat === "fail" ) {
+    if ( row.pyarole_rakhan_upayukat === "failed" ) {
         return {
             label: "बोर्डबाट फेल",
             color: "failed"
