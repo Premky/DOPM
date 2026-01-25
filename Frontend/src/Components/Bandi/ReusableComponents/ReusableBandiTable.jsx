@@ -59,6 +59,10 @@ const ReusableBandiTable = ( {
     // Export state
     const [exporting, setExporting] = useState( false );
     const [exportProgress, setExportProgress] = useState( { done: 0, total: 0 } );
+    const [selectedExportColumns, setSelectedExportColumns] = useState(
+        columns.map( c => c.field ) // default: all visible columns
+    );
+
 
     // small translation helper
     const t = ( np, en ) => ( language === "en" ? en : np );
@@ -146,32 +150,7 @@ const ReusableBandiTable = ( {
     );
 
 
-    //Export Handler
-    const handleExport = async () => {
-        try {
-            setExporting( true );
-            const params = { ...filters, includePhoto: includePhoto ? 1 : 0, language };
-            const response = await axios.get( `${ BASE_URL }/bandi/export_office_bandi_excel`, { params, responseType: 'blob', withCredentials: true } );
-            const blob = new Blob( [response.data] );
-            const url = window.URL.createObjectURL( blob );
-            const link = document.createElement( 'a' );
-            link.href = url;
-            const fileNameEn = `Bandi_Details_for_${ authState.office_en } ${ includePhoto ? '_With_Photo.xlsx' : '.xlsx' }`;
-            const fileNameNp = `${ authState.office_np } ${ includePhoto ? '_को_लागी_फोटो_सहितको_बन्दीहरुको_विवरण.xlsx' : '_को_बन्दीहरुको_विवरण.xlsx' }`;
-            link.download = `${ language === "en" ? fileNameEn : fileNameNp }`;
-            // link.download = `${ language === "en" ? "Bandi_Details.xlsx" : "बन्दी_विवरण.xlsx" }`;
-            document.body.appendChild( link );
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL( url );
-        } catch ( error ) {
-            console.error( 'Export failed:', error );
-            Swal.fire( 'Error', 'Export failed', 'error' );
-            setExporting( false );
-        } finally {
-            setExporting( false );
-        }
-    };
+
 
 
     // --------- Render ---------
@@ -196,7 +175,7 @@ const ReusableBandiTable = ( {
                         {t( "फोटो समावेश गर्नुहोस्", "Include Photo" )}
                     </label>
 
-        {/* Untouched still working */}
+                    {/* Untouched still working */}
                     {/* <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
                         {exporting ? (
                             <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
@@ -207,10 +186,20 @@ const ReusableBandiTable = ( {
                         )}
                     </Button> */}
 
-                    <ExportBandiButton
+                    {/* <ExportBandiButton
                         BASE_URL={BASE_URL}
                         authState={authState}
                         filters={filters}
+                        includePhoto={includePhoto}
+                        language={language}
+                    /> */}
+                    <ExportBandiButton
+                        BASE_URL={BASE_URL}
+                        authState={authState}
+                        filters={{
+                            ...filters,
+                            columns: selectedExportColumns, // 🔥 THIS
+                        }}
                         includePhoto={includePhoto}
                         language={language}
                     />
@@ -224,6 +213,32 @@ const ReusableBandiTable = ( {
                     <img src={photoToPreview} alt="Preview" style={{ width: "100%", maxWidth: 400, borderRadius: 8, objectFit: "contain" }} />
                 </DialogContent>
             </Dialog>
+
+            <Dialog
+                open={false} // you can control with a button
+                onClose={() => { }}
+            >
+                <DialogTitle>{t( "स्तम्भ चयन गर्नुहोस्", "Select Columns" )}</DialogTitle>
+                <DialogContent>
+                    {columns.map( col => (
+                        <label key={col.field} style={{ display: "block", marginBottom: 6 }}>
+                            <input
+                                type="checkbox"
+                                checked={selectedExportColumns.includes( col.field )}
+                                onChange={( e ) => {
+                                    setSelectedExportColumns( prev =>
+                                        e.target.checked
+                                            ? [...prev, col.field]
+                                            : prev.filter( f => f !== col.field )
+                                    );
+                                }}
+                            />
+                            {col.headerName}
+                        </label>
+                    ) )}
+                </DialogContent>
+            </Dialog>
+
 
             <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
                 <Table stickyHeader size="small">
@@ -336,3 +351,31 @@ const ReusableBandiTable = ( {
 };
 
 export default ReusableBandiTable;
+
+
+//Export Handler
+// const handleExport = async () => {
+//     try {
+//         setExporting( true );
+//         const params = { ...filters, includePhoto: includePhoto ? 1 : 0, language };
+//         const response = await axios.get( `${ BASE_URL }/bandi/export_office_bandi_excel`, { params, responseType: 'blob', withCredentials: true } );
+//         const blob = new Blob( [response.data] );
+//         const url = window.URL.createObjectURL( blob );
+//         const link = document.createElement( 'a' );
+//         link.href = url;
+//         const fileNameEn = `Bandi_Details_for_${ authState.office_en } ${ includePhoto ? '_With_Photo.xlsx' : '.xlsx' }`;
+//         const fileNameNp = `${ authState.office_np } ${ includePhoto ? '_को_लागी_फोटो_सहितको_बन्दीहरुको_विवरण.xlsx' : '_को_बन्दीहरुको_विवरण.xlsx' }`;
+//         link.download = `${ language === "en" ? fileNameEn : fileNameNp }`;
+//         // link.download = `${ language === "en" ? "Bandi_Details.xlsx" : "बन्दी_विवरण.xlsx" }`;
+//         document.body.appendChild( link );
+//         link.click();
+//         link.remove();
+//         window.URL.revokeObjectURL( url );
+//     } catch ( error ) {
+//         console.error( 'Export failed:', error );
+//         Swal.fire( 'Error', 'Export failed', 'error' );
+//         setExporting( false );
+//     } finally {
+//         setExporting( false );
+//     }
+// };
