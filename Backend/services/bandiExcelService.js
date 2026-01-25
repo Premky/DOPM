@@ -121,6 +121,10 @@ export const generateBandiExcel = async ( job, filters ) => {
         language === "en" ? "Decision Office" : "फैसला गर्ने निकाय",
         language === "en" ? "Decision Date" : "फैसला मिति",
         language === "en" ? "Contact Person" : "सम्पर्क व्यक्ति",
+        language === "en" ? "Escape Status" : "फरार भए/नभएको अवस्था",
+        language === "en" ? "Date of Escape (B.S.)" : "फरार भएको मिति (बि.सं.)",
+        language === "en" ? "Escape Details" : "फरार विवरण",
+        language === "en" ? "Re-Admitted Details" : "पुनः समातिएको विवरण",
     ];
 
     sheet.addRow( headers ).commit();
@@ -222,6 +226,10 @@ function writeBandiToSheet(sheet, b, language, genderNpMap, sn) {
                 : m.mudda_phesala_antim_office,
             m.mudda_phesala_antim_office_date,
             b.other_relatives || "",
+            b.escape_status || "",
+            b.escape_date_bs || "",
+            b.escape_method || "",
+            b.readmit_details || "",
         ])
     );
 
