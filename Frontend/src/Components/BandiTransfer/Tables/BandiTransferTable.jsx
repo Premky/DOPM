@@ -244,6 +244,8 @@ const BandiTransferTable = () => {
                                             }<hr />
                                             <br />
                                             {data.transfer_reason_np} <br />
+                                            <hr />
+                                            <br />
                                             {data.transfer_reason || ''}
                                         </TableCell>
                                         <TableCell rowSpan={rowSpan}>
