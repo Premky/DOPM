@@ -207,13 +207,13 @@ const ReusableBandiTable = ( {
                         </DialogContent>
                     </Dialog>
 
-                    <Button
+                    {/* <Button
                         variant="outlined"
                         size="small"
                         onClick={() => setColumnDialogOpen( true )}
                     >
                         {t( "स्तम्भ चयन", "Select Columns" )}
-                    </Button>
+                    </Button> */}
 
 
                     <ExportBandiButton
