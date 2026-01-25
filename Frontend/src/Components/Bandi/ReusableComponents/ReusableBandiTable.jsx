@@ -59,9 +59,13 @@ const ReusableBandiTable = ( {
     // Export state
     const [exporting, setExporting] = useState( false );
     const [exportProgress, setExportProgress] = useState( { done: 0, total: 0 } );
-    const [selectedExportColumns, setSelectedExportColumns] = useState(
-        columns.map( c => c.field ) // default: all visible columns
-    );
+    const [columnDialogOpen, setColumnDialogOpen] = useState( false );
+    const [selectedExportColumns, setSelectedExportColumns] = useState( [] );
+
+    React.useEffect( () => {
+        setSelectedExportColumns( columns.map( c => c.field ) );
+    }, [columns] );
+
 
 
     // small translation helper
@@ -175,24 +179,43 @@ const ReusableBandiTable = ( {
                         {t( "फोटो समावेश गर्नुहोस्", "Include Photo" )}
                     </label>
 
-                    {/* Untouched still working */}
-                    {/* <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
-                        {exporting ? (
-                            <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                                <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
-                            </span>
-                        ) : (
-                            t( "एक्सेल निर्यात", "Export to Excel" )
-                        )}
-                    </Button> */}
+                    <Dialog
+                        open={columnDialogOpen}
+                        onClose={() => setColumnDialogOpen( false )}
+                        maxWidth="xs"
+                        fullWidth
+                    >
 
-                    {/* <ExportBandiButton
-                        BASE_URL={BASE_URL}
-                        authState={authState}
-                        filters={filters}
-                        includePhoto={includePhoto}
-                        language={language}
-                    /> */}
+                        <DialogTitle>{t( "स्तम्भ चयन गर्नुहोस्", "Select Columns" )}</DialogTitle>
+                        <DialogContent>
+                            {columns.map( col => (
+                                <label key={col.field} style={{ display: "block", marginBottom: 6 }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedExportColumns.includes( col.field )}
+                                        onChange={( e ) => {
+                                            setSelectedExportColumns( prev =>
+                                                e.target.checked
+                                                    ? [...prev, col.field]
+                                                    : prev.filter( f => f !== col.field )
+                                            );
+                                        }}
+                                    />
+                                    {col.headerName}
+                                </label>
+                            ) )}
+                        </DialogContent>
+                    </Dialog>
+
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setColumnDialogOpen( true )}
+                    >
+                        {t( "स्तम्भ चयन", "Select Columns" )}
+                    </Button>
+
+
                     <ExportBandiButton
                         BASE_URL={BASE_URL}
                         authState={authState}
@@ -211,31 +234,6 @@ const ReusableBandiTable = ( {
                 <DialogTitle>{t( "फोटो", "Photo" )}</DialogTitle>
                 <DialogContent sx={{ textAlign: "center" }}>
                     <img src={photoToPreview} alt="Preview" style={{ width: "100%", maxWidth: 400, borderRadius: 8, objectFit: "contain" }} />
-                </DialogContent>
-            </Dialog>
-
-            <Dialog
-                open={false} // you can control with a button
-                onClose={() => { }}
-            >
-                <DialogTitle>{t( "स्तम्भ चयन गर्नुहोस्", "Select Columns" )}</DialogTitle>
-                <DialogContent>
-                    {columns.map( col => (
-                        <label key={col.field} style={{ display: "block", marginBottom: 6 }}>
-                            <input
-                                type="checkbox"
-                                checked={selectedExportColumns.includes( col.field )}
-                                onChange={( e ) => {
-                                    setSelectedExportColumns( prev =>
-                                        e.target.checked
-                                            ? [...prev, col.field]
-                                            : prev.filter( f => f !== col.field )
-                                    );
-                                }}
-                            />
-                            {col.headerName}
-                        </label>
-                    ) )}
                 </DialogContent>
             </Dialog>
 
@@ -352,6 +350,25 @@ const ReusableBandiTable = ( {
 
 export default ReusableBandiTable;
 
+
+{/* Untouched still working */ }
+{/* <Button variant="outlined" onClick={() => handleExport()} disabled={exporting}>
+                        {exporting ? (
+                            <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                                <CircularProgress size={16} /> {t( "निर्यात हुँदैछ...", "Exporting..." )}
+                            </span>
+                        ) : (
+                            t( "एक्सेल निर्यात", "Export to Excel" )
+                        )}
+                    </Button> */}
+
+{/* <ExportBandiButton
+                        BASE_URL={BASE_URL}
+                        authState={authState}
+                        filters={filters}
+                        includePhoto={includePhoto}
+                        language={language}
+                    /> */}
 
 //Export Handler
 // const handleExport = async () => {
