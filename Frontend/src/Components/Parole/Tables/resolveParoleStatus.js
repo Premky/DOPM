@@ -63,14 +63,14 @@ export const resolveParoleStatus = ( row ) => {
     if ( row.pyarole_rakhan_upayukat === "passed" ) {
         return {
             label: "बोर्डबाट पास",
-            color: "passed"
+            color: "pass"
         };
     }
 
     if ( row.pyarole_rakhan_upayukat === "failed" ) {
         return {
             label: "बोर्डबाट फेल",
-            color: "failed"
+            color: "fail"
         };
     }
 

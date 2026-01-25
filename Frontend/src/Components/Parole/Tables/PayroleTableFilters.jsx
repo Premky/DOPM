@@ -219,8 +219,8 @@ const PayroleTableFilters = ( { onChange } ) => {
                             { label: 'सबै', value: '' },
                             { label: 'योग्य', value: 'eligible' },
                             { label: 'अयोग्य', value: 'ineligible' },
-                            { label: 'पास', value: 'pass' },
-                            { label: 'फेल', value: 'fail' },
+                            { label: 'पास', value: 'passed' },
+                            { label: 'फेल', value: 'failed' },
                             { label: 'छलफल', value: 'discussion' },
                             { label: 'कागजात अपुग', value: 'incomplete_docs' }
                         ]}
