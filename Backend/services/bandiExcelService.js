@@ -189,10 +189,8 @@ export const generateBandiExcel = async ( job, filters ) => {
 function writeBandiToSheet(sheet, b, language, genderNpMap, sn) {
     const muddas = b.muddas.length ? b.muddas : [{}];
 
-    // ✅ FIX: streaming-safe start row
-    const startRow = (sheet.lastRow?.number ?? sheet.rowCount ?? 1) + 1;
-
-    muddas.forEach((m, idx) => {
+    // 1️⃣ Add rows WITHOUT committing
+    const rows = muddas.map((m, idx) =>
         sheet.addRow([
             idx === 0 ? sn : "",
             language === "en" ? b.bandi_office_en : b.bandi_office,
@@ -224,17 +222,22 @@ function writeBandiToSheet(sheet, b, language, genderNpMap, sn) {
                 : m.mudda_phesala_antim_office,
             m.mudda_phesala_antim_office_date,
             b.other_relatives || "",
-        ]).commit();
-    });
+        ])
+    );
 
-    // ✅ merge stays the same
-    if (muddas.length > 1) {
+    // 2️⃣ Merge BEFORE commit
+    if (rows.length > 1) {
+        const start = rows[0].number;
+        const end = rows[rows.length - 1].number;
+
         ["A", "B", "C", "D", "E", "F", "G"].forEach(col => {
-            sheet.mergeCells(
-                `${col}${startRow}:${col}${startRow + muddas.length - 1}`
-            );
+            sheet.mergeCells(`${col}${start}:${col}${end}`);
         });
     }
+
+    // 3️⃣ NOW commit rows
+    rows.forEach(r => r.commit());
 }
+
 
 
