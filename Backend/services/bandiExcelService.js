@@ -183,6 +183,8 @@ export const generateBandiExcel = async ( job, filters ) => {
     }
     if ( bandiBuffer ) {
         const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
+        const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
+        const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
         writeBandiToSheet( sheet, bandiBuffer, language, genderNpMap, sn++ );
     }
 
@@ -226,7 +228,7 @@ function writeBandiToSheet(sheet, b, language, genderNpMap, sn) {
                 : m.mudda_phesala_antim_office,
             m.mudda_phesala_antim_office_date,
             b.other_relatives || "",
-            b.escape_status || "",
+            language === "en" ? escapeStatusEnMap[b.escape_status] : escapeStatusNpMap[b.escape_status] || "",
             b.escape_date_bs || "",
             b.escape_method || "",
             b.readmit_details || "",
