@@ -149,113 +149,113 @@ const PayroleTable = ( { status } ) => {
 
             <Box>जम्मा: {totalKaidi}</Box>
 
-            {/* <TableContainer component={Paper} sx={{ maxHeight: "70vh", overflowX: "auto" }}> */}
-            <Table size="small" sx={{ tableLayout: 'fixed', minWidth: 1800 }}>
-                <TableHead>
-                    <TableRow sx={{ backgroundColor: grey }}>
-                        {!isCheckboxNotVisible && (
+            <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }} component={Paper}>
+                <Table size="small" stickyHeader sx={{ tableLayout: "fixed" }} border={1}>
+                    <TableHead>
+                        <TableRow sx={{ backgroundColor: grey }}>
+                            {!isCheckboxNotVisible && (
+                                <TableCell
+                                    sx={stickyStyle( 0, 5 )}
+                                >
+                                    ✓
+                                </TableCell>
+                            )}
+
                             <TableCell
-                                sx={stickyStyle( 0, 5 )}
+                                sx={stickyStyle( isCheckboxNotVisible ? 0 : 50, 5 )}
                             >
-                                ✓
+                                सि.नं.
                             </TableCell>
-                        )}
 
-                        <TableCell
-                            sx={stickyStyle( isCheckboxNotVisible ? 0 : 50, 5 )}
-                        >
-                            सि.नं.
-                        </TableCell>
-
-                        <TableCell
-                            sx={stickyStyle( isCheckboxNotVisible ? 50 : 100, 5 )}
-                        >
-                            स्थिति
-                        </TableCell>
+                            <TableCell
+                                sx={stickyStyle( isCheckboxNotVisible ? 50 : 100, 5 )}
+                            >
+                                स्थिति
+                            </TableCell>
 
 
-                        <TableCell
-                            sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 5 )}
-                        >
-                            कारागार
-                        </TableCell>
+                            <TableCell
+                                sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 5 )}
+                            >
+                                कारागार
+                            </TableCell>
 
-                        <TableCell
-                            sx={stickyStyle( isCheckboxNotVisible ? 160 : 250, 5 )}
-                        >
-                            बन्दीको नाम
-                        </TableCell>
-                        <TableCell>
-                            बन्दी ID
-                        </TableCell>
+                            <TableCell
+                                sx={stickyStyle( isCheckboxNotVisible ? 160 : 250, 5 )}
+                            >
+                                बन्दीको नाम
+                            </TableCell>
+                            <TableCell>
+                                बन्दी ID
+                            </TableCell>
 
-                        <TableCell>उमेर/लिङ्ग</TableCell>
-                        {/* <TableCell>लिङ्ग</TableCell> */}
-                        <TableCell>राष्ट्रियता</TableCell>
-                        <TableCell>मुद्दाको नाम/नं.</TableCell>
-                        <TableCell>जाहेरवाला</TableCell>
-                        <TableCell>अन्तिम फैसला</TableCell>
-                        <TableCell>थुना परेको मिति</TableCell>
-                        <TableCell>कैद अवधि</TableCell>
-                        <TableCell>कैद पुरा हुने मिति</TableCell>
-                        <TableCell>भुक्तान कैद</TableCell>
-                        <TableCell>प्यारोलमा राख्नुपर्ने अवधि</TableCell>
-                        <TableCell>पुनरावेदन प्रमाण</TableCell>
-                        <TableCell>जरिबाना</TableCell>
-                        <TableCell>कैफियत</TableCell>
-                        {/* <TableCell>अदालतको निर्णय</TableCell> */}
-                        <TableCell>#</TableCell>
-                    </TableRow>
-                </TableHead>
+                            <TableCell>उमेर/लिङ्ग</TableCell>
+                            {/* <TableCell>लिङ्ग</TableCell> */}
+                            <TableCell>राष्ट्रियता</TableCell>
+                            <TableCell>मुद्दाको नाम/नं.</TableCell>
+                            <TableCell>जाहेरवाला</TableCell>
+                            <TableCell>अन्तिम फैसला</TableCell>
+                            <TableCell>थुना परेको मिति</TableCell>
+                            <TableCell>कैद अवधि</TableCell>
+                            <TableCell>कैद पुरा हुने मिति</TableCell>
+                            <TableCell>भुक्तान कैद</TableCell>
+                            <TableCell>प्यारोलमा राख्नुपर्ने अवधि</TableCell>
+                            <TableCell>पुनरावेदन प्रमाण</TableCell>
+                            <TableCell>जरिबाना</TableCell>
+                            <TableCell>कैफियत</TableCell>
+                            {/* <TableCell>अदालतको निर्णय</TableCell> */}
+                            <TableCell>#</TableCell>
+                        </TableRow>
+                    </TableHead>
 
-                <TableBody>
-                    {!loading &&
-                        data.map( ( row, i ) => (
-                            <PayroleRow
-                                key={row.payrole_id}
-                                data={row}
-                                index={page * rowsPerPage + i + 1}
-                                kaidiMuddas={fetchedMuddas[row.bandi_id] || []}
-                                bandiFines={fetchedFines[row.bandi_id] || []}
-                                bandiNoPunarabedan={fetchedNoPunarabedan[row.bandi_id] || []}
-                                isCheckboxNotVisible={isCheckboxNotVisible}
-                                onCheck={( id, value ) => handleCheckboxChange( id, value )}
-                                onMenuOpen={handleMenuOpen}
-                            />
-                        ) )}
-                </TableBody>
-            </Table>
-            {/* </TableContainer> */}
+                    <TableBody>
+                        {!loading &&
+                            data.map( ( row, i ) => (
+                                <PayroleRow
+                                    key={row.payrole_id}
+                                    data={row}
+                                    index={page * rowsPerPage + i + 1}
+                                    kaidiMuddas={fetchedMuddas[row.bandi_id] || []}
+                                    bandiFines={fetchedFines[row.bandi_id] || []}
+                                    bandiNoPunarabedan={fetchedNoPunarabedan[row.bandi_id] || []}
+                                    isCheckboxNotVisible={isCheckboxNotVisible}
+                                    onCheck={( id, value ) => handleCheckboxChange( id, value )}
+                                    onMenuOpen={handleMenuOpen}
+                                />
+                            ) )}
+                    </TableBody>
+                </Table>
+                </TableContainer>
 
-            <TablePagination
-                component="div"
-                count={totalKaidi}
-                page={page}
-                rowsPerPage={rowsPerPage}
-                onPageChange={( _, p ) => setPage( p )}
-                onRowsPerPageChange={( e ) => {
-                    setRowsPerPage( parseInt( e.target.value, 10 ) );
-                    setPage( 0 );
-                }}
-                rowsPerPageOptions={[50, 100, 200, 500, 1000]}
-            />
+                <TablePagination
+                    component="div"
+                    count={totalKaidi}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={( _, p ) => setPage( p )}
+                    onRowsPerPageChange={( e ) => {
+                        setRowsPerPage( parseInt( e.target.value, 10 ) );
+                        setPage( 0 );
+                    }}
+                    rowsPerPageOptions={[50, 100, 200, 500, 1000]}
+                />
 
-            <Menu
-                anchorEl={menuAnchorEl}
-                open={Boolean( menuAnchorEl )}
-                onClose={handleMenuClose}
-            >
-                {menuRowData && (
-                    <PayroleActionMenu
-                        oldStatus={status}
-                        data={menuRowData}
-                        onClose={handleMenuClose}
-                        refetchAll={refetchAll}
-                    />
-                )}
-            </Menu>
-        </>
-    );
+                <Menu
+                    anchorEl={menuAnchorEl}
+                    open={Boolean( menuAnchorEl )}
+                    onClose={handleMenuClose}
+                >
+                    {menuRowData && (
+                        <PayroleActionMenu
+                            oldStatus={status}
+                            data={menuRowData}
+                            onClose={handleMenuClose}
+                            refetchAll={refetchAll}
+                        />
+                    )}
+                </Menu>
+            </>
+            );
 };
 
-export default PayroleTable;
+            export default PayroleTable;
