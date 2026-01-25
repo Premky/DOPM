@@ -145,11 +145,13 @@ export const generateBandiExcel = async ( job, filters ) => {
 
         if ( !rows.length ) break;
         const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
+        const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
+        const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
 
         for ( const row of rows ) {
             if ( row.bandi_id !== lastBandiId ) {
                 if ( bandiBuffer ) {
-                    writeBandiToSheet( sheet, bandiBuffer, language, genderNpMap, sn++ );
+                    writeBandiToSheet( sheet, bandiBuffer, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn++ );
                 }
 
                 bandiBuffer = { ...row, muddas: [] };
@@ -185,14 +187,14 @@ export const generateBandiExcel = async ( job, filters ) => {
         const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
         const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
         const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
-        writeBandiToSheet( sheet, bandiBuffer, language, genderNpMap, sn++ );
+        writeBandiToSheet( sheet, bandiBuffer, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn++ );
     }
 
     await workbook.commit();
 
     return filePath; // return path for download
 };
-function writeBandiToSheet(sheet, b, language, genderNpMap, sn) {
+function writeBandiToSheet(sheet, b, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn) {
     const muddas = b.muddas.length ? b.muddas : [{}];
 
     // 1️⃣ Add rows WITHOUT committing
