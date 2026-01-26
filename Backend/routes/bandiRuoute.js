@@ -816,7 +816,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
     if ( nationality !== null ) conditions.push( "nationality = ?" ), params.push( nationality );
     if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
-    if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
+    // if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
+    if ( gender ) conditions.push( "gender = ?" ), params.push( gender );
     if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
     if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
     if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
