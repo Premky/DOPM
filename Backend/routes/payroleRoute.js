@@ -469,6 +469,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
             searchpayrole_no_id,
             searchbandi_name,
             searchcourt_decision,
+            searchmudda_id,
             searchis_checked,
             nationality,
             searchOffice,
@@ -514,6 +515,14 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         ) {
             where += ` AND payrole_no_id = ? `;
             params.push( searchpayrole_no_id );
+        }
+        if (
+            searchmudda_id &&
+            searchmudda_id !== 'all' &&
+            searchmudda_id !== '0'
+        ) {
+            where += ` AND mudda_id = ? `;
+            params.push( searchmudda_id );
         }
 
         if ( searchbandi_name ) { where += ` AND bandi_name LIKE ?`; params.push( `%${ searchbandi_name }%` ); }

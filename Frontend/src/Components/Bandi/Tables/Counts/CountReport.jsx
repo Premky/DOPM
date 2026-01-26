@@ -174,7 +174,34 @@ const CountReport = () => {
                                 />
                             </Grid>
 
-                            {/* <Grid container size={{ xs: 12, sm: 4 }}>
+                           
+
+                            <Grid xs={12}>
+                                <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+                                    रिपोर्ट लिई ल्याउनुहोस्
+                                </Button>
+                                <Button onClick={ExportCountReport} variant="outlined" sx={{ mt: 2, ml: 2 }}>
+                                    एक्सेल निर्यात
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </form>
+                </Box>
+            </Grid>
+            <Grid container>
+                <Suspense fallback={<div>Loading...</div>}>
+                    {!isLoading && <LazyCountAcMuddaTableBody records={records} totals={totals} />}
+                </Suspense>
+            </Grid>
+        </>
+    );
+};
+
+export default CountReport;
+
+
+
+ {/* <Grid container size={{ xs: 12, sm: 4 }}>
                                 <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseDatePickerBS
                                         name="startDate"
@@ -220,26 +247,3 @@ const CountReport = () => {
                                     )}
                                 />
                             </Grid> */}
-
-                            <Grid xs={12}>
-                                <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                                    रिपोर्ट लिई ल्याउनुहोस्
-                                </Button>
-                                <Button onClick={ExportCountReport} variant="outlined" sx={{ mt: 2, ml: 2 }}>
-                                    एक्सेल निर्यात
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </form>
-                </Box>
-            </Grid>
-            <Grid container>
-                <Suspense fallback={<div>Loading...</div>}>
-                    {!isLoading && <LazyCountAcMuddaTableBody records={records} totals={totals} />}
-                </Suspense>
-            </Grid>
-        </>
-    );
-};
-
-export default CountReport;
