@@ -518,7 +518,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         }
         if (
             searchmudda_id &&
-            searchmudda_id !== 'all' &&
+            searchmudda_id !== '' &&
             searchmudda_id !== '0'
         ) {
             where += ` AND mudda_id = ? `;
