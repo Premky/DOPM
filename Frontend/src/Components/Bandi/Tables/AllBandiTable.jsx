@@ -10,10 +10,11 @@ import NepaliDate from 'nepali-datetime';
 import '../../../index.css';
 import { useNavigate, Link } from 'react-router-dom';
 import fetchMuddaGroups from '../../ReuseableComponents/FetchApis/fetchMuddaGroups';
-import { finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
+import { calculateBSDate, finalReleaseDateWithFine } from '../../../../Utils/dateCalculator';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { event } from 'jquery';
 import fetchBandiStatus from '../../ReuseableComponents/FetchApis/fetchBandiStatus';
+import { age_array } from '../ReusableComponents/age_array';
 const ReuseKaragarOffice = React.lazy( () => import( '../../ReuseableComponents/ReuseKaragarOffice' ) );
 const ReuseSelect = React.lazy( () => import( '../../ReuseableComponents/ReuseSelect' ) );
 const ReuseInput = React.lazy( () => import( '../../ReuseableComponents/ReuseInput' ) );
@@ -28,6 +29,7 @@ const AllBandiTable = () => {
     const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
     const { records: muddaGroups, optrecords: mudaGroupsOpt, loading: muddaGroupsLoading } = fetchMuddaGroups();
     const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
+
     useEffect( () => {
         setValue( 'searchOffice', authState.office_id | '' );
     }, [authState] );
@@ -79,13 +81,17 @@ const AllBandiTable = () => {
     let is_active = watch( 'is_active' );
     const is_dependent = watch( 'is_dependent' );
     const mudda_group_id = watch( 'mudda_group_id' );
+    const age_above = watch( 'age_above' );
+    const age_below = watch( 'age_below' );
     const is_escape = watch( 'is_escape' );
     //Watch Variables
 
     //Params for API
     const filters = {
         searchOffice, bandi_status, nationality, country, search_name,
-        gender, bandi_type, is_active, is_dependent, mudda_group_id, is_escape
+        gender, bandi_type, is_active, is_dependent, mudda_group_id, is_escape,
+        age_above, age_below
+
     };
 
 
@@ -102,7 +108,8 @@ const AllBandiTable = () => {
                 params: {
                     searchOffice, bandi_status, nationality, country,
                     gender, bandi_type, search_name,
-                    is_active, is_dependent, mudda_group_id, is_escape
+                    is_active, is_dependent, mudda_group_id, is_escape,
+                    age_above, age_below
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
@@ -153,7 +160,8 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         // fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender, is_active, mudda_group_id, is_escape] );
+    }, [page, rowsPerPage, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender,
+        is_active, mudda_group_id, is_escape, age_above, age_below] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -193,6 +201,9 @@ const AllBandiTable = () => {
             field: "bandi_office", headerName: "कारागार कार्यालय", width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
+                const totalKaidDuration = calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 );
+                const totalBakiDuration = calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) );
+
                 if ( row.bandi_office == row.arrested_office ) {
                     return row.bandi_office;
                 } else {
@@ -273,7 +284,7 @@ const AllBandiTable = () => {
                 return type || ''; //fallback for unexpected values 
             }
         },
-        { field: "total_jariwana_amount", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },
+        { field: "total_fine", headerName: "जरिवाना (तिर्न बाँकी)", width: 100 },
         { field: "thuna_date_bs", headerName: "थुना परेको मिति", width: 100 },
         {
             field: "release_date_bs", headerName: "कैदमुक्त मिति", width: 100,
@@ -290,15 +301,17 @@ const AllBandiTable = () => {
         },
         {
             field: "remaining_days_to_release",
-            headerName: "कैदमुक्त हुन बाँकी दिन (जरिवाना समेत)",
+            headerName: "बाँकी कैद % (जरिवाना समेत)",
             width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
-                return `${ finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0 }`;
+                // return `${ finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_fine ) || 0 }`;
+                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
             },
             sortValue: ( row ) => {
+                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
                 // sorting based on the computed numeric value
-                return finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0;
+                // return finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_fine ) || 0;
             }
         }
 
@@ -381,7 +394,7 @@ const AllBandiTable = () => {
         { field: "card_no", headerName: "Identity Card No.", width: 100 },
         { field: "current_age", headerName: "Age", width: 100 },
         { field: "gender", headerName: "Gender", width: 100 },
-        { field: "total_jariwana_amount", headerName: "Fine (if due)", width: 100 },
+        { field: "total_fine", headerName: "Fine (if due)", width: 100 },
         { field: "thuna_date_bs", headerName: "Date of arrest", width: 100 },
         {
             field: "release_date_bs", headerName: "Release date", width: 100,
@@ -398,18 +411,19 @@ const AllBandiTable = () => {
         },
         {
             field: "remaining_days_to_release",
-            headerName: "Remaining Days to Release (Including Fine)",
+            headerName: "Remaining % (Including Fine)",
             width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
-                return `${ finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0 }`;
+                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, 
+                            calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
             },
             sortValue: ( row ) => {
                 // sorting based on the computed numeric value
-                return finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_jariwana_amount ) || 0;
+                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, 
+                            calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
             }
         }
-
     ];
 
     if ( language == 'en' ) {
@@ -564,6 +578,27 @@ const AllBandiTable = () => {
                             options={mudaGroupsOpt}
                         />
                     </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="age_above"
+                            label='उमेर (माथि)'
+                            control={control}
+                            options={age_array}
+                            defaultValue={''}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="age_below"
+                            label='उमेर (तल)'
+                            control={control}
+                            options={age_array}
+                            defaultValue={''}
+                        />
+                    </Grid>
+                    <Grid container size={{ xs: 12 }}>
+
+                    </Grid>
 
 
                     <Grid size={{ xs: 6 }} mt={3}>
@@ -574,6 +609,7 @@ const AllBandiTable = () => {
                         </Button>
                     </Grid>
                 </Grid>
+
                 {/* </form> */}
             </Box>
             {/* <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}> */}
