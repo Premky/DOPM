@@ -11,6 +11,7 @@ import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { useAuth } from '../../../Context/AuthContext';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
 import fetchBandiStatus from '../../ReuseableComponents/FetchApis/fetchBandiStatus';
+import { age_array } from '../ReusableComponents/age_array';
 //Export data to Excel
 const exportMaskebari = async () => {
   await exportToExcel( releasedCounts, records, totals, foreignrecords, foreignTotals, fy, fm );
@@ -25,9 +26,11 @@ const BandiMaskebari = () => {
   const searchStartDate = watch( 'start_date' );
   const searchEndDate = watch( 'end_date' );
   const bandi_status = watch( 'bandi_status' );
+  const age_above = watch( 'age_above' );
+  const age_below = watch( 'age_below' );
 
   const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
-  
+
   //decounced Variables, so update only happens after given interval of time
   const [debounceKaragarOffice] = useDebounce( searchKaragarOffice, 100 );
   const [debounceStartDate] = useDebounce( searchStartDate, 300 );
@@ -39,9 +42,10 @@ const BandiMaskebari = () => {
     searchKaragarOffice: debounceKaragarOffice,
     searchStartDate: debounceStartDate,
     searchEndDate: deobounceEndDate,
-    bandi_status
-  } ), [debounceKaragarOffice, debounceStartDate, deobounceEndDate, bandi_status] );
+    bandi_status, age_above, age_below
+  } ), [debounceKaragarOffice, debounceStartDate, deobounceEndDate, bandi_status, age_above, age_below] );
 
+  // console.log(filters)
   return (
     <Box>
       <form>
@@ -81,6 +85,25 @@ const BandiMaskebari = () => {
               ]}
 
               defaultValue={1}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 3}}>
+            <ReuseSelect
+              name="age_above"
+              label='उमेर (माथि)'
+              control={control}
+              options={age_array}
+              defaultValue={''}
+            />
+          </Grid>
+          <Grid size={{ xs: 3 }}>
+            <ReuseSelect
+              name="age_below"
+              label='उमेर (तल)'
+              control={control}
+              options={age_array}
+              defaultValue={''}
             />
           </Grid>
 

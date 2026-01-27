@@ -7,6 +7,7 @@ import useFetchCountAcToCountry from '../../Apis_to_fetch/useFetchCountAcToCount
 import { useForm } from 'react-hook-form';
 import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 import fetchBandiStatus from '../../../ReuseableComponents/FetchApis/fetchBandiStatus';
+import { age_array } from '../../ReusableComponents/age_array';
 
 const CountAcOfficenCountry = () => {
   const { state } = useAuth();
@@ -14,10 +15,15 @@ const CountAcOfficenCountry = () => {
 
   //Watch Variables//
   const bandi_status = watch( 'bandi_status', 1 ); // default value
+  const age_above = watch( 'age_above' );
+  const age_below = watch( 'age_below' );
 
   const filters = useMemo( () => ( {
-    bandi_status
-  } ), [bandi_status] );
+    bandi_status,
+    age_above,
+    age_below
+
+  } ), [bandi_status, age_above, age_below] );
 
   const { records: countries } = useFetchCountryAcToOffice( filters );
   const { records: count_ac_country } = useFetchCountAcToCountry( bandi_status, filters );
@@ -128,6 +134,25 @@ const CountAcOfficenCountry = () => {
                 defaultValue={1}
               />
             </Grid>
+            <Grid size={{ xs: 3 }}>
+              <ReuseSelect
+                name="age_above"
+                label='उमेर (माथि)'
+                control={control}
+                options={age_array}
+                defaultValue={''}
+              />
+            </Grid>
+            <Grid size={{ xs: 3 }}>
+              <ReuseSelect
+                name="age_below"
+                label='उमेर (तल)'
+                control={control}
+                options={age_array}
+                defaultValue={''}
+              />
+            </Grid>
+
             <Grid size={{ xs: 4 }}>
               <br /> <br />
               <Button variant="contained" onClick={handleExport} sx={{ mb: 2 }}>

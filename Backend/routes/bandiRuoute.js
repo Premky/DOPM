@@ -785,7 +785,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const nationality = toInt( req.query.nationality );
     const country = toInt( req.query.country );
     const gender = req.query.gender;
-    const bandi_type =  req.query.bandi_type ;
+    const bandi_type = req.query.bandi_type;
     const mudda_group_id = toInt( req.query.mudda_group_id );
     const is_dependent = toInt( req.query.is_dependent );
     const is_escape = req.query.is_escape || '';
@@ -2903,7 +2903,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         const defaultAge = 65;
         const defaultOfficeCategory = 2;
 
-        let { nationality, ageFrom, ageTo, office_id, startDate, endDate, bandi_status } = req.query;
+        let { nationality, office_id, startDate, endDate, bandi_status, age_above, age_below } = req.query;
 
         if ( !startDate && !endDate ) {
             startDate = '1000-01-01';
@@ -2936,8 +2936,11 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         if ( nationality ) {
             extraSubqueryFilters += ' AND bp.nationality = ' + pool.escape( nationality.trim() );
         }
-        if ( ageFrom && ageTo ) {
-            extraSubqueryFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ${ Number( ageFrom ) } AND ${ Number( ageTo ) }`;
+        if ( age_above ) {
+            extraSubqueryFilters += ' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= ' + pool.escape( parseInt( age_above ) );
+        }
+        if ( age_below ) {
+            extraSubqueryFilters += ' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) < ' + pool.escape( parseInt( age_below ) );
         }
 
         const sql = `
@@ -3045,7 +3048,7 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
 
-    let { startDate, endDate, ageFrom, ageTo, office_id, bandi_status } = req.query;
+    let { startDate, endDate, age_above, age_below, office_id, bandi_status } = req.query;
     const params = [];
 
     if ( !startDate ) startDate = '1001-01-01';
@@ -3057,6 +3060,13 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
     let commonFilters = '';
     if ( bandi_status ) {
         commonFilters += ` AND bp.bandi_status='${ bandi_status }'`;
+    }
+
+    if ( age_above ) {
+        commonFilters += ' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= ' + pool.escape( parseInt( age_above ) );
+    }
+    if ( age_below ) {
+        commonFilters += ' AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) < ' + pool.escape( parseInt( age_below ) );
     }
 
     // Office filter
@@ -3649,8 +3659,8 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
         endDate,
         bandi_status,
         nationality,
-        ageFrom,
-        ageTo,
+        age_above,
+        age_below,
         office_id // optional for super admin
     } = req.query;
 
@@ -3707,7 +3717,7 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     `;
 
     // Only include main and last mudda to avoid duplicates
-    filters.push( "bp.is_active = 1" );
+    // filters.push( "bp.is_active = 1" );
     filters.push( "bp.is_under_payrole!=1" );
     // filters.push(
     //     "(bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda = 1 AND bmd.is_last_mudda = 0) OR (bmd.is_main_mudda = 0 AND bmd.is_last_mudda = 1) OR (bmd.is_main_mudda=0 AND bmd.is_last_mudda=0)"
@@ -3715,9 +3725,19 @@ router.get( '/get_prisioners_count', verifyToken, async ( req, res ) => {
     // filters.push( "bmd.is_last_mudda = 1" );
 
     // Age filter
-    if ( ageFrom && ageTo ) {
-        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
-        params.push( Number( ageFrom ), Number( ageTo ) );
+    // if ( ageFrom && ageTo ) {
+    //     filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?" );
+    //     params.push( Number( ageFrom ), Number( ageTo ) );
+    // }
+
+    if ( age_above ) {
+        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= ?" );
+        params.push( Number( age_above ) );
+    }
+
+    if ( age_below ) {
+        filters.push( "TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) < ?" );
+        params.push( Number( age_below ) );
     }
 
     // Bandi status filter
@@ -3799,9 +3819,10 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     const active_office = req.user.office_id;
     const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
 
-    let { startDate, endDate, nationality, ageFrom, ageTo, office_id, bandi_status } = req.query;
+    let { startDate, endDate, nationality, age_above, age_below, office_id, bandi_status } = req.query;
 
-    const filters = ['bp.is_active = 1'];
+    // const filters = ['bp.is_active = 1'];
+    const filters = ['1 = 1'];
     const params = [];
 
     // Default date logic
@@ -3845,9 +3866,13 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
     }
 
     // Optional age filter
-    if ( ageFrom && ageTo ) {
-        filters.push( `TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?` );
-        params.push( Number( ageFrom ), Number( ageTo ) );
+    if ( age_above ) {
+        filters.push( `TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= ?` );
+        params.push( Number( age_above ) );
+    }
+    if ( age_below ) {
+        filters.push( `TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) < ?` );
+        params.push( Number( age_below ) );
     }
 
     // Final SQL with dynamic country counts

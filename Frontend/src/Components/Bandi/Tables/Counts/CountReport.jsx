@@ -11,6 +11,7 @@ import ReuseSelect from '../../../ReuseableComponents/ReuseSelect';
 
 import { exportToExcel } from './ExportCountToExcel';
 import fetchBandiStatus from '../../../ReuseableComponents/FetchApis/fetchBandiStatus';
+import { age_array } from '../../ReusableComponents/age_array';
 
 const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
 const fyy = new NepaliDate().format( 'YYYY' );
@@ -40,6 +41,8 @@ const CountReport = () => {
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
+    const age_above = watch( 'age_above' );
+    const age_below = watch( 'age_below' );
 
     const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
 
@@ -54,8 +57,8 @@ const CountReport = () => {
                 // office_id: selectedOffice || '', // Optional filter
                 bandi_status: data?.bandi_status || '',     // Optional filter
                 nationality: data?.nationality || '',     // Optional filter
-                ageFrom: data?.ageFrom || '',             // Optional filter
-                ageTo: data?.ageTo || '',                 // Optional filter
+                age_above: data?.age_above || '',             // Optional filter
+                age_below: data?.age_below || '',                 // Optional filter
             } );
 
             // console.log(office_id)
@@ -112,9 +115,9 @@ const CountReport = () => {
 
     useEffect( () => {
         startTransition( () => {
-            fetchRecords( { startDate, endDate, selectedOffice, bandi_status, nationality } );
+            fetchRecords( { startDate, endDate, selectedOffice, bandi_status, nationality, age_above, age_below } );
         } );
-    }, [startDate, endDate, selectedOffice, bandi_status, nationality] );
+    }, [startDate, endDate, selectedOffice, bandi_status, nationality, age_above, age_below] );
 
     const onSubmit = ( formData ) => {
         fetchRecords( formData );
@@ -162,6 +165,25 @@ const CountReport = () => {
                                 />
                             </Grid>
 
+                            <Grid size={{ xs: 12, sm: 2 }}>
+                                <ReuseSelect
+                                    name="age_above"
+                                    label='उमेर (माथि)'
+                                    control={control}
+                                    options={age_array}
+                                    defaultValue={''}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 2 }}>
+                                <ReuseSelect
+                                    name="age_below"
+                                    label='उमेर (तल)'
+                                    control={control}
+                                    options={age_array}
+                                    defaultValue={''}
+                                />
+                            </Grid>
+
                             <Grid size={{ xs: 12, sm: 4 }}>
                                 <ReuseSelect
                                     name="nationality"
@@ -174,7 +196,7 @@ const CountReport = () => {
                                 />
                             </Grid>
 
-                           
+
 
                             <Grid xs={12}>
                                 <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
@@ -201,7 +223,7 @@ export default CountReport;
 
 
 
- {/* <Grid container size={{ xs: 12, sm: 4 }}>
+{/* <Grid container size={{ xs: 12, sm: 4 }}>
                                 <Grid size={{ xs: 12, sm: 6 }}>
                                     <ReuseDatePickerBS
                                         name="startDate"
@@ -218,32 +240,4 @@ export default CountReport;
                                 </Grid>
                             </Grid>
 
-                            <Grid xs={6} sm={3}>
-                                <Controller
-                                    name="ageFrom"
-                                    control={control}
-                                    render={( { field } ) => (
-                                        <TextField
-                                            {...field}
-                                            label="Min Age"
-                                            fullWidth
-                                            type="number"
-                                        />
-                                    )}
-                                />
-                            </Grid>
-
-                            <Grid xs={6} sm={3}>
-                                <Controller
-                                    name="ageTo"
-                                    control={control}
-                                    render={( { field } ) => (
-                                        <TextField
-                                            {...field}
-                                            label="Max Age"
-                                            fullWidth
-                                            type="number"
-                                        />
-                                    )}
-                                />
-                            </Grid> */}
+                             */}

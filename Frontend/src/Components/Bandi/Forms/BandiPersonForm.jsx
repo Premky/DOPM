@@ -362,6 +362,7 @@ const BandiPersonForm = () => {
                 label="दाखिला मिति"
                 required={true}
                 control={control}
+                maxDate={formattedDateNp}
                 error={errors.enrollment_date_bs}
               />
             </Grid>
@@ -412,7 +413,8 @@ const BandiPersonForm = () => {
             <Grid container size={{ xs: 12, sm: 6, md: 3 }}>
               <Grid size={{ xs: 10, sm: 9, md: 8 }}>
                 {/* <ReuseDatePickerBS */}
-                <ReuseDatePickerBSsmV5
+                {/* <ReuseDatePickerBSsmV5 */}
+                <ReuseDateField
                   name="dob"
                   label="जन्म मिति (वि.सं.)"
                   placeholder={"YYYY-MM-DD"}
@@ -583,8 +585,8 @@ const BandiPersonForm = () => {
 
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     {/* <ReuseDatePickerBs */}
-                    {/* <ReuseDateField */}
-                    <ReuseDatePickerSMV5
+                    {/* <ReuseDatePickerSMV5 */}
+                    <ReuseDateField
                       name={`thuna_date_bs_${ index + 1 }`}
                       label='थुना/कैद परेको मिती'
                       placeholder={'YYYY-MM-DD'}
@@ -659,6 +661,7 @@ const BandiPersonForm = () => {
                           placeholder="YYYY-MM-DD"
                           required={true}
                           control={control}
+                          maxDate={formattedDateNp}
                           error={errors[`mudda_phesala_date_${ index + 1 }`]}
                         />
                       </Grid>
@@ -833,7 +836,8 @@ const BandiPersonForm = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             {/* <ReuseDatePickerBs */}
-            <ReuseDatePickerBSsmV5
+            {/* <ReuseDatePickerBSsmV5 */}
+            <ReuseDateField
               name='hirasat_date_bs'
               label='थुना/कैद परेको मिती'
               placeholder={'YYYY-MM-DD'}
@@ -961,6 +965,7 @@ const BandiPersonForm = () => {
               // required={idcardtype !== 6 || idcardtype==''}
               required={false}
               control={control}
+              maxDate={formattedDateNp}
               error={errors.card_issue_date}
             />
           </Grid>
@@ -1117,11 +1122,13 @@ const BandiPersonForm = () => {
 
                 {isDependent === 1 && (
                   <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                    <ReuseDatePickerBs
+                    {/* <ReuseDatePickerBs */}
+                    <ReuseDateField
                       name={`family[${ index }].bandi_relative_dob`}
                       label="जन्म मिति"
                       type="number"
                       control={control}
+                      maxDate={formattedDateNp}
                       error={errors?.family?.[index]?.bandi_relative_dob}
                     />
                   </Grid>
@@ -1352,6 +1359,7 @@ const BandiPersonForm = () => {
                               placeholder="YYYY-MM-DD"
                               required={true}
                               control={control}
+                              maxDate={formattedDateNp}
                               error={errors?.fine?.[index]?.fine_paid_date}
                             />
                           </Grid>
@@ -1613,6 +1621,7 @@ const BandiPersonForm = () => {
                   label="बिमा देखी"
                   required={true}
                   control={control}
+                  maxDate={formattedDateNp}
                   error={errors.insurance_from}
                 />
               </Grid>
@@ -1621,7 +1630,7 @@ const BandiPersonForm = () => {
                 {/* <ReuseDatePickerBs */}
                 <ReuseDateField
                   name="insurance_to"
-                  label="बिमा देखी"
+                  label="बिमा सम्म"
                   required={true}
                   control={control}
                   error={errors.insurance_to}

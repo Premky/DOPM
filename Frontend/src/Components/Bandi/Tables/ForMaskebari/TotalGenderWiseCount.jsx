@@ -3,7 +3,7 @@ import { Box, Grid, TableContainer, Table, TableHead, TableBody, TableCell, Tabl
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 
 const TotalGenderWiseCount = ({filters}) => {
-    // console.log(filters)
+    console.log(filters)
     const { totals, countLoading } = UseBandiTotalCountACoffice(filters);
     // console.log( totals );
     return (

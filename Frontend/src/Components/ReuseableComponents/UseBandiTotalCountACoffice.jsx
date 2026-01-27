@@ -10,6 +10,7 @@ const UseBandiTotalCountACoffice = (filters={}) => {
   // console.log(filters?.searchStartDate)
 
   useEffect(() => {
+    
     const fetchRecords = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/bandi/get_office_wise_count`, {
@@ -18,6 +19,8 @@ const UseBandiTotalCountACoffice = (filters={}) => {
             startDate: filters?.searchStartDate || '',
             endDate: filters?.searchEndDate || '',
             bandi_status: filters?.bandi_status || '',
+            age_above: filters?.age_above || '',
+            age_below: filters?.age_below || '',
             _t: Date.now(),
           },
           withCredentials: true
@@ -33,7 +36,7 @@ const UseBandiTotalCountACoffice = (filters={}) => {
     if (filters) {
       fetchRecords();
     }
-  }, [BASE_URL, filters?.searchKaragarOffice, filters?.searchStartDate, filters?.searchEndDate, filters?.bandi_status]);
+  }, [BASE_URL, filters?.searchKaragarOffice, filters?.searchStartDate, filters?.searchEndDate, filters?.bandi_status, filters?.age_above, filters?.age_below]);
 
   const totals = count.reduce((acc, curr) => {
     Object.keys(curr).forEach((key) => {

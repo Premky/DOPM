@@ -194,7 +194,7 @@ const ReusableBandiTable = ( {
                         />
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 3 }}>
+                    {/* <Grid size={{ xs: 12, sm: 3 }}>
                         <Select
                             label='भुक्तान प्रतिसत (माथि)'
                             value={percentageAbove}
@@ -219,7 +219,7 @@ const ReusableBandiTable = ( {
                                 </MenuItem>
                             ) )}
                         </Select>
-                    </Grid>
+                    </Grid> */}
 
 
                     <label style={{ display: "flex", alignItems: "center", gap: 8 }}>

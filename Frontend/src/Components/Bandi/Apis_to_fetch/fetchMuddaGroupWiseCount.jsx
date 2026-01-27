@@ -73,8 +73,8 @@ const fetchMuddaGroupWiseCount = ( { filters } ) => {
                 office_id: filters.selectedOffice || '',
                 bandi_status: filters.bandi_status || '',
                 nationality: filters.nationality || '',
-                ageFrom: filters.ageFrom || '',
-                ageTo: filters.ageTo || '',
+                age_above: filters.age_above || '',
+                age_below: filters.age_below || '',
             } );
 
             const fullUrl = `${ BASE_URL }/bandi/get_prisioners_count_for_maskebari?${ queryParams.toString() }`;

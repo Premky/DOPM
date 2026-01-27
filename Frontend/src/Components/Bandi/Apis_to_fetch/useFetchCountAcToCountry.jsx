@@ -13,7 +13,10 @@ const useFetchCountAcToCountry = ( bandi_id, filters = {} ) => {
         try {
             setLoading( true );
             const response = await axios.get( `${ BASE_URL }/bandi/get_bandi_count_ac_to_country`,
-                { params: { bandi_status: filters?.bandi_status || '', _t: Date.now() }, },
+                { params: { bandi_status: filters?.bandi_status || '', 
+                    age_above: filters?.age_above || '',
+                    age_below: filters?.age_below || '',
+                    _t: Date.now() }, },
                 { withCredentials: true } );
             const { Status, Result, Error } = response.data;
             // console.log( Result );
@@ -44,7 +47,7 @@ const useFetchCountAcToCountry = ( bandi_id, filters = {} ) => {
 
     useEffect( () => {
         fetchBandiRecords();
-    }, [BASE_URL, bandi_id, filters?.bandi_status] );
+    }, [BASE_URL, bandi_id, filters?.bandi_status, filters?.age_above, filters?.age_below] );
 
     return { records, optrecords, loading, refetch: fetchBandiRecords };
 };

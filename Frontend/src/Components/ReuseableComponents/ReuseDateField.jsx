@@ -52,6 +52,48 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                     }, [value] );
 
                     const handleInputChange = ( e ) => {
+                        const raw = e.target.value.replace( /[^0-9]/g, "" );
+                        let formatted = raw;
+
+                        if ( raw.length > 4 ) {
+                            formatted = `${ raw.slice( 0, 4 ) }-${ raw.slice( 4, 6 ) }`;
+                        }
+                        if ( raw.length > 6 ) {
+                            formatted = `${ raw.slice( 0, 4 ) }-${ raw.slice( 4, 6 ) }-${ raw.slice( 6, 8 ) }`;
+                        }
+
+                        formatted = formatted.slice( 0, 10 );
+
+                        setFormattedValue( formatted );
+                        onChange( formatted );
+                        propsOnChange?.( formatted );
+                    };
+                    const handleBlur = () => {
+                        if ( !formattedValue || formattedValue.length !== 10 ) return;
+
+                        let [y, m, d] = formattedValue.split( "-" ).map( Number );
+
+                        if ( m < 1 ) m = 1;
+                        if ( m > 12 ) m = 12;
+
+                        if ( d < 1 ) d = 1;
+                        if ( d > 32 ) d = 32;
+
+                        let fixed = `${ y }-${ String( m ).padStart( 2, "0" ) }-${ String( d ).padStart( 2, "0" ) }`;
+
+                        let limitDate = maxDate;
+                        if ( !limitDate ) limitDate = "9999-12-32";
+                        else if ( limitDate === "today" ) limitDate = formattedDateNp;
+
+                        if ( fixed > limitDate ) fixed = limitDate;
+
+                        setFormattedValue( fixed );
+                        onChange( fixed );
+                    };
+
+
+
+                    const handleInputChange1 = ( e ) => {
                         let maxYear, maxMonth, maxDay;
                         if ( maxDate === null || maxDate === "" || maxDate === undefined ) {
                             maxDate = "9999-12-32";
@@ -145,7 +187,7 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                             placeholder={defaultValue || placeholder || "YYYY-MM-DD"}
                             value={defaultValue || formattedValue}
                             onChange={handleInputChange}
-                            onBlur={onBlur}
+                            onBlur={handleBlur}
                             inputProps={{ maxLength: 10 }}
                         />
                     );

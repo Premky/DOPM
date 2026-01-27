@@ -12,6 +12,7 @@ import ReuseDateField from '../../ReuseableComponents/ReuseDateField';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import fetchBandiStatus from '../../ReuseableComponents/FetchApis/fetchBandiStatus';
 import ReuseSelect from '../../ReuseableComponents/ReuseSelect';
+import { age_array } from '../ReusableComponents/age_array';
 
 const KaragarMaskebari = () => {
     const { state: authState } = useAuth();
@@ -31,14 +32,19 @@ const KaragarMaskebari = () => {
     const nationality = watch( 'nationality' );
     const startDate = watch( 'startDate' );
     const endDate = watch( 'endDate' );
+    const age_above = watch( 'age_above' );
+    const age_below = watch( 'age_below' );
 
     const filters = useMemo( () => ( {
         startDate: startDate,
         endDate: endDate,
         nationality: nationality || '',
         selectedOffice: selectedOffice || '',
-        bandi_status:bandi_status || ''
-    } ), [startDate, endDate, nationality, selectedOffice, bandi_status, current_date] );
+        bandi_status: bandi_status || '',
+        age_above: age_above || '',
+        age_below: age_below || ''
+
+    } ), [startDate, endDate, nationality, selectedOffice, bandi_status, age_above, age_below, current_date] );
 
     const validEndDate = endDate || current_date;
     const to_year = validEndDate.split( "-" )[0];
@@ -58,16 +64,20 @@ const KaragarMaskebari = () => {
         endDate: endDate,
         nationality: 'स्वदेशी',
         selectedOffice: selectedOffice || '',
-        bandi_status: bandi_status || ''
-    } ), [startDate, endDate, selectedOffice,bandi_status, current_date] );
+        bandi_status: bandi_status || '',
+        age_above: age_above || '',
+        age_below: age_below || ''
+    } ), [startDate, endDate, selectedOffice, bandi_status, age_above, age_below, current_date] );
 
     const bideshiFilters = useMemo( () => ( {
         startDate: startDate,
         endDate: endDate,
         nationality: 'विदेशी',
         selectedOffice: selectedOffice || '',
-        bandi_status: bandi_status || ''
-    } ), [startDate, endDate, selectedOffice, bandi_status, current_date] );
+        bandi_status: bandi_status || '',
+        age_above: age_above || '',
+        age_below: age_below || ''
+    } ), [startDate, endDate, selectedOffice, bandi_status, age_above, age_below, current_date] );
 
     const {
         records: swadeshiCount,
@@ -157,7 +167,7 @@ const KaragarMaskebari = () => {
 
                             <Grid container size={{ xs: 12 }} spacing={2}>
 
-                                <Grid size={{ xs: 12, sm: 4 }}>
+                                <Grid size={{ xs: 12, sm: 2 }}>
                                     <ReuseDateField
                                         name="startDate"
                                         control={control}
@@ -165,7 +175,7 @@ const KaragarMaskebari = () => {
                                         label="मिति"
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 4 }}>
+                                <Grid size={{ xs: 12, sm: 2 }}>
                                     <ReuseDateField
                                         name="endDate"
                                         control={control}
@@ -174,7 +184,7 @@ const KaragarMaskebari = () => {
                                     />
                                 </Grid>
 
-                                <Grid size={{ xs: 12, sm: 4 }}>
+                                <Grid size={{ xs: 12, sm: 2 }}>
                                     <ReuseSelect
                                         name="bandi_status"
                                         label='बन्दीको अवस्था'
@@ -187,6 +197,26 @@ const KaragarMaskebari = () => {
                                         defaultValue={1}
                                     />
                                 </Grid>
+
+                                <Grid size={{ xs: 12, sm: 2 }}>
+                                    <ReuseSelect
+                                        name="age_above"
+                                        label='उमेर (माथि)'
+                                        control={control}
+                                        options={age_array}
+                                        defaultValue={''}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 2 }}>
+                                    <ReuseSelect
+                                        name="age_below"
+                                        label='उमेर (तल)'
+                                        control={control}
+                                        options={age_array}
+                                        defaultValue={''}
+                                    />
+                                </Grid>
+
                                 <Grid container size={{ xs: 12 }} spacing={2}>
                                     <Grid size={{ xs: 12, sm: 4 }}>
                                         <Button
@@ -218,35 +248,7 @@ const KaragarMaskebari = () => {
                                 </Grid>
                             </Grid>
 
-                            {/*<Grid xs={6} sm={3}>
-                                <Controller
-                                    name="ageFrom"
-                                    control={control}
-                                    render={( { field } ) => (
-                                        <TextField
-                                            {...field}
-                                            label="Min Age"
-                                            fullWidth
-                                            type="number"
-                                        />
-                                    )}
-                                />
-                            </Grid>
 
-                            <Grid xs={6} sm={3}>
-                                <Controller
-                                    name="ageTo"
-                                    control={control}
-                                    render={( { field } ) => (
-                                        <TextField
-                                            {...field}
-                                            label="Max Age"
-                                            fullWidth
-                                            type="number"
-                                        />
-                                    )}
-                                />
-                            </Grid> */}
 
 
                         </Grid>
