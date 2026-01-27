@@ -781,13 +781,13 @@ const BandiPersonForm = () => {
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }} sx={formHeadStyle}>
             पक्राउ/हिरासत/थुना/कैद/छुट्ने विवरण(कैद हद भएको भए सोही अनुसार): &nbsp;
-            <Button
+            {/* <Button
               variant="outlined"
               size="small"
               onClick={handleSameAsAbove}
             >
               copy मुख्य मुद्दा
-            </Button>
+            </Button> */}
 
           </Grid>
 

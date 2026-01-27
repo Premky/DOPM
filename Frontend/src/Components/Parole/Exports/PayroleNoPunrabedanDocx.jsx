@@ -1,118 +1,90 @@
-// MyDocGenerator.js
-// import { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } from "docx";
+// PayroleNoPunrabedanDocx.jsx
+
 import { Button } from "@mui/material";
-// import { saveAs } from "file-saver";
 import NepaliDate from "nepali-datetime";
-import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
 
-const current_date = new NepaliDate().format( "YYYY-MM-DD" );
+const current_date = new NepaliDate().format("YYYY-MM-DD");
 
-export default function PayroleNoPunrabedanDocx( props ) {
-    const { data } = props;
-
-    // Handle address
-    let address = "";
-    if ( data?.nationality === "विदेशी" ) {
-        address = `${ data?.bidesh_nagarik_address_details || "" }, ${ data?.country_name_np || "" }`;
-    } else if ( data?.nationality === "स्वदेशी" ) {
-        address = `${ data?.city_name_np || "" }, ${ data?.district_name_np || "" }, ${ data?.state_name_np || "" }, ${ data?.country_name_np || "" }`;
-    }
-
-    // Handle mudda names
-    let mudda_name = "";
-    if ( Array.isArray( data?.muddas ) ) {
-        mudda_name = data.muddas.map( ( m ) => m.mudda_name ).join( ", " );
-    }
-
-
+export default function PayroleNoPunrabedanDocx({ data }) {
 
     const generateDocument = async () => {
-        const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, WidthType, TableRow, TableCell, LevelFormat } = await import('docx');
-        const { saveAs } = await import( "file-saver" );
-        const headerRow = new TableRow( {
+        const {
+            Document,
+            Packer,
+            Paragraph,
+            TextRun,
+            AlignmentType,
+            Table,
+            WidthType,
+            TableRow,
+            TableCell,
+        } = await import("docx");
+
+        const { saveAs } = await import("file-saver");
+
+        /* ---------------- Table Header ---------------- */
+        const headerRow = new TableRow({
             children: [
                 "सि.नं.",
                 "मुद्दाको नाम",
                 "मुद्दा नं.",
-                "जाहेरवाला(वादी)",
-                // "ठेकिएको कैद",
+                "जाहेरवाला (वादी)",
                 "फैसला गर्ने निकाय",
                 "फैसला मिति",
                 "कैद परेको मिति",
                 "कैद भुक्तान हुने मिति",
                 "कैफियत",
-            ].map(
-                ( headerText ) => new TableCell( {
+            ].map(text =>
+                new TableCell({
                     children: [
-                        new Paragraph( {
-                            children: [new TextRun( { text: headerText, bold: true } )],
+                        new Paragraph({
                             alignment: AlignmentType.CENTER,
-                        } ),
+                            children: [new TextRun({ text, bold: true })],
+                        }),
                     ],
-                } ),
+                })
             ),
-        } );
-        // console.log( data );
-        const dataRows = data.muddas.map( ( item, index ) => {
-            return new TableRow( {
+        });
+
+        /* ---------------- Table Rows ---------------- */
+        const dataRows = (data?.kaidiMuddas || []).map((item, index) =>
+            new TableRow({
                 children: [
                     index + 1,
                     item?.mudda_name,
                     item?.mudda_no,
                     item?.vadi,
-                    // item?.kaid_duration,
-                    item?.mudda_phesala_antim_office,
+                    item?.mudda_phesala_antim_office || item?.mudda_office,
                     item?.mudda_phesala_antim_office_date,
-                    item?.bmd_thuna_date,
-                    item?.bmd_release_date,
-                    '',
-                    // item?.remarks,
-                ].map(
-                    ( text ) =>
-                        new TableCell( {
-                            children: [
-                                new Paragraph( {
-                                    children: [new TextRun( { text: String( text ) } )],
-                                } ),
-                            ],
-                        } )
+                    item?.thuna_date_bs,
+                    item?.release_date_bs,
+                    "",
+                ].map(value =>
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                alignment: AlignmentType.LEFT,
+                                children: [
+                                    new TextRun({ text: String(value ?? "") }),
+                                ],
+                            }),
+                        ],
+                    })
                 ),
-            } );
-        } );
-        const numbering = {
-            config: [
-                {
-                    reference: "my-cool-numbering",
-                    levels: [
-                        {
-                            level: 0,
-                            format: LevelFormat.DECIMAL,
-                            text: "%1.",
-                            alignment: AlignmentType.LEFT,
-                            style: {
-                                paragraph: {
-                                    indent: { left: 800, hanging: 400 }, // 0.5 inch indent
-                                },
-                            },
-                        },
-                    ],
-                },
-            ],
-        };
+            })
+        );
 
-        const doc = new Document( {
-            numbering,
+        /* ---------------- Document ---------------- */
+        const doc = new Document({
             styles: {
                 default: {
                     document: {
                         run: {
                             font: "Kalimati",
-                            size: 22, // 11pt = 22 half-points
+                            size: 22,
                         },
                         paragraph: {
-                            spacing: {
-                                line: 276, // line spacing 1.15
-                            },
+                            spacing: { line: 276 },
                         },
                     },
                 },
@@ -123,11 +95,11 @@ export default function PayroleNoPunrabedanDocx( props ) {
                         page: {
                             size: {
                                 orientation: "portrait",
-                                width: 11906, // A4 width in twips
-                                height: 16838, // A4 height in twips
+                                width: 11906,
+                                height: 16838,
                             },
                             margin: {
-                                top: 1440, // 1 inch
+                                top: 1440,
                                 bottom: 1440,
                                 left: 1440,
                                 right: 1440,
@@ -135,62 +107,69 @@ export default function PayroleNoPunrabedanDocx( props ) {
                         },
                     },
                     children: [
-                        new Paragraph( {
+                        new Paragraph({
                             alignment: AlignmentType.RIGHT,
                             children: [
-                                new TextRun( { text: "मितिः" } ),
-                                new TextRun( { text: current_date } ),
-                                new TextRun( { break: 1 } ),
+                                new TextRun("मितिः "),
+                                new TextRun(current_date),
                             ],
-                        } ),
-                        new Paragraph( {
+                        }),
+
+                        new Paragraph({
                             children: [
-                                new TextRun( { text: "मितिः" } ),
-                                new TextRun( { break: 1 } ),
-                                new TextRun( { text: `श्रीमान् कारागार प्रशासक/प्यारोल अधिकृतज्यू,` } ),
-                                new TextRun( { break: 1 } ),
-                                new TextRun( { text: `कारागार कार्यालय ${ data?.letter_address || "" }`, bold: true } ),
+                                new TextRun("श्रीमान् कारागार प्रशासक/प्यारोल अधिकृतज्यू,"),
+                                new TextRun({ break: 1 }),
+                                new TextRun({
+                                    text: `कारागार कार्यालय ${data?.current_office_name || ""}`,
+                                    bold: true,
+                                }),
                             ],
-                        } ),
-                        new Paragraph( {
+                        }),
+
+                        new Paragraph({
                             alignment: AlignmentType.CENTER,
                             children: [
-                                new TextRun(
-                                    { text: "विषयः पुनरावेदनको काम कारबाही नगरेको सम्बन्धमा ।", bold: true }
-                                ),
+                                new TextRun({
+                                    text: "विषयः पुनरावेदनको काम कारबाही नगरेको सम्बन्धमा ।",
+                                    bold: true,
+                                }),
                             ],
-                        } ),
-                        new Paragraph( {
+                        }),
+
+                        new Paragraph({
                             alignment: AlignmentType.JUSTIFIED,
                             children: [
                                 new TextRun(
-                                    { text: `उपर्युक्त सम्बन्धमा जिल्ला ${ data?.district_name_np || "" } ${ data?.city_name_np || "" } वडा नं. ${ data?.wardno } घर भई हाल कारागार कार्यालय ${ data?.letter_address }मा कैद भुक्तान गरीरहेको म निवेदक ${ data?.bandi_name } को हकमा सम्मानित अदालतबाट फैसला भएका देहायका मुद्दाहरुमा म निवेदकको तर्फबाट पुनरावेदनको काम कारवाही अन्तिम भएको व्यहोरा निवेदन गर्दछु । उक्त व्यहोरा साँचो हो, झुट्ठा ठहरेमा कानून बमोजिम सहुँला बुझाउँला ।` }
+                                    `जिल्ला ${data?.district_name_np || ""} ${
+                                        data?.city_name_np || ""
+                                    } वडा नं. ${data?.wardno || ""} घर भई हाल कारागार कार्यालय ${
+                                        data?.current_office_name || ""
+                                    } मा कैद भुक्तान गरिरहेको म निवेदक ${
+                                        data?.bandi_name || ""
+                                    } को हकमा देहायका मुद्दाहरूमा पुनरावेदनको काम कारबाही अन्तिम भएको व्यहोरा निवेदन गर्दछु ।`
                                 ),
                             ],
-                        } ),
+                        }),
 
-                        //For Table:
-                        new Table( {
-                            width: {
-                                size: 100,
-                                type: WidthType.PERCENTAGE,
-                            },
+                        new Table({
+                            width: { size: 100, type: WidthType.PERCENTAGE },
                             rows: [headerRow, ...dataRows],
-                        } )
+                        }),
                     ],
                 },
             ],
-        } );
+        });
 
-        const blob = await Packer.toBlob( doc );
-        saveAs( blob, `${ data.bandi_name }को_पुनरावेदन नगरेको निवेदन.docx` );
+        const blob = await Packer.toBlob(doc);
+        saveAs(
+            blob,
+            `${data?.bandi_name || "निवेदक"}_पुनरावेदन_नगरेको_निवेदन.docx`
+        );
     };
 
     return (
-        <div>
-            <Button onClick={generateDocument} variant="outlined">
-                पुनरावेदन नगरेको निवेदन
-            </Button>
-        </div>
+        <Button onClick={generateDocument} variant="outlined">
+            पुनरावेदन नगरेको निवेदन
+        </Button>
     );
 }

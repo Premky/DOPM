@@ -65,6 +65,7 @@ import EmployeeList from './Components/Employee/Tables/EmployeeList';
 import ViewBandiWordStyle from './Components/Bandi/ViewBandiWordStyle';
 
 import CreateEmployee from './Components/Employee/Forms/CreateEmployee';
+import MainBandiPersonForm from './Components/Bandi/Forms/BandiPersonForm/MainBandiPersonForm';
 
 // Axios interceptor for 401
 axios.interceptors.response.use(
@@ -128,6 +129,7 @@ function App() {
                     <Route path="maskebari" element={<KaragarMaskebari />} />
                     <Route path="bandi_details" element={<AllBandiTable />} />
                     <Route path="create_bandi" element={<BandiPersonForm />} />
+                    <Route path="test_create_bandi" element={<MainBandiPersonForm />} />
                     <Route path="bandi_release" element={<BandiReleaseForm />} />
                     <Route path="bandi_escape" element={<BandiEscapeForm />} />
                     <Route path="bandi_recapture" element={<BandiRecaptureForm />} />

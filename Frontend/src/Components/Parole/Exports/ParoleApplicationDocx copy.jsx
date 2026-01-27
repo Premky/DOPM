@@ -24,15 +24,15 @@ export default function ParoleApplicationDocx( props ) {
     }
 
     let address;
-    
+    console.log( data );
     if ( data?.nationality == 'विदेशी' ) {
         address = `${ data?.bidesh_nagarik_address_details },${ data?.country_name_np }`;
     } else if ( data?.nationality == 'स्वदेशी' ) {
         address = `${ data.city_name_np, data.district_name_np, data.district_name_np, data.state_name_np, data.country_name_np }`;
     }
     let mudda_name;
-    if ( data?.kaidiMuddas ) {
-        const muddas = data.kaidiMuddas;
+    if ( data?.muddas ) {
+        const muddas = data.muddas;
         muddas.map( ( m, i ) => {
             if ( mudda_name ) {
                 mudda_name += ',' + m.mudda_name;
@@ -132,7 +132,7 @@ export default function ParoleApplicationDocx( props ) {
                                     bold: true
                                 } ),
                                 new TextRun( {
-                                    text: `${ data.kaidiMuddas[0].vadi }`,
+                                    text: `${ data.muddas[0].vadi }`,
                                     size: 20,
                                 } ),
                                 new TextRun( { break: 1 } ),
@@ -142,7 +142,7 @@ export default function ParoleApplicationDocx( props ) {
                                     bold: true
                                 } ),
                                 new TextRun( {
-                                    text: `${ data.kaidiMuddas[0].vadi }`,
+                                    text: `${ data.muddas[0].vadi }`,
                                     size: 20,
                                 } ),
                                 new TextRun( { break: 1 } ),
@@ -152,7 +152,7 @@ export default function ParoleApplicationDocx( props ) {
                                     bold: true
                                 } ),
                                 new TextRun( {
-                                    text: `${ data.kaidiMuddas[0].mudda_phesala_antim_office }, ${ data.kaidiMuddas[0].mudda_phesala_antim_office_date }`,
+                                    text: `${ data.muddas[0].mudda_phesala_antim_office }, ${ data.muddas[0].mudda_phesala_antim_office_date }`,
                                     size: 20,
                                 } ),
                                 new TextRun( { break: 1 } ),
