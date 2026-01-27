@@ -600,7 +600,7 @@ const AllBandiTable = () => {
                             defaultValue={''}
                         />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 2 }}>
+                    {/* <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseSelect
                             name="percentage_above"
                             label='भुक्तान प्रतिसत (माथि)'
@@ -617,7 +617,7 @@ const AllBandiTable = () => {
                             options={age_array}
                             defaultValue={''}
                         />
-                    </Grid>
+                    </Grid> */}
 
                     <Grid size={{ xs: 6 }} mt={3}>
                         <Button

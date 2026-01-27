@@ -785,7 +785,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const nationality = toInt( req.query.nationality );
     const country = toInt( req.query.country );
     const gender = req.query.gender;
-    const bandi_type = toInt( req.query.bandi_type );
+    const bandi_type =  req.query.bandi_type ;
     const mudda_group_id = toInt( req.query.mudda_group_id );
     const is_dependent = toInt( req.query.is_dependent );
     const is_escape = req.query.is_escape || '';
@@ -822,7 +822,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     if ( country !== null ) conditions.push( "country_id = ?" ), params.push( country );
     // if ( gender !== null ) conditions.push( "gender = ?" ), params.push( gender );
     if ( gender ) conditions.push( "gender = ?" ), params.push( gender );
-    if ( bandi_type !== null ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
+    if ( bandi_type ) conditions.push( "bandi_type = ?" ), params.push( bandi_type );
     if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
     if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
     if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );

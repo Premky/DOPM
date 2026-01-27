@@ -17,6 +17,9 @@ import {
     DialogContent,
     CircularProgress,
     Typography,
+    Grid,
+    Select,
+    MenuItem,
 } from "@mui/material";
 
 
@@ -28,6 +31,8 @@ import axios from "axios";
 import { set } from "react-hook-form";
 import Swal from "sweetalert2";
 import ExportBandiButton from "./ExportBandiButton";
+import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
+import { age_array } from "./age_array";
 
 const ReusableBandiTable = ( {
     language = "",
@@ -50,6 +55,8 @@ const ReusableBandiTable = ( {
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
     const [filterText, setFilterText] = useState( "" );
+    const [percentageAbove, setPercentageAbove] = useState( "" );
+    const [percentageBelow, setPercentageBelow] = useState( "" );
     const [orderBy, setOrderBy] = useState( null );
     const [order, setOrder] = useState( "asc" );
     const [photoPreviewOpen, setPhotoPreviewOpen] = useState( false );
@@ -97,6 +104,17 @@ const ReusableBandiTable = ( {
                 String( b.office_bandi_id || "" ).toLowerCase().includes( q )
         );
     }, [rowsWithComputed, filterText] );
+    
+    // const filteredRows = useMemo( () => {
+    //     if ( !filterText ) return rowsWithComputed;
+    //     const q = filterText.toLowerCase();
+    //     return rowsWithComputed.filter(
+    //         ( b ) =>
+    //             b.bandi_name?.toLowerCase().includes( q ) ||
+    //             b.bandi_name_en?.toLowerCase().includes( q ) ||
+    //             String( b.office_bandi_id || "" ).toLowerCase().includes( q )
+    //     );
+    // }, [rowsWithComputed, filterText] );
 
     // 3) sorting
     const sortedRows = useMemo( () => {
@@ -166,13 +184,43 @@ const ReusableBandiTable = ( {
                 </Typography>
 
                 <Box display="flex" alignItems="center" gap={2}>
-                    <TextField
-                        label={t( "बन्दीको नाम/संकेत नं.ले खोज्नुहोस्", "Prisoner's Name/Bandi ID" )}
-                        variant="outlined"
-                        size="small"
-                        value={filterText}
-                        onChange={( e ) => setFilterText( e.target.value )}
-                    />
+                    <Grid size={{ xs: 12, sm: 3 }}>
+                        <TextField
+                            label={t( "बन्दीको नाम/संकेत नं.ले खोज्नुहोस्", "Prisoner's Name/Bandi ID" )}
+                            variant="outlined"
+                            size="small"
+                            value={filterText}
+                            onChange={( e ) => setFilterText( e.target.value )}
+                        />
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 3 }}>
+                        <Select
+                            label='भुक्तान प्रतिसत (माथि)'
+                            value={percentageAbove}
+                            onChange={( e ) => setPercentageAbove( e.target.value )}
+                        >
+                            {Array.from( { length: 100 }, ( _, i ) => i + 1 ).map( ( item ) => (
+                                <MenuItem key={item} value={item}>
+                                    {item}
+                                </MenuItem>
+                            ) )}
+                        </Select>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 3 }}>
+                        <Select
+                            label='भुक्तान प्रतिसत (तल)'
+                            value={percentageBelow}
+                            onChange={( e ) => setPercentageBelow( e.target.value )}
+                        >
+                            {Array.from( { length: 100 }, ( _, i ) => i + 1 ).map( ( item ) => (
+                                <MenuItem key={item} value={item}>
+                                    {item}
+                                </MenuItem>
+                            ) )}
+                        </Select>
+                    </Grid>
+
 
                     <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <input type="checkbox" checked={includePhoto} onChange={( e ) => setIncludePhoto( e.target.checked )} />
