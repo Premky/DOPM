@@ -83,6 +83,8 @@ const AllBandiTable = () => {
     const mudda_group_id = watch( 'mudda_group_id' );
     const age_above = watch( 'age_above' );
     const age_below = watch( 'age_below' );
+    const percentage_below = watch( 'percentage_below' );
+    const percentage_above = watch( 'percentage_above' );
     const is_escape = watch( 'is_escape' );
     //Watch Variables
 
@@ -90,7 +92,7 @@ const AllBandiTable = () => {
     const filters = {
         searchOffice, bandi_status, nationality, country, search_name,
         gender, bandi_type, is_active, is_dependent, mudda_group_id, is_escape,
-        age_above, age_below
+        age_above, age_below, percentage_above, percentage_below
 
     };
 
@@ -109,7 +111,7 @@ const AllBandiTable = () => {
                     searchOffice, bandi_status, nationality, country,
                     gender, bandi_type, search_name,
                     is_active, is_dependent, mudda_group_id, is_escape,
-                    age_above, age_below
+                    age_above, age_below, percentage_above, percentage_below,
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
             } );
@@ -161,7 +163,9 @@ const AllBandiTable = () => {
         fetchKaidi();
         // fetchMuddas();
     }, [page, rowsPerPage, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender,
-        is_active, mudda_group_id, is_escape, age_above, age_below] );
+        is_active, mudda_group_id, is_escape, age_above, age_below,
+        percentage_above, percentage_below
+    ] );
 
     const [editDialogOpen, setEditDialogOpen] = useState( false );
     const [selectedData, setSelectedData] = useState( null );
@@ -306,10 +310,10 @@ const AllBandiTable = () => {
             renderCell: ( params ) => {
                 const row = params.row;
                 // return `${ finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_fine ) || 0 }`;
-                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
+                return `${ ( calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0 }`;
             },
             sortValue: ( row ) => {
-                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
+                return `${ ( calculateBSDate( formattedDateNp, row.release_date_bs, calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0 }`;
                 // sorting based on the computed numeric value
                 // return finalReleaseDateWithFine( row.thuna_date_bs, row.release_date_bs, row.total_fine ) || 0;
             }
@@ -415,13 +419,13 @@ const AllBandiTable = () => {
             width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
-                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, 
-                            calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
+                return `${ ( calculateBSDate( formattedDateNp, row.release_date_bs,
+                    calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0 }`;
             },
             sortValue: ( row ) => {
                 // sorting based on the computed numeric value
-                return `${ (calculateBSDate( formattedDateNp, row.release_date_bs, 
-                            calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) )).percentage || 0 }`;
+                return `${ ( calculateBSDate( formattedDateNp, row.release_date_bs,
+                    calculateBSDate( row.thuna_date_bs, row.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0 }`;
             }
         }
     ];
@@ -596,10 +600,24 @@ const AllBandiTable = () => {
                             defaultValue={''}
                         />
                     </Grid>
-                    <Grid container size={{ xs: 12 }}>
-
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="percentage_above"
+                            label='भुक्तान प्रतिसत (माथि)'
+                            control={control}
+                            options={age_array}
+                            defaultValue={''}
+                        />
                     </Grid>
-
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="percentage_below"
+                            label='भुक्तान प्रतिसत (तल)'
+                            control={control}
+                            options={age_array}
+                            defaultValue={''}
+                        />
+                    </Grid>
 
                     <Grid size={{ xs: 6 }} mt={3}>
                         <Button

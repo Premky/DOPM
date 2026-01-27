@@ -791,6 +791,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const is_escape = req.query.is_escape || '';
     const age_above = toInt( req.query.age_above );
     const age_below = toInt( req.query.age_below );
+    const percentage_above = toInt( req.query.percentage_above );
+    const percentage_below = toInt( req.query.percentage_below );
 
     // const is_active =
     //     req.query.is_active !== undefined ? Number( req.query.is_active ) : 1;
@@ -826,6 +828,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
     if ( age_above !== null ) conditions.push( "current_age >= ?" ), params.push( age_above );
     if ( age_below !== null ) conditions.push( "current_age < ?" ), params.push( age_below );
+    // if ( percentage_above !== null ) conditions.push( "percentage >= ?" ), params.push( percentage_above );
+    // if ( percentage_below !== null ) conditions.push( "percentage < ?" ), params.push( percentage_below );
 
     if ( search_name ) {
         conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
