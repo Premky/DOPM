@@ -44,6 +44,10 @@ export const generateBandiExcel = async ( job, filters ) => {
             ? Number( filters.is_under_payrole )
             : 0;
     const search_name = filters.search_name?.trim() || "";
+    const age_above = toInt( filters.age_above );
+    const age_below = toInt( filters.age_below );
+    const percentage_above = toInt( filters.percentage_above );
+    const percentage_below = toInt( filters.percentage_below );
 
     /* ---------------- WHERE CLAUSE ---------------- */
     let conditions = [];
@@ -69,7 +73,8 @@ export const generateBandiExcel = async ( job, filters ) => {
     if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
     if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
     if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
-
+    if ( age_above !== null ) conditions.push( "current_age >= ?" ), params.push( age_above );
+    if ( age_below !== null ) conditions.push( "current_age < ?" ), params.push( age_below );
     if ( search_name ) {
         conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
         params.push( `%${ search_name }%`, search_name );
@@ -116,8 +121,8 @@ export const generateBandiExcel = async ( job, filters ) => {
         language === "en" ? "Mother Name/Contact No." : "आमाको नाम/सम्पर्क नं.",
         // language === "en" ? "Mother Contact No." : "आमाको सम्पर्क नं.",
         language === "en" ? "Date of imprisonment (B.S.)" : "थुना परेको मिति(बि.सं.)",
-        language === "en" ? "Remaining Duration(%)" : "बाँकी अवधि(%)",
         language === "en" ? "Release Date (B.S.)" : "कैद मुक्त मिति",
+        language === "en" ? "Remaining Duration(%)" : "बाँकी अवधि(%)",
         language === "en" ? "Mudda Group" : "मुद्दा समूह",
         language === "en" ? "Mudda" : "मुद्दा",
         language === "en" ? "Mudda No." : "मुद्दा नं.",
