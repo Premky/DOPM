@@ -3,7 +3,9 @@ import fs from "fs";
 import path from "path";
 import pool from "../utils/db3.js";
 import { calculateBSDate } from "../utils/dateCalculator.js";
-
+import NepaliDate from 'nepali-datetime';
+const npToday = new NepaliDate();
+const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
 // temp folder for exported files
 const TEMP_DIR = path.join( process.cwd(), "temp_exports" );
 if ( !fs.existsSync( TEMP_DIR ) ) fs.mkdirSync( TEMP_DIR );
