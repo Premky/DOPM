@@ -607,10 +607,10 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
     let sql;
     let params = [];
-    let officeFilterSql;
+    let officeFilterSql = 'WHERE 1=1';
     if ( active_office !== 1 && active_office !== 2 ) {
         params.push( active_office );
-        officeFilterSql = 'AND o.id = ?';
+        officeFilterSql += ' AND o.id = ?';
     }
     // else if ( active_office ) {
     //     params.push( active_office );
@@ -620,7 +620,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
     sql = `SELECT pb.*, o.letter_address 
        FROM prison_blocks pb 
        JOIN offices o ON pb.prison_id = o.id
-       WHERE 1=1 ${ officeFilterSql }`;
+       ${ officeFilterSql }`;
     try {
         const [result] = await pool.query( sql, [params] );
         return res.json( { Status: true, Result: result } );
