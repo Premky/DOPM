@@ -3139,7 +3139,7 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
         AND (brd.karnayan_miti_ad IS NULL OR brd.karnayan_miti_ad >= ?)
         ${ commonFilters }
         ${ officeFilter }
-        ${ ageFilter }
+        
       GROUP BY bp.current_office_id, nc.id, nc.country_name_np
       HAVING country_total > 0
     ) AS sub
