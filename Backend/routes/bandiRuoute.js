@@ -3072,19 +3072,19 @@ router.get( '/get_bandi_count_ac_to_country', verifyToken, async ( req, res ) =>
     // Office filter
     let officeFilter = '';
     if ( active_office !== 1 && active_office !== 2 ) {
-        officeFilter = 'AND bp.current_office_id = ?';
+        officeFilter = ' AND bp.current_office_id = ?';
         params.push( active_office );
     } else if ( office_id ) {
-        officeFilter = 'AND bp.current_office_id = ?';
+        officeFilter = ' AND bp.current_office_id = ?';
         params.push( parseInt( office_id, 10 ) );
     }
 
     // Age filter
-    let ageFilter = '';
-    if ( ageFrom && ageTo ) {
-        ageFilter = `AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?`;
-        params.push( Number( ageFrom ), Number( ageTo ) );
-    }
+    // let ageFilter = '';
+    // if ( ageFrom && ageTo ) {
+    //     ageFilter = `AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) BETWEEN ? AND ?`;
+    //     params.push( Number( ageFrom ), Number( ageTo ) );
+    // }
     const defaultOfficeCategory = 2;
     officeFilter += ' AND o.office_categories_id=? ';
     params.push( defaultOfficeCategory );
