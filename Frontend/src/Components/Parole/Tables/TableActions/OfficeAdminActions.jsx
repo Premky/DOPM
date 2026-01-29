@@ -10,7 +10,7 @@ const OfficeAdminActions = ( { status, onForward, onApprove } ) => {
         </MenuItem>
       )}
 
-      {(status === 16 || status===17) && (
+      {( status === 15 || status === 16 || status === 17 ) && (
         <MenuItem onClick={onApprove}>
           अदालतको निर्णय राख्नुहोस्
         </MenuItem>
