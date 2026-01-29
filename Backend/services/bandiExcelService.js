@@ -12,6 +12,11 @@ const TEMP_DIR = path.join( process.cwd(), "temp_exports" );
 if ( !fs.existsSync( TEMP_DIR ) ) fs.mkdirSync( TEMP_DIR );
 
 export const generateBandiExcelWithPhoto = async ( job, filters ) => {
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    let lastBandiId = null;
+    let bandiBuffer = null;
+
     const toInt = ( v ) => {
         if ( v === undefined || v === "0" || v === "" ) return null;
         const n = Number( v );
@@ -30,8 +35,16 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     const is_dependent = toInt( filters.is_dependent );
     const is_escape = filters.is_escape || "";
     const language = filters.language || "np";
+    const includePhoto = filters.includePhoto === "1";
+    const is_under_payrole =
+        filters.is_under_payrole !== undefined
+            ? Number( filters.is_under_payrole )
+            : 0;
     const search_name = filters.search_name?.trim() || "";
-    const is_under_payrole = filters.is_under_payrole ? Number( filters.is_under_payrole ) : 0;
+    const age_above = toInt( filters.age_above );
+    const age_below = toInt( filters.age_below );
+    const percentage_above = toInt( filters.percentage_above );
+    const percentage_below = toInt( filters.percentage_below );
 
     /* ---------------- WHERE CLAUSE ---------------- */
     let conditions = [];
@@ -53,6 +66,8 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
     if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
     if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
+    if ( age_above !== null ) conditions.push( "current_age >= ?" ), params.push( age_above );
+    if ( age_below !== null ) conditions.push( "current_age < ?" ), params.push( age_below );
     if ( search_name ) {
         conditions.push( "(bandi_name LIKE ? OR office_bandi_id = ?)" );
         params.push( `%${ search_name }%`, search_name );
@@ -71,113 +86,199 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     const sheet = workbook.addWorksheet( "बन्दी विवरण" );
 
     const headers = [
-        "क्र.सं.", "कारागार कार्यालय", "बन्दी ID", "लगत नं.", "ब्लक",
-        "बन्दी प्रकार", "बन्दीको नाम", "देश", "ठेगाना",
-        "परिचय पत्र", "जन्म मिति", "उमेर", "लिङ्ग",
-        "पति/पत्नी", "सम्पर्क नं.",
-        "बुबा/सम्पर्क", "आमा/सम्पर्क",
-        "थुना मिति", "मुक्त मिति",
-        "जरिवाना", "बाँकी %",
-        "मुद्दा समूह", "मुद्दा", "मुद्दा नं.", "वादी",
-        "फैसला निकाय", "फैसला मिति",
-        "सम्पर्क व्यक्ति",
-        "फरार भए/नभएको अवस्था", "फरार मिति", "फरार विवरण",
-        "पुनः समातिएको मिति", "पुनः समातिएको कार्यालय",
-        "फोटो"
+        language === "en" ? "S.N." : "क्र.सं.",
+        language === "en" ? "Prison Office" : "कारागार कार्यालय",
+        language === "en" ? "Office Bandi ID" : "बन्दी ID",
+        language === "en" ? "Lagat No." : "लगत नं.",
+        language === "en" ? "Block" : "ब्लक",
+        language === "en" ? "Bandi Type" : "बन्दी प्रकार",
+        language === "en" ? "Bandi Name" : "बन्दीको नाम",
+        language === "en" ? "Country" : "देश",
+        language === "en" ? "Address" : "ठेगाना",
+        language === "en" ? "ID Type & Number" : "परिचय पत्रको प्रकार र नम्बर",
+        language === "en" ? "DOB (B.S.)" : "जन्म मिति(बि.सं.)",
+        // language === "en" ? "DOB (A.D.)" : "जन्म मिति(ई.सं.)",
+        language === "en" ? "Age" : "उमेर",
+        language === "en" ? "Gender" : "लिङ्ग",
+        language === "en" ? "Spouse Name" : "पति/पत्नीको नाम",
+        language === "en" ? "Spouse Contact No." : "पति/पत्नीको सम्पर्क नं.",
+        language === "en" ? "Father Name/Contact No." : "बुबाको नाम/सम्पर्क नं.",
+        // language === "en" ? "Father Contact No." : "बुबाको सम्पर्क नं.",
+        language === "en" ? "Mother Name/Contact No." : "आमाको नाम/सम्पर्क नं.",
+        // language === "en" ? "Mother Contact No." : "आमाको सम्पर्क नं.",
+        language === "en" ? "Date of imprisonment (B.S.)" : "थुना परेको मिति(बि.सं.)",
+        language === "en" ? "Release Date (B.S.)" : "कैद मुक्त मिति",
+        language === "en" ? "Fine (To be Paid)" : "जरिवाना (तिर्न बाँकी)",
+        language === "en" ? "Remaining Duration(%)" : "बाँकी अवधि(%)",
+        language === "en" ? "Mudda Group" : "मुद्दा समूह",
+        language === "en" ? "Mudda" : "मुद्दा",
+        language === "en" ? "Mudda No." : "मुद्दा नं.",
+        language === "en" ? "Vadi" : "वादी",
+        language === "en" ? "Decision Office" : "फैसला गर्ने निकाय",
+        language === "en" ? "Decision Date" : "फैसला मिति",
+        language === "en" ? "Contact Person" : "सम्पर्क व्यक्ति",
+        language === "en" ? "Escape Status" : "फरार भए/नभएको अवस्था",
+        language === "en" ? "Date of Escape (B.S.)" : "फरार भएको मिति (बि.सं.)",
+        language === "en" ? "Escape Details" : "फरार विवरण",
+        language === "en" ? "Re-Admitted Date" : "पुनः समातिएको मिति",
+        language === "en" ? "Re-Admitted Office" : "पुनः समातिएको कार्यालय",
+        ...( includePhoto ? [language === "en" ? "Photo" : "फोटो"] : [] ),
     ];
 
     sheet.addRow( headers );
+    let totalRows = 0;
 
-    /* ---------------- FETCH DATA ---------------- */
-    const [rows] = await pool.query(
-        `SELECT * FROM view_bandi_full ${ whereClause } ORDER BY bandi_id DESC`,
-        params
+    //Original : Estimate total rows for progress (rough)
+    const [[{ total }]] = await pool.query(
+        `SELECT COUNT(*) as total FROM view_bandi_full ${ whereClause }`, params
     );
+    /* ---------------- FETCH DATA ---------------- */
+    while ( true ) {
+        const [rows] = await pool.query(
+            `SELECT * FROM view_bandi_full ${ whereClause } ORDER BY bandi_id DESC LIMIT ? OFFSET ?`,
+            [...params, PAGE_SIZE, offset]
+        );
 
-    let sn = 1;
+        let sn = 1;
+        if ( !rows.length ) break;
+        const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
+        const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
+        const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
 
-    for ( const r of rows ) {
-        // Assume each bandi has 1 mudda per row; if multiple muddas, adjust here
-        const bandiRows = [];
-        const row = sheet.addRow( [
-            sn,
-            r.bandi_office,
-            r.office_bandi_id,
-            r.lagat_no,
-            r.block_name,
-            r.bandi_type,
-            r.bandi_name,
-            r.country_name_np,
-            `${ r.city_name_np }-${ r.wardno }, ${ r.district_name_np }`,
-            `${ r.govt_id_name_np }, ${ r.card_no }`,
-            r.dob,
-            r.current_age,
-            r.gender,
-            r.spouse_name,
-            r.spouse_contact_no,
-            `${ r.father_name }/${ r.father_contact_no }`,
-            `${ r.mother_name }/${ r.mother_contact_no }`,
-            r.thuna_date_bs,
-            r.release_date_bs,
-            r.total_fine,
-            calculateBSDate( formattedDateNp, r.release_date_bs ).percentage || 0,
-            r.mudda_group_name,
-            r.mudda_name,
-            r.mudda_no,
-            r.vadi,
-            r.mudda_phesala_antim_office,
-            r.mudda_phesala_antim_office_date,
-            r.other_relatives,
-            r.escape_status || "",
-            r.escape_date_bs || "",
-            r.escape_method || "",
-            r.recapture_date_bs || "",
-            r.recaptured_office || "",
-            "" // placeholder for photo
-        ] );
-        bandiRows.push( row );
-
-        // Merge bandi info if multiple mudda rows (currently single, adjust if needed)
-        if ( bandiRows.length > 1 ) {
-            const start = bandiRows[0].number;
-            const end = bandiRows[bandiRows.length - 1].number;
-            ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
-                sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
-            } );
-        }
-
-        // Add photo if exists
-        if ( r.photo_path ) {
-            // Remove leading slash if exists
-            let relativePath = r.photo_path.startsWith( '/' ) ? r.photo_path.slice( 1 ) : r.photo_path;
-
-            const photoFullPath = path.join( process.cwd(), relativePath );
-
-            if ( fs.existsSync( photoFullPath ) ) {
-                // Detect file extension
-                const ext = path.extname( photoFullPath ).toLowerCase().replace( '.', '' );
-                const allowedExt = ['jpeg', 'jpg', 'png'];
-                if ( !allowedExt.includes( ext ) ) console.warn( `Unsupported photo format: ${ photoFullPath }` );
-
-                const imageId = workbook.addImage( {
-                    filename: photoFullPath,
-                    extension: ext === 'jpg' ? 'jpeg' : ext, // ExcelJS expects 'jpeg'
-                } );
-
-                row.height = 90; // Adjust row height for photo
-                sheet.addImage( imageId, {
-                    tl: { col: headers.length - 1, row: row.number - 1 }, // last column
-                    ext: { width: 80, height: 100 }, // width/height of photo
-                } );
-            } else {
-                console.warn( `Photo not found: ${ photoFullPath }` );
+        for ( const r of rows ) {
+            if ( row.bandi_id !== lastBandiId ) {
+                if ( bandiBuffer ) {
+                    writeBandiToSheet(
+                        sheet,
+                        bandiBuffer,
+                        language,
+                        genderNpMap,
+                        escapeStatusNpMap,
+                        escapeStatusEnMap,
+                        sn++,
+                        includePhoto,
+                        workbook
+                    );
+                }
+                bandiBuffer = { ...row, muddas: [] };
+                lastBandiId = row.bandi_id;
             }
+            if ( row.mudda_id ) {
+                bandiBuffer.muddas.push( {
+                    mudda_group_name: row.mudda_group_name,
+                    mudda_group_name_en: row.mudda_group_name_en,
+                    mudda_name: row.mudda_name,
+                    mudda_name_en: row.mudda_name_en,
+                    mudda_no: row.mudda_no,
+                    vadi: row.vadi,
+                    vadi_en: row.vadi_en,
+                    mudda_phesala_antim_office: row.mudda_phesala_antim_office,
+                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,
+                    mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
+                } );
+            }
+
+            totalRows++;
         }
 
+        offset += PAGE_SIZE;
 
-        sn++;
+        //Update job progress
+        const progress = Math.min( 100, Math.floor( ( totalRows / total ) * 100 ) );
+        await job.updateProgress( progress );
+    }
+    if ( bandiBuffer ) {
+        const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
+        const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
+        const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
+        writeBandiToSheet( sheet, bandiBuffer, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn++ );
     }
 
-    await workbook.xlsx.writeFile( filePath );
-    return filePath;
+    // Assume each bandi has 1 mudda per row; if multiple muddas, adjust here
+    const bandiRows = [];
+    const rows = muddas.map( ( m, idx ) =>
+        sheet.addRow( [
+            idx === 0 ? sn : "",
+            language === "en" ? b.bandi_office_en : b.bandi_office,
+            b.office_bandi_id || "",
+            b.lagat_no || "",
+            b.block_name || "",
+            b.bandi_type || "",
+            language === "en" ? b.bandi_name_en : b.bandi_name,
+            language === "en" ? b.country_name_en : b.country_name_np,
+            language === "en"
+                ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
+                : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
+            `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
+            b.dob,
+            b.current_age,
+            language === "en" ? b.gender : genderNpMap[b.gender] || "",
+            b.spouse_name,
+            b.spouse_contact_no,
+            `${ b.father_name }/${ b.father_contact_no }`,
+            `${ b.mother_name }/${ b.mother_contact_no }`,
+            b.thuna_date_bs,
+            b.release_date_bs,
+            b.total_fine || 0,
+            ( calculateBSDate( formattedDateNp, b.release_date_bs, calculateBSDate( b.thuna_date_bs, b.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0,
+            language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
+            language === "en" ? m.mudda_name_en : m.mudda_name,
+            m.mudda_no,
+            language === "en" ? m.vadi_en : m.vadi,
+            language === "en"
+                ? m.mudda_phesala_antim_office_en
+                : m.mudda_phesala_antim_office,
+            m.mudda_phesala_antim_office_date,
+            b.other_relatives || "",
+            language === "en" ? escapeStatusEnMap[b.escape_status] : escapeStatusNpMap[b.escape_status] || "",
+            b.escape_date_bs || "",
+            b.escape_method || "",
+            b.recapture_date_bs || "",
+            b.recaptured_office || "",
+
+        ] )
+    );
+
+    bandiRows.push( row );
+
+    // Merge bandi info if multiple mudda rows (currently single, adjust if needed)
+    if ( bandiRows.length > 1 ) {
+        const start = bandiRows[0].number;
+        const end = bandiRows[bandiRows.length - 1].number;
+        ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
+            sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
+        } );
+    }
+
+    // Add photo if exists
+    if ( r.photo_path ) {
+        // Remove leading slash if exists
+        let relativePath = r.photo_path.startsWith( '/' ) ? r.photo_path.slice( 1 ) : r.photo_path;
+
+        const photoFullPath = path.join( process.cwd(), relativePath );
+
+        if ( fs.existsSync( photoFullPath ) ) {
+            // Detect file extension
+            const ext = path.extname( photoFullPath ).toLowerCase().replace( '.', '' );
+            const allowedExt = ['jpeg', 'jpg', 'png'];
+            if ( !allowedExt.includes( ext ) ) console.warn( `Unsupported photo format: ${ photoFullPath }` );
+
+            const imageId = workbook.addImage( {
+                filename: photoFullPath,
+                extension: ext === 'jpg' ? 'jpeg' : ext, // ExcelJS expects 'jpeg'
+            } );
+
+            row.height = 90; // Adjust row height for photo
+            sheet.addImage( imageId, {
+                tl: { col: headers.length - 1, row: row.number - 1 }, // last column
+                ext: { width: 80, height: 100 }, // width/height of photo
+            } );
+        } else {
+            console.warn( `Photo not found: ${ photoFullPath }` );
+        }
+    }
+
+    sn++;
+await workbook.xlsx.writeFile( filePath );
+return filePath;
 };
