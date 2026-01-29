@@ -279,6 +279,68 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     }
 
     sn++;
-await workbook.xlsx.writeFile( filePath );
-return filePath;
+    await workbook.xlsx.writeFile( filePath );
+    return filePath;
 };
+function writeBandiToSheet( sheet, b, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn ) {
+    const muddas = b.muddas.length ? b.muddas : [{}];
+
+
+    // 1️⃣ Add rows WITHOUT committing
+    const rows = muddas.map( ( m, idx ) =>
+        sheet.addRow( [
+            idx === 0 ? sn : "",
+            language === "en" ? b.bandi_office_en : b.bandi_office,
+            b.office_bandi_id || "",
+            b.lagat_no || "",
+            b.block_name || "",
+            b.bandi_type || "",
+            language === "en" ? b.bandi_name_en : b.bandi_name,
+            language === "en" ? b.country_name_en : b.country_name_np,
+            language === "en"
+                ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
+                : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
+            `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
+            b.dob,
+            b.current_age,
+            language === "en" ? b.gender : genderNpMap[b.gender] || "",
+            b.spouse_name,
+            b.spouse_contact_no,
+            `${ b.father_name }/${ b.father_contact_no }`,
+            `${ b.mother_name }/${ b.mother_contact_no }`,
+            b.thuna_date_bs,
+            b.release_date_bs,
+            b.total_fine || 0,
+            ( calculateBSDate( formattedDateNp, b.release_date_bs, calculateBSDate( b.thuna_date_bs, b.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0,
+            language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
+            language === "en" ? m.mudda_name_en : m.mudda_name,
+            m.mudda_no,
+            language === "en" ? m.vadi_en : m.vadi,
+            language === "en"
+                ? m.mudda_phesala_antim_office_en
+                : m.mudda_phesala_antim_office,
+            m.mudda_phesala_antim_office_date,
+            b.other_relatives || "",
+            language === "en" ? escapeStatusEnMap[b.escape_status] : escapeStatusNpMap[b.escape_status] || "",
+            b.escape_date_bs || "",
+            b.escape_method || "",
+            b.recapture_date_bs || "",
+            b.recaptured_office || "",
+
+        ] )
+    );
+
+    // 2️⃣ Merge BEFORE commit
+    if ( rows.length > 1 ) {
+        const start = rows[0].number;
+        const end = rows[rows.length - 1].number;
+
+        ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
+            sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
+        } );
+    }
+
+    // 3️⃣ NOW commit rows
+    rows.forEach( r => r.commit() );
+}
+
