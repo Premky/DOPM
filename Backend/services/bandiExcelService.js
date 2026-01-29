@@ -197,51 +197,6 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
 
     // Assume each bandi has 1 mudda per row; if multiple muddas, adjust here
     const bandiRows = [];
-    // const rows = muddas.map( ( m, idx ) =>
-    //     sheet.addRow( [
-    //         idx === 0 ? sn : "",
-    //         language === "en" ? b.bandi_office_en : b.bandi_office,
-    //         b.office_bandi_id || "",
-    //         b.lagat_no || "",
-    //         b.block_name || "",
-    //         b.bandi_type || "",
-    //         language === "en" ? b.bandi_name_en : b.bandi_name,
-    //         language === "en" ? b.country_name_en : b.country_name_np,
-    //         language === "en"
-    //             ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
-    //             : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
-    //         `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
-    //         b.dob,
-    //         b.current_age,
-    //         language === "en" ? b.gender : genderNpMap[b.gender] || "",
-    //         b.spouse_name,
-    //         b.spouse_contact_no,
-    //         `${ b.father_name }/${ b.father_contact_no }`,
-    //         `${ b.mother_name }/${ b.mother_contact_no }`,
-    //         b.thuna_date_bs,
-    //         b.release_date_bs,
-    //         b.total_fine || 0,
-    //         ( calculateBSDate( formattedDateNp, b.release_date_bs, calculateBSDate( b.thuna_date_bs, b.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0,
-    //         language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
-    //         language === "en" ? m.mudda_name_en : m.mudda_name,
-    //         m.mudda_no,
-    //         language === "en" ? m.vadi_en : m.vadi,
-    //         language === "en"
-    //             ? m.mudda_phesala_antim_office_en
-    //             : m.mudda_phesala_antim_office,
-    //         m.mudda_phesala_antim_office_date,
-    //         b.other_relatives || "",
-    //         language === "en" ? escapeStatusEnMap[b.escape_status] : escapeStatusNpMap[b.escape_status] || "",
-    //         b.escape_date_bs || "",
-    //         b.escape_method || "",
-    //         b.recapture_date_bs || "",
-    //         b.recaptured_office || "",
-
-    //     ] )
-    // );
-
-    // bandiRows.push( row );
-
     // Merge bandi info if multiple mudda rows (currently single, adjust if needed)
     if ( bandiRows.length > 1 ) {
         const start = bandiRows[0].number;
@@ -283,13 +238,21 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     await workbook.xlsx.writeFile( filePath );
     return filePath;
 };
-function writeBandiToSheet( sheet, b, language, genderNpMap, escapeStatusNpMap, escapeStatusEnMap, sn ) {
+function writeBandiToSheet(
+    sheet,
+    b,
+    language,
+    genderNpMap,
+    escapeStatusNpMap,
+    escapeStatusEnMap,
+    sn,
+    includePhoto,
+    workbook
+) {
     const muddas = b.muddas.length ? b.muddas : [{}];
 
-
-    // 1️⃣ Add rows WITHOUT committing
-    const rows = muddas.map( ( m, idx ) =>
-        sheet.addRow( [
+    const rows = muddas.map((m, idx) =>
+        sheet.addRow([
             idx === 0 ? sn : "",
             language === "en" ? b.bandi_office_en : b.bandi_office,
             b.office_bandi_id || "",
@@ -299,49 +262,71 @@ function writeBandiToSheet( sheet, b, language, genderNpMap, escapeStatusNpMap, 
             language === "en" ? b.bandi_name_en : b.bandi_name,
             language === "en" ? b.country_name_en : b.country_name_np,
             language === "en"
-                ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
-                : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
-            `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
+                ? `${b.city_name_en}-${b.wardno}, ${b.district_name_en}`
+                : `${b.city_name_np}-${b.wardno}, ${b.district_name_np}`,
+            `${b.govt_id_name_np || ""}, ${b.card_no || ""}`,
             b.dob,
             b.current_age,
             language === "en" ? b.gender : genderNpMap[b.gender] || "",
             b.spouse_name,
             b.spouse_contact_no,
-            `${ b.father_name }/${ b.father_contact_no }`,
-            `${ b.mother_name }/${ b.mother_contact_no }`,
+            `${b.father_name || ""}/${b.father_contact_no || ""}`,
+            `${b.mother_name || ""}/${b.mother_contact_no || ""}`,
             b.thuna_date_bs,
             b.release_date_bs,
             b.total_fine || 0,
-            ( calculateBSDate( formattedDateNp, b.release_date_bs, calculateBSDate( b.thuna_date_bs, b.release_date_bs, 0, 0, 0, 0 ) ) ).percentage || 0,
+            calculateBSDate(formattedDateNp, b.release_date_bs).percentage || 0,
             language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
             language === "en" ? m.mudda_name_en : m.mudda_name,
-            m.mudda_no,
+            m.mudda_no || "",
             language === "en" ? m.vadi_en : m.vadi,
             language === "en"
                 ? m.mudda_phesala_antim_office_en
                 : m.mudda_phesala_antim_office,
-            m.mudda_phesala_antim_office_date,
+            m.mudda_phesala_antim_office_date || "",
             b.other_relatives || "",
             language === "en" ? escapeStatusEnMap[b.escape_status] : escapeStatusNpMap[b.escape_status] || "",
             b.escape_date_bs || "",
             b.escape_method || "",
             b.recapture_date_bs || "",
             b.recaptured_office || "",
-
-        ] )
+            includePhoto ? "" : undefined, // Placeholder for photo column
+        ])
     );
 
-    // 2️⃣ Merge BEFORE commit
-    if ( rows.length > 1 ) {
+    // Merge bandi info if multiple mudda rows
+    if (rows.length > 1) {
         const start = rows[0].number;
         const end = rows[rows.length - 1].number;
-
-        ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
-            sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
-        } );
+        ["A", "B", "C", "D", "E", "F", "G"].forEach((col) => {
+            sheet.mergeCells(`${col}${start}:${col}${end}`);
+        });
     }
 
-    // 3️⃣ NOW commit rows
-    rows.forEach( r => r.commit() );
+    // Add photos for the first row of the bandi
+    if (includePhoto && b.photo_path) {
+        let relativePath = b.photo_path.startsWith("/") ? b.photo_path.slice(1) : b.photo_path;
+        const photoFullPath = path.join(process.cwd(), relativePath);
+
+        if (fs.existsSync(photoFullPath)) {
+            const ext = path.extname(photoFullPath).toLowerCase().replace(".", "");
+            const imageId = workbook.addImage({
+                filename: photoFullPath,
+                extension: ext === "jpg" ? "jpeg" : ext,
+            });
+
+            const photoRow = rows[0];
+            photoRow.height = 90;
+            sheet.addImage(imageId, {
+                tl: { col: sheet.columns.length - 1, row: photoRow.number - 1 },
+                ext: { width: 80, height: 100 },
+            });
+        } else {
+            console.warn(`Photo not found: ${photoFullPath}`);
+        }
+    }
+
+    rows.forEach((r) => r.commit());
 }
+
 
