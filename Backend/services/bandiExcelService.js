@@ -16,6 +16,7 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     let offset = 0;
     let lastBandiId = null;
     let bandiBuffer = null;
+    let sn = 1;
 
     const toInt = ( v ) => {
         if ( v === undefined || v === "0" || v === "" ) return null;
@@ -139,7 +140,7 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
             [...params, PAGE_SIZE, offset]
         );
 
-        let sn = 1;
+        
         if ( !rows.length ) break;
         const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
         const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
