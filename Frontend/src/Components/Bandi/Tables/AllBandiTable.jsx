@@ -305,7 +305,7 @@ const AllBandiTable = () => {
         },
         {
             field: "remaining_days_to_release",
-            headerName: "बाँकी कैद % (जरिवाना समेत)",
+            headerName: "बाँकी कैद (%)",
             width: 100,
             renderCell: ( params ) => {
                 const row = params.row;
