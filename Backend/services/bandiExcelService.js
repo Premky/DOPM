@@ -145,7 +145,7 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
         const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
         const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
 
-        for ( const r of rows ) {
+        for ( const row of rows ) {
             if ( row.bandi_id !== lastBandiId ) {
                 if ( bandiBuffer ) {
                     writeBandiToSheet(
