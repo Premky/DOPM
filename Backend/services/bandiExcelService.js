@@ -11,14 +11,16 @@ const formattedDateNp = npToday.format("YYYY-MM-DD");
 const TEMP_DIR = path.join(process.cwd(), "temp_exports");
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
-export const generateBandiExcelWithPhoto = async (job, filters) => {
-  const toInt = (v) => {
-    if (v === undefined || v === "0" || v === "") return null;
-    const n = Number(v);
-    return Number.isNaN(n) ? null : n;
-  };
+const toInt = (v) => {
+  if (v === undefined || v === "0" || v === "") return null;
+  const n = Number(v);
+  return Number.isNaN(n) ? null : n;
+};
 
-  /* ---------------- FILTERS ---------------- */
+/**
+ * Generate Excel with bandi records including photos
+ */
+export const generateBandiExcelWithPhoto = async (job, filters) => {
   const selected_office = toInt(filters.selected_office);
   const searchOffice = toInt(filters.searchOffice);
   const bandi_status = toInt(filters.bandi_status) ?? 1;
@@ -29,21 +31,16 @@ export const generateBandiExcelWithPhoto = async (job, filters) => {
   const mudda_group_id = toInt(filters.mudda_group_id);
   const is_dependent = toInt(filters.is_dependent);
   const is_escape = filters.is_escape || "";
-  const language = filters.language || "np";
-  const search_name = filters.search_name?.trim() || "";
+  const includePhoto = true; // always include photo
   const is_under_payrole = filters.is_under_payrole ? Number(filters.is_under_payrole) : 0;
+  const search_name = filters.search_name?.trim() || "";
 
-  /* ---------------- WHERE CLAUSE ---------------- */
+  // Build WHERE clause
   let conditions = [];
   let params = [];
 
-  if (selected_office !== null) {
-    conditions.push("current_office_id = ?");
-    params.push(selected_office);
-  } else if (searchOffice !== null) {
-    conditions.push("current_office_id = ?");
-    params.push(searchOffice);
-  }
+  if (selected_office !== null) conditions.push("current_office_id = ?"), params.push(selected_office);
+  else if (searchOffice !== null) conditions.push("current_office_id = ?"), params.push(searchOffice);
 
   if (bandi_status !== null) conditions.push("bandi_status = ?"), params.push(bandi_status);
   if (nationality !== null) conditions.push("nationality = ?"), params.push(nationality);
@@ -57,19 +54,18 @@ export const generateBandiExcelWithPhoto = async (job, filters) => {
     conditions.push("(bandi_name LIKE ? OR office_bandi_id = ?)");
     params.push(`%${search_name}%`, search_name);
   }
-
-  conditions.push("is_under_payrole = ?");
-  params.push(is_under_payrole);
+  conditions.push("is_under_payrole = ?"), params.push(is_under_payrole);
 
   const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const fileName = `Bandi_Records_With_Photo_${Date.now()}.xlsx`;
   const filePath = path.join(TEMP_DIR, fileName);
 
-  /* ---------------- WORKBOOK ---------------- */
+  // Workbook & Sheet
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("बन्दी विवरण");
 
+  // Headers
   const headers = [
     "क्र.सं.", "कारागार कार्यालय", "बन्दी ID", "लगत नं.", "ब्लक",
     "बन्दी प्रकार", "बन्दीको नाम", "देश", "ठेगाना",
@@ -81,21 +77,15 @@ export const generateBandiExcelWithPhoto = async (job, filters) => {
     "मुद्दा समूह", "मुद्दा", "मुद्दा नं.", "वादी",
     "फैसला निकाय", "फैसला मिति",
     "सम्पर्क व्यक्ति",
-    "फरार भए/नभएको अवस्था", "फरार मिति", "फरार विवरण",
-    "पुनः समातिएको मिति", "पुनः समातिएको कार्यालय",
     "फोटो"
   ];
 
   sheet.addRow(headers);
 
-  /* ---------------- FETCH DATA ---------------- */
-  const [rows] = await pool.query(
-    `SELECT * FROM view_bandi_full ${whereClause} ORDER BY bandi_id DESC`,
-    params
-  );
+  // Fetch data
+  const [rows] = await pool.query(`SELECT * FROM view_bandi_full ${whereClause} ORDER BY bandi_id DESC`, params);
 
   let sn = 1;
-
   for (const r of rows) {
     const row = sheet.addRow([
       sn,
@@ -126,37 +116,26 @@ export const generateBandiExcelWithPhoto = async (job, filters) => {
       r.mudda_phesala_antim_office,
       r.mudda_phesala_antim_office_date,
       r.other_relatives,
-      r.escape_status || "",
-      r.escape_date_bs || "",
-      r.escape_method || "",
-      r.recapture_date_bs || "",
-      r.recaptured_office || "",
-      "" // placeholder for photo
+      "" // photo placeholder
     ]);
 
-    // ✅ Add photo if exists
-    if (r.photo_path) {
-      const photoFullPath = path.isAbsolute(r.photo_path)
-        ? r.photo_path
-        : path.join(process.cwd(), r.photo_path);
-
-      if (fs.existsSync(photoFullPath)) {
-        const imageId = workbook.addImage({
-          filename: photoFullPath,
-          extension: "jpeg",
-        });
-
-        row.height = 90; // enough for photo
-        sheet.addImage(imageId, {
-          tl: { col: headers.length - 1, row: row.number - 1 },
-          ext: { width: 80, height: 100 },
-        });
-      }
+    // Add photo if exists
+    if (r.photo_path && fs.existsSync(path.join(process.cwd(), r.photo_path))) {
+      const imageId = workbook.addImage({
+        filename: path.join(process.cwd(), r.photo_path),
+        extension: "jpeg",
+      });
+      sheet.addImage(imageId, {
+        tl: { col: 28, row: row.number - 1 },
+        ext: { width: 80, height: 100 }
+      });
+      row.height = 80;
     }
 
     sn++;
   }
 
   await workbook.xlsx.writeFile(filePath);
-  return filePath;
+
+  return filePath; // ✅ guaranteed defined
 };
