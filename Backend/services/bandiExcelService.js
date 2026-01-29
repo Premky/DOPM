@@ -148,10 +148,10 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
 
         // Add photo if exists
         if ( r.photo_path ) {
-            // Make sure the path is absolute
-            const photoFullPath = path.isAbsolute( r.photo_path )
-                ? r.photo_path
-                : path.join( process.cwd(), r.photo_path );
+            // Remove leading slash if exists
+            let relativePath = r.photo_path.startsWith( '/' ) ? r.photo_path.slice( 1 ) : r.photo_path;
+
+            const photoFullPath = path.join( process.cwd(), relativePath );
 
             if ( fs.existsSync( photoFullPath ) ) {
                 // Detect file extension
