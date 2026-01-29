@@ -4,13 +4,13 @@ const OfficeAdminActions = ( { status, onForward, onApprove } ) => {
   return (
     <>
       {/* Forward to next level */}
-      {status < 16 && (
+      {payrole_status < 16 && (
         <MenuItem onClick={onForward}>
           कारागार प्रशासकबाट अगाडि पठाउनुहोस्
         </MenuItem>
       )}
 
-      {(status === 16 || status===17) && (
+      {(payrole_status === 16 || payrole_status===17) && (
         <MenuItem onClick={onApprove}>
           अदालतको निर्णय राख्नुहोस्
         </MenuItem>

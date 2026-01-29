@@ -125,10 +125,18 @@ LEFT JOIN prison_blocks pb ON b.block_no = pb.id
 LEFT JOIN bandi_escape_details bed ON b.id = bed.bandi_id
 LEFT JOIN offices efo ON bed.current_office_id = efo.id
 
-LEFT JOIN bandi_relative_info bri ON b.id = bri.bandi_id
 LEFT JOIN bandi_release_details brd ON b.id = brd.bandi_id
 LEFT JOIN bandi_release_reasons brr ON brd.reason_id=brr.id
 LEFT JOIN bandi_relative_info brri ON brd.aafanta_id=brri.id
+
+-- Dependent Status
+LEFT JOIN (
+    SELECT
+        bandi_id,
+        MAX(is_dependent) AS is_dependent
+    FROM bandi_relative_info
+    GROUP BY bandi_id
+) bri ON b.id = bri.bandi_id
 
 -- Spouse
 LEFT JOIN (
