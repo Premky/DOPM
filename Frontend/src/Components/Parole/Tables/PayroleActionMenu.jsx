@@ -39,6 +39,7 @@ const PayroleActionMenu = ( { data, refetchAll } ) => {
 
   const role = authState.role_name;
   const status = data?.payrole_status;
+  console.log("payrole Status:", status);
 
   /** ROLE FLAGS **/
   const isClerk = role === "clerk";
