@@ -252,7 +252,7 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
     }
 
     // Add photo if exists
-    if ( r.photo_path ) {
+    if ( row.photo_path ) {
         // Remove leading slash if exists
         let relativePath = r.photo_path.startsWith( '/' ) ? r.photo_path.slice( 1 ) : r.photo_path;
 
