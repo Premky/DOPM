@@ -142,45 +142,6 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
 
         
         if ( !rows.length ) break;
-        const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
-        const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
-        const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
-
-        for ( const row of rows ) {
-            if ( row.bandi_id !== lastBandiId ) {
-                if ( bandiBuffer ) {
-                    writeBandiToSheet(
-                        sheet,
-                        bandiBuffer,
-                        language,
-                        genderNpMap,
-                        escapeStatusNpMap,
-                        escapeStatusEnMap,
-                        sn++,
-                        includePhoto,
-                        workbook
-                    );
-                }
-                bandiBuffer = { ...row, muddas: [] };
-                lastBandiId = row.bandi_id;
-            }
-            if ( row.mudda_id ) {
-                bandiBuffer.muddas.push( {
-                    mudda_group_name: row.mudda_group_name,
-                    mudda_group_name_en: row.mudda_group_name_en,
-                    mudda_name: row.mudda_name,
-                    mudda_name_en: row.mudda_name_en,
-                    mudda_no: row.mudda_no,
-                    vadi: row.vadi,
-                    vadi_en: row.vadi_en,
-                    mudda_phesala_antim_office: row.mudda_phesala_antim_office,
-                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,
-                    mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
-                } );
-            }
-
-            totalRows++;
-        }
 
         offset += PAGE_SIZE;
 
