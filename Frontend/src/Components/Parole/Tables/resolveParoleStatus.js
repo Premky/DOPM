@@ -8,28 +8,28 @@ export const resolveParoleStatus = ( row ) => {
         };
     }
 
-    if ( row.court_decision === "स्वीकृत" ) {
+    if ( row.payrole_result === "स्वीकृत" ) {
         return {
             label: "स्वीकृत",
             color: "pass"
         };
     }
 
-    if ( row.court_decision === "अस्वीकृत" ) {
+    if ( row.payrole_result === "अस्वीकृत" ) {
         return {
             label: "अस्वीकृत",
             color: "fail"
         };
     }
 
-    if ( row.court_decision === "पास" ) {
+    if ( row.payrole_result === "पास" ) {
         return {
             label: "स्वीकृत",
             color: "pass"
         };
     }
 
-    if ( row.court_decision === "फेल" ) {
+    if ( row.payrole_result === "फेल" ) {
         return {
             label: "अस्वीकृत",
             color: "fail"

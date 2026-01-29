@@ -52,7 +52,7 @@ FROM
     LEFT JOIN offices ro ON p.recommended_court_id = ro.id
     LEFT JOIN offices o ON bp.current_office_id = o.id
     LEFT JOIN muddas pm ON p.payrole_mudda_id = pm.id
-    LEFT JOIN payrole_decisions pd ON p.id = pd.id
+    LEFT JOIN payrole_decisions pd ON p.id = pd.payrole_id
     LEFT JOIN payrole_status ps ON p.status = ps.id
     LEFT JOIN (
         SELECT

@@ -123,6 +123,17 @@ export const saveCourtDecisionService = async ( {
                 userId: userId || null,
             } );
         }
+        if ( data.payrole_result === "फेल" ) {
+            await conn.query( `UPDATE bandi_person SET is_under_payrole=? WHERE id=?`, [0, parole.bandi_id] );
+            await updateBandiStatus(
+                conn, {
+                bandiId: parole.bandi_id,
+                newStatusId: BANDI_STATUS.IN_CUSTODY,
+                historyCode: "IN_CUSTODY",
+                source: "SYSTEM",
+                userId: userId || null,
+            } );
+        }
 
         //Insert status history: 
         await conn.query( `

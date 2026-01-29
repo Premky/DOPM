@@ -15,11 +15,8 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    CircularProgress,
     Typography,
     Grid,
-    Select,
-    MenuItem,
 } from "@mui/material";
 
 
@@ -27,12 +24,7 @@ import {
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { finalReleaseDateWithFine } from "../../../../Utils/dateCalculator";
 import { useAuth } from "../../../Context/AuthContext";
-import axios from "axios";
-import { set } from "react-hook-form";
-import Swal from "sweetalert2";
 import ExportBandiButton from "./ExportBandiButton";
-import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
-import { age_array } from "./age_array";
 
 const ReusableBandiTable = ( {
     language = "",
