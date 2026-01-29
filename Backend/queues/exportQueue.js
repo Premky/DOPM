@@ -11,16 +11,15 @@ export const exportQueue = new Queue( "export_bandi", {
 } );
 
 // Worker
+// Worker
 export const exportWorker = new Worker(
   "export_bandi",
-  async ( job ) => {
-    console.log( `Processing export job ${ job.id }` );
+  async (job) => {
+    console.log(`Processing export job ${job.id}`);
 
-    // const filePath =
-    //   job.data.includePhoto === "1"
-    //     ? await generateBandiExcelWithPhoto(job, job.data.filters)
-    //     : await generateBandiExcel(job, job.data.filters);
-    await generateBandiExcelWithPhoto( job, job.data.filters );
+    // ✅ Capture the returned file path
+    const filePath = await generateBandiExcelWithPhoto(job, job.data.filters);
+
     return { filePath };
   },
   {
@@ -28,6 +27,7 @@ export const exportWorker = new Worker(
     concurrency: 1,
   }
 );
+
 
 exportWorker.on( "completed", ( job, result ) => {
   console.log( `✅ Export job ${ job.id } done → ${ result.filePath }` );
