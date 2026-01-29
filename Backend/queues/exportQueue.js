@@ -1,6 +1,6 @@
 import { Queue, Worker } from "bullmq";
 import { redis } from "../config/redis.js";
-import { generateBandiExcel } from "../services/bandiExcelService.js"; // your existing code
+import { generateBandiExcel, generateBandiExcelWithPhoto } from "../services/bandiExcelService.js"; // your existing code
 
 // Queue
 export const exportQueue = new Queue("export_bandi", { connection: redis });
