@@ -8,6 +8,7 @@ import NepaliDate from "nepali-datetime";
 const npToday = new NepaliDate();
 const formattedDateNp = npToday.format("YYYY-MM-DD");
 
+// temp folder
 const TEMP_DIR = path.join(process.cwd(), "temp_exports");
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
@@ -24,7 +25,7 @@ export const generateBandiExcel = async (job, filters) => {
         return Number.isNaN(n) ? null : n;
     };
 
-    /* ---------------- FILTERS ---------------- */
+    /* -------- FILTERS -------- */
     const selected_office = toInt(filters.selected_office);
     const searchOffice = toInt(filters.searchOffice);
     const bandi_status = toInt(filters.bandi_status) ?? 1;
@@ -45,7 +46,7 @@ export const generateBandiExcel = async (job, filters) => {
     const age_above = toInt(filters.age_above);
     const age_below = toInt(filters.age_below);
 
-    /* ---------------- WHERE ---------------- */
+    /* -------- WHERE -------- */
     let conditions = [];
     let params = [];
 
@@ -71,7 +72,6 @@ export const generateBandiExcel = async (job, filters) => {
     if (is_dependent !== null) conditions.push("is_dependent = ?"), params.push(is_dependent);
     if (age_above !== null) conditions.push("current_age >= ?"), params.push(age_above);
     if (age_below !== null) conditions.push("current_age < ?"), params.push(age_below);
-
     if (search_name) {
         conditions.push("(bandi_name LIKE ? OR office_bandi_id = ?)");
         params.push(`%${search_name}%`, search_name);
@@ -84,7 +84,8 @@ export const generateBandiExcel = async (job, filters) => {
         ? `WHERE ${conditions.join(" AND ")}`
         : "";
 
-    const filePath = path.join(TEMP_DIR, `Bandi_Records_${Date.now()}.xlsx`);
+    const fileName = `Bandi_Records_${Date.now()}.xlsx`;
+    const filePath = path.join(TEMP_DIR, fileName);
 
     const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
         filename: filePath,
@@ -94,9 +95,9 @@ export const generateBandiExcel = async (job, filters) => {
 
     const sheet = workbook.addWorksheet("बन्दी विवरण");
 
+    /* -------- HEADERS -------- */
     const headers = [
         language === "en" ? "S.N." : "क्र.सं.",
-        ...(includePhoto ? [language === "en" ? "Photo" : "फोटो"] : []),
         language === "en" ? "Prison Office" : "कारागार कार्यालय",
         language === "en" ? "Office Bandi ID" : "बन्दी ID",
         language === "en" ? "Lagat No." : "लगत नं.",
@@ -115,7 +116,7 @@ export const generateBandiExcel = async (job, filters) => {
         language === "en" ? "Mother Name/Contact No." : "आमाको नाम/सम्पर्क नं.",
         language === "en" ? "Date of imprisonment (B.S.)" : "थुना परेको मिति(बि.सं.)",
         language === "en" ? "Release Date (B.S.)" : "कैद मुक्त मिति",
-        language === "en" ? "Fine" : "जरिवाना",
+        language === "en" ? "Fine (To be Paid)" : "जरिवाना (तिर्न बाँकी)",
         language === "en" ? "Remaining Duration(%)" : "बाँकी अवधि(%)",
         language === "en" ? "Mudda Group" : "मुद्दा समूह",
         language === "en" ? "Mudda" : "मुद्दा",
@@ -129,6 +130,7 @@ export const generateBandiExcel = async (job, filters) => {
         language === "en" ? "Escape Details" : "फरार विवरण",
         language === "en" ? "Re-Admitted Date" : "पुनः समातिएको मिति",
         language === "en" ? "Re-Admitted Office" : "पुनः समातिएको कार्यालय",
+        ...(includePhoto ? [language === "en" ? "Photo" : "फोटो"] : []),
     ];
 
     sheet.addRow(headers).commit();
@@ -138,59 +140,63 @@ export const generateBandiExcel = async (job, filters) => {
         params
     );
 
+    let processed = 0;
+
     while (true) {
         const [rows] = await pool.query(
-            `SELECT * FROM view_bandi_full ${whereClause} ORDER BY bandi_id DESC LIMIT ? OFFSET ?`,
+            `SELECT * FROM view_bandi_full ${whereClause}
+             ORDER BY bandi_id DESC
+             LIMIT ? OFFSET ?`,
             [...params, PAGE_SIZE, offset]
         );
 
         if (!rows.length) break;
 
-        for (const row of rows) {
-            if (row.bandi_id !== lastBandiId) {
+        const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
+        const escapeNp = { escaped: "फरार", recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", "": "" };
+        const escapeEn = { escaped: "Escaped", recaptured: "Re-Captured", self_present: "Self Present", "": "" };
+
+        for (const r of rows) {
+            if (r.bandi_id !== lastBandiId) {
                 if (bandiBuffer) {
-                    writeBandiToSheet(
-                        sheet,
-                        bandiBuffer,
-                        language,
-                        sn++,
-                        includePhoto,
-                        workbook
-                    );
+                    writeBandiToSheet(sheet, bandiBuffer, language, genderNpMap, escapeNp, escapeEn, sn++, includePhoto, workbook);
                 }
-                bandiBuffer = { ...row, muddas: [] };
-                lastBandiId = row.bandi_id;
+                bandiBuffer = { ...r, muddas: [] };
+                lastBandiId = r.bandi_id;
             }
 
-            if (row.mudda_id) {
-                bandiBuffer.muddas.push(row);
+            if (r.mudda_id) {
+                bandiBuffer.muddas.push(r);
             }
+
+            processed++;
         }
 
         offset += PAGE_SIZE;
-        await job.updateProgress(Math.min(100, Math.floor((offset / total) * 100)));
+        await job.updateProgress(Math.min(100, Math.floor((processed / total) * 100)));
     }
 
     if (bandiBuffer) {
-        writeBandiToSheet(sheet, bandiBuffer, language, sn++, includePhoto, workbook);
+        writeBandiToSheet(sheet, bandiBuffer, language, {}, {}, {}, sn++, includePhoto, workbook);
     }
 
     await workbook.commit();
     return filePath;
 };
 
-function writeBandiToSheet(sheet, b, language, sn, includePhoto, workbook) {
+/* ================= WRITE ROWS ================= */
+
+function writeBandiToSheet(sheet, b, language, genderNpMap, escapeNp, escapeEn, sn, includePhoto, workbook) {
     const muddas = b.muddas.length ? b.muddas : [{}];
 
-    const rows = muddas.map((m, idx) => {
-        const row = [
+    const rows = muddas.map((m, idx) =>
+        sheet.addRow([
             idx === 0 ? sn : "",
-            ...(includePhoto ? [""] : []),
             language === "en" ? b.bandi_office_en : b.bandi_office,
-            b.office_bandi_id,
-            b.lagat_no,
-            b.block_name,
-            b.bandi_type,
+            b.office_bandi_id || "",
+            b.lagat_no || "",
+            b.block_name || "",
+            b.bandi_type || "",
             language === "en" ? b.bandi_name_en : b.bandi_name,
             language === "en" ? b.country_name_en : b.country_name_np,
             language === "en"
@@ -199,7 +205,7 @@ function writeBandiToSheet(sheet, b, language, sn, includePhoto, workbook) {
             `${b.govt_id_name_np || ""}, ${b.card_no || ""}`,
             b.dob,
             b.current_age,
-            b.gender,
+            language === "en" ? b.gender : genderNpMap[b.gender],
             b.spouse_name,
             b.spouse_contact_no,
             `${b.father_name}/${b.father_contact_no}`,
@@ -207,55 +213,43 @@ function writeBandiToSheet(sheet, b, language, sn, includePhoto, workbook) {
             b.thuna_date_bs,
             b.release_date_bs,
             b.total_fine || 0,
-            calculateBSDate(
-                formattedDateNp,
-                b.release_date_bs,
-                calculateBSDate(b.thuna_date_bs, b.release_date_bs, 0, 0, 0, 0)
-            ).percentage || 0,
+            calculateBSDate(formattedDateNp, b.release_date_bs).percentage || 0,
             language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
             language === "en" ? m.mudda_name_en : m.mudda_name,
             m.mudda_no,
             language === "en" ? m.vadi_en : m.vadi,
-            language === "en"
-                ? m.mudda_phesala_antim_office_en
-                : m.mudda_phesala_antim_office,
+            language === "en" ? m.mudda_phesala_antim_office_en : m.mudda_phesala_antim_office,
             m.mudda_phesala_antim_office_date,
             b.other_relatives || "",
-            b.escape_status || "",
+            language === "en" ? escapeEn[b.escape_status] : escapeNp[b.escape_status],
             b.escape_date_bs || "",
             b.escape_method || "",
             b.recapture_date_bs || "",
             b.recaptured_office || "",
-        ];
-        return sheet.addRow(row);
-    });
+        ])
+    );
 
-    if (includePhoto && b.photo_path && rows.length) {
-        const imgPath = path.join(process.cwd(), b.photo_path);
-        if (fs.existsSync(imgPath)) {
-            const imgId = workbook.addImage({
-                filename: imgPath,
-                extension: path.extname(imgPath).slice(1),
-            });
-            sheet.addImage(imgId, {
-                tl: { col: 1, row: rows[0].number - 1 },
-                ext: { width: 60, height: 60 },
-            });
-            rows[0].height = 50;
-        }
-    }
-
+    // MERGE BEFORE COMMIT
     if (rows.length > 1) {
         const start = rows[0].number;
         const end = rows[rows.length - 1].number;
-        const mergeCols = includePhoto
-            ? ["A", "B", "C", "D", "E", "F", "G", "H"]
-            : ["A", "B", "C", "D", "E", "F", "G"];
-
-        mergeCols.forEach((c) =>
-            sheet.mergeCells(`${c}${start}:${c}${end}`)
-        );
+        ["A", "B", "C", "D", "E", "F", "G"].forEach(col => {
+            sheet.mergeCells(`${col}${start}:${col}${end}`);
+        });
     }
 
-    rows.forEach((r) => r.commit());
+    rows.forEach(r => r.commit());
+
+    // STREAM SAFE IMAGE GUARD
+    if (includePhoto && typeof sheet.addImage === "function" && b.photo_path) {
+        try {
+            const imgPath = path.join(process.cwd(), b.photo_path);
+            if (fs.existsSync(imgPath)) {
+                const imgId = workbook.addImage({ filename: imgPath, extension: "jpeg" });
+                sheet.addImage(imgId, { tl: { col: 34, row: rows[0].number - 1 }, ext: { width: 80, height: 100 } });
+            }
+        } catch {
+            // ignore (streaming limitation)
+        }
+    }
 }
