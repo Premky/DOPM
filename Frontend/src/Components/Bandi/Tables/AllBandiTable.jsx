@@ -275,8 +275,20 @@ const AllBandiTable = () => {
                     "No Image"
                 ),
         },
-        { field: "govt_id_name_np", headerName: "परिचयपत्र प्रकार", width: 100 },
-        { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },
+        {
+            field: "govt_id_name_no",
+            headerName: "परिचयपत्र प्रकार/नं.",
+            width: 100,
+            renderCell: ( params ) => {
+                const row = params.row;
+                return `${ row.card_no || '' } (${ row.govt_id_name_np || '' }) `;
+            },
+            sortValue: ( row ) => {
+                return `${ row.card_no || '' } (${ row.govt_id_name_np || '' }) `;
+            }
+        },
+        // { field: "govt_id_name_np", headerName: "परिचयपत्र प्रकार", width: 100 },
+        // { field: "card_no", headerName: "परिचयपत्र नं.", width: 100 },
         { field: "current_age", headerName: "उमेर", width: 100 },
         {
             field: "gender", headerName: "लिङ्ग", width: 100,

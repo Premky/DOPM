@@ -11,8 +11,10 @@ import useBlockList from "../../../../ReuseableComponents/FetchApis/useBlockList
 
 
 const PersonalInfo = () => {
-    const { control } = useFormContext();
+    const { control, watch } = useFormContext();    
     const { optrecords: blockListOpt, loading: blockListLoading } = useBlockList();
+
+    watch("office_bandi_id"); // to re-render on change
 
     return ( <>
         <Typography variant="h6" gutterBottom>

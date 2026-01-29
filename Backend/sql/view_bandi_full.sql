@@ -71,6 +71,7 @@ SELECT
 
     -- Fine Summary
     fine_summary_table.fine_summary,
+    fine_totals.total_fine,
 
     -- Escape Details
     bed.escaped_from_office_id,
