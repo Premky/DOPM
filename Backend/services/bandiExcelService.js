@@ -142,6 +142,45 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
 
         
         if ( !rows.length ) break;
+        const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
+        const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
+        const escapeStatusEnMap = { recaptured: "Re-Captured", self_present: "Self Present", escaped: "Escaped", "": "" };
+
+        for ( const row of rows ) {
+            if ( row.bandi_id !== lastBandiId ) {
+                if ( bandiBuffer ) {
+                    writeBandiToSheet(
+                        sheet,
+                        bandiBuffer,
+                        language,
+                        genderNpMap,
+                        escapeStatusNpMap,
+                        escapeStatusEnMap,
+                        sn++,
+                        includePhoto,
+                        workbook
+                    );
+                }
+                bandiBuffer = { ...row, muddas: [] };
+                lastBandiId = row.bandi_id;
+            }
+            if ( row.mudda_id ) {
+                bandiBuffer.muddas.push( {
+                    mudda_group_name: row.mudda_group_name,
+                    mudda_group_name_en: row.mudda_group_name_en,
+                    mudda_name: row.mudda_name,
+                    mudda_name_en: row.mudda_name_en,
+                    mudda_no: row.mudda_no,
+                    vadi: row.vadi,
+                    vadi_en: row.vadi_en,
+                    mudda_phesala_antim_office: row.mudda_phesala_antim_office,
+                    mudda_phesala_antim_office_en: row.mudda_phesala_antim_office_en,
+                    mudda_phesala_antim_office_date: row.mudda_phesala_antim_office_date,
+                } );
+            }
+
+            totalRows++;
+        }
 
         offset += PAGE_SIZE;
 
@@ -165,34 +204,6 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
         ["A", "B", "C", "D", "E", "F", "G"].forEach( col => {
             sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
         } );
-    }
-
-    // Add photo if exists
-    if ( row.photo_path ) {
-        // Remove leading slash if exists
-        let relativePath = r.photo_path.startsWith( '/' ) ? r.photo_path.slice( 1 ) : r.photo_path;
-
-        const photoFullPath = path.join( process.cwd(), relativePath );
-
-        if ( fs.existsSync( photoFullPath ) ) {
-            // Detect file extension
-            const ext = path.extname( photoFullPath ).toLowerCase().replace( '.', '' );
-            const allowedExt = ['jpeg', 'jpg', 'png'];
-            if ( !allowedExt.includes( ext ) ) console.warn( `Unsupported photo format: ${ photoFullPath }` );
-
-            const imageId = workbook.addImage( {
-                filename: photoFullPath,
-                extension: ext === 'jpg' ? 'jpeg' : ext, // ExcelJS expects 'jpeg'
-            } );
-
-            row.height = 90; // Adjust row height for photo
-            sheet.addImage( imageId, {
-                tl: { col: headers.length - 1, row: row.number - 1 }, // last column
-                ext: { width: 80, height: 100 }, // width/height of photo
-            } );
-        } else {
-            console.warn( `Photo not found: ${ photoFullPath }` );
-        }
     }
 
     sn++;
