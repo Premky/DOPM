@@ -2,6 +2,7 @@ import { BANDI_STATUS } from "../constants/bandiStatus.js";
 import { bs2ad } from "../utils/bs2ad.js";
 import pool from "../utils/db3.js";
 import { logAudit } from "./auditService.js";
+import { updateBandiStatus } from "./bandiStatusService.js";
 
 export const getParoleNos = async ( data, active_user ) => {
     const sql = `SELECT * FROM payrole_nos`;
@@ -113,18 +114,10 @@ export const saveCourtDecisionService = async ( {
         // Update Bandi Current Status:
         if ( data.payrole_result === "पास" ) {
             await conn.query( `UPDATE bandi_person SET bandi_status=?, is_under_payrole=? WHERE id=?`, [bandiStatusId, 0, parole.bandi_id] );
-            await logAudit( {
-                tableName: 'payrole_decisions',
-                recordId: id,
-                action: "update",
-                oldData: req.oldRecord,
-                userId
-            } );
-
             await updateBandiStatus(
                 conn, {
                 bandiId: parole.bandi_id,                
-                newStatusId: BANDI_STATUS.RELEASED_ON_PAROLE,
+                newStatusId: BANDI_STATUS.PAROLE_GRANTED,
                 historyCode: "RELEASED_ON_PAROLE",
                 source: "SYSTEM",
                 userId: userId || null,

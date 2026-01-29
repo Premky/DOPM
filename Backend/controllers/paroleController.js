@@ -48,6 +48,7 @@ export const deleteParoleNos = async ( req, res ) => {
 
 export const updateCourtDecision = async ( req, res ) => {
   const { parole_id } = req.params;
+  console.log("Update Court Decision Req Data:", req.body)
   const userId = req.user.username;
   const currentOffice = req.user.office_id;
   const data = req.body;
