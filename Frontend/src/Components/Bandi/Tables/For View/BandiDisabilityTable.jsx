@@ -119,7 +119,7 @@ const BandiDisabilityTable = ( { bandi_id, print = false } ) => {
                 }}>
                     ♿ अलोपत्व विवरण
                 </Typography>
-                <Tooltip title="नयाँ अलोपत्व थप्नुहोस्">
+                <Tooltip title="नयाँ अपाङ्गताको विवरण थप्नुहोस्">
                     <Button
                         variant='contained'
                         size='small'
@@ -171,7 +171,7 @@ const BandiDisabilityTable = ( { bandi_id, print = false } ) => {
                                         padding: '12px 8px',
                                         fontSize: '0.9rem',
                                         borderColor: '#e0e0e0'
-                                    }}>अलोपत्व</TableCell>
+                                    }}>अपांगता</TableCell>
                                     {!print && (
                                         <TableCell align="center" sx={{
                                             fontWeight: 600,
