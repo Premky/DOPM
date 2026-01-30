@@ -17,8 +17,8 @@ const PersonalInfo = () => {
     const officeId = watch( "office_bandi_id" );    // to re-render on change
 
     return ( <>
-        <Typography variant="h6" gutterBottom>
-            व्यक्तिगत विवरण
+        <Typography sx={{ color: "blue", fontWeight: "bold", fontSize: "1.5rem" }} gutterBottom>
+            पारिवारीक / आश्रित विवरणः
         </Typography>
         <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>

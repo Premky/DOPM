@@ -11,7 +11,7 @@ const useGetOfficeBandiId = () => {
                 { withCredentials: true }
             );
 
-            console.log( res );
+            // console.log( res );
             if ( res.data?.Status ) {
                 return res.data.Result;
             }
@@ -21,7 +21,6 @@ const useGetOfficeBandiId = () => {
             return "";
         }
     };
-
     return { getRandomBandiId };
 };
 

@@ -15,10 +15,10 @@
 //For now: 
 AddressInfo
 FamilySection
+MuddaSection
+KaidDetails
 FineSection
 HealthSection
-KaidDetails
-MuddaSection
 PersonalInfo
 RemarksSection
 
