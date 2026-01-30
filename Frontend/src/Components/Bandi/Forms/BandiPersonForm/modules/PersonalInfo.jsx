@@ -11,10 +11,10 @@ import useBlockList from "../../../../ReuseableComponents/FetchApis/useBlockList
 
 
 const PersonalInfo = () => {
-    const { control, watch } = useFormContext();    
+    const { control, watch } = useFormContext();
     const { optrecords: blockListOpt, loading: blockListLoading } = useBlockList();
 
-    watch("office_bandi_id"); // to re-render on change
+    const officeId = watch( "office_bandi_id" );    // to re-render on change
 
     return ( <>
         <Typography variant="h6" gutterBottom>
@@ -22,7 +22,7 @@ const PersonalInfo = () => {
         </Typography>
         <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <ReuseInput name="office_bandi_id" label="बन्दी आईडी" control={control} readonly={true} required={true} />
+                <ReuseInput name="office_bandi_id" label="बन्दी आईडी" control={control} readonly={true} required={true} defaultValue={officeId} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <ReuseInput name="lagat_no" label="लगत नं" control={control} required={false} />
@@ -66,8 +66,9 @@ const PersonalInfo = () => {
                     label="लिङ्ग"
                     control={control}
                     options={[
-                        { value: "पुरुष", label: "पुरुष" },
-                        { value: "महिला", label: "महिला" },
+                        { label: 'पुरुष', value: 'male' },
+                        { label: 'महिला', value: 'female' },
+                        { label: 'अन्य', value: 'other' }
                     ]}
                     required={true}
                 />

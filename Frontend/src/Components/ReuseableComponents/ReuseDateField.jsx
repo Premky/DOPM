@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { InputLabel, TextField } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import NepaliDate from 'nepali-datetime';
+import Swal from 'sweetalert2';
 
 const ReuseDateField = ( { name, label, required, control, error, placeholder, onChange: propsOnChange, defaultValue, maxDate } ) => {
     const npToday = new NepaliDate();
@@ -85,7 +86,16 @@ const ReuseDateField = ( { name, label, required, control, error, placeholder, o
                         if ( !limitDate ) limitDate = "9999-12-32";
                         else if ( limitDate === "today" ) limitDate = formattedDateNp;
 
-                        if ( fixed > limitDate ) fixed = limitDate;
+                        if ( fixed > limitDate ) {
+                            Swal.fire( {
+                                // title: err?.response?.data?.nerr || err.message || "सर्भरमा समस्या आयो।",
+                                title: `यो विवरण मान्य छैन !`,
+                                text: `अघिल्लो ${ label } प्रविष्ट गर्ने सुविधा छैन। कृपया ${ label } सच्चयाउनु होला ।`,
+                                icon: 'error',
+                                draggable: true
+                            } );
+                            fixed = limitDate;
+                        };
 
                         setFormattedValue( fixed );
                         onChange( fixed );

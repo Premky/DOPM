@@ -1,18 +1,19 @@
+// defaultValues.js
 export const bandiDefaultValues = {
-  office_bandi_id: '',
-  lagat_no: '',
-  bandi_type: '',
-  gender: '',
-  dob: '',
-  age: '',
-  nationality: 'स्वदेशी',
+  // 🔑 MUST EXIST
+  office_bandi_id: "",
 
-  family: [{}],
-  muddas: [{}],
-  fines: [],
-  diseases: [],
-  disabilities: [],
+  lagat_no: "",
+  block_no: "",
+  enrollment_date_bs: "",
+  bandi_type: "",
+  bandi_name: "",
+  bandi_name_en: "",
+  gender: "",
+  dob: "",
+  married_status: "",
+  bandi_education: "",
+  bandi_huliya: "",
 
-  is_active: 0,
-  bandi_remarks: '',
+  photo: null,
 };
