@@ -191,7 +191,7 @@ const KaidDetailsSection = ( {formattedDateNp} ) => {
             </Grid>
           </>
         )}
-        <Grid size={{ xs: 12, sm: 3 }}>
+        {/* <Grid size={{ xs: 12, sm: 3 }}>
           <ReusePdfInput
             name="kaid_pdf"
             label="थुनुवा/कैदी पुर्जी(PDF मात्र)"
@@ -199,7 +199,7 @@ const KaidDetailsSection = ( {formattedDateNp} ) => {
             control={control}
             error={errors?.kaid_pdf}
           />
-        </Grid>
+        </Grid> */}
       </Grid>
     </>
   );
