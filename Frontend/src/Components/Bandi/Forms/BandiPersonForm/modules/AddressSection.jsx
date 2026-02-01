@@ -6,7 +6,7 @@ import ReuseInput from "../../../../ReuseableComponents/ReuseInput";
 import ReuseMunicipality from "../../../../ReuseableComponents/ReuseMunicipality";
 import ReuseDistrict from "../../../../ReuseableComponents/ReuseDistrict";
 import ReuseState from "../../../../ReuseableComponents/ReuseState";
-import ReuseCountry from "../../../../ReuseableComponents/ReuseRelativeRelations";
+import ReuseCountry from "../../../../ReuseableComponents/ReuseCountry";
 import ReuseSelect from "../../../../ReuseableComponents/ReuseSelect";
 
 

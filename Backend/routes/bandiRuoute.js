@@ -32,6 +32,8 @@ import {
     insertDisablilityDetails,
     updateContactPerson,
     updateDisabilities,
+    updateDiseasesDetails,
+    insertTransferDetails,
 } from '../services/bandiService.js';
 import { ageCalculator } from '../utils/ageCalculator.js';
 // console.log(current_date);
@@ -47,6 +49,7 @@ import { logAudit } from '../services/auditService.js';
 import { updateBandiStatus } from '../services/bandiStatusService.js';
 import { BANDI_STATUS } from '../constants/bandiStatus.js';
 import { exportQueue } from '../queues/exportQueue.js';
+import { bandiUpload } from '../middlewares/upload.js';
 
 async function translateEscapedNames( limit = 4000 ) {
     try {
@@ -135,41 +138,17 @@ router.get( '/get_random_bandi_id', verifyToken, async ( req, res ) => {
 } );
 
 //Define storage configuration
-const storage1 = multer.diskStorage( {
-    destination: function ( req, file, cb ) {
-        // route files to filder depending on fieldname
-        const field = ( file.fieldname || '' ).toString();
-        let uploadDir = './uploads/others';
-        if ( field.startsWith( 'thunuwa_or_kaidi_purji_' ) ) {
-            uploadDir = './uploads/bandi_kaidi_purji_photos';
-        } else if ( field === 'photo' ) {
-            uploadDir = './uploads/bandi_photos';
-        }
-        // console.log(uploadDir)
-        if ( !fs.existsSync( uploadDir ) ) {
-            fs.mkdirSync( uploadDir, { recursive: true } );
-        }
-        cb( null, uploadDir );
-    },
+const safeUnlink = ( filePath ) => {
+    if ( !filePath ) return;
 
-    filename: function ( req, file, cb ) {
-        let { office_bandi_id } = req.body;
-        if ( !office_bandi_id ) {
-            return cb( new Error( 'office_bandi_id is required' ), null );
+    fs.unlink( filePath, ( err ) => {
+        if ( err ) {
+            console.log( "Failed to delete file:", filePath, err.message );
         } else {
-            office_bandi_id = file.fieldname;
+            console.log( "🗑️ Deleted file:", filePath );
         }
-
-        const ext = path.extname( file.originalname );
-        const timestamp = Date.now();
-        // const random = Math.round( Math.random() * 1e9 );
-        const random = Math.floor( Math.random() * 111 ) + 1;
-
-        const uniqueName = `${ office_bandi_id }_${ file.fieldname }_${ timestamp }_${ random }${ ext }`;
-        cb( null, uniqueName );
-    }
-
-} );
+    } );
+};
 
 
 const storage = multer.diskStorage( {
@@ -344,8 +323,161 @@ router.put( '/update_bandi_photo/:id', verifyToken, upload.single( 'photo' ), as
     }
 } );
 
+router.post(
+    "/create_bandi",
+    verifyToken,
+    bandiUpload.fields( [
+        { name: "bandi_photo", maxCount: 1 },
+        { name: "kaid_pdf", maxCount: 1 },
+    ] ),
+    async ( req, res ) => {
+        // console.log( "REQ.FILES =>", req.files );
+        // console.log("CONTENT-TYPE:", req.headers["content-type"]);
 
-router.post( '/create_bandi', verifyToken,
+
+        const connection = await pool.getConnection();
+        let uploadedFiles = [];
+        try {
+            await connection.beginTransaction();
+
+            const data = req.body;
+            const files = req.files;
+            const user_id = req.user.username;
+            const office_id = req.user.office_id;
+            const office_bandi_id = data.office_bandi_id;
+            // console.log( 'data:', data );
+
+            /* ------------------ Files ------------------ */
+            const bandiPhotoPath = files?.bandi_photo?.[0]
+                ? `/uploads/bandi_photos/${ files.bandi_photo[0].filename }`
+                : null;
+
+            const kaidPdfPath = files?.kaid_pdf?.[0]
+                ? `/uploads/kaid_pdfs/${ files.kaid_pdf[0].filename }`
+                : null;
+
+            if ( bandiPhotoPath ) uploadedFiles.push( bandiPhotoPath );
+            if ( kaidPdfPath ) uploadedFiles.push( kaidPdfPath );
+
+            /* ------------------ JSON parse ------------------ */
+            const family = JSON.parse( data.family || "[]" );
+            const fine = JSON.parse( data.fine || "[]" );
+            const disease = JSON.parse( data.disease || "[]" );
+            const disability = JSON.parse( data.disability || "[]" );
+            const healthInsurance = JSON.parse( data.health_insurance || "[]" );
+            const contact_person = JSON.parse( data.contact_person || "[]" );
+            const transfer_details = [
+                {
+                    transfer_from_office_id: office_id,
+                    transfer_to_office_id: office_id,
+                    transfer_from_date: data.enrollment_date_bs,
+                    transfer_to_date: data.enrollment_date_bs,
+                    transfer_reason_id: 100,
+                    transfer_reason: "नयाँ थप",
+                    role_id: req.user.role_id
+                }
+            ];
+
+            /* ------------------ 1️⃣ bandi_person ------------------ */
+            const bandi_id = await insertBandiPerson(
+                {
+
+                    ...data,
+                    photo_path: bandiPhotoPath,
+                    created_by: user_id,
+                    current_office_id: office_id,
+                },
+                connection
+            );
+            /* ------------------ Update bandi_person Status ------------------ */
+            await updateBandiStatus( connection, {
+                bandiId: bandi_id,
+                newStatusId: BANDI_STATUS.IN_CUSTODY,
+                historyCode: "IN_CUSTODY",
+                source: "ADMIN",
+                remarks: req.body.remarks,
+                userId: req.user.username,
+            } );
+            /* ------------------ 2️⃣ kaid_details ------------------ */
+            await insertKaidDetails(
+                bandi_id,
+                {
+                    ...req.body,
+                    kaid_pdf_path: kaidPdfPath, // ✅ FIXED
+                    created_by: user_id,
+                    updated_by: user_id,
+                    current_office_id: office_id,
+                },
+                connection );
+
+            /* ------------------ 3️⃣ mudda (NO FILES) ------------------ */
+            const muddas = [];
+            for ( let i = 1; i <= 10; i++ ) { // adjust max mudda count
+                if ( !data[`mudda_id_${ i }`] || !data[`mudda_no_${ i }`] ) continue;
+                muddas.push( {
+                    mudda_id: data[`mudda_id_${ i }`],
+                    mudda_no: data[`mudda_no_${ i }`],
+                    is_last: Number( data[`is_last_mudda_${ i }`] ),
+                    is_main: Number( data[`is_main_mudda_${ i }`] ),
+                    hirasat_years: req.body[`hirasat_years_${ i }`],
+                    hirasat_months: req.body[`hirasat_months_${ i }`],
+                    hirasat_days: req.body[`hirasat_days_${ i }`],
+                    total_kaid_duration: data[`total_kaid_duration_${ i }`],
+                    thuna_date_bs: data[`thuna_date_bs_${ i }`],
+                    release_date_bs: data[`release_date_bs_${ i }`],
+                    is_life_time: Number( data[`is_life_time_${ i }`] ),
+                    condition: req.body[`mudda_condition_${ i }`],
+                    district: req.body[`mudda_district_${ i }`],
+                    office: req.body[`mudda_office_${ i }`],
+                    date: req.body[`mudda_phesala_date_${ i }`],
+                    vadi: req.body[`vadi_${ i }`],
+                    vadi_en: req.body[`vadi_en_${ i }`],
+                    mudda_group_id: data[`mudda_group_id_${ i }`],
+                } );
+            }
+            // Then call:
+            await insertMuddaDetails( bandi_id, muddas, user_id, office_id, connection );
+
+            /* ------------------ 4️⃣ related tables ------------------ */
+            await insertCardDetails( bandi_id, data, user_id, office_id, connection );
+            await insertAddress( bandi_id, data, user_id, office_id, connection );
+            await insertFineDetails( bandi_id, fine, user_id, office_id, connection );
+            if ( data.punarabedan_office_id && data.punarabedan_office_ch_no && data.punarabedan_office_date ) {
+                await insertPunarabedan( bandi_id, data, user_id, office_id, connection );
+            }
+            await insertFamily( bandi_id, family, user_id, office_id, connection );
+            await insertContacts( bandi_id, contact_person, user_id, office_id, connection );
+            await insertHealthInsurance( bandi_id, healthInsurance, connection );
+            await insertDisablilityDetails( bandi_id, disability, user_id, office_id, connection );
+            await insertDiseasesDetails( bandi_id, disease, user_id, office_id, connection );
+
+            await insertTransferDetails( bandi_id, transfer_details, 15, office_id, user_id, connection );
+
+            await connection.commit();
+
+            res.status( 201 ).json( {
+                Status: true,
+                Result: bandi_id,
+                office_bandi_id: office_bandi_id,
+                message: 'बन्दी विवरण सफलतापूर्वक सुरक्षित गरियो।'
+            } );
+
+        } catch ( error ) {
+            await connection.rollback();
+            console.error( "❌ create_bandi error:", error );
+            // Cleaning up unploaded files
+            uploadedFiles.forEach( ( filePath ) => safeUnlink( filePath ) );
+            res.status( 500 ).json( {
+                success: false,
+                message: "Failed to create bandi",
+            } );
+        } finally {
+            connection.release();
+        }
+    }
+);
+
+router.post( '/create_bandi1', verifyToken,
     upload.fields( [
         { name: 'photo', maxCount: 1 },
         { name: 'thunuwa_or_kaidi_purji_1', maxCount: 1 },
@@ -506,6 +638,8 @@ router.post( '/create_bandi', verifyToken,
             if ( connection ) connection.release();
         }
     } );
+
+
 
 router.post( '/create_bandi_punrabedn', verifyToken, async ( req, res ) => {
     let connection;
@@ -2562,12 +2696,12 @@ router.get( '/get_bandi_diseases/:id', async ( req, res ) => {
 router.put( '/update_bandi_diseases/:id', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     const user_id = req.user.username;
-    const disabilityId = req.params.id;
+    const disease_req_id = req.params.id;
     let connection;
     try {
         connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
-        const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office, connection );
+        const updatedCount = await updateDiseasesDetails( disease_req_id, req.body, user_id, active_office, connection );
 
         if ( updatedCount === 0 ) {
             return res.status( 400 ).json( {
@@ -2677,7 +2811,7 @@ router.put( '/update_bandi_disability/:id', verifyToken, async ( req, res ) => {
     try {
         connection = await pool.getConnection();
         console.log( "📝 Update disability request:", req.body );
-        const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office );
+        const updatedCount = await updateDisabilities( disabilityId, req.body, user_id, active_office, connection );
 
         if ( updatedCount === 0 ) {
             return res.status( 400 ).json( {

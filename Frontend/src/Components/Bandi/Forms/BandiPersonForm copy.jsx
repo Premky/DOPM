@@ -250,7 +250,7 @@ const BandiPersonForm = () => {
         // console.log( response );
         const bandi_id = Result;
         // console.log( bandi_id );
-        navigate( `/bandi/view_saved_record/${ bandi_id }` ); // <-- fixed here
+        navigate( `/bandi/view_saved_record/${ bandi_id }/${bandi_id}` ); // <-- fixed here
         reset();
         setEditing( false );
 

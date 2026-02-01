@@ -128,8 +128,8 @@ function App() {
                     <Route path="count_ac_country" element={<CountAcOfficenCountry />} />
                     <Route path="maskebari" element={<KaragarMaskebari />} />
                     <Route path="bandi_details" element={<AllBandiTable />} />
-                    <Route path="create_bandi" element={<BandiPersonForm />} />
-                    <Route path="test_create_bandi" element={<MainBandiPersonForm />} />
+                    <Route path="test_create_bandi" element={<BandiPersonForm />} />
+                    <Route path="create_bandi" element={<MainBandiPersonForm />} />                    
                     <Route path="bandi_release" element={<BandiReleaseForm />} />
                     <Route path="bandi_escape" element={<BandiEscapeForm />} />
                     <Route path="bandi_recapture" element={<BandiRecaptureForm />} />

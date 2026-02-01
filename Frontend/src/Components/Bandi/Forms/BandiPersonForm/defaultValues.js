@@ -15,5 +15,5 @@ export const bandiDefaultValues = {
   bandi_education: "",
   bandi_huliya: "",
 
-  photo: null,
+  bandi_photo: null,
 };

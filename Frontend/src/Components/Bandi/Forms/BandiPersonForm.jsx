@@ -193,7 +193,7 @@ const BandiPersonForm = () => {
     try {
       const url = editing
         ? `${ BASE_URL }/bandi/update_bandi/${ currentData.id }`
-        : `${ BASE_URL }/bandi/create_bandi`;
+        : `${ BASE_URL }/bandi/create_bandi1`;
 
       const method = editing ? 'PUT' : 'POST';
 

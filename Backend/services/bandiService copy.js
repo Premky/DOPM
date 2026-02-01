@@ -7,7 +7,6 @@ import { ageCalculator } from '../utils/ageCalculator.js';
 // connection = await pool.getConnection();
 
 async function insertBandiPerson( data, connection ) {
-  console.log( 'photo_path:', data.photo_path );
   const dob_ad = await bs2ad( data.dob );
   const age = await ageCalculator( dob_ad );
 
@@ -17,7 +16,7 @@ async function insertBandiPerson( data, connection ) {
     data.gender, data.dob, dob_ad, age, data.married_status, data.photo_path,
     data.bandi_education, data.bandi_height, data.bandi_weight, data.bandi_huliya,
     0,
-    data.bandi_remarks, data.created_by, data.created_by, data.current_office_id
+    data.bandi_remarks, data.user_id, data.user_id, data.office_id
   ];
   const sql = `INSERT INTO bandi_person (
     bandi_type, office_bandi_id, lagat_no, nationality, bandi_name, bandi_name_en,
@@ -31,56 +30,62 @@ async function insertBandiPerson( data, connection ) {
 }
 
 async function insertKaidDetails( bandi_id, data, connection ) {
+  // const defaultDate = '1950-01-01';
+  const hirasatBs = data.hirasat_date_bs;
+  const releaseBs = data.release_date_bs;
 
-  const hirasatBs = data.hirasat_date_bs || null;
-  const releaseBs = data.release_date_bs || null;
+  let thunaAd;
+  let releaseAd;
+  if ( hirasatBs ) {
+    // thunaAd = data.hirasatBs;
+    thunaAd = hirasatBs && await bs2ad( hirasatBs );
+  }
+  if ( releaseBs ) {
+    releaseAd = data.releaseBs && await bs2ad( data?.release_date_bs );
+  }
+  let is_life_time;
+  if ( data.is_life_time == undefined || data.is_life_time == "" || data.is_life_time == null ) {
+    is_life_time = 0;
+  } else {
+    is_life_time = data.is_life_time;
+  }
 
-  const thunaAd = hirasatBs ? await bs2ad( hirasatBs ) : null;
-  const releaseAd = releaseBs ? await bs2ad( releaseBs ) : null;
-
-  const is_life_time = data.is_life_time ? 1 : 0;
-
-  const values = [
+  const baseValues = [
     bandi_id,
-    data.hirasat_years || 0,
-    data.hirasat_months || 0,
-    data.hirasat_days || 0,
+    data.hirasat_years,
+    data.hirasat_months,
+    data.hirasat_days,
     hirasatBs,
-    thunaAd,
-    is_life_time,
-    releaseBs,
-    releaseAd,
-    data.kaid_pdf_path || null,   // ✅ NEW
-    data.created_by,
-    data.updated_by,
-    data.current_office_id,
+    thunaAd
   ];
 
-  const sql = `
-    INSERT INTO bandi_kaid_details (
-      bandi_id,
-      hirasat_years,
-      hirasat_months,
-      hirasat_days,
-      thuna_date_bs,
-      thuna_date_ad,
-      is_life_time,
-      release_date_bs,
-      release_date_ad,
-      kaid_pdf_path,
-      created_by,
-      updated_by,
-      current_office_id
-    ) VALUES (?)
-  `;
+  const auditFields = [data.user_id, data.user_id, data.office_id];
 
-  await connection.query( sql, [values] );
+  let values, sql;
+
+  if ( releaseBs ) {
+    values = [...baseValues, is_life_time, releaseBs, releaseAd, ...auditFields];
+    sql = `INSERT INTO bandi_kaid_details (
+    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs, thuna_date_ad, is_life_time,
+    release_date_bs, release_date_ad,
+    created_by, updated_by, current_office_id
+  ) VALUES (?)`;
+  } else {
+    values = [...baseValues, ...auditFields];
+    sql = `INSERT INTO bandi_kaid_details (
+    bandi_id, hirasat_years, hirasat_months, hirasat_days, thuna_date_bs,  thuna_date_ad,
+    created_by, updated_by, current_office_id
+  ) VALUES (?)`;
+  }
+  // await queryAsync( sql, [values] );
+  console.log( values );
+  const [result] = await connection.query( sql, [values] );
 }
 
-async function insertCardDetails( bandi_id, data, user_id, office_id, connection ) {
+async function insertCardDetails( bandi_id, data, connection ) {
   const values = [
     bandi_id, data.id_card_type, data.card_name, data.card_no,
-    data.card_issue_district_id, data.card_issue_date, user_id, office_id
+    data.card_issue_district_id, data.card_issue_date, data.user_id, data.office_id
   ];
   const sql = `INSERT INTO bandi_id_card_details (
     bandi_id, card_type_id, card_name, card_no, card_issue_district, card_issue_date, created_by, current_office_id
@@ -89,7 +94,7 @@ async function insertCardDetails( bandi_id, data, user_id, office_id, connection
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertAddress( bandi_id, data, user_id, office_id, connection ) {
+async function insertAddress( bandi_id, data, connection ) {
   let sql, values;
   const isNepali = Number( data.nationality_id ) === 1;
 
@@ -101,9 +106,9 @@ async function insertAddress( bandi_id, data, user_id, office_id, connection ) {
       data.district_id,
       data.municipality_id,
       data.wardno,
-      user_id,
-      user_id,
-      office_id
+      data.user_id,
+      data.user_id,
+      data.office_id
     ];
     sql = `INSERT INTO bandi_address (
       bandi_id, nationality_id, province_id, district_id,
@@ -115,9 +120,9 @@ async function insertAddress( bandi_id, data, user_id, office_id, connection ) {
       bandi_id,
       data.nationality_id,
       data.bidesh_nagrik_address_details,
-      user_id,
-      user_id,
-      office_id
+      data.user_id,
+      data.user_id,
+      data.office_id
     ];
     sql = `INSERT INTO bandi_address (
       bandi_id, nationality_id, bidesh_nagarik_address_details,
@@ -386,14 +391,13 @@ async function insertSingleFineDetails( bandi_id, data, user_id, office_id, conn
   const [result] = await connection.query( sql, [values] );
 }
 
-async function insertPunarabedan( bandi_id, data, user_id, office_id, connection ) {
-  if ( !data.punarabedan_office_id ) return;
+async function insertPunarabedan( bandi_id, data, connection ) {
+  if ( !data.punarabedan_office_id && !data.punarabedan_office_district ) return;
   const values = [
-    bandi_id, data.punarabedan_office_id,
-    data.punarabedan_office_ch_no, data.punarabedan_office_date,
-    user_id, user_id, office_id
+    bandi_id, data.punarabedan_office_id, data.punarabedan_office_district,
+    data.punarabedan_office_ch_no, data.punarabedan_office_date
   ];
-  const sql = `INSERT INTO bandi_punarabedan_details (bandi_id, punarabedan_office_id, punarabedan_office_ch_no, punarabedan_office_date, created_by, updated_by, current_office_id) VALUES (?)`;
+  const sql = `INSERT INTO bandi_punarabedan_details (...) VALUES (?)`;
   // await queryAsync( sql, [values] );
   const [result] = await connection.query( sql, [values] );
 }
@@ -601,6 +605,23 @@ async function updateDiseasesDetails( diseasesId, diseases, user_id, office_id, 
   }
 }
 
+async function insertDisablilityDetails1( bandi_id, disabilities = [], user_id, office_id ) {
+
+  for ( const disability of disabilities ) {
+    if ( Number( disability.is_disabled ) === 1 ) {
+      const sql = `INSERT INTO bandi_disability_details(
+      bandi_id, disability_id, disability_name, created_by, updated_by, created_office_id) VALUES (?)`;
+      const values = [
+        bandi_id,
+        disability.disability_id || 0,
+        disability.disability_name?.trim() || null,
+        user_id, user_id, office_id
+      ];
+      await queryAsync( sql, [values] );
+    }
+  }
+}
+
 async function insertDisablilityDetails( bandi_id, disabilities = [], user_id, office_id, connection ) {
   try {
     if ( !disabilities.length ) {
@@ -713,9 +734,8 @@ async function insertTransferDetails( bandi_id, data = [], status_id, user_id, a
     item.transfer_to_date,
     item.transfer_reason_id,
     item.transfer_reason,
-    item.role_id,
     status_id,
-    item?.remarks||'',
+    item.remarks,
     user_id,
     user_id,
     new Date(),
@@ -727,7 +747,7 @@ async function insertTransferDetails( bandi_id, data = [], status_id, user_id, a
     INSERT INTO bandi_transfer_history (
       bandi_id, transfer_from_office_id, final_to_office_id,
       transfer_from_date, transfer_to_date,
-      transfer_reason_id, transfer_reason, role_id, status_id, remarks,
+      transfer_reason_id, transfer_reason, status_id, remarks,
       created_by, updated_by, created_at, updated_at, created_office_id
     ) VALUES ?
   `;

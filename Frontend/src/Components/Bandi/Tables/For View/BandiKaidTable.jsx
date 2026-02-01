@@ -148,6 +148,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कैद अवधी</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>छुट्ने मिति</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>आजिवन सजाय हो/होइन?</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>फाइल</TableCell>
                                     {!print && (
                                         <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>#</TableCell>
                                     )}
@@ -166,6 +167,16 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                         </TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.release_date_bs || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_life_time === '1' ? 'हो' : 'होइन'}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>
+                                            {opt.kaid_pdf_path ?
+                                                ( <a
+                                                    href={`${ BASE_URL }${ opt.kaid_pdf_path }`}
+                                                    download
+                                                >
+                                                    डउनलोड गर्नुहोस्
+                                                </a> ) : ( 'कुनै फाइल छैन।' )
+                                            }
+                                        </TableCell>
                                         {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 <Tooltip title="संपादन गर्नुहोस्">

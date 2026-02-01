@@ -180,8 +180,14 @@ const ViewBandiWordStyle = ( { bandi } ) => {
           <SectionBox><BandiIDTable bandi_id={bandi_id} /></SectionBox>
           <SectionBox><BandiFineTable bandi_id={bandi_id} /></SectionBox>
           <SectionBox><BandiPunrabednTable bandi_id={bandi_id} /></SectionBox>
-          <SectionBox><BandiDiseasesTable bandi_id={bandi_id} /></SectionBox>
-          <SectionBox><BandiDisabilityTable bandi_id={bandi_id} /></SectionBox>
+          <Grid container size={{ xs: 12 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <SectionBox><BandiDiseasesTable bandi_id={bandi_id} /></SectionBox>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <SectionBox><BandiDisabilityTable bandi_id={bandi_id} /></SectionBox>
+            </Grid>
+          </Grid>
           <SectionBox><BandiTransferHistoryTable bandi_id={bandi_id} /></SectionBox>
           <SectionBox><BandiEscapeTable bandi_id={bandi_id} /></SectionBox>
           <SectionBox><BandiReleaseTable bandi_id={bandi_id} /></SectionBox>

@@ -171,6 +171,13 @@ const BandiDiseasesTable = ( { bandi_id, print = false } ) => {
                                         fontSize: '0.9rem',
                                         borderColor: '#e0e0e0'
                                     }}>रोग</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>रोगको विवरण</TableCell>
                                     {!print && (
                                         <TableCell align="center" sx={{
                                             fontWeight: 600,
@@ -190,7 +197,8 @@ const BandiDiseasesTable = ( { bandi_id, print = false } ) => {
                                         }
                                     }}>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
-                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.disease_id == 100 ? <>{`(${ opt.disease_name_np }) ${ opt.disease_name_if_other }`} </> : opt.disease_name_np}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.disease_name_np}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.disease_name_if_other}</TableCell>
                                         {!print && (
                                             <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                                 <Tooltip title="संपादन गर्नुहोस्">

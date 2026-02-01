@@ -1,28 +1,40 @@
-import React, { useEffect } from "react";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
-
+import { FormProvider, useForm } from "react-hook-form";
+import { submitBandiPersonForm } from "./formSubmit";
 import { bandiDefaultValues } from "./defaultValues";
-import PersonalInfo from "./modules/PersonalInfo";
+import { useNavigate } from "react-router-dom";
+import { useBaseURL } from "../../../../Context/BaseURLProvider";
 import useGetOfficeBandiId from "./hooks/useGetOfficeBandiId";
+import { useEffect } from "react";
+import PersonalInfo from "./modules/PersonalInfo";
 import FamilySection from "./modules/FamilySection";
 import MuddaSection from "./modules/MuddaSection";
 import KaidDetailsSection from "./modules/KaidDetailsSection";
-import NepaliDate from "nepali-datetime";
 import AddressSection from "./modules/AddressSection";
 import ContactPersonSection from "./modules/ContactPersonSection";
 import IdCardSection from "./modules/IdCardSection";
 import FineSection from "./modules/FineSection";
+import HealthInsuranceDisabilitySection from "./modules/HealthInsuranceDisabilitySection";
+import { Button } from "@mui/material";
+import PunrabedanSection from "./modules/PunrabedanSection";
 
-const MainBandiPersonForm = ( { onSubmit, onError, isEditMode = false } ) => {
+
+
+const MainBandiPersonForm = ( { onError, isEditMode = false } ) => {
   const methods = useForm( {
     mode: "onBlur",
     defaultValues: bandiDefaultValues,
   } );
 
-  const npToday = new NepaliDate();
-  const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
+  const navigate = useNavigate();
+  const BASE_URL = useBaseURL();
 
-  const { handleSubmit, watch, setValue, getValues, register, reset, control, formState: { errors } } = methods;
+  const {
+    handleSubmit,
+    setValue,
+    getValues,
+    reset,
+  } = methods;
+
   const { getRandomBandiId } = useGetOfficeBandiId();
 
   useEffect( () => {
@@ -44,27 +56,48 @@ const MainBandiPersonForm = ( { onSubmit, onError, isEditMode = false } ) => {
     loadBandiId();
   }, [isEditMode, getRandomBandiId, getValues, setValue] );
 
+  /* ✅ THIS IS THE ONLY CORRECT PLACE WHERE `data` EXISTS */
+  const onSubmit = async ( data ) => {
+    // console.log( "Date:", data );
+    await submitBandiPersonForm( {
+      data,
+      BASE_URL,
+      editing: isEditMode,
+      navigate,
+      reset,
+    } );
+  };
+
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit( onSubmit, onError )}>
+      <form onSubmit={handleSubmit( onSubmit, onError )}>
         <PersonalInfo />
-        <hr />
-        <FamilySection />
         <hr />
         <MuddaSection />
         <hr />
-        <KaidDetailsSection formattedDateNp={formattedDateNp} />
-        <hr />
-        <AddressSection />
-        <hr />
-        <ContactPersonSection />
+        <KaidDetailsSection />
         <hr />
         <IdCardSection />
         <hr />
+        <AddressSection />
+        <hr />
+        <FamilySection />
+        <hr />
+        <ContactPersonSection />
+        <hr />
         <FineSection />
+        <hr />
+        <PunrabedanSection />
+        <hr />
+        <HealthInsuranceDisabilitySection />
+        <hr />
+
+        <Button type="submit" variant="contained">
+          Submit
+        </Button>
+
       </form>
     </FormProvider>
   );
 };
-
 export default MainBandiPersonForm;

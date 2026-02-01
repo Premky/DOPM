@@ -7,9 +7,10 @@ import ReuseInput from "../../../../ReuseableComponents/ReuseInput";
 import { useFormContext } from "react-hook-form";
 import ReuseSelect from "../../../../ReuseableComponents/ReuseSelect";
 import { calculateBSDate, sumDates } from "../../../../../../Utils/dateCalculator";
+import ReusePdfInput from "../../../../ReuseableComponents/ReusePDFInput";
 
-const KaidDetailsSection = ( formattedDateNp ) => {
-  const currentdate = formattedDateNp.formattedDateNp;
+const KaidDetailsSection = ( {formattedDateNp} ) => {
+  const currentdate = formattedDateNp;
 
   const {
     control,
@@ -190,6 +191,15 @@ const KaidDetailsSection = ( formattedDateNp ) => {
             </Grid>
           </>
         )}
+        <Grid size={{ xs: 12, sm: 3 }}>
+          <ReusePdfInput
+            name="kaid_pdf"
+            label="थुनुवा/कैदी पुर्जी(PDF मात्र)"
+            required
+            control={control}
+            error={errors?.kaid_pdf}
+          />
+        </Grid>
       </Grid>
     </>
   );

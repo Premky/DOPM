@@ -117,7 +117,7 @@ const BandiDisabilityTable = ( { bandi_id, print = false } ) => {
                     alignItems: 'center',
                     gap: 1
                 }}>
-                    ♿ अलोपत्व विवरण
+                    ♿ अपाङ्गताको विवरण
                 </Typography>
                 <Tooltip title="नयाँ अपाङ्गताको विवरण थप्नुहोस्">
                     <Button
@@ -172,6 +172,13 @@ const BandiDisabilityTable = ( { bandi_id, print = false } ) => {
                                         fontSize: '0.9rem',
                                         borderColor: '#e0e0e0'
                                     }}>अपांगता</TableCell>
+                                    <TableCell align="center" sx={{
+                                        fontWeight: 600,
+                                        color: '#2c3e50',
+                                        padding: '12px 8px',
+                                        fontSize: '0.9rem',
+                                        borderColor: '#e0e0e0'
+                                    }}>अपांगता विवरण</TableCell>
                                     {!print && (
                                         <TableCell align="center" sx={{
                                             fontWeight: 600,
@@ -191,6 +198,8 @@ const BandiDisabilityTable = ( { bandi_id, print = false } ) => {
                                         }
                                     }}>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{index + 1}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.disablility_name_np}</TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.disabliity_name_if_other}</TableCell>
                                         {!print && (
                                         <TableCell align="center" sx={{ padding: '10px 8px' }}>
                                             <Tooltip title="संपादन गर्नुहोस्">
