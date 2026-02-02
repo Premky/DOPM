@@ -20,7 +20,7 @@ const MuddaSection = () => {
     const [muddaCount, setMuddaCount] = useState( 1 );
     const { optrecords: muddaGroups } = fetchMuddaGroups();
     const selectedbandi_type = watch( 'bandi_type' );
-    
+
     useEffect( () => {
         [...Array( muddaCount )].forEach( ( _, index ) => {
             const thuna = watch( `thuna_date_bs_${ index + 1 }` );
@@ -216,48 +216,48 @@ const MuddaSection = () => {
                             </>
                         )}
 
-                        <br />
+                        
                         <Grid container size={{ xs: 12 }}>
-                            <Grid size={{ xs: 12 }}>कारागार आउनुभन्दा अगाडीको हिरासत/थुनामा बसेको अवधि</Grid>
-                            <Grid size={{ xs: 1 }}>
-                                <ReuseInput
-                                    name={`hirasat_years_${ i }`}
-                                    label="वर्ष"
-                                    placeholder='वर्ष'
-                                    type='number'
-                                    defaultValue={0}
-                                    required={true}
-                                    control={control}
-                                    error={errors?.[`hirasat_years_${ i }`]}
-                                />
+                            <Grid container size={{ xs: 12, sm: 6, md: 3 }}>कारागार आउनुभन्दा अगाडीको हिरासत/थुनामा बसेको अवधि
+                                <Grid size={{ xs: 4 }}>
+                                    <ReuseInput
+                                        name={`hirasat_years_${ i }`}
+                                        label="वर्ष"
+                                        placeholder='वर्ष'
+                                        type='number'
+                                        defaultValue={0}
+                                        required={true}
+                                        control={control}
+                                        error={errors?.[`hirasat_years_${ i }`]}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 4 }}>
+                                    <ReuseInput
+                                        name={`hirasat_months_${ i }`}
+                                        label="महिना "
+                                        placeholder='महिना'
+                                        type='number'
+                                        defaultValue={0}
+                                        required={true}
+                                        control={control}
+                                        error={errors?.[`hirasat_months_${ i }`]}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 4 }}>
+                                    <ReuseInput
+                                        name={`hirasat_days_${ i }`}
+                                        label="दिन"
+                                        placeholder='दिन'
+                                        defaultValue={0}
+                                        type='number'
+                                        required={true}
+                                        control={control}
+                                        error={errors?.[`hirasat_days_${ i }`]}
+                                    />
+                                </Grid>
                             </Grid>
-                            <Grid size={{ xs: 1 }}>
-                                <ReuseInput
-                                    name={`hirasat_months_${ i }`}
-                                    label="महिना "
-                                    placeholder='महिना'
-                                    type='number'
-                                    defaultValue={0}
-                                    required={true}
-                                    control={control}
-                                    error={errors?.[`hirasat_months_${ i }`]}
-                                />
-                            </Grid>
-                            <Grid size={{ xs: 1 }}>
-                                <ReuseInput
-                                    name={`hirasat_days_${ i }`}
-                                    label="दिन"
-                                    placeholder='दिन'
-                                    defaultValue={0}
-                                    type='number'
-                                    required={true}
-                                    control={control}
-                                    error={errors?.[`hirasat_days_${ i }`]}
-                                />
-                            </Grid>
-
                             {/* Duration */}
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                                 <ReuseInput
                                     name={`total_kaid_duration_${ i }`}
                                     label="जम्मा कैद अवधि"
@@ -267,7 +267,7 @@ const MuddaSection = () => {
                             </Grid>
                             <br />
                             {/* Main / Last */}
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                                 <ReuseSelect
                                     name={`is_main_mudda_${ i }`}
                                     label="मुख्य मुद्दा?"
