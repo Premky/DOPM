@@ -1,15 +1,20 @@
-// import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist";
 // import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
 
 // pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-import * as pdfjsLib from "pdfjs-dist";
+// pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+//     "pdfjs-dist/build/pdf.worker.min.mjs",
+//     import.meta.url
+// ).toString();
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url
-).toString();
-    
+// pdfjsLib.GlobalWorkerOptions.workerSrc =
+//   "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
 export const usePdfFilePolicy = ( {
     numCases = 1,
     sizePerPageMB = 0.5,
