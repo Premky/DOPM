@@ -1,4 +1,5 @@
 import axios from "axios";
+import Swal from "sweetalert2";
 
 /* ---------------------------------------
    Build FormData for create/update
@@ -65,8 +66,25 @@ export const submitBandiPersonForm = async ( {
         // optional: reset form or navigate
         // if ( !editing && reset ) reset();
         if ( navigate && response.data.Status ) {
-            // navigate( `/bandi/view_saved_record/${ response.data.Result }/${ response.data.office_bandi_id }` );
-            alert('recorded')
+            if ( Status ) {
+                // Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
+                Swal.fire( {
+                    title: 'आहा!',
+                    text: 'रेकर्ड सफलतापूर्वक थपियो',
+                    // imageUrl: `/gif/funnySuccesslogo.gif`,
+                    imageUrl: `/gif/clap.gif`,
+                    // imageUrl: `${ BASE_URL }/gif/funnySuccesslogo.gif`, // Use your custom GIF here
+                    imageWidth: 200, // optional
+                    imageHeight: 200, // optional
+                    imageAlt: 'Custom success image',
+                } );
+            
+                // console.log( bandi_id );
+                 navigate( `/bandi/view_saved_record/${ response.data.Result }/${ response.data.office_bandi_id }` );
+                reset();                
+            } else {
+                Swal.fire( 'त्रुटि!', response.data.Error || 'रिकर्ड थप्न सकिएन', 'error' );
+            } 
         }
 
         return response.data;
