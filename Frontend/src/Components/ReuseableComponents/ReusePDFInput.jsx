@@ -11,6 +11,7 @@ const ReusePdfInput = ({
   control,
   error,
   defaultValue,
+  numCases = 1,
   sizePerPageMB = 0.5,
   rejectEncrypted = true,
   rejectScanned = false,
@@ -22,6 +23,7 @@ const ReusePdfInput = ({
   const [loading, setLoading] = useState(false);
 
   const { validatePdf } = usePdfFilePolicy({
+    numCases,
     sizePerPageMB,
     rejectEncrypted,
     rejectScanned,
@@ -29,7 +31,7 @@ const ReusePdfInput = ({
 
   return (
     <>
-      <InputLabel id={name}>
+      <InputLabel>
         {label} {required && <span style={{ color: "red" }}>*</span>}
       </InputLabel>
 
@@ -37,11 +39,7 @@ const ReusePdfInput = ({
         name={name}
         control={control}
         defaultValue={defaultValue || null}
-        rules={{
-          ...(required && {
-            required: { value: true, message: "PDF फाइल अनिवार्य छ" },
-          }),
-        }}
+        rules={required ? { required: "PDF फाइल अनिवार्य छ" } : {}}
         render={({ field: { onChange, value } }) => {
           const handleChange = async (e) => {
             const file = e.target.files?.[0];
@@ -55,7 +53,7 @@ const ReusePdfInput = ({
               setFileName(file.name);
               setPageCount(pages);
               setExistingUrl(null);
-              onChange(file); // ✅ store single File object
+              onChange(file);
             } catch (err) {
               setUploadError(err.message);
               onChange(null);
@@ -91,7 +89,7 @@ const ReusePdfInput = ({
 
               {existingUrl && (
                 <Typography variant="body2" mt={1}>
-                  <a href={existingUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={existingUrl} target="_blank" rel="noreferrer">
                     हालको PDF हेर्नुहोस्
                   </a>
                 </Typography>
@@ -104,20 +102,11 @@ const ReusePdfInput = ({
                 sx={{ mt: 1 }}
                 disabled={loading}
               >
-                {loading
-                  ? "कृपया पर्खनुहोस्..."
-                  : fileName
-                  ? "PDF परिवर्तन गर्नुहोस्"
-                  : "PDF छान्नुहोस्"}
-                <input
-                  hidden
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleChange}
-                />
+                {loading ? "कृपया पर्खनुहोस्..." : fileName ? "PDF परिवर्तन गर्नुहोस्" : "PDF छान्नुहोस्"}
+                <input hidden type="file" accept="application/pdf" onChange={handleChange} />
               </Button>
 
-              {fileName && !loading && (
+              {fileName && (
                 <Button
                   size="small"
                   color="error"
@@ -133,7 +122,7 @@ const ReusePdfInput = ({
                 </Button>
               )}
 
-              {(error || uploadError) && (
+              {(uploadError || error) && (
                 <Typography color="error" variant="body2" mt={1}>
                   {uploadError || error?.message}
                 </Typography>

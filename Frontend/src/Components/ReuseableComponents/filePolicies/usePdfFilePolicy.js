@@ -1,31 +1,13 @@
-import * as pdfjsLib from "pdfjs-dist";
-// import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
-
-// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
-
-// pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-//     "pdfjs-dist/build/pdf.worker.min.mjs",
-//     import.meta.url
-// ).toString();
-
-// pdfjsLib.GlobalWorkerOptions.workerSrc =
-//   "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js";
-
-// pdfjsLib.GlobalWorkerOptions.workerSrc =
-//   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.530/build/pdf.worker.min.js";
+import pdfjsLib from "./pdfWorker";
 
 export const usePdfFilePolicy = ( {
     numCases = 1,
     sizePerPageMB = 0.5,
     rejectEncrypted = true,
     rejectScanned = false,
-} ) => {
-
+} = {} ) => {
     const validatePdf = async ( file ) => {
-        if ( file.type !== "application/pdf" ) {
+        if ( !file || file.type !== "application/pdf" ) {
             throw new Error( "कृपया PDF फाइल मात्र अपलोड गर्नुहोस्" );
         }
 
@@ -42,19 +24,22 @@ export const usePdfFilePolicy = ( {
         }
 
         const pages = pdf.numPages;
-        const maxAllowedSize = numCases * pages * sizePerPageMB * 1024 * 1024;
+        const maxAllowedSize =
+            numCases * pages * sizePerPageMB * 1024 * 1024;
 
         if ( file.size > maxAllowedSize ) {
             throw new Error(
-                `PDF ${ pages } पृष्ठको छ। अधिकतम अनुमति ${ ( maxAllowedSize / 1024 / 1024 ).toFixed( 2 ) } MB हो`
+                `PDF ${ pages } पृष्ठको छ। अधिकतम अनुमति ${ ( maxAllowedSize / 1024 / 1024 ).toFixed(
+                    2
+                ) } MB हो`
             );
         }
 
         if ( rejectScanned ) {
             let textCount = 0;
-            const pagesToCheck = Math.min( pages, 2 );
+            const checkPages = Math.min( pages, 2 );
 
-            for ( let i = 1; i <= pagesToCheck; i++ ) {
+            for ( let i = 1; i <= checkPages; i++ ) {
                 const page = await pdf.getPage( i );
                 const text = await page.getTextContent();
                 textCount += text.items.length;
