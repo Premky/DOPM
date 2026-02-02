@@ -1,8 +1,15 @@
+// import * as pdfjsLib from "pdfjs-dist";
+// import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
 import * as pdfjsLib from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
-
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+).toString();
+    
 export const usePdfFilePolicy = ( {
     numCases = 1,
     sizePerPageMB = 0.5,
