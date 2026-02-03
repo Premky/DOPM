@@ -183,7 +183,7 @@ router.post( '/login', authLimiter, async ( req, res ) => {
 
   try {
     const [userResult] = await pool.query( `
-            SELECT u.*, o.office_name_with_letter_address AS office_np, o.letter_address AS office_en,
+            SELECT u.*, o.office_name_with_letter_address AS office_np, o.letter_address AS office_en, o.office_categories_id, 
                    nd.district_name_np, ur.id AS role_id, ur.role_name, b.branch_np,
                    ut.usertype_en, ut.usertype_np
             FROM users u
@@ -214,6 +214,7 @@ router.post( '/login', authLimiter, async ( req, res ) => {
       is_online: 1,
       office_id: user.office_id,
       office_np: user.office_np,
+      office_categories_id: user.office_categories_id,
       office_en: user.office_en,
       office_district: user.district_name_np,
       branch_name: user.branch_np,

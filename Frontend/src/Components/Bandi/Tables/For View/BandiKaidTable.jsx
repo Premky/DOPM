@@ -21,8 +21,6 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 import { useBaseURL } from '../../../../Context/BaseURLProvider';
-import FamilyModal from '../../Dialogs/FamilyModal';
-import AddressModal from '../../Dialogs/AddressModal';
 import KaidModal from '../../Dialogs/KaidModal';
 import { calculateBSDate } from '../../../../../Utils/dateCalculator';
 
@@ -99,19 +97,30 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
         setModalOpen( true );
     };
 
-    const handleSave = async ( formData, id ) => {
+    const handleSave1 = async ( formData, id ) => {
+        console.log( formData );
+        const fd = new FormData();
+        Object.entries( formData ).forEach( ( [key, value] ) => {
+            fd.append( key, value );
+        } );
+        if ( formData.kaid_pdf ) {
+            fd.append( "kaid_pdf", formData.kaid_pdf );
+            console.log( fd );
+        }
+
+
         try {
             if ( id ) {
                 await axios.put(
                     `${ BASE_URL }/bandi/update_bandi_kaid_details/${ id }`,
-                    formData,
+                    fd,
                     { withCredentials: true }
                 );
                 Swal.fire( 'सफल भयो !', 'डेटा अपडेट गरियो', 'success' );
             } else {
                 await axios.post(
                     `${ BASE_URL }/bandi/create_bandi_kaid_details`,
-                    { ...formData, bandi_id: bandi_id },
+                    { ...fd, bandi_id: bandi_id },
                     { withCredentials: true }
                 );
                 Swal.fire( 'सफल भयो !', 'नयाँ डेटा थपियो ।', 'success' );
@@ -119,6 +128,49 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
             fetchBandies();
         } catch ( error ) {
             Swal.fire( 'त्रुटि!', 'सर्भर अनुरध असफल भयो ।', 'error' );
+        }
+    };
+
+    const handleSave = async ( formData, id ) => {
+        const fd = new FormData();
+
+        Object.entries( formData ).forEach( ( [key, value] ) => {
+            if ( key !== "kaid_pdf" ) {
+                fd.append( key, value );
+            }
+        } );
+
+        if ( formData.kaid_pdf instanceof File ) {
+            fd.append( "kaid_pdf", formData.kaid_pdf );
+        }
+
+        // Debug (optional)
+        // for ( let pair of fd.entries() ) {
+        //     console.log( pair[0], pair[1] );
+        // }
+
+        try {
+            if ( id ) {
+                await axios.put(
+                    `${ BASE_URL }/bandi/update_bandi_kaid_details/${ id }`,
+                    fd,
+                    { withCredentials: true }
+                );
+                Swal.fire( "सफल भयो !", "डेटा अपडेट गरियो", "success" );
+            } else {
+                fd.append( "bandi_id", bandi_id );
+                await axios.post(
+                    `${ BASE_URL }/bandi/create_bandi_kaid_details`,
+                    fd,
+                    { withCredentials: true }
+                );
+                Swal.fire( "सफल भयो !", "नयाँ डेटा थपियो ।", "success" );
+            }
+
+            fetchBandies();
+        } catch ( error ) {
+            console.error( error );
+            Swal.fire( "त्रुटि!", "सर्भर अनुरध असफल भयो ।", "error" );
         }
     };
 

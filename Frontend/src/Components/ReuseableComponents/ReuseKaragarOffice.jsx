@@ -18,52 +18,53 @@ const ReuseKaragarOffice = ( { name, label, required, control, error, defaultVal
     // Fetch office data
     const fetchOffices = async ( name_type ) => {
         try {
+            setLoading( true );
+
             const url = `${ BASE_URL }/public/get_offices`;
             const response = await axios.get( url, {
                 headers: { Authorization: `Bearer ${ token }` },
             } );
 
-            const { Status, Result, Error } = response.data;
+            const { Status, Result } = response.data;
 
-            if ( Status ) {
-                if ( Array.isArray( Result ) && Result.length > 0 ) {
-                    const filtered = Result.filter( a => a.office_categories_id == 2 || a.office_categories_id == 3 );
-                    let formatted;
-                    if ( name_type === name_type ) {
-                        formatted = filtered.map( ( opt, index ) => ( {
-                            sn: index + 1,
-                            label: opt.letter_address,
-                            value: opt.id,
-                        } ) );
-                    } else {
-                        formatted = filtered.map( ( opt, index ) => ( {
-                            sn: index + 1,
-                            label: opt.office_name_with_letter_address,
-                            value: opt.id,
-                        } ) );
-                    }
+            if ( !Status || !Array.isArray( Result ) ) return;
 
-                    // to include all option 
-                    if ( includeAll ) {
-                        formatted.unshift( { sn: 0, label: 'सबै', value: '' } );
-                    }
-                    setFormattedOptions( formatted );
-                } else {
-                    console.log( 'No records found.' );
-                }
-            } else {
-                console.log( Error || 'Failed to fetch.' );
+            const filtered = office_categories_id
+                ? Result.filter(
+                    ( a ) => a.office_categories_id == office_categories_id
+                )
+                : Result.filter(
+                    ( a ) =>
+                        a.office_categories_id == 2 ||
+                        a.office_categories_id == 3
+                );
+
+            let formatted = filtered.map( ( opt, index ) => ( {
+                sn: index + 1,
+                label:
+                    name_type === 'short'
+                        ? opt.letter_address
+                        : opt.office_name_with_letter_address,
+                value: opt.id,
+            } ) );
+
+            if ( includeAll ) {
+                formatted.unshift( { sn: 0, label: 'सबै', value: '' } );
             }
-        } catch ( error ) {
-            console.error( 'Error fetching records:', error );
+
+            setFormattedOptions( formatted );
+        } catch ( err ) {
+            console.error( 'Error fetching offices:', err );
         } finally {
             setLoading( false );
         }
     };
 
+
     useEffect( () => {
-        fetchOffices();
-    }, [] );
+        fetchOffices( name_type );
+    }, [office_categories_id, name_type] );
+
 
     // 👇 Automatically select "All" if nothing is selected
     // useEffect( () => {

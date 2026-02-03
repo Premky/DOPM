@@ -70,7 +70,10 @@ const AllBandiTable = () => {
         status: '',
     } );
 
+    // console.log("office_categories_id", authState.office_categories_id)
+
     //Watch Variables:
+    const office_categories_id = watch( 'office_categories_id' );
     const searchOffice = watch( 'searchOffice' );
     const bandi_status = watch( 'bandi_status' );
     const nationality = watch( 'nationality' );
@@ -90,10 +93,9 @@ const AllBandiTable = () => {
 
     //Params for API
     const filters = {
-        searchOffice, bandi_status, nationality, country, search_name,
+        office_categories_id, searchOffice, bandi_status, nationality, country, search_name,
         gender, bandi_type, is_active, is_dependent, mudda_group_id, is_escape,
         age_above, age_below, percentage_above, percentage_below
-
     };
 
 
@@ -108,7 +110,7 @@ const AllBandiTable = () => {
             const response = await axios.get( `${ BASE_URL }/bandi/get_all_office_bandi`, {
                 // page, limit: rowsPerPage,
                 params: {
-                    searchOffice, bandi_status, nationality, country,
+                    office_categories_id, searchOffice, bandi_status, nationality, country,
                     gender, bandi_type, search_name,
                     is_active, is_dependent, mudda_group_id, is_escape,
                     age_above, age_below, percentage_above, percentage_below,
@@ -162,7 +164,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         // fetchMuddas();
-    }, [page, rowsPerPage, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender,
+    }, [page, rowsPerPage, office_categories_id, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender,
         is_active, mudda_group_id, is_escape, age_above, age_below,
         percentage_above, percentage_below
     ] );
@@ -471,11 +473,27 @@ const AllBandiTable = () => {
             </Box>
             <Box sx={{ p: 2 }}>
                 <Grid container spacing={2}>
+                    {authState.office_id === 2 && (
+                        <Grid size={{ xs: 12, sm: 2 }}>
+                            <ReuseSelect
+                                name="office_categories_id"
+                                label='कार्यालय'
+                                control={control}
+                                options={[
+                                    { label: "बालसुधार", value: 3 },
+                                    { label: "कारागार", value: 2 }
+                                ]}
+                                defaultValue={authState.office_categories_id}
+                            />
+                        </Grid>
+                    )}
+
                     <Grid size={{ xs: 12, sm: 2 }}>
                         <ReuseKaragarOffice
                             name="searchOffice"
                             label="Office"
                             control={control}
+                            office_categories_id={office_categories_id || authState.office_categories_id}
                         // disabled={authState.office_id >= 3}
                         />
                     </Grid>
@@ -487,7 +505,7 @@ const AllBandiTable = () => {
                             control={control}
                             options={[
                                 ...bandiStatusOpt,
-                                { label: "कारागारमा", value: 1 }
+                                { label: "थुना/कैदमा", value: 1 }
                             ]}
 
                             defaultValue={1}

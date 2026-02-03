@@ -50,6 +50,7 @@ import { updateBandiStatus } from '../services/bandiStatusService.js';
 import { BANDI_STATUS } from '../constants/bandiStatus.js';
 import { exportQueue } from '../queues/exportQueue.js';
 import { bandiUpload } from '../middlewares/upload.js';
+import { kaidUpload } from '../middlewares/uploads/kaidOnlyUpload.js';
 
 async function translateEscapedNames( limit = 4000 ) {
     try {
@@ -912,7 +913,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
         const n = Number( v );
         return Number.isNaN( n ) ? null : n;
     };
-
+    const office_categories_id = toInt( req.query.office_categories_id );
     const selected_office = toInt( req.query.selected_office );
     const searchOffice = toInt( req.query.searchOffice );
     const bandi_status = toInt( req.query.bandi_status );
@@ -940,6 +941,8 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
     let conditions = [];
     let params = [];
+
+    if ( office_categories_id !== null ) conditions.push( "office_categories_id = ?" ), params.push( office_categories_id );
 
     if ( selected_office !== null ) {
         conditions.push( "current_office_id = ?" );
@@ -1926,95 +1929,131 @@ router.get( '/get_bandi_kaid_details/:id', async ( req, res ) => {
     }
 } );
 
-router.put( '/update_bandi_kaid_details/:id', verifyToken, async ( req, res ) => {
-    const active_office = req.user.office_id;
-    const user_id = req.user.username;
-    const id = req.params.id;
+router.put( '/update_bandi_kaid_details/:id',
+    verifyToken, kaidUpload.single( "kaid_pdf" ), async ( req, res ) => {
+        const active_office = req.user.office_id;
+        const user_id = req.user.username;
+        const id = req.params.id;
 
-    const {
-        bandi_id,
-        bandi_type,
-        hirasat_years,
-        hirasat_months,
-        hirasat_days,
-        thuna_date_bs,
-        release_date_bs,
-        is_life_time = 0
-    } = req.body;
+        const {
+            bandi_id,
+            bandi_type,
+            hirasat_years,
+            hirasat_months,
+            hirasat_days,
+            thuna_date_bs,
+            release_date_bs,
+            is_life_time = 0
+        } = req.body;
+        const kaidFile = req.file;
 
-    let connection;
+        let connection;
 
-    try {
-        // Date conversion
-        const thunaDateAd = thuna_date_bs ? await bs2ad( thuna_date_bs ) : '2001-01-01';
-        // const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '2001-01-01';
+        try {
+            // Date conversion
+            const thunaDateAd = thuna_date_bs ? await bs2ad( thuna_date_bs ) : '2001-01-01';
+            // const releaseDateAd = release_date_bs ? await bs2ad( release_date_bs ) : '2001-01-01';
+            const kaidPdfPath = kaidFile
+                ? `/uploads/kaid_pdfs/${ kaidFile.filename }`
+                : null;
 
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
+            let old_kaid_pdf_path = null;
 
-        let updateKaidSql = '';
-        let kaidValues = [];
-        //  release_date_ad = ?, releaseDateAd,
-        if ( bandi_type === 'कैदी' ) {
-            updateKaidSql = `
+            if ( kaidPdfPath ) {
+                const [rows] = await pool.query(
+                    `SELECT kaid_pdf_path FROM bandi_kaid_details WHERE id=?`,
+                    [id]
+                );
+                old_kaid_pdf_path = rows?.[0]?.kaid_pdf_path || null;
+            }
+
+            connection = await pool.getConnection();
+            await connection.beginTransaction();
+
+            let updateKaidSql = '';
+            let kaidValues = [];
+            //  release_date_ad = ?, releaseDateAd,
+            if ( bandi_type === 'कैदी' ) {
+                updateKaidSql = `
         UPDATE bandi_kaid_details
-        SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
-            thuna_date_bs = ?, thuna_date_ad = ?, release_date_bs = ?,
-            is_life_time = ?,
-            updated_by = ?
-        WHERE id = ?`;
-            kaidValues = [
-                hirasat_years, hirasat_months, hirasat_days,
-                thuna_date_bs, thunaDateAd,
-                release_date_bs, is_life_time,
-                user_id,
-                id
-            ];
-        } else if ( bandi_type === 'थुनुवा' ) {
-            updateKaidSql = `
-        UPDATE bandi_kaid_details
-        SET hirasat_years = ?, hirasat_months = ?, hirasat_days = ?,
-            thuna_date_bs = ?, thuna_date_ad = ?,
-            updated_by = ?
-        WHERE id = ?`;
-            kaidValues = [
-                hirasat_years, hirasat_months, hirasat_days,
-                thuna_date_bs, thunaDateAd,
-                user_id,
-                id
-            ];
-        } else {
-            throw new Error( 'Invalid bandi_type' );
+            SET
+                hirasat_years   = ?,
+                hirasat_months = ?,
+                hirasat_days   = ?,
+                thuna_date_bs  = ?,
+                thuna_date_ad  = ?,
+                release_date_bs = ?,
+                is_life_time   = ?,
+                kaid_pdf_path  = COALESCE(?, kaid_pdf_path),
+                updated_by     = ?
+            WHERE id = ?;
+            `;
+                kaidValues = [
+                    hirasat_years, hirasat_months, hirasat_days,
+                    thuna_date_bs, thunaDateAd,
+                    release_date_bs, is_life_time, kaidPdfPath || null,
+                    user_id,
+                    id
+                ];
+            } else if ( bandi_type === 'थुनुवा' ) {
+                updateKaidSql = `
+            UPDATE bandi_kaid_details
+            SET
+                hirasat_years   = ?,
+                hirasat_months = ?,
+                hirasat_days   = ?,
+                thuna_date_bs  = ?,
+                thuna_date_ad  = ?,
+                kaid_pdf_path  = COALESCE(?, kaid_pdf_path),
+                updated_by     = ?
+            WHERE id = ?;
+`;
+                kaidValues = [
+                    hirasat_years, hirasat_months, hirasat_days,
+                    thuna_date_bs, thunaDateAd, kaidPdfPath || null,
+                    user_id,
+                    id
+                ];
+            } else {
+                throw new Error( 'Invalid bandi_type' );
+            }
+
+            // Update kaid details
+            await connection.query( updateKaidSql, kaidValues );
+
+            //Delete Old File only if new file exists
+            if ( old_kaid_pdf_path && old_kaid_pdf_path !== kaidPdfPath ) {
+                const fullPath = path.join( process.cwd(), old_kaid_pdf_path );
+                if ( fs.existsSync( fullPath ) ) fs.unlinkSync( fullPath );
+            }
+
+
+            // Update bandi type in bandi_person
+            await connection.query(
+                `UPDATE bandi_person SET bandi_type = ?, updated_by = ? WHERE id = ?`,
+                [bandi_type, user_id, bandi_id]
+            );
+
+            await connection.commit();
+            return res.json( {
+                Status: true,
+                message: "बन्दी कैद विवरण सफलतापूर्वक अद्यावधिक गरियो।"
+            } );
+
+        } catch ( error ) {
+            if ( connection ) await connection.rollback();
+            console.error( "❌ Update failed:", error );
+            return res.status( 500 ).json( {
+                Status: false,
+                Error: error.message,
+                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            } );
+
+        } finally {
+            if ( connection ) connection.release();
         }
+    } );
 
-        // Update kaid details
-        await connection.query( updateKaidSql, kaidValues );
-
-        // Update bandi type in bandi_person
-        await connection.query(
-            `UPDATE bandi_person SET bandi_type = ?, updated_by = ? WHERE id = ?`,
-            [bandi_type, user_id, bandi_id]
-        );
-
-        await connection.commit();
-        return res.json( {
-            Status: true,
-            message: "बन्दी कैद विवरण सफलतापूर्वक अद्यावधिक गरियो।"
-        } );
-
-    } catch ( error ) {
-        if ( connection ) await connection.rollback();
-        console.error( "❌ Update failed:", error );
-        return res.status( 500 ).json( {
-            Status: false,
-            Error: error.message,
-            message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
-        } );
-
-    } finally {
-        if ( connection ) connection.release();
-    }
-} );
 
 router.get( '/get_bandi_family/:id', async ( req, res ) => {
     const { id } = req.params;

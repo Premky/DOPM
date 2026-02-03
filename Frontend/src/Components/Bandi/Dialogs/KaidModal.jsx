@@ -14,6 +14,7 @@ import ReuseSelect from "../../ReuseableComponents/ReuseSelect";
 import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 import ReuseDatePickerBS from "../../ReuseableComponents/ReuseDatePickerBS";
 import ReuseDatePickerSMV5 from "../../ReuseableComponents/ReuseDatePickerSMV5";
+import ReusePdfInput from "../../ReuseableComponents/ReusePDFInput";
 
 
 const KaidModal = ( { open, onClose, onSave, editingData } ) => {
@@ -29,7 +30,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
     // console.log(editingData)
     useEffect( () => {
         if ( editingData ) {
-            console.log( editingData );
+            // console.log( editingData );
             reset( {
                 bandi_id: editingData.bandi_id || "",
                 bandi_type: editingData.bandi_type || "",
@@ -39,6 +40,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                 thuna_date_bs: editingData.thuna_date_bs || "",
                 release_date_bs: editingData.release_date_bs || "",
                 is_life_time: editingData.is_life_time || false,
+                kaid_pdf: editingData.kaid_pdf || "",
             } );
         } else {
             reset( {
@@ -50,6 +52,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                 thuna_date_bs: "",
                 release_date_bs: "",
                 is_life_time: false,
+                kaid_pdf:"",
             } );
         }
     }, [editingData, reset] );
@@ -142,12 +145,20 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                     /> )
 
                 ) : ( <></> )}
-                <ReuseDatePickerBS
+                <ReuseDateField
                     name="thuna_date_bs"
                     label="थुना/कैद परेको मितिः"
+                    maxDate={"today"}
                     control={control}
                     required={true}
                     error={errors.thuna_date_bs}
+                />
+                <ReusePdfInput
+                    name="kaid_pdf"
+                    label="थुनुवा/कैदी पुर्जी(PDF मात्र)"
+                    required
+                    control={control}
+                    error={errors?.kaid_pdf}
                 />
             </DialogContent>
 

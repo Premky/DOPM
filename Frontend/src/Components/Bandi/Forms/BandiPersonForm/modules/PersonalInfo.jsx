@@ -11,10 +11,10 @@ import useBlockList from "../../../../ReuseableComponents/FetchApis/useBlockList
 
 
 const PersonalInfo = () => {
-    const { control, watch } = useFormContext();
+    const { control, watch, formState: { errors } } = useFormContext();
     const { optrecords: blockListOpt, loading: blockListLoading } = useBlockList();
 
-    const officeId = watch( "office_bandi_id" );    // to re-render on change
+    const OfficeBandiId = watch( "office_bandi_id" );    // to re-render on change
 
     return ( <>
         <Typography sx={{ color: "blue", fontWeight: "bold", fontSize: "1.5rem" }} gutterBottom>
@@ -23,7 +23,7 @@ const PersonalInfo = () => {
         <Grid container spacing={2}>
             <Grid container size={{ xs: 12, sm: 9, md: 9 }}>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <ReuseInput name="office_bandi_id" label="बन्दी आईडी" control={control} readonly={true} required={true} defaultValue={officeId} />
+                    <ReuseInput name="office_bandi_id" label="बन्दी आईडी" control={control} readonly={true} required={true} defaultValue={OfficeBandiId} error={errors?.office_bandi_id} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <ReuseInput name="lagat_no" label="लगत नं" control={control} required={false} />
@@ -36,6 +36,7 @@ const PersonalInfo = () => {
                         options={blockListOpt}
                         required={true}
                         disabled={blockListLoading}
+                        error={errors?.block_no}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -45,20 +46,23 @@ const PersonalInfo = () => {
                         control={control}
                         required={true}
                         maxDate={"today"}
+                        error={errors?.enrollment_date_bs}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                     <ReuseSelect name="bandi_type" label="बन्दी प्रकार" control={control} options={[
                         { value: "कैदी", label: "कैदी" },
                         { value: "थुनुवा", label: "थुनुवा" },
-                    ]} required={true} />
+                    ]} required={true}
+                        error={errors?.bandi_type}
+                    />
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <ReuseInput name="bandi_name" label="बन्दीको नाम(नेपालीमा)" control={control} required={true} />
+                    <ReuseInput name="bandi_name" label="बन्दीको नाम(नेपालीमा)" control={control} required={true} error={errors?.bandi_name} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                    <ReuseInput name="bandi_name_en" label="Name (In English)" control={control} required={true} language='english' />
+                    <ReuseInput name="bandi_name_en" label="Name (In English)" control={control} required={true} language='english' error={errors?.bandi_name_en} />
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -71,6 +75,7 @@ const PersonalInfo = () => {
                             { label: 'महिला', value: 'female' },
                             { label: 'अन्य', value: 'other' }
                         ]}
+                        error={errors?.gender}
                         required={true}
                     />
                 </Grid>
@@ -83,6 +88,7 @@ const PersonalInfo = () => {
                         placeholder={"YYYY-MM-DD"}
                         required={true}
                         maxDate={"today"}
+                        error={errors?.dob}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -94,6 +100,7 @@ const PersonalInfo = () => {
                             { value: "Married", label: "विवाहित" },
                             { value: "Unmarried", label: "अविवाहित" },
                         ]}
+                        error={errors?.married_status}
                     />
                 </Grid>
 
@@ -112,6 +119,7 @@ const PersonalInfo = () => {
                             { label: 'स्नातक', value: 'स्नातक' },
                             { label: 'स्नातकोत्तर', value: 'स्नातकोत्तर' },
                         ]}
+                        error={errors?.bandi_education}
                         required={true}
                     />
                 </Grid>
@@ -122,6 +130,7 @@ const PersonalInfo = () => {
                         label="बन्दीको हुलिया"
                         control={control}
                         required={true}
+                        error={errors?.bandi_huliya}
                     />
                 </Grid>
 
@@ -135,6 +144,7 @@ const PersonalInfo = () => {
                     required={true}
                     maxSizeMB={0.5} // optional
                     allowedTypes={/jpeg|jpg|png|gif|webp|jfif/} // optional
+                    error={errors?.bandi_photo}
                 />
             </Grid>
 

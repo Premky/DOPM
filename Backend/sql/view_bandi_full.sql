@@ -27,6 +27,7 @@ SELECT
     -- Bandi Office
     bo.letter_address AS bandi_office,
     bo.short_name_en AS bandi_office_en,
+    bo.office_categories_id,
 
     -- Address
     ba.wardno,
