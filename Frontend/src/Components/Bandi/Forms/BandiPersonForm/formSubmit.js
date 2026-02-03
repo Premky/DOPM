@@ -66,7 +66,7 @@ export const submitBandiPersonForm = async ( {
         // optional: reset form or navigate
         // if ( !editing && reset ) reset();
         if ( navigate && response.data.Status ) {
-            if ( Status ) {
+            if ( response.data.Status ) {
                 // Swal.fire( 'थपियो!', 'रिकर्ड सफलतापूर्वक थपियो', 'success' );
                 Swal.fire( {
                     title: 'आहा!',
