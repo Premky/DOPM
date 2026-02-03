@@ -50,7 +50,7 @@ import { updateBandiStatus } from '../services/bandiStatusService.js';
 import { BANDI_STATUS } from '../constants/bandiStatus.js';
 import { exportQueue } from '../queues/exportQueue.js';
 import { bandiUpload } from '../middlewares/upload.js';
-import { kaidUpload } from '../middlewares/uploads/kaidOnlyUpload.js';
+import { kaidUpload } from '../middlewares/upload_related/kaidOnlyUpload.js';
 
 async function translateEscapedNames( limit = 4000 ) {
     try {
