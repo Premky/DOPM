@@ -198,6 +198,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>थुनुवा/कैदी</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>थुना मिति</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>कैद अवधी</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>हिरासत बसेको अवधी</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>छुट्ने मिति</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>आजिवन सजाय हो/होइन?</TableCell>
                                     <TableCell align="center" sx={{ fontWeight: 600, color: '#2c3e50', padding: '12px 8px', fontSize: '0.9rem' }}>फाइल</TableCell>
@@ -217,6 +218,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                                                 calculateBSDate( opt.thuna_date_bs, opt.release_date_bs, '', opt.hirasat_years, opt.hirasat_months, opt.hirasat_days ).formattedDuration
                                             }
                                         </TableCell>
+                                        <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.hirasat_years || 0}|{opt.hirasat_months || 0}|{opt.hirasat_days || 0}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.release_date_bs || ''}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>{opt.is_life_time === '1' ? 'हो' : 'होइन'}</TableCell>
                                         <TableCell align="center" sx={{ padding: '10px 8px', fontSize: '0.85rem' }}>
