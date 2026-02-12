@@ -35,16 +35,27 @@ SELECT
     bmd.is_main_mudda,
     bmd.is_last_mudda,
     bmd.vadi,
-    bmd.thuna_date_bs AS bmd_thuna_date,
-    bmd.thuna_date_bs,
-    bmd.release_date_bs AS bmd_release_date,
-    bmd.release_date_bs,
+
+  --  bmd.thuna_date_bs AS bmd_thuna_date,
+  --  bmd.thuna_date_bs,
+  --  bmd.release_date_bs AS bmd_release_date,
+  --  bmd.release_date_bs,
     bmd.mudda_phesala_antim_office,
-    bmd.mudda_phesala_antim_office_date
+    bmd.mudda_phesala_antim_office_date,
+
+    bkd.thuna_date_bs AS bmd_thuna_date,
+    bkd.thuna_date_bs,
+    bkd.release_date_bs AS bmd_release_date,
+    bkd.release_date_bs,
+    bkd.hirasat_years, 
+    bkd.hirasat_months,
+    bkd.hirasat_days
+    
 FROM
     payroles p
     LEFT JOIN bandi_person bp ON p.bandi_id = bp.id
     LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
+    LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
     LEFT JOIN np_country nc ON ba.nationality_id = nc.id
     LEFT JOIN np_state ns ON ba.province_id = ns.state_id
     LEFT JOIN np_district nd ON ba.district_id = nd.did

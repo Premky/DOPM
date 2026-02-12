@@ -17,7 +17,7 @@ import ReuseDatePickerSMV5 from "../../ReuseableComponents/ReuseDatePickerSMV5";
 import ReusePdfInput from "../../ReuseableComponents/ReusePDFInput";
 
 
-const KaidModal = ( { open, onClose, onSave, editingData } ) => {
+const KaidModal = ( { open, onClose, onSave, editingData, BASE_URL } ) => {
     const {
         control,
         handleSubmit,
@@ -52,7 +52,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                 thuna_date_bs: "",
                 release_date_bs: "",
                 is_life_time: false,
-                kaid_pdf:"",
+                kaid_pdf: "",
             } );
         }
     }, [editingData, reset] );
@@ -126,7 +126,7 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                 <ReuseSelect
                     name="is_life_time"
                     label="आजिवन कैद हो/होइन?"
-                    required={false}
+                    required={true}
                     options={[
                         { value: '1', label: 'हो' },
                         { value: '0', label: 'होइन' }
@@ -153,13 +153,25 @@ const KaidModal = ( { open, onClose, onSave, editingData } ) => {
                     required={true}
                     error={errors.thuna_date_bs}
                 />
+                {editingData?.kaid_pdf_path && (
+                    <div style={{ marginBottom: "8px" }}>
+                        <a
+                            href={`${ BASE_URL }${ editingData.kaid_pdf_path }`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            हालको रहेको फाइल हेर्नुहोस्
+                        </a>
+                    </div>
+                )}
                 <ReusePdfInput
                     name="kaid_pdf"
-                    label="थुनुवा/कैदी पुर्जी(PDF मात्र)"
-                    required
+                    label={editingData ? "नयाँ PDF अपलोड गर्नुहोस् (वैकल्पिक)" : "थुनुवा/कैदी पुर्जी (PDF मात्र)"}
+                    required={!editingData} //Required only if not in editing mode.
                     control={control}
                     error={errors?.kaid_pdf}
                 />
+
             </DialogContent>
 
             <DialogActions>

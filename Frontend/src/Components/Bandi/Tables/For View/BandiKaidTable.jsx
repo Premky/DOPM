@@ -246,7 +246,7 @@ const BandiKaidTable = ( { bandi_id, print = false } ) => {
                         </Table>
                     </TableContainer>
                 )}
-                <KaidModal open={modalOpen} onClose={() => setModalOpen( false )} editingData={editingData} onSave={handleSave} />
+                <KaidModal open={modalOpen} onClose={() => setModalOpen( false )} editingData={editingData} onSave={handleSave} BASE_URL={BASE_URL}/>
             </Grid>
         </Grid>
     );
