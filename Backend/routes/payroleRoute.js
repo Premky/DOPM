@@ -486,7 +486,7 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         //Role Based Status
         const roleMap = await getUserBasedStatusMap();
         const allowedStatuses = roleMap[role_name];
-        console.log(allowedStatuses)
+        console.log( allowedStatuses );
 
         if ( allowedStatuses !== 'all' ) {
             if ( !allowedStatuses || allowedStatuses.length === 0 ) {
@@ -549,23 +549,24 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         const [[{ total }]] = await pool.query( `
             SELECT COUNT(*) total FROM view_full_parole ${ where }`, params );
 
-        //Data for table
-        const [dataRows] = await pool.query(
-            `SELECT * FROM view_full_parole ${ where }
-            ORDER BY payrole_id DESC
-            LIMIT ? OFFSET ?`,
-            [...params, Number( limit ), Number( offset )]
-        );
+        let rows;
 
-        //Data for export
-        const [exportRows] = await pool.query(
-            `SELECT * FROM view_full_parole ${ where }
-            ORDER BY payrole_id DESC`,
-            [...params]
-        );
-        // let rows;
-        // is_export ? rows = dataRows : rows = exportRows;
-        const rows = is_export ? exportRows : dataRows;
+        if ( Number( is_export ) === 1 ) {
+            const [exportRows] = await pool.query(
+                `SELECT * FROM view_full_parole ${ where }
+         ORDER BY payrole_id DESC`,
+                params
+            );
+            rows = exportRows;
+        } else {
+            const [dataRows] = await pool.query(
+                `SELECT * FROM view_full_parole ${ where }
+         ORDER BY payrole_id DESC
+         LIMIT ? OFFSET ?`,
+                [...params, Number( limit ), Number( offset )]
+            );
+            rows = dataRows;
+        }
 
         return res.json( {
             Status: true,
@@ -577,6 +578,24 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
         res.status( 500 ).json( { Status: false, Error: 'Server error' } );
     }
 } );
+
+//Data for table
+        // const [dataRows] = await pool.query(
+        //     `SELECT * FROM view_full_parole ${ where }
+        //     ORDER BY payrole_id DESC
+        //     LIMIT ? OFFSET ?`,
+        //     [...params, Number( limit ), Number( offset )]
+        // );
+
+        // //Data for export
+        // const [exportRows] = await pool.query(
+        //     `SELECT * FROM view_full_parole ${ where }
+        //     ORDER BY payrole_id DESC`,
+        //     [...params]
+        // );
+        // // let rows;
+        // // is_export ? rows = dataRows : rows = exportRows;
+        // const rows = is_export ? exportRows : dataRows;
 
 // Node/Express route (example using MySQL)
 router.post( '/get_all_bandi_fines', async ( req, res ) => {

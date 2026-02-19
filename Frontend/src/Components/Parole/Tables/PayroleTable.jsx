@@ -74,7 +74,7 @@ const PayroleTable = ( { status } ) => {
         const res = await axios.get(
             `${ BASE_URL }/payrole/get_payroles`,
             {
-                params: { ...filters, export: 1 },
+                params: { ...filters, is_export: 1 },
                 withCredentials: true
             }
         );
