@@ -580,22 +580,22 @@ router.get( '/get_payroles', verifyToken, async ( req, res ) => {
 } );
 
 //Data for table
-        // const [dataRows] = await pool.query(
-        //     `SELECT * FROM view_full_parole ${ where }
-        //     ORDER BY payrole_id DESC
-        //     LIMIT ? OFFSET ?`,
-        //     [...params, Number( limit ), Number( offset )]
-        // );
+// const [dataRows] = await pool.query(
+//     `SELECT * FROM view_full_parole ${ where }
+//     ORDER BY payrole_id DESC
+//     LIMIT ? OFFSET ?`,
+//     [...params, Number( limit ), Number( offset )]
+// );
 
-        // //Data for export
-        // const [exportRows] = await pool.query(
-        //     `SELECT * FROM view_full_parole ${ where }
-        //     ORDER BY payrole_id DESC`,
-        //     [...params]
-        // );
-        // // let rows;
-        // // is_export ? rows = dataRows : rows = exportRows;
-        // const rows = is_export ? exportRows : dataRows;
+// //Data for export
+// const [exportRows] = await pool.query(
+//     `SELECT * FROM view_full_parole ${ where }
+//     ORDER BY payrole_id DESC`,
+//     [...params]
+// );
+// // let rows;
+// // is_export ? rows = dataRows : rows = exportRows;
+// const rows = is_export ? exportRows : dataRows;
 
 // Node/Express route (example using MySQL)
 router.post( '/get_all_bandi_fines', async ( req, res ) => {
@@ -835,7 +835,7 @@ router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
                     (payrole_id,bandi_id,  office_bandi_id, hajir_date, hajir_status, hajir_office_id)VALUES
                     (?,?,  ?, ?, ?, ?)`,
                 [result.insertId, bandi_id, office_bandi_id, hajir_miti, 'उपस्थित', recommended_office] );
-            await connection.query( `UPDATE bandi_person SET is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, user_id, new Date(), bandi_id] );
+            await connection.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, user_id, new Date(), bandi_id] );
             await connection.commit();
             return res.json( {
                 Status: true,
@@ -945,7 +945,7 @@ router.post( '/create_payrole', verifyToken, async ( req, res ) => {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
-            await connection.query( `UPDATE bandi_person SET is_under_facility=? WHERE id=?`, [1, bandi_id] );
+            await connection.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=? WHERE id=?`, [1, 1, bandi_id] );
             const [result] = await connection.query( sql, values );
             await connection.commit();
 
@@ -1110,6 +1110,11 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
         const status_id = board_decision[0].id;
         sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, status=?, dopm_remarks=? WHERE id=?`;
         values = [pyarole_rakhan_upayukat, status_id, dopmremark, payrole_id];
+        if ( pyarole_rakhan_upayukat == 'failed' ) {
+            await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [0, 0, user_id, new Date(), bandi_id] );
+        } else {
+            await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, 1, user_id, new Date(), bandi_id] );
+        }
     } else {
         sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
         values = [pyarole_rakhan_upayukat, dopmremark, payrole_id];

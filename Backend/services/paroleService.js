@@ -113,7 +113,7 @@ export const saveCourtDecisionService = async ( {
 
         // Update Bandi Current Status:
         if ( data.payrole_result === "पास" ) {
-            await conn.query( `UPDATE bandi_person SET is_under_payrole=? WHERE id=?`, [0, parole.bandi_id] );
+            await conn.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=? WHERE id=?`, [1, 1, parole.bandi_id] );
             await updateBandiStatus(
                 conn, {
                 bandiId: parole.bandi_id,
@@ -124,7 +124,7 @@ export const saveCourtDecisionService = async ( {
             } );
         }
         if ( data.payrole_result === "फेल" ) {
-            await conn.query( `UPDATE bandi_person SET is_under_payrole=? WHERE id=?`, [0, parole.bandi_id] );
+            await conn.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=? WHERE id=?`, [0, 0, parole.bandi_id] );
             await updateBandiStatus(
                 conn, {
                 bandiId: parole.bandi_id,
