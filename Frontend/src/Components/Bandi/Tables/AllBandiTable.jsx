@@ -598,7 +598,7 @@ const AllBandiTable = () => {
                             name="is_life_time"
                             label='आजीवन कैदी हो/होइन'
                             options={[
-                                { label: 'होइन', value: '0' },
+                                // { label: 'होइन', value: '0' },
                                 { label: 'हो', value: '1' }
                             ]}
                             control={control}
