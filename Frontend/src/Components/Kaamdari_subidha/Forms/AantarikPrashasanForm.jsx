@@ -1,22 +1,21 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { Grid, Box } from '@mui/material'
-import { useBaseURL } from '../../../../Context/BaseURLProvider'
-import { useAuth } from '../../../../Context/AuthContext'
-import { useForm } from 'react-hook-form'
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Grid, Box } from '@mui/material';
+import { useBaseURL } from '../../../Context/BaseURLProvider';
+import { useAuth } from '../../../Context/AuthContext';
+import { useForm } from 'react-hook-form';
 
 
-import ReuseKaragarOffice from '../../../ReuseableComponents/ReuseKaragarOffice'
+import ReuseKaragarOffice from '../../ReuseableComponents/ReuseKaragarOffice';
 
 const AantarikPrashasanForm = () => {
     const BASE_URL = useBaseURL();
-    const {state: authState} = useAuth();
+    const { state: authState } = useAuth();
 
     const {
-        handleSubmit, watch, setValue, control, formState:{errors}
-    } = useForm()
+        handleSubmit, watch, setValue, control, formState: { errors }
+    } = useForm();
 
-    
     return (
         <>
             <Box>
@@ -39,7 +38,7 @@ const AantarikPrashasanForm = () => {
                 </Grid>
             </Box>
         </>
-    )
-}
+    );
+};
 
-export default AantarikPrashasanForm
+export default AantarikPrashasanForm;

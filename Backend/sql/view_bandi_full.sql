@@ -64,6 +64,7 @@ SELECT
     bkd.hirasat_days,
     bkd.thuna_date_bs,
     bkd.release_date_bs,
+    bkd.is_life_time,
 
     -- Punarabedan
     bpdo.office_name_with_letter_address AS punarabedan_office,

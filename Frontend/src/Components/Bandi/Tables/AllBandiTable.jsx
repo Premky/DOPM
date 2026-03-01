@@ -83,6 +83,7 @@ const AllBandiTable = () => {
     const bandi_type = watch( 'bandi_type' );
     let is_active = watch( 'is_active' );
     const is_dependent = watch( 'is_dependent' );
+    const is_life_time = watch( 'is_life_time' );
     const mudda_group_id = watch( 'mudda_group_id' );
     const age_above = watch( 'age_above' );
     const age_below = watch( 'age_below' );
@@ -94,7 +95,7 @@ const AllBandiTable = () => {
     //Params for API
     const filters = {
         office_categories_id, searchOffice, bandi_status, nationality, country, search_name,
-        gender, bandi_type, is_active, is_dependent, mudda_group_id, is_escape,
+        gender, bandi_type, is_active, is_dependent, is_life_time, mudda_group_id, is_escape,
         age_above, age_below, percentage_above, percentage_below
     };
 
@@ -112,7 +113,7 @@ const AllBandiTable = () => {
                 params: {
                     office_categories_id, searchOffice, bandi_status, nationality, country,
                     gender, bandi_type, search_name,
-                    is_active, is_dependent, mudda_group_id, is_escape,
+                    is_active, is_dependent, is_life_time, mudda_group_id, is_escape,
                     age_above, age_below, percentage_above, percentage_below,
                 },
                 withCredentials: true // ✅ This sends cookies (e.g., token)
@@ -164,7 +165,7 @@ const AllBandiTable = () => {
     useEffect( () => {
         fetchKaidi();
         // fetchMuddas();
-    }, [page, rowsPerPage, office_categories_id, searchOffice, bandi_status, nationality, country, is_dependent, bandi_type, gender,
+    }, [page, rowsPerPage, office_categories_id, searchOffice, bandi_status, nationality, country, is_dependent, is_life_time, bandi_type, gender,
         is_active, mudda_group_id, is_escape, age_above, age_below,
         percentage_above, percentage_below
     ] );
@@ -588,6 +589,17 @@ const AllBandiTable = () => {
                             options={[
                                 // { label: 'नभएको', value: '0' },
                                 { label: 'भएको', value: '1' }
+                            ]}
+                            control={control}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                        <ReuseSelect
+                            name="is_life_time"
+                            label='आजीवन कैदी हो/होइन'
+                            options={[
+                                { label: 'होइन', value: '0' },
+                                { label: 'हो', value: '1' }
                             ]}
                             control={control}
                         />

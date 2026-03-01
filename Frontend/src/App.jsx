@@ -35,10 +35,10 @@ const ParoleLogForm = lazy( () => import( './Components/Parole/Forms/PayroleLogF
 const ParoleSetting = lazy( () => import( './Components/Parole/Settings/ParoleSetting' ) );
 const PayroleNosForm = lazy( () => import( './Components/Parole/Settings/ParoleNosForm' ) );
 
-const AantarikPrashasanForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/AantarikPrashasanForm' ) );
-const AantarikPrashasanTable = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Tables/AantarikPrashasanTable' ) );
-const KaamdariSubidhaForm = lazy( () => import( './Components/Bandi/Kaamdari_subidha/Forms/KaamdariSubidhaForm' ) );
-const KaamdariBhuktanDecision = lazy( () => import( './Components/Bandi/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
+const AantarikPrashasanForm = lazy( () => import( './Components/Kaamdari_subidha/Forms/AantarikPrashasanForm' ) );
+const AantarikPrashasanTable = lazy( () => import( './Components/Kaamdari_subidha/Tables/AantarikPrashasanTable' ) );
+const KaamdariSubidhaForm = lazy( () => import( './Components/Kaamdari_subidha/Forms/KaamdariSubidhaForm' ) );
+const KaamdariBhuktanDecision = lazy( () => import( './Components/Kaamdari_subidha/DetailedTables/KaamdariBhuktanDecision' ) );
 
 import KaragarMaskebari from './Components/Bandi/Reports/KaragarMaskebari';
 import BandiTransferForm from './Components/BandiTransfer/Forms/BandiTransferForm';
@@ -129,7 +129,7 @@ function App() {
                     <Route path="maskebari" element={<KaragarMaskebari />} />
                     <Route path="bandi_details" element={<AllBandiTable />} />
                     <Route path="test_create_bandi" element={<BandiPersonForm />} />
-                    <Route path="create_bandi" element={<MainBandiPersonForm />} />                    
+                    <Route path="create_bandi" element={<MainBandiPersonForm />} />
                     <Route path="bandi_release" element={<BandiReleaseForm />} />
                     <Route path="bandi_escape" element={<BandiEscapeForm />} />
                     <Route path="bandi_recapture" element={<BandiRecaptureForm />} />

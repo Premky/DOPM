@@ -13,19 +13,19 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import NepaliDate from "nepali-datetime";
 
-import ReuseKaragarOffice from "../../../ReuseableComponents/ReuseKaragarOffice";
-import ReuseInput from "../../../ReuseableComponents/ReuseInput";
-import ReuseBandi from "../../../ReuseableComponents/ReuseBandi";
-import ReuseBandiRanks from "../../../ReuseableComponents/ReuseBandiRanks";
-import ReuseDateField from "../../../ReuseableComponents/ReuseDateField";
+import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
+import ReuseInput from "../../ReuseableComponents/ReuseInput";
+import ReuseBandi from "../../ReuseableComponents/ReuseBandi";
+import ReuseBandiRanks from "../../ReuseableComponents/ReuseBandiRanks";
+import ReuseDateField from "../../ReuseableComponents/ReuseDateField";
 
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
-import { calculateBSDate } from "../../../../../Utils/dateCalculator";
-import { calculateTotalConcession } from "../../../../../Utils/calculateTotalConcession";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
+import { calculateBSDate } from "../../../../Utils/dateCalculator";
+import { calculateTotalConcession } from "../../../../Utils/calculateTotalConcession";
 
-const InternalAdminModal = ({ open, onClose, onSave, editingData }) => {
-    const BASE_URL =useBaseURL();
-    const current_date = new NepaliDate().format("YYYY-MM-DD");
+const InternalAdminModal = ( { open, onClose, onSave, editingData } ) => {
+    const BASE_URL = useBaseURL();
+    const current_date = new NepaliDate().format( "YYYY-MM-DD" );
 
     const {
         control,
@@ -34,51 +34,51 @@ const InternalAdminModal = ({ open, onClose, onSave, editingData }) => {
         reset,
         setValue,
         formState: { errors },
-    } = useForm({
+    } = useForm( {
         defaultValues: editingData || {},
-    });
+    } );
 
-    const appointment_start_date_bs = watch("appointment_start_date_bs");
-    const appointment_end_date_bs = watch("appointment_end_date_bs");
-    const internal_admin_post_id = watch("internal_admin_post_id");
+    const appointment_start_date_bs = watch( "appointment_start_date_bs" );
+    const appointment_end_date_bs = watch( "appointment_end_date_bs" );
+    const internal_admin_post_id = watch( "internal_admin_post_id" );
 
-    const [ranks, setRanks] = useState([]);
+    const [ranks, setRanks] = useState( [] );
 
-    const fetchBandiRanks = async() => {
-        const url = `${BASE_URL}/public/get_bandi_ranks`;
-        const response = await axios.get(url);
+    const fetchBandiRanks = async () => {
+        const url = `${ BASE_URL }/public/get_bandi_ranks`;
+        const response = await axios.get( url );
         // console.log(response)
-        setRanks(response.data.Result)
-    }
-    useEffect(()=>{fetchBandiRanks()},[])
+        setRanks( response.data.Result );
+    };
+    useEffect( () => { fetchBandiRanks(); }, [] );
     // Calculate appointment duration and update form
-    useEffect(() => {
+    useEffect( () => {
         // console.log('office_id',internal_admin_post_id)
-        if (appointment_start_date_bs && appointment_end_date_bs) {
+        if ( appointment_start_date_bs && appointment_end_date_bs ) {
             const duration = calculateBSDate(
                 appointment_start_date_bs,
                 appointment_end_date_bs
             );
-            setValue("appointment_duration", duration.rawFormatted || "");
+            setValue( "appointment_duration", duration.rawFormatted || "" );
 
-            if (internal_admin_post_id) {
+            if ( internal_admin_post_id ) {
                 // Calculate total concession based on ranks and appointment
                 // Assuming you have a function to get ranks list somewhere
                 // For example, pass ranks via props or fetch them here.
                 // Here, I'll assume a static empty array; replace as needed
-                
-                console.log('duration', duration, 'rank', ranks, 'id', internal_admin_post_id)
+
+                console.log( 'duration', duration, 'rank', ranks, 'id', internal_admin_post_id );
                 const concession = calculateTotalConcession(
                     duration,
                     ranks,
                     internal_admin_post_id
                 );
-                console.log(concession)
+                console.log( concession );
 
-                if (concession) {
-                    setValue("facility_years", concession.years || 0);
-                    setValue("facility_months", concession.months || 0);
-                    setValue("facility_days", concession.days || 0);
+                if ( concession ) {
+                    setValue( "facility_years", concession.years || 0 );
+                    setValue( "facility_months", concession.months || 0 );
+                    setValue( "facility_days", concession.days || 0 );
                 }
             }
         }
@@ -87,20 +87,20 @@ const InternalAdminModal = ({ open, onClose, onSave, editingData }) => {
         appointment_end_date_bs,
         internal_admin_post_id,
         setValue,
-    ]);
+    ] );
 
     // Reset form when editingData changes
-    useEffect(() => {
-        reset(editingData || {});
-    }, [editingData, reset]);
+    useEffect( () => {
+        reset( editingData || {} );
+    }, [editingData, reset] );
 
     // On submit handler passes clean data only
-    const onSubmit = (data) => {
-        onSave(data, editingData?.id);
+    const onSubmit = ( data ) => {
+        onSave( data, editingData?.id );
         onClose();
     };
 
-    const office_id = watch('office_id')
+    const office_id = watch( 'office_id' );
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -276,7 +276,7 @@ const InternalAdminModal = ({ open, onClose, onSave, editingData }) => {
                 <Button onClick={onClose} color="secondary">
                     रद्द गर्नुहोस्
                 </Button>
-                <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
+                <Button onClick={handleSubmit( onSubmit )} variant="contained" color="primary">
                     {editingData ? "अपडेट गर्नुहोस्" : "थप्नुहोस्"}
                 </Button>
             </DialogActions>

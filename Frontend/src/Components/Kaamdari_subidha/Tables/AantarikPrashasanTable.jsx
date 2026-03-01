@@ -5,115 +5,115 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
-import { useBaseURL } from "../../../../Context/BaseURLProvider";
-import { useAuth } from "../../../../Context/AuthContext";
-import { calculateBSDate } from "../../../../../Utils/dateCalculator";
-import { calculateTotalConcession } from "../../../../../Utils/calculateTotalConcession";
+import { useBaseURL } from "../../../Context/BaseURLProvider";
+import { useAuth } from "../../../Context/AuthContext";
+import { calculateBSDate } from "../../../../Utils/dateCalculator";
+import { calculateTotalConcession } from "../../../../Utils/calculateTotalConcession";
 
-import useBandiRanks from "../../../ReuseableComponents/useBandiRanks";
+import useBandiRanks from "../../ReuseableComponents/useBandiRanks";
 import InternalAdminModal from "../Modals/InternalAdminModal";
 
-import ReuseKaragarOffice from "../../../ReuseableComponents/ReuseKaragarOffice";
-import ReuseBandiRanks from "../../../ReuseableComponents/ReuseBandiRanks";
-import ReuseableTable from "../../../ReuseableComponents/ReuseTable";
+import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
+import ReuseBandiRanks from "../../ReuseableComponents/ReuseBandiRanks";
+import ReuseableTable from "../../ReuseableComponents/ReuseTable";
 
 const AantarikPrashasanTable = () => {
   const BASE_URL = useBaseURL();
   const { state: authState } = useAuth();
   const navigate = useNavigate();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingData, setEditingData] = useState(null);
-  const [bandies, setBandies] = useState([]);
+  const [modalOpen, setModalOpen] = useState( false );
+  const [editingData, setEditingData] = useState( null );
+  const [bandies, setBandies] = useState( [] );
   const { ranks, loading } = useBandiRanks();
 
   const {
     control,
     setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm( {
     defaultValues: {
       office_id: "",
       bandi_rank_id: "",
     },
-  });
+  } );
 
   // Set office_id from auth on load
-  useEffect(() => {
-    if (authState?.office_id !== undefined) {
-      setValue("office_id", Number(authState.office_id));
+  useEffect( () => {
+    if ( authState?.office_id !== undefined ) {
+      setValue( "office_id", Number( authState.office_id ) );
     }
-  }, [authState?.office_id, setValue]);
+  }, [authState?.office_id, setValue] );
 
   // Fetch bandies or internal admin data (implement your own endpoint)
   const fetchBandies = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/bandi/get_all_internal_admin`,
+        `${ BASE_URL }/bandi/get_all_internal_admin`,
         { withCredentials: true }
       );
-      setBandies(response.data.Result || []);
+      setBandies( response.data.Result || [] );
       // console.log(response.data.Result)
-    } catch (error) {
-      console.error("Failed to fetch bandies:", error);
+    } catch ( error ) {
+      console.error( "Failed to fetch bandies:", error );
     }
   };
 
-  useEffect(() => {
+  useEffect( () => {
     fetchBandies();
-  }, []);
+  }, [] );
 
   // Open modal to edit existing record
-  const handleEdit = (data) => {
-    setEditingData(data);
-    setModalOpen(true);
+  const handleEdit = ( data ) => {
+    setEditingData( data );
+    setModalOpen( true );
   };
 
   // Handle View 
-  const handleView = (data) => {
+  const handleView = ( data ) => {
     // console.log(data)
-    navigate(`/kaamdari_subidha/view_detials/${data.bia_id}`)
+    navigate( `/kaamdari_subidha/view_detials/${ data.bia_id }` );
   };
 
   // Open modal to add new record with optional bandi_id
-  const handleAdd = (bandi_id = null) => {
-    setEditingData(bandi_id ? { bandi_id } : null);
-    setModalOpen(true);
+  const handleAdd = ( bandi_id = null ) => {
+    setEditingData( bandi_id ? { bandi_id } : null );
+    setModalOpen( true );
   };
 
   // Save handler passed to modal
-  const handleSave = async (formData, id) => {
+  const handleSave = async ( formData, id ) => {
     try {
       // Validate JSON serializability
-      JSON.stringify(formData);
-    } catch (e) {
-      console.error("Data contains circular reference:", e);
-      return Swal.fire("त्रुटि!", "डेटा सुरक्षित गर्न सकिएन।", "error");
+      JSON.stringify( formData );
+    } catch ( e ) {
+      console.error( "Data contains circular reference:", e );
+      return Swal.fire( "त्रुटि!", "डेटा सुरक्षित गर्न सकिएन।", "error" );
     }
 
     try {
-      if (id) {
+      if ( id ) {
         await axios.put(
-          `${BASE_URL}/bandi/update_internal_admin/${id}`,
+          `${ BASE_URL }/bandi/update_internal_admin/${ id }`,
           formData,
           { withCredentials: true }
         );
-        Swal.fire("सफल भयो!", "डेटा अपडेट गरियो", "success");
+        Swal.fire( "सफल भयो!", "डेटा अपडेट गरियो", "success" );
       } else {
-        if (!formData.bandi_id) {
-          return Swal.fire("त्रुटि!", "Bandi ID हराइरहेको छ ।", "error");
+        if ( !formData.bandi_id ) {
+          return Swal.fire( "त्रुटि!", "Bandi ID हराइरहेको छ ।", "error" );
         }
         await axios.post(
-          `${BASE_URL}/bandi/add_internal_admin`,
+          `${ BASE_URL }/bandi/add_internal_admin`,
           formData,
           { withCredentials: true }
         );
-        Swal.fire("सफल भयो!", "नयाँ डेटा थपियो ।", "success");
+        Swal.fire( "सफल भयो!", "नयाँ डेटा थपियो ।", "success" );
       }
-      setModalOpen(false);
+      setModalOpen( false );
       fetchBandies();
-    } catch (error) {
-      console.error("handleSave error:", error);
+    } catch ( error ) {
+      console.error( "handleSave error:", error );
       Swal.fire(
         "त्रुटि!",
         error.response?.data?.Error || error.message || "सर्भर अनुरोध असफल भयो ।",
@@ -142,31 +142,31 @@ const AantarikPrashasanTable = () => {
     // Add more fields as necessary
   ];
 
-  const rows = bandies.map((b) => ({
+  const rows = bandies.map( ( b ) => ( {
     // const duration = calculateBSDate(b.appointment_start_date_bs, b.appointment_end_date_bs),
     ...b,
     id: b.bandi_id,
     bandi_address: b.nepali_address || b.bidesh_nagarik_address_details,
     // duration: b.facility_years || 0 + '|' + b.facility_months || 0 + '|' + b.faciltiy_days || 0,
-    duration: `${b.facility_years || 0}|${b.facility_months || 0}|${b.facility_days || 0}`,
+    duration: `${ b.facility_years || 0 }|${ b.facility_months || 0 }|${ b.facility_days || 0 }`,
     facility:
       b.appointment_start_date_bs && b.appointment_end_date_bs
         ? calculateTotalConcession(
-          calculateBSDate(b.appointment_start_date_bs, b.appointment_end_date_bs),
+          calculateBSDate( b.appointment_start_date_bs, b.appointment_end_date_bs ),
           ranks,
           b.internal_admin_post_id
         )?.formatted || ''
         : null,
     office: b.office_name,
     current_office_id: b.current_office
-  }))
+  } ) );
 
 
   return (
     <Box p={2}>
       <InternalAdminModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => setModalOpen( false )}
         onSave={handleSave}
         editingData={editingData}
       />
@@ -186,7 +186,7 @@ const AantarikPrashasanTable = () => {
           <Controller
             name="office_id"
             control={control}
-            render={({ field }) => (
+            render={( { field } ) => (
               <ReuseKaragarOffice
                 {...field}
                 label="कार्यालय"
@@ -201,7 +201,7 @@ const AantarikPrashasanTable = () => {
           <Controller
             name="bandi_rank_id"
             control={control}
-            render={({ field }) => (
+            render={( { field } ) => (
               <ReuseBandiRanks
                 {...field}
                 label="पद"

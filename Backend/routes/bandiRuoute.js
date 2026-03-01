@@ -923,6 +923,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     const bandi_type = req.query.bandi_type;
     const mudda_group_id = toInt( req.query.mudda_group_id );
     const is_dependent = toInt( req.query.is_dependent );
+    const is_life_time = toInt( req.query.is_life_time );
     const is_escape = req.query.is_escape || '';
     const age_above = toInt( req.query.age_above );
     const age_below = toInt( req.query.age_below );
@@ -963,6 +964,7 @@ router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
     if ( mudda_group_id !== null ) conditions.push( "muddas_group_id = ?" ), params.push( mudda_group_id );
     if ( is_escape ) conditions.push( "escape_status = ?" ), params.push( is_escape );
     if ( is_dependent !== null ) conditions.push( "is_dependent = ?" ), params.push( is_dependent );
+    if ( is_life_time !== null ) conditions.push( "is_life_time = ?" ), params.push( is_life_time );
     if ( age_above !== null ) conditions.push( "current_age >= ?" ), params.push( age_above );
     if ( age_below !== null ) conditions.push( "current_age < ?" ), params.push( age_below );
     // if ( percentage_above !== null ) conditions.push( "percentage >= ?" ), params.push( percentage_above );
