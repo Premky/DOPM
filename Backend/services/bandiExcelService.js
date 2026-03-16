@@ -91,6 +91,7 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
         language === "en" ? "Prison Office" : "कारागार कार्यालय",
         language === "en" ? "Office Bandi ID" : "बन्दी ID",
         language === "en" ? "Lagat No." : "लगत नं.",
+        language === "en" ? "Dakhila Date" : "दाखिला मिति",
         language === "en" ? "Block" : "ब्लक",
         language === "en" ? "Bandi Type" : "बन्दी प्रकार",
         language === "en" ? "Bandi Name" : "बन्दीको नाम",
@@ -123,6 +124,12 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
         language === "en" ? "Escape Details" : "फरार विवरण",
         language === "en" ? "Re-Admitted Date" : "पुनः समातिएको मिति",
         language === "en" ? "Re-Admitted Office" : "पुनः समातिएको कार्यालय",
+        language === "en" ? "Release Reason" : "कैद मुक्तिको कारण",
+        language === "en" ? "Release Date" : "कैद मुक्तिको मिति",
+        // language === "en" ? "Release Relative Name" : "कैद मुक्तिको कारण",
+        // language === "en" ? "Release Relative Address" : "कैद मुक्तिको कारण",
+        // language === "en" ? "Release Relative Contact No." : "कैद मुक्तिको कारण",
+        // language === "en" ? "Release Remarks" : "कैद मुक्तिको कारण",
         ...( includePhoto ? [language === "en" ? "Photo" : "फोटो"] : [] ),
     ];
 
@@ -140,7 +147,7 @@ export const generateBandiExcelWithPhoto = async ( job, filters ) => {
             [...params, PAGE_SIZE, offset]
         );
 
-        
+
         if ( !rows.length ) break;
         const genderNpMap = { Male: "पुरुष", Female: "महिला", Other: "अन्य" };
         const escapeStatusNpMap = { recaptured: "पुनः पक्राउ", self_present: "स्वयं उपस्थित", escaped: "फरार", "": "" };
@@ -223,31 +230,32 @@ function writeBandiToSheet(
 ) {
     const muddas = b.muddas.length ? b.muddas : [{}];
 
-    const rows = muddas.map((m, idx) =>
-        sheet.addRow([
+    const rows = muddas.map( ( m, idx ) =>
+        sheet.addRow( [
             idx === 0 ? sn : "",
             language === "en" ? b.bandi_office_en : b.bandi_office,
             b.office_bandi_id || "",
             b.lagat_no || "",
+            b.enrollment_date_bs || "",
             b.block_name || "",
             b.bandi_type || "",
             language === "en" ? b.bandi_name_en : b.bandi_name,
             language === "en" ? b.country_name_en : b.country_name_np,
             language === "en"
-                ? `${b.city_name_en}-${b.wardno}, ${b.district_name_en}`
-                : `${b.city_name_np}-${b.wardno}, ${b.district_name_np}`,
-            `${b.govt_id_name_np || ""}, ${b.card_no || ""}`,
+                ? `${ b.city_name_en }-${ b.wardno }, ${ b.district_name_en }`
+                : `${ b.city_name_np }-${ b.wardno }, ${ b.district_name_np }`,
+            `${ b.govt_id_name_np || "" }, ${ b.card_no || "" }`,
             b.dob,
             b.current_age,
             language === "en" ? b.gender : genderNpMap[b.gender] || "",
             b.spouse_name,
             b.spouse_contact_no,
-            `${b.father_name || ""}/${b.father_contact_no || ""}`,
-            `${b.mother_name || ""}/${b.mother_contact_no || ""}`,
+            `${ b.father_name || "" }/${ b.father_contact_no || "" }`,
+            `${ b.mother_name || "" }/${ b.mother_contact_no || "" }`,
             b.thuna_date_bs,
             b.release_date_bs,
             b.total_fine || 0,
-            calculateBSDate(formattedDateNp, b.release_date_bs).percentage || 0,
+            calculateBSDate( formattedDateNp, b.release_date_bs ).percentage || 0,
             language === "en" ? m.mudda_group_name_en : m.mudda_group_name,
             language === "en" ? m.mudda_name_en : m.mudda_name,
             m.mudda_no || "",
@@ -262,43 +270,45 @@ function writeBandiToSheet(
             b.escape_method || "",
             b.recapture_date_bs || "",
             b.recaptured_office || "",
+            b.release_reason || "",
+            b.release_date || "",
             includePhoto ? "" : undefined, // Placeholder for photo column
-        ])
+        ] )
     );
 
     // Merge bandi info if multiple mudda rows
-    if (rows.length > 1) {
+    if ( rows.length > 1 ) {
         const start = rows[0].number;
         const end = rows[rows.length - 1].number;
-        ["A", "B", "C", "D", "E", "F", "G"].forEach((col) => {
-            sheet.mergeCells(`${col}${start}:${col}${end}`);
-        });
+        ["A", "B", "C", "D", "E", "F", "G"].forEach( ( col ) => {
+            sheet.mergeCells( `${ col }${ start }:${ col }${ end }` );
+        } );
     }
 
     // Add photos for the first row of the bandi
-    if (includePhoto && b.photo_path) {
-        let relativePath = b.photo_path.startsWith("/") ? b.photo_path.slice(1) : b.photo_path;
-        const photoFullPath = path.join(process.cwd(), relativePath);
+    if ( includePhoto && b.photo_path ) {
+        let relativePath = b.photo_path.startsWith( "/" ) ? b.photo_path.slice( 1 ) : b.photo_path;
+        const photoFullPath = path.join( process.cwd(), relativePath );
 
-        if (fs.existsSync(photoFullPath)) {
-            const ext = path.extname(photoFullPath).toLowerCase().replace(".", "");
-            const imageId = workbook.addImage({
+        if ( fs.existsSync( photoFullPath ) ) {
+            const ext = path.extname( photoFullPath ).toLowerCase().replace( ".", "" );
+            const imageId = workbook.addImage( {
                 filename: photoFullPath,
                 extension: ext === "jpg" ? "jpeg" : ext,
-            });
+            } );
 
             const photoRow = rows[0];
             photoRow.height = 90;
-            sheet.addImage(imageId, {
+            sheet.addImage( imageId, {
                 tl: { col: sheet.columns.length - 1, row: photoRow.number - 1 },
                 ext: { width: 80, height: 100 },
-            });
+            } );
         } else {
-            console.warn(`Photo not found: ${photoFullPath}`);
+            console.warn( `Photo not found: ${ photoFullPath }` );
         }
     }
 
-    rows.forEach((r) => r.commit());
+    rows.forEach( ( r ) => r.commit() );
 }
 
 
