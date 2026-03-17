@@ -139,7 +139,7 @@ const BandiReleaseForm = () => {
                                 control={control}
                                 error={errors.bandi_id}
                                 current_office={authState.office_np}
-                                type='allbandi'
+                                type='currentofficeonly'
                             />
                         </Grid>
 
