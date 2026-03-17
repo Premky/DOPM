@@ -22,16 +22,19 @@ const ReuseBandi = ( { name, label, required, control, error, defaultvalue, type
     try {
       let url;
 
-      url = `${ BASE_URL }/bandi/get_all_office_bandi`;
+      url = `${ BASE_URL }/bandi/get_bandi_of_current_office_only`;
       if ( selected_office ) {
         url = `${ BASE_URL }/bandi/get_all_office_bandi`;
       }
 
       if ( authState.office_id ) {
+        // console.log(authState.office_id)
         if ( type === 'acceptedpayrole' ) {
           url = `${ BASE_URL }/bandi/get_accepted_payroles`;
         } else if ( type === 'allbandi' ) {
           url = `${ BASE_URL }/bandi/get_all_office_bandi`;
+        } else if ( type === 'currentofficeonly' ) {
+          url = `${ BASE_URL }/bandi/get_bandi_of_current_office_only`;
         }
       }
 
@@ -49,7 +52,7 @@ const ReuseBandi = ( { name, label, required, control, error, defaultvalue, type
           .map( ( opt, index ) => {
             const bt = opt.bandi_type;
             return {
-              label: `${ opt.office_bandi_id } | ${ bt } ${ opt.bandi_name?.trim() } | ${ opt.mudda_name } | ${ index + 1 }`,
+              label: `${ opt.office_bandi_id } | ${ bt } ${ opt.bandi_name?.trim() } | ${ opt?.mudda_name || '' } | ${ index + 1 }`,
               value: opt.bandi_id,
             };
           } );
