@@ -906,6 +906,21 @@ router.get( '/get_bandi/:id', async ( req, res ) => {
     }
 } );
 
+router.get( '/get_bandi_of_current_office_only', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    // console.log( 'activeOffice', active_office );
+    const sql = `SELECT id AS bandi_id, bandi_name, office_bandi_id, bandi_type
+                 from bandi_person WHERE is_active=1 AND current_office_id =? `;
+    try {
+        const [result] = await pool.query( sql, active_office );
+        // console.log( result );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
 router.get( '/get_all_office_bandi', verifyToken, async ( req, res ) => {
 
     const toInt = ( v ) => {
