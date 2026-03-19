@@ -1,6 +1,32 @@
 import NepaliDate from 'nepali-datetime';
 
-export const calculateBSDate = ( startDate, endDate, referenceDuration = null, hirasat_years = 0, hirasat_months = 0, hirasat_days = 0 ) => {
+export const calculateBSDate = ( startDate, endDate, referenceDuration = null, hirasat = {}, escapeDurationDays = 0 ) => {
+  // console.log( 'calculator: Hirasat Duration', hirasat );
+  // console.log( 'calculator: Escape Duration Days', escapeDurationDays );
+  let hirasat_years = parseFloat( hirasat.years ) || 0;
+  let hirasat_months = parseFloat( hirasat.months ) || 0;
+  let hirasat_days = parseFloat( hirasat.days ) || 0;
+
+  let farar_years = 0;
+  let farar_months = 0;
+  let farar_days = 0;
+
+  let farar_total_days = Math.abs( escapeDurationDays );
+// console.log( 'calculator: Absolute Escape Duration Days', escapeDurationDays );
+  farar_years = farar_total_days ? Math.floor( farar_total_days / 365 ) : 0;
+  farar_months = farar_total_days ? Math.floor( ( farar_total_days % 365 ) / 30 ) : 0;
+  farar_days = farar_total_days ? ( farar_total_days % 365 ) % 30 : 0;
+
+  if ( escapeDurationDays < 0 ) {
+    farar_years = farar_years * ( -1 );
+    farar_months = farar_months * ( -1 );
+    farar_days = farar_days * ( -1 );
+  }
+
+  hirasat_years = hirasat_years - farar_years;
+  hirasat_months = hirasat_months - farar_months;
+  hirasat_days = hirasat_days - farar_days;
+
   try {
     let startDate1, endDate1;
     let startAD, endAD;
@@ -63,28 +89,49 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
     let months = endMonth - startMonth + hirasat_months;
     let days = endDay - startDay + hirasat_days;
 
+    // if ( days <= 0 ) {
+    //   months--;
+    //   // days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
+    //   days += 30;
+    // }
 
-    if ( days <= 0 ) {
+    // if ( days >= 30 ) {
+    //   months++;
+    //   days -= 30;
+    // }
+
+    // if ( months < 0 ) {
+    //   years--;
+    //   months += 12;
+    // }
+
+    // Normalize days
+    while ( days < 0 ) {
       months--;
-      // days += NepaliDate.getDaysOfMonth( endYear, endMonth - 1 );
       days += 30;
     }
 
-    if ( days >= 30 ) {
+    while ( days >= 30 ) {
       months++;
       days -= 30;
     }
 
-    if ( months < 0 ) {
+    // Normalize months
+    while ( months < 0 ) {
       years--;
       months += 12;
     }
 
-    if ( months === 12 && days === 0 ) {
+    while ( months >= 12 ) {
       years++;
-      months = 0;
-      days = 0;
+      months -= 12;
     }
+
+    // if ( months === 12 && days === 0 ) {
+    //   years++;
+    //   months = 0;
+    //   days = 0;
+    // }
 
 
     let totalDays = Math.floor( ( endAD - startAD ) / ( 1000 * 60 * 60 * 24 ) );
@@ -121,7 +168,6 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
     };
   }
 };
-
 
 export const fineToDays = ( fineAmount, dailyFineRate ) => {
   if ( !fineAmount || !dailyFineRate ) return { years: 0, months: 0, days: 0, totalDays: 0 };

@@ -24,6 +24,7 @@ import { useBaseURL } from "../../../Context/BaseURLProvider";
 import { useAuth } from "../../../Context/AuthContext";
 import axios from "axios";
 import { grey } from "@mui/material/colors";
+import { fontSize, fontStyle, fontWeight } from "@mui/system";
 
 const PayroleTable = ( { status } ) => {
     const BASE_URL = useBaseURL();
@@ -119,6 +120,14 @@ const PayroleTable = ( { status } ) => {
         background: "#fff"
     } );
 
+   const tableHeadStyle = ( {
+        background: "#0e227c",
+        color: "#ffffff",
+        fontWeight: "bold",
+        fontSize: "1rem",
+        textAlign: "center",
+        border: "1px solid #ddd"
+    } );
 
     return (
         <>
@@ -149,62 +158,54 @@ const PayroleTable = ( { status } ) => {
 
             <Box>जम्मा: {totalKaidi}</Box>
 
-            <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }} component={Paper}>
+            <TableContainer sx={{ maxWidth: "100%", overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }} component={Paper}>
                 <Table size="small" stickyHeader sx={{ tableLayout: "fixed" }} border={1}>
-                    <TableHead>
+                    <TableHead >
                         <TableRow sx={{ backgroundColor: grey }}>
                             {!isCheckboxNotVisible && (
                                 <TableCell
-                                    sx={stickyStyle( 0, 5 )}
+                                    sx={{ ...tableHeadStyle }}
                                 >
                                     ✓
                                 </TableCell>
                             )}
 
-                            <TableCell
-                                sx={stickyStyle( isCheckboxNotVisible ? 0 : 50, 5 )}
-                            >
+                            <TableCell sx={{ ...tableHeadStyle }}>
                                 सि.नं.
                             </TableCell>
 
-                            <TableCell
-                                sx={stickyStyle( isCheckboxNotVisible ? 50 : 100, 5 )}
-                            >
+                            <TableCell sx={{ ...tableHeadStyle }}>
                                 स्थिति
                             </TableCell>
 
 
-                            <TableCell
-                                sx={stickyStyle( isCheckboxNotVisible ? 100 : 160, 5 )}
-                            >
+                            <TableCell sx={{ ...tableHeadStyle }}>
                                 कारागार
                             </TableCell>
 
-                            <TableCell
-                                sx={stickyStyle( isCheckboxNotVisible ? 160 : 250, 5 )}
-                            >
+                            <TableCell sx={{ ...tableHeadStyle }}>
                                 बन्दीको नाम
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>
                                 बन्दी ID
                             </TableCell>
 
-                            <TableCell>उमेर/लिङ्ग</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>उमेर/लिङ्ग</TableCell>
                             {/* <TableCell>लिङ्ग</TableCell> */}
-                            <TableCell>राष्ट्रियता</TableCell>
-                            <TableCell>मुद्दाको नाम/नं.</TableCell>
-                            <TableCell>जाहेरवाला</TableCell>
-                            <TableCell>अन्तिम फैसला</TableCell>
-                            <TableCell>थुना परेको मिति</TableCell>
-                            <TableCell>कैद अवधि</TableCell>
-                            <TableCell>कैद पुरा हुने मिति</TableCell>
-                            <TableCell>भुक्तान कैद</TableCell>
-                            <TableCell>प्यारोलमा राख्नुपर्ने अवधि</TableCell>
-                            <TableCell>पुनरावेदन प्रमाण</TableCell>
-                            <TableCell>जरिबाना</TableCell>
-                            <TableCell>कैफियत</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>राष्ट्रियता</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>मुद्दाको नाम/नं.</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>जाहेरवाला</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>अन्तिम फैसला</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>थुना परेको मिति</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>कैद अवधि</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>कैद पुरा हुने मिति</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>भुक्तान कैद</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>प्यारोलमा राख्नुपर्ने अवधि</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>पुनरावेदन प्रमाण</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>जरिबाना</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}>कैफियत</TableCell>
                             {/* <TableCell>अदालतको निर्णय</TableCell> */}
-                            <TableCell>#</TableCell>
+                            <TableCell sx={{ ...tableHeadStyle }}   >#</TableCell>
                         </TableRow>
                     </TableHead>
 
@@ -225,37 +226,37 @@ const PayroleTable = ( { status } ) => {
                             ) )}
                     </TableBody>
                 </Table>
-                </TableContainer>
+            </TableContainer>
 
-                <TablePagination
-                    component="div"
-                    count={totalKaidi}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    onPageChange={( _, p ) => setPage( p )}
-                    onRowsPerPageChange={( e ) => {
-                        setRowsPerPage( parseInt( e.target.value, 10 ) );
-                        setPage( 0 );
-                    }}
-                    rowsPerPageOptions={[50, 100, 200, 500, 1000]}
-                />
+            <TablePagination
+                component="div"
+                count={totalKaidi}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                onPageChange={( _, p ) => setPage( p )}
+                onRowsPerPageChange={( e ) => {
+                    setRowsPerPage( parseInt( e.target.value, 10 ) );
+                    setPage( 0 );
+                }}
+                rowsPerPageOptions={[50, 100, 200, 500, 1000]}
+            />
 
-                <Menu
-                    anchorEl={menuAnchorEl}
-                    open={Boolean( menuAnchorEl )}
-                    onClose={handleMenuClose}
-                >
-                    {menuRowData && (
-                        <PayroleActionMenu
-                            oldStatus={status}
-                            data={menuRowData}
-                            onClose={handleMenuClose}
-                            refetchAll={refetchAll}
-                        />
-                    )}
-                </Menu>
-            </>
-            );
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean( menuAnchorEl )}
+                onClose={handleMenuClose}
+            >
+                {menuRowData && (
+                    <PayroleActionMenu
+                        oldStatus={status}
+                        data={menuRowData}
+                        onClose={handleMenuClose}
+                        refetchAll={refetchAll}
+                    />
+                )}
+            </Menu>
+        </>
+    );
 };
 
-            export default PayroleTable;
+export default PayroleTable;

@@ -11,6 +11,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import StatusChip from "./StatusChip";
 import NepaliDate from 'nepali-datetime';
 import { calculateBSDate } from "../../../../Utils/dateCalculator";
+// import { calculateBSDate } from "../../../../Utils/newDateCalculator";
+
 import { maxHeight } from "@mui/system";
 import { resolveParoleStatus } from "./resolveParoleStatus";
 
@@ -39,18 +41,28 @@ const PayroleTableRow = ( {
   const hirasatDays = data?.hirasat_days || 0;
   const hirasatMonths = data?.hirasat_months || 0;
   const hirasatYears = data?.hirasat_years || 0;
+
+  const hirasat = { years: hirasatYears, months: hirasatMonths, days: hirasatDays };
+  const dummyHirasat = { years: 0, months: 0, days: 0 };
+  const escapeDurationDays = data?.total_escape_duration_days || 0;
+
   let totalKaidDuration;
   let totalBhuktanDuration;
   let totalBakiDuration;
-  if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
-    totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
-    totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
-    totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration );
+  if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 || escapeDurationDays > 0 ) {
+    totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasat );
+    totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasat, escapeDurationDays );
+    totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration, dummyHirasat, -escapeDurationDays );
   }
+  console.log( 'totalKaidDuration:', totalKaidDuration );
+  console.log( 'totalBhuktanDuration', totalBhuktanDuration );
+  console.log( 'totalBakiDuration', totalBakiDuration );
+
+
 
 
   const statusBgMap = {
-    info: "#b6e6ff", 
+    info: "#b6e6ff",
     eligible: "rgb(153, 206, 244)",    // blue
     ineligible: "rgb(247, 168, 160)",   // red
     pass: "#acfcb3ff", // green
@@ -63,7 +75,7 @@ const PayroleTableRow = ( {
   const rowBgColor = statusBgMap[status.color] || "transparent";
 
   const stickyStyle = ( left, z = 3 ) => ( {
-    position: "sticky",
+    // position: "sticky",
     left,
     zIndex: z,
     background: rowBgColor
@@ -120,11 +132,12 @@ const PayroleTableRow = ( {
         {/* Mudda (first row) */}
         <TableCell>{firstMudda.mudda_name} <br /> {firstMudda.mudda_no}</TableCell>
         <TableCell>{firstMudda.vadi}</TableCell>
-        <TableCell>{firstMudda.mudda_office}</TableCell>
+        <TableCell>{firstMudda.mudda_office} <br /> {firstMudda.mudda_phesala_antim_office_date}</TableCell>
 
         <TableCell rowSpan={rowSpan}>{data.thuna_date_bs}</TableCell>
         <TableCell rowSpan={rowSpan}>
           {/* कैद अवधि */}
+
           {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? (
             <>
               जम्मा कैदः <br />
@@ -136,12 +149,18 @@ const PayroleTableRow = ( {
               बेरुजु कैदः <br />
             </>
           ) : null}
+
           {kaidDuration?.formattedDuration}
+
+          {data.total_escape_duration_days > 0 && (
+            <><br /><i>फरार अवधि: <br /></i>{escapeDurationDays} दिन         </>
+          )}
+
         </TableCell>
         <TableCell rowSpan={rowSpan}>{data.release_date_bs}</TableCell>
         <TableCell rowSpan={rowSpan}>
           {/*भुक्तान अवधी*/}
-          {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
+          {( data.hirasat_days || data.hirasat_months || data.hirasat_years || escapeDurationDays ) ? ( <>
             {totalBhuktanDuration?.formattedDuration}
             <hr />
             {totalBhuktanDuration?.percentage != null ? `${ totalBhuktanDuration.percentage }%` : '–'}
@@ -153,7 +172,7 @@ const PayroleTableRow = ( {
           )}
         </TableCell>
         <TableCell rowSpan={rowSpan}>
-          {( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ? ( <>
+          {( data.hirasat_days || data.hirasat_months || data.hirasat_years || escapeDurationDays ) ? ( <>
             {totalBakiDuration?.formattedDuration}
             <hr />
             {totalBakiDuration?.percentage != null ? `${ totalBakiDuration.percentage }%` : '–'}
@@ -223,7 +242,7 @@ const PayroleTableRow = ( {
           {/* <TableCell></TableCell> */}
           <TableCell>{m.mudda_name} {m.mudda_no && ( m.mudda_no )}</TableCell>
           <TableCell>{m.vadi}</TableCell>
-          <TableCell>{m.mudda_office}</TableCell>
+          <TableCell>{m.mudda_office} <br /> {m.mudda_phesala_antim_office_date}</TableCell>
         </TableRow>
       ) )}
     </Fragment>
