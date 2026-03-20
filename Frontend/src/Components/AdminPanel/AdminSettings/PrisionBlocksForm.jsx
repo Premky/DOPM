@@ -145,6 +145,7 @@ const PrisonBlocksForm = () => {
             </IconButton>
           </TableCell>
 
+          <TableCell>{row.sn}</TableCell>
           <TableCell>{row.prison_name}</TableCell>
           <TableCell>{row.total_capacity}</TableCell>
           <TableCell>{row.total_male}</TableCell>
@@ -229,10 +230,10 @@ const PrisonBlocksForm = () => {
               </TableHead>
 
               <TableBody>
-                {groupedData.map( ( row ) => (
+                {groupedData.map( ( row, index ) => (
                   <Row
                     key={row.prison_id}
-                    row={row}
+                    row={{...row, sn: index+1}}
                     handleOpen={handleOpen}
                     handleDelete={handleDelete}
                   />
