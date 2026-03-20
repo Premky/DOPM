@@ -3103,6 +3103,174 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
             if ( !endDate ) endDate = today_date_bs;
         }
 
+        const params = [startDate, endDate];
+
+        let extraFilters = '';
+
+        if ( bandi_status ) {
+            extraFilters += ` AND bp.bandi_status='${ bandi_status }'`;
+        }
+        if ( nationality ) {
+            extraFilters += ` AND bp.nationality=${ pool.escape( nationality.trim() ) }`;
+        }
+        if ( age_above ) {
+            extraFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) >= ${ pool.escape( parseInt( age_above ) ) }`;
+        }
+        if ( age_below ) {
+            extraFilters += ` AND TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) < ${ pool.escape( parseInt( age_below ) ) }`;
+        }
+
+        let officeFilterSql = '';
+        if ( active_office !== 1 && active_office !== 2 ) {
+            params.push( active_office );
+            officeFilterSql = 'AND o.id = ?';
+        } else if ( office_id ) {
+            params.push( office_id );
+            officeFilterSql = 'AND o.id = ?';
+        }
+
+        const sql = `
+    WITH bp_base AS (
+      SELECT 
+        bp.id,
+        bp.gender,
+        bp.bandi_type,
+        bp.current_office_id,
+        TIMESTAMPDIFF(YEAR, bp.dob_ad, CURDATE()) AS age,
+        MAX(bri.is_dependent) AS is_dependent,
+        MAX(vbad.country_name_np) AS country_name_np
+      FROM bandi_person bp
+      LEFT JOIN view_bandi_address_details vbad ON bp.id = vbad.bandi_id
+      LEFT JOIN bandi_relative_info bri ON bp.id = bri.bandi_id
+      LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+      WHERE bp.is_under_payrole != 1
+        AND (bkd.thuna_date_bs IS NULL OR bkd.thuna_date_bs BETWEEN ? AND ?)
+        ${ extraFilters }
+      GROUP BY bp.id
+    ),
+
+    escape_latest AS (
+      SELECT bandi_id, status
+      FROM (
+        SELECT 
+          bed.*,
+          ROW_NUMBER() OVER (PARTITION BY bed.bandi_id ORDER BY bed.created_at DESC) rn
+        FROM bandi_escape_details bed
+      ) t
+      WHERE rn = 1
+    ),
+
+    country_final AS (
+      SELECT 
+        current_office_id,
+        JSON_ARRAYAGG(JSON_OBJECT('country', country_name_np, 'count', cnt)) AS foreign_countries
+      FROM (
+        SELECT 
+          bp.current_office_id,
+          bp.country_name_np,
+          COUNT(bp.id) AS cnt
+        FROM bp_base bp
+        GROUP BY bp.current_office_id, bp.country_name_np
+      ) x
+      GROUP BY current_office_id
+    )
+
+    SELECT
+      voad.state_name_np,
+      voad.district_order_id,
+      o.letter_address AS office_short_name,
+      o.id AS office_id,
+
+      -- Kaidi
+      COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'male', 1, NULL)) AS kaidi_male,
+      COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender = 'female', 1, NULL)) AS kaidi_female,
+      COUNT(IF(bp.bandi_type = 'कैदी' AND bp.gender NOT IN ('male','female'), 1, NULL)) AS kaidi_other,
+      COUNT(IF(bp.bandi_type = 'कैदी', 1, NULL)) AS total_kaidi,
+
+      -- Thunuwa
+      COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male', 1, NULL)) AS thunuwa_male,
+      COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female', 1, NULL)) AS thunuwa_female,
+      COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender NOT IN ('male','female'), 1, NULL)) AS thunuwa_other,
+      COUNT(IF(bp.bandi_type = 'थुनुवा', 1, NULL)) AS total_thunuwa,
+
+      -- Gender totals
+      COUNT(IF(bp.gender = 'male', 1, NULL)) AS total_male,
+      COUNT(IF(bp.gender = 'female', 1, NULL)) AS total_female,
+      COUNT(IF(bp.gender NOT IN ('male','female'), 1, NULL)) AS total_other,
+
+      COUNT(bp.id) AS total_kaidibandi,
+
+      -- Aashrit
+      COUNT(IF(bp.is_dependent = 1, 1, NULL)) AS total_aashrit,
+
+      -- Age 65+
+      COUNT(IF(bp.bandi_type='कैदी' AND bp.gender='male' AND bp.age >= ${ defaultAge },1,NULL)) AS kaidi_male_65plus,
+      COUNT(IF(bp.bandi_type='कैदी' AND bp.gender='female' AND bp.age >= ${ defaultAge },1,NULL)) AS kaidi_female_65plus,
+      COUNT(IF(bp.bandi_type='थुनुवा' AND bp.gender='male' AND bp.age >= ${ defaultAge },1,NULL)) AS thunuwa_male_65plus,
+      COUNT(IF(bp.bandi_type='थुनुवा' AND bp.gender='female' AND bp.age >= ${ defaultAge },1,NULL)) AS thunuwa_female_65plus,
+
+      -- ✅ FIXED ESCAPE LOGIC
+      COUNT(DISTINCT CASE 
+        WHEN el.status IN ('escaped','recaptured','self_present') 
+        THEN bp.id END) AS totalEscaped,
+
+      COUNT(DISTINCT CASE 
+        WHEN el.status IN ('recaptured','self_present') 
+        THEN bp.id END) AS totalReturned,
+
+      -- Foreign
+      COUNT(IF(bp.country_name_np IS NOT NULL,1,NULL)) AS foreign_count_including_nepal,
+      COUNT(IF(bp.country_name_np != 'नेपाल',1,NULL)) AS foreign_count,
+
+      COALESCE(cf.foreign_countries, JSON_ARRAY()) AS foreign_countries
+
+    FROM offices o
+    LEFT JOIN view_office_address_details voad ON o.id = voad.office_id
+    LEFT JOIN bp_base bp ON bp.current_office_id = o.id
+    LEFT JOIN escape_latest el ON bp.id = el.bandi_id
+    LEFT JOIN country_final cf ON cf.current_office_id = o.id
+
+    LEFT JOIN (
+      SELECT bandi_id, MAX(karnayan_miti) AS karnayan_miti
+      FROM bandi_release_details
+      GROUP BY bandi_id
+    ) brd ON brd.bandi_id = bp.id
+
+    WHERE 
+      (brd.karnayan_miti IS NULL OR STR_TO_DATE(brd.karnayan_miti,'%Y-%m-%d') > STR_TO_DATE('${ endDate }','%Y-%m-%d'))
+      AND o.office_categories_id = ${ defaultOfficeCategory }
+      ${ officeFilterSql }
+
+    GROUP BY voad.state_id, voad.district_order_id, o.id
+    HAVING total_kaidi > 0
+    ORDER BY voad.state_id, voad.district_order_id;
+    `;
+
+        const [rows] = await pool.query( sql, params );
+        return res.json( { Status: true, Result: rows } );
+
+    } catch ( error ) {
+        console.error( "Error in /get_office_wise_count2:", error );
+        return res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+router.get( '/get_office_wise_count1', verifyToken, async ( req, res ) => {
+    try {
+        const active_office = req.user.office_id;
+        const today_date_bs = new NepaliDate().format( 'YYYY-MM-DD' );
+        const defaultAge = 65;
+        const defaultOfficeCategory = 2;
+
+        let { nationality, office_id, startDate, endDate, bandi_status, age_above, age_below } = req.query;
+
+        if ( !startDate && !endDate ) {
+            startDate = '1000-01-01';
+            endDate = today_date_bs;
+        } else {
+            if ( !startDate ) startDate = '1000-01-01';
+            if ( !endDate ) endDate = today_date_bs;
+        }
+
         const params = [defaultAge, defaultAge, defaultAge, defaultAge];
         params.push( startDate, endDate ); // thuna_date_bs BETWEEN
         params.push( startDate, endDate ); // for country_stats subquery
@@ -3162,6 +3330,7 @@ router.get( '/get_office_wise_count', verifyToken, async ( req, res ) => {
         COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'male' AND bp.age >= ?, 1, NULL)) AS thunuwa_male_65plus,
         COUNT(IF(bp.bandi_type = 'थुनुवा' AND bp.gender = 'female' AND bp.age >= ?, 1, NULL)) AS thunuwa_female_65plus,
 
+        
         -- Total foreign count (including Nepal)
         COUNT(IF(bp.country_name_np IS NOT NULL, 1, NULL)) AS foreign_count_including_nepal,
         COUNT(IF(bp.country_name_np != 'नेपाल', 1, NULL)) AS foreign_count,
@@ -4075,21 +4244,48 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
                 COALESCE(nc.country_name_np,'नखुलेको') AS country_name,
                 bp.bandi_type,
                 bp.gender,
-                bp.dob_ad
+                bp.dob_ad,
+                bed.status AS escape_status
             FROM bandi_person bp
             LEFT JOIN bandi_address ba ON bp.id = ba.bandi_id
             LEFT JOIN np_country nc ON ba.nationality_id = nc.id
+
             LEFT JOIN (
                 SELECT *
                 FROM (
-                    SELECT bmd.*, ROW_NUMBER() OVER (PARTITION BY bmd.bandi_id ORDER BY bmd.created_at DESC) AS rn
+                    SELECT 
+                        bmd.*,
+                        ROW_NUMBER() OVER (PARTITION BY bmd.bandi_id ORDER BY bmd.created_at DESC) AS rn,
+                        COUNT(*) OVER (PARTITION BY bmd.bandi_id) AS total_mudda
                     FROM bandi_mudda_details bmd
                 ) ranked_mudda
-                WHERE ranked_mudda.rn = 1
+                WHERE 
+                    (
+                        ranked_mudda.total_mudda = 1
+                        OR 
+                        (
+                            ranked_mudda.total_mudda > 1
+                            AND (
+                                (ranked_mudda.is_last_mudda = 1 AND ranked_mudda.is_main_mudda = 1)
+                                OR ranked_mudda.is_life_time = 1
+                                OR ranked_mudda.is_main_mudda = 1
+                                OR ranked_mudda.is_last_mudda = 1
+                            )
+                        )
+                    )
+                    AND ranked_mudda.rn = 1
             ) bmd ON bp.id = bmd.bandi_id
+                
             LEFT JOIN muddas m ON bmd.mudda_id = m.id
             LEFT JOIN muddas_groups mg ON m.muddas_group_id = mg.id
             LEFT JOIN bandi_kaid_details bkd ON bp.id = bkd.bandi_id
+            LEFT JOIN (
+                SELECT bandi_id, status
+                FROM (SELECT bed.*, ROW_NUMBER() OVER (PARTITION BY bed.bandi_id ORDER BY bed.created_at DESC) AS rn
+                FROM bandi_escape_details bed
+                ) ranked_escape
+                WHERE ranked_escape.rn = 1
+            ) bed ON bp.id = bed.bandi_id
             LEFT JOIN (
                 SELECT bandi_id, MAX(karnayan_miti_ad) AS karnayan_miti_ad
                 FROM bandi_release_details
@@ -4119,6 +4315,14 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
                 SUM(CASE WHEN bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaTotal,
                 SUM(CASE WHEN bandi_type = 'थुनुवा' AND gender = 'Male' THEN 1 ELSE 0 END) AS ThunuwaMale,
                 SUM(CASE WHEN bandi_type = 'थुनुवा' AND gender = 'Female' THEN 1 ELSE 0 END) AS ThunuwaFemale,
+                COUNT(DISTINCT CASE 
+                    WHEN escape_status IN ('escaped', 'recaptured', 'self_present') 
+                    THEN bandi_id 
+                END) AS totalEscaped,
+                COUNT(DISTINCT CASE 
+                    WHEN escape_status IN ( 'recaptured', 'self_present') 
+                    THEN bandi_id 
+                END) AS totalReturned,
                 SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob_ad, CURDATE()) >= 65 AND bandi_type = 'कैदी' THEN 1 ELSE 0 END) AS KaidiAgeAbove65,
                 SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob_ad, CURDATE()) >= 65 AND bandi_type = 'थुनुवा' THEN 1 ELSE 0 END) AS ThunuwaAgeAbove65
             FROM base
@@ -4134,6 +4338,8 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
             f.ThunuwaTotal,
             f.ThunuwaMale,
             f.ThunuwaFemale,
+            f.totalEscaped,
+            f.totalReturned,
             f.KaidiAgeAbove65,
             f.ThunuwaAgeAbove65,
             GROUP_CONCAT(CONCAT(c.country_name,'-',c.country_total) ORDER BY c.country_name SEPARATOR ', ') AS country_name
@@ -4142,6 +4348,17 @@ router.get( '/get_prisioners_count_for_maskebari', verifyToken, async ( req, res
         GROUP BY f.mg_id, f.mudda_group_name
         ORDER BY f.mudda_group_name ASC;
     `;
+
+    //     LEFT JOIN (
+    //     SELECT *
+    //     FROM (
+    //         SELECT bmd.*, ROW_NUMBER() OVER (PARTITION BY bmd.bandi_id ORDER BY bmd.created_at DESC) AS rn
+    //         FROM bandi_mudda_details bmd
+    //         WHERE (is_last_mudda=1 AND is_main_mudda=1) 
+    //            OR is_life_time=1 OR is_main_mudda=1 OR is_last_mudda=1
+    //     ) ranked_mudda
+    //     WHERE ranked_mudda.rn = 1
+    // ) bmd ON bp.id = bmd.bandi_id
 
     try {
         const [result] = await pool.query( baseSql, params );
