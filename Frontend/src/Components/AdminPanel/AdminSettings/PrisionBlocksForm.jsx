@@ -13,6 +13,9 @@ import {
   TableRow,
   Paper,
   CircularProgress,
+  TableContainer,
+  Collapse,
+  Typography,
 } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import axios from "axios";
@@ -20,20 +23,23 @@ import ReuseKaragarOffice from "../../ReuseableComponents/ReuseKaragarOffice";
 import ReuseInput from "../../ReuseableComponents/ReuseInput";
 import { useForm } from "react-hook-form";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { Box } from "@mui/system";
 
 const PrisonBlocksForm = () => {
   const BASE_URL = useBaseURL();
-  const [blocks, setBlocks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [editingBlock, setEditingBlock] = useState(null);
+  const [blocks, setBlocks] = useState( [] );
+  const [loading, setLoading] = useState( false );
+  const [open, setOpen] = useState( false );
+  const [editingBlock, setEditingBlock] = useState( null );
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm({
+  } = useForm( {
     mode: "onBlur",
     defaultValues: {
       prison_id: "",
@@ -41,83 +47,186 @@ const PrisonBlocksForm = () => {
       capacity: "",
       description: "",
     },
+  } );
+
+  const [groupedData, setGroupedData] = useState( [] );
+  
+  const groupByPrison = (blocks) => {
+  const grouped = {};
+
+  blocks.forEach((b) => {
+    if (!grouped[b.prison_id]) {
+      grouped[b.prison_id] = {
+        prison_id: b.prison_id,
+        prison_name: b.letter_address,
+        total_male: 0,
+        total_female: 0,
+        total: 0,
+        total_capacity: 0,
+        blocks: [],
+      };
+    }
+
+    // 👉 Add block
+    grouped[b.prison_id].blocks.push(b);
+
+    // 👉 Add capacity
+    grouped[b.prison_id].total_capacity += Number(b.capacity || 0);
+
+    // 👉 Count prisoners inside block (if available)
+    // assuming your API sends male_count / female_count per block
+    const male = Number(b.male_count || 0);
+    const female = Number(b.female_count || 0);
+
+    grouped[b.prison_id].total_male += male;
+    grouped[b.prison_id].total_female += female;
+    grouped[b.prison_id].total += male + female;
   });
+
+  return Object.values(grouped);
+};
 
   // ✅ Fetch blocks
   const fetchBlocks = async () => {
-    setLoading(true);
+    setLoading( true );
     try {
-      const res = await axios.get(`${BASE_URL}/public/prison_blocks`, {
+      const res = await axios.get( `${ BASE_URL }/public/prison_blocks`, {
         withCredentials: true,
-      });
-      setBlocks(res.data.Result || []);
-    //   console.log(res.data.Result)
-    } catch (err) {
-      console.error("Fetch error:", err);
+      } );
+      setBlocks( res.data.Result || [] );
+      const grouped = groupByPrison( res.data.Result || [] );
+      setGroupedData( grouped );
+      //   console.log(res.data.Result)
+    } catch ( err ) {
+      console.error( "Fetch error:", err );
     } finally {
-      setLoading(false);
+      setLoading( false );
     }
   };
 
-  useEffect(() => {
+  useEffect( () => {
     fetchBlocks();
-  }, []);
+  }, [] );
 
-  const handleOpen = (block = null) => {
-    if (block) {
-      setEditingBlock(block);
-      reset({
+
+  const handleOpen = ( block = null ) => {
+    if ( block ) {
+      setEditingBlock( block );
+      reset( {
         prison_id: block.prison_id,
         block_name: block.block_name,
         capacity: block.capacity || "",
         description: block.description || "",
-      });
+      } );
     } else {
-      setEditingBlock(null);
+      setEditingBlock( null );
       reset();
     }
-    setOpen(true);
+    setOpen( true );
   };
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => setOpen( false );
 
   // ✅ Create / Update
-  const onSubmit = async (data) => {
+  const onSubmit = async ( data ) => {
     try {
-      if (editingBlock) {
+      if ( editingBlock ) {
         await axios.put(
-          `${BASE_URL}/admin/prison_blocks/${editingBlock.id}`,
+          `${ BASE_URL }/admin/prison_blocks/${ editingBlock.id }`,
           data,
           { withCredentials: true }
         );
       } else {
-        await axios.post(`${BASE_URL}/admin/prison_blocks`, data, {
+        await axios.post( `${ BASE_URL }/admin/prison_blocks`, data, {
           withCredentials: true,
-        });
+        } );
       }
       fetchBlocks();
       handleClose();
-    } catch (error) {
-      console.error("Save error:", error);
-      alert("Failed to save block!");
+    } catch ( error ) {
+      console.error( "Save error:", error );
+      alert( "Failed to save block!" );
     }
   };
 
   // ✅ Delete
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this block?")) {
+  const handleDelete = async ( id ) => {
+    if ( window.confirm( "Are you sure you want to delete this block?" ) ) {
       try {
-        await axios.delete(`${BASE_URL}/admin/prison_blocks/${id}`, {
+        await axios.delete( `${ BASE_URL }/admin/prison_blocks/${ id }`, {
           withCredentials: true,
-        });
+        } );
         fetchBlocks();
-      } catch (err) {
-        console.error("Delete error:", err);
-        alert("Failed to delete block!");
+      } catch ( err ) {
+        console.error( "Delete error:", err );
+        alert( "Failed to delete block!" );
       }
     }
   };
 
+  function Row( { row, handleOpen, handleDelete } ) {
+    const [open, setOpen] = React.useState( false );
+
+    return (
+      <>
+        {/* Parent Row (Prison) */}
+        <TableRow>
+          <TableCell>
+            <IconButton onClick={() => setOpen( !open )}>
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          </TableCell>
+
+          <TableCell>{row.prison_name}</TableCell>
+          <TableCell>{row.total_capacity}</TableCell>
+          <TableCell>{row.total_male}</TableCell>
+          <TableCell>{row.total_female}</TableCell>
+          <TableCell>{row.total}</TableCell>
+        </TableRow>
+
+        {/* Child Row (Blocks) */}
+        <TableRow>
+          <TableCell colSpan={5} sx={{ p: 0 }}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{ m: 2 }}>
+                <Typography variant="h6">Blocks</Typography>
+
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>ब्लक</TableCell>
+                      <TableCell>क्षमता</TableCell>
+                      <TableCell>विवरण</TableCell>
+                      <TableCell>#</TableCell>
+                    </TableRow>
+                  </TableHead>
+
+                  <TableBody>
+                    {row.blocks.map( ( block ) => (
+                      <TableRow key={block.id}>
+                        <TableCell>{block.block_name}</TableCell>
+                        <TableCell>{block.capacity}</TableCell>
+                        <TableCell>{block.description}</TableCell>
+                        <TableCell>
+                          <IconButton onClick={() => handleOpen( block )}>
+                            <Edit />
+                          </IconButton>
+                          <IconButton onClick={() => handleDelete( block.id )}>
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ) )}
+                  </TableBody>
+
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }
   return (
     <div>
       <Button variant="contained" onClick={() => handleOpen()}>
@@ -128,35 +237,31 @@ const PrisonBlocksForm = () => {
         <CircularProgress sx={{ mt: 3 }} />
       ) : (
         <Paper sx={{ mt: 2 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>कारागार कार्यालय</TableCell>
-                <TableCell>ब्लकको नाम</TableCell>
-                <TableCell>क्षमता</TableCell>
-                <TableCell>विवरण</TableCell>
-                <TableCell>#</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {blocks.map((block) => (
-                <TableRow key={block.id}>
-                  <TableCell>{block.letter_address}</TableCell>
-                  <TableCell>{block.block_name}</TableCell>
-                  <TableCell>{block.capacity}</TableCell>
-                  <TableCell>{block.description}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleOpen(block)}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(block.id)}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
+          <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell />
+                  <TableCell>कारागार</TableCell>
+                  <TableCell>क्षमता</TableCell>
+                  <TableCell>पुरुष</TableCell>
+                  <TableCell>महिला</TableCell>
+                  <TableCell>जम्मा</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+
+              <TableBody>
+                {groupedData.map( ( row ) => (
+                  <Row
+                    key={row.prison_id}
+                    row={row}
+                    handleOpen={handleOpen}
+                    handleDelete={handleDelete}
+                  />
+                ) )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
       )}
 
@@ -202,7 +307,7 @@ const PrisonBlocksForm = () => {
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             variant="contained"
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit( onSubmit )}
             disabled={isSubmitting}
           >
             {editingBlock ? "Update" : "Create"}
