@@ -619,6 +619,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
             pb.block_name, 
             pb.capacity, 
             o.letter_address, 
+            o.id,
             COUNT(bp.id) AS total_bandi,
             COUNT(CASE WHEN bp.gender = 'Male' THEN 1 END) AS male_count,
             COUNT(CASE WHEN bp.gender = 'Female' THEN 1 END) AS female_count,
