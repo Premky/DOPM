@@ -219,8 +219,11 @@ const PrisonBlocksForm = () => {
         <CircularProgress sx={{ mt: 3 }} />
       ) : (
         <Paper sx={{ mt: 2 }}>
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table stickyHeader>
+          <TableContainer
+            component={Paper}
+            sx={{ mt: 2, maxHeight: 400, overflow: "auto" }}
+          >
+            <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
                   <TableCell />
