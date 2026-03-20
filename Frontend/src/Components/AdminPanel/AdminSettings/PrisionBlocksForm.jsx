@@ -16,6 +16,7 @@ import {
   TableContainer,
   Collapse,
   Typography,
+  TableFooter,
 } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import axios from "axios";
@@ -50,6 +51,7 @@ const PrisonBlocksForm = () => {
   } );
 
   const [groupedData, setGroupedData] = useState( [] );
+  const [grandTotals, setGrandTotals] = useState( [] );
 
   // ✅ Fetch blocks
   const fetchBlocks = async () => {
@@ -60,6 +62,7 @@ const PrisonBlocksForm = () => {
       } );
       setBlocks( res.data.Result || [] );
       setGroupedData( res.data.GroupedResult || [] );
+      setGrandTotals( res.data.GrandTotals || {} );
       //   console.log(res.data.Result)
     } catch ( err ) {
       console.error( "Fetch error:", err );
@@ -154,6 +157,7 @@ const PrisonBlocksForm = () => {
           <TableCell>{row.total}</TableCell>
         </TableRow>
 
+
         {/* Child Row (Blocks) */}
         <TableRow>
           <TableCell colSpan={5} sx={{ p: 0 }}>
@@ -234,12 +238,22 @@ const PrisonBlocksForm = () => {
                 {groupedData.map( ( row, index ) => (
                   <Row
                     key={row.prison_id}
-                    row={{...row, sn: index+1}}
+                    row={{ ...row, sn: index + 1 }}
                     handleOpen={handleOpen}
                     handleDelete={handleDelete}
                   />
                 ) )}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={3}><b>जम्मा</b></TableCell>
+                  <TableCell><b>{grandTotals.capacity}</b></TableCell>
+                  <TableCell><b>{grandTotals.male}</b></TableCell>
+                  <TableCell><b>{grandTotals.female}</b></TableCell>
+                  <TableCell><b>{grandTotals.other}</b></TableCell>
+                  <TableCell><b>{grandTotals.total}</b></TableCell>
+                </TableRow>
+              </TableFooter>
             </Table>
           </TableContainer>
         </Paper>
