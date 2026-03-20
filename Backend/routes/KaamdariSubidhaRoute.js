@@ -1,0 +1,921 @@
+import express from 'express';
+import con from '../utils/db.js';
+import pool from '../utils/db3.js';
+import { promisify } from 'util';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import NepaliDate from 'nepali-datetime';
+import dateConverter from 'nepali-datetime/dateConverter';
+
+import { calculateBSDate } from '../utils/dateCalculator.js';
+import verifyToken from '../middlewares/verifyToken.js';
+import { verifyRole } from '../middlewares/verifyRole.js';
+// import verifyRole from '../middelwares/verifyRole.js';
+
+async function getUserBasedStatusMap() {
+    const [rows] = await pool.query( `
+        SELECT ur.id, ur.role_name, rsr.payrole_status_id, ps.payrole_status_name
+                FROM payrole_status_roles rsr 
+                LEFT JOIN user_roles ur ON rsr.role_id=ur.id
+                LEFT JOIN payrole_status ps ON rsr.payrole_status_id=ps.id
+  `);
+
+    const map = {};
+
+    for ( const row of rows ) {
+        const role = row.role_name;
+        const statusId = row.payrole_status_id;
+
+        if ( !map[role] ) {
+            map[role] = [];
+        }
+        map[role].push( statusId );
+    }
+    // console.log( map );
+    // Optionally, handle special cases
+    map.superadmin = 'all';
+
+    return map;
+}
+
+
+const router = express.Router();
+// const query = promisify(con.query).bind(con);
+const __filename = fileURLToPath( import.meta.url );
+const __dirname = path.dirname( __filename );
+
+
+
+import NepaliDateConverter from 'nepali-date-converter';
+const current_date = new NepaliDate().format( 'YYYY-MM-DD' );
+const fy = new NepaliDate().format( 'YYYY' ); //Support for filter
+const fy_date = fy + '-04-01';
+
+import { bs2ad } from '../utils/bs2ad.js';
+import * as kaamdariSubidhaController from '../controllers/kaamdariSubidhaController.js';
+import { verifyPermission } from '../middlewares/verifyPermissions.js';
+import { PAROLE_STATUS } from '../constants/paroleStatus.js';
+import { BANDI_STATUS } from '../constants/bandiStatus.js';
+import { updateBandiStatus } from '../services/bandiStatusService.js';
+
+
+// With VerifyPermissions
+
+
+
+router.post( "/create_aantarik_prashasan", verifyToken, verifyRole( 'superadmin', 'clerk', 'office_admin' ), kaamdariSubidhaController.create_aantarik_prashasan );
+router.put( "/update_kaamdari_status/:id", verifyToken, verifyRole( 'superadmin', 'clerk', 'office_admin', 'supervisor', 'headoffice_approver', 'top_level', 'dg' ), kaamdariSubidhaController.update_kaamdari_status );
+router.put( "/approve_kaamdari_subidha/:id", verifyToken, verifyRole( 'superadmin', 'clerk', 'office_admin', 'headoffice_approver', 'top_level' ), kaamdariSubidhaController.approve_kaamdari_subidha );
+
+router.get( "/get_aantarik_prashasan", verifyToken, kaamdariSubidhaController.get_aantarik_prashasan );
+
+router.get( '/get_allowed_actions', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_role_id = req.user.role_id;
+    const bpa_status = Number( req.query.status_id );
+    console.log( 'bpa_status', bpa_status, 'user_role_id', user_role_id );
+    try {
+        const [result] = await pool.query( `
+            SELECT ur.id, ur.role_name_np, abta.allowed_status_id, 
+            abts.status_name, abts.status_key, abts.id AS ps_id
+            FROM all_bandi_table_actions abta 
+            LEFT JOIN user_roles ur ON abta.role_id=ur.id
+            LEFT JOIN all_bandi_table_status abts ON abta.allowed_status_id=abts.id
+            WHERE abta.role_id=? AND (abta.current_status_id IS NULL OR abta.current_status_id=?) AND abta.table_name=?
+            `
+            , [user_role_id, bpa_status, 'view_assigned_kaamdari_full'] );
+        // console.log( 'result', result );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'GET Error:', err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
+
+router.get( '/get_payroles', verifyToken, async ( req, res ) => {
+    try {
+        const { office_id, role_name } = req.user;
+        const {
+            searchpayroleStatus,
+            searchpayrole_no_id,
+            searchbandi_name,
+            searchcourt_decision,
+            searchmudda_id,
+            searchis_checked,
+            nationality,
+            searchOffice,
+            searchpyarole_rakhan_upayukat,
+            is_export = 0,
+            page = 0,
+            limit = 25
+        } = req.query;
+
+        const offset = page * limit;
+        let where = `WHERE 1=1`;
+        const params = [];
+
+        //Role Based Status
+        const roleMap = await getUserBasedStatusMap();
+        const allowedStatuses = roleMap[role_name];
+        console.log( allowedStatuses );
+
+        if ( allowedStatuses !== 'all' ) {
+            if ( !allowedStatuses || allowedStatuses.length === 0 ) {
+                return res.json( { Status: true, Result: [], TotalCount: 0 } );
+            }
+
+            where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
+            params.push( ...allowedStatuses );
+        }
+
+        // const roleMap = await getUserBasedStatusMap();
+        // let allowedStatuses = roleMap[role_name] ?? [];
+
+        // if ( allowedStatuses !== 'all' ) {
+        //     where += ` AND payrole_status IN (${ allowedStatuses.map( () => '?' ).join( ',' ) })`;
+        //     params.push( ...allowedStatuses );
+        // }
+
+        //Filters
+        if ( searchpayroleStatus ) { where += ` AND status = ?`; params.push( searchpayroleStatus ); }
+        // if ( searchpayrole_no_id ) { where += ` AND payrole_no_id = ?`; params.push( searchpayrole_no_id ); }
+        if (
+            searchpayrole_no_id &&
+            searchpayrole_no_id !== 'all' &&
+            searchpayrole_no_id !== '0'
+        ) {
+            where += ` AND payrole_no_id = ? `;
+            params.push( searchpayrole_no_id );
+        }
+        if (
+            searchmudda_id &&
+            searchmudda_id !== '' &&
+            searchmudda_id !== '0'
+        ) {
+            where += ` AND mudda_id = ? `;
+            params.push( searchmudda_id );
+        }
+
+        if ( searchbandi_name ) { where += ` AND bandi_name LIKE ?`; params.push( `%${ searchbandi_name }%` ); }
+        if ( searchcourt_decision ) { where += ` AND payrole_result = ?`; params.push( searchcourt_decision ); }
+        // if ( searchis_checked ) { where += ` AND is_checked = ?`; params.push( searchis_checked ); }
+        if ( searchis_checked !== undefined && searchis_checked !== '' ) {
+            where += ` AND is_checked = ?`;
+            params.push( searchis_checked );
+        }
+
+        if ( nationality ) { where += ` AND nationality = ?`; params.push( `%${ nationality }%` ); }
+        if ( searchpyarole_rakhan_upayukat ) { where += ` AND pyarole_rakhan_upayukat = ? `; params.push( searchpyarole_rakhan_upayukat ); }
+
+        //Office Logic
+        if ( ![1, 2].includes( office_id ) ) {
+            where += ` AND current_office_id=?`;
+            params.push( office_id );
+        } else if ( searchOffice ) {
+            where += ` AND current_office_id=?`;
+            params.push( searchOffice );
+        }
+
+        //Total count
+        const [[{ total }]] = await pool.query( `
+            SELECT COUNT(*) total FROM view_full_parole ${ where }`, params );
+
+        let rows;
+
+        if ( Number( is_export ) === 1 ) {
+            const [exportRows] = await pool.query(
+                `SELECT * FROM view_full_parole ${ where }
+         ORDER BY payrole_id DESC`,
+                params
+            );
+            rows = exportRows;
+        } else {
+            const [dataRows] = await pool.query(
+                `SELECT * FROM view_full_parole ${ where }
+         ORDER BY payrole_id DESC
+         LIMIT ? OFFSET ?`,
+                [...params, Number( limit ), Number( offset )]
+            );
+            rows = dataRows;
+        }
+
+        return res.json( {
+            Status: true,
+            Result: rows,
+            TotalCount: total
+        } );
+    } catch ( err ) {
+        console.error( err );
+        res.status( 500 ).json( { Status: false, Error: 'Server error' } );
+    }
+} );
+
+router.post( "/:id/court-decision", async ( req, res ) => {
+    const { decision, bandiId, remarks } = req.body;
+    const userId = req.user.username;
+    if ( decision === 'APPROVED' ) {
+        //update parole workflow 
+        await pool.query( `UPDATE payroles SET status_id=? WHERE id=?`, [PAROLE_STATUS.COURT, req.params.id] );
+
+        //Update Prisoner life status 
+        await updateBandiStatus( {
+            bandiId,
+            newStatusId: BANDI_STATUS.RELEASED_ON_PAROLE,
+            historyCode: "COURT_APPROVED",
+            source: "COURT",
+            remarks,
+            decisionDate: new Date(),
+            userId,
+        } );
+        return res.json( { message: "Parole approved & prisoner released" } );
+    }
+    //Court Rejected
+    await updateBandiStatus( {
+        bandiId,
+        newStatusId: BANDI_STATUS.IN_CUSTODY,
+        historyCode: "COURT_REJECTED",
+        source: "COURT",
+        remarks,
+        decisionDate: new Date(),
+        userId,
+    } );
+    res.json( { message: "Parole rejected" } );
+} );
+
+router.get( '/get_bandi_posts/', verifyToken, async ( req, res ) => {
+    try {
+        const [result] = await pool.query( `SELECT * FROM bandi_posts` );
+        res.status( 200 ).json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.log( err );
+        res.status( 500 ).json( { Status: false, error: err.message } );
+    }
+} );
+
+
+
+// Node/Express route (example using MySQL)
+router.post( '/get_all_bandi_fines', async ( req, res ) => {
+    const { bandiIds } = req.body;
+    if ( !Array.isArray( bandiIds ) || bandiIds.length === 0 ) {
+        return res.json( { Status: false, Error: "Invalid bandiIds" } );
+    }
+
+    try {
+        const [results] = await pool.query(
+            `SELECT * FROM bandi_fines WHERE bandi_id IN (?)`,
+            [bandiIds]
+        );
+        res.json( { Status: true, Result: results } );
+    } catch ( error ) {
+        console.error( error );
+        res.json( { Status: false, Error: "Failed to fetch fines" } );
+    }
+} );
+
+router.get( '/get_bandi_for_payrole', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.username;
+    const office_id = req.query.office_id; // extract if passed manually
+    const filters = [];
+    const params = [];
+
+    // Apply filters based on office
+    // if ( active_office !== 1 && active_office !== 2 ) {
+    //     filters.push( '1=1' );
+    //     // params.push( active_office );
+    // } else if ( office_id ) {
+    //     filters.push( 'o.id = ?' );
+    //     params.push( office_id );
+    // }
+    filters.push( 'o.id=?' );
+    params.push( office_id || active_office );
+    // Filter only कैदी type
+    filters.push( 'bp.bandi_type = ?' );
+    params.push( 'कैदी' );
+    filters.push( '(bfd.amount_fixed IS NULL OR (bfd.amount_fixed = 0 OR bfd.amount_deposited>0))' ); // Ensure no fines or only paid fines
+
+    const whereClause = filters.length > 0 ? `WHERE ${ filters.join( ' AND ' ) }` : '';
+    const sql = `
+        SELECT 
+        bp.id, bp.office_bandi_id, bp.bandi_name, bp.bandi_type, 
+        bkd.hirasat_years, bkd.hirasat_months, bkd.hirasat_days,
+        bkd.release_date_bs, bkd.release_date_ad, 
+        bkd.thuna_date_bs, bkd.thuna_date_ad 
+        FROM bandi_person bp
+        LEFT JOIN bandi_kaid_details bkd ON bkd.bandi_id = bp.id
+        LEFT JOIN bandi_fine_details bfd ON bfd.bandi_id = bp.id        
+        LEFT JOIN offices o ON o.id = bp.current_office_id
+        ${ whereClause }
+    `;
+
+    try {
+        const [result] = await pool.query( sql, params );
+        res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
+router.get( '/get_bandi_name_for_select', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    // console.log(active_office)
+    // const user_id = req.user.id;
+    let sql = '';
+    if ( active_office <= 2 ) {
+        sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id,
+                        m.mudda_name, 
+                        p.id AS payrole_id 
+                    FROM bandi_person bp
+                        LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id 
+                        LEFT JOIN muddas m ON bmd.mudda_id=m.id  
+                        LEFT JOIN payroles p ON bp.id=p.bandi_id
+                     WHERE bmd.is_main_mudda=1`;
+    } else {
+        sql = `SELECT bp.*, bp.id AS bandi_id, bp.id AS bandi_office_id,
+                        p.id AS payrole_id, 
+                        m.mudda_name 
+                    FROM bandi_person bp
+                        LEFT JOIN bandi_mudda_details bmd ON bp.id=bmd.bandi_id
+                        LEFT JOIN muddas m ON bmd.mudda_id=m.id
+                        JOIN payroles p ON bp.id=bandi_id
+                    WHERE bmd.is_main_mudda=1 WHERE bp.current_office_id=${ active_office }`;
+    }
+    try {
+        const [result] = await pool.query( sql ); // Use promise-wrapped query
+
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found for select" } );
+        }
+        const bandi = result[0];
+        // 🟢 Calculate age from BS DOB
+        const age = await calculateAge( bandi.dob ); // Assuming dob is BS like '2080-01-10'
+        bandi.age = age;
+        // console.log(age)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+router.get( '/get_selected_bandi/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT b.*, bm.*, m.mudda_name 
+        FROM bandies b
+        LEFT JOIN bandi_mudda bm ON b.id = bm.bandi_id 
+        LEFT JOIN muddas m ON bm.mudda_id = m.id
+        WHERE b.id = ? AND bm.is_main = 1
+    `;
+
+    try {
+        const [result] = await pool.query( sql, [id] ); // Use promise-wrapped query
+
+        if ( result.length === 0 ) {
+            return res.json( { Status: false, Error: "Bandi not found" } );
+        }
+        const bandi = result[0];
+        // 🟢 Calculate age from BS DOB
+        const age = await calculateAge( bandi.dob ); // Assuming dob is BS like '2080-01-10'
+        bandi.age = age;
+        // console.log(age)
+        return res.json( { Status: true, Result: bandi } );
+    } catch ( err ) {
+        console.error( err );
+        return res.json( { Status: false, Error: "Query Error" } );
+    }
+} );
+
+router.post( '/create_previous_payrole', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const user_role_id = req.user.role_id;
+
+    const {
+        bandi_id,
+        payrole_no,
+        payrole_entry_date,
+        recommended_district,
+        recommended_city,
+        recommended_tole_ward,
+        recommended_court_id,
+        payrole_rakhan_upayukat,
+
+        payrole_reason,
+        payrole_remarks,
+        payrole_granted_aadesh_date,
+        payrole_granted_letter_no,
+        payrole_granted_letter_date,
+        payrole_result,
+        payrole_decision_remark,
+
+        hajir_miti,
+        recommended_office,
+        other_details,
+
+        dopmremark
+    } = req.body;
+    console.log( req.body );
+
+    let payrole_no_bandi_id = '';
+    if ( bandi_id && payrole_no ) {
+        payrole_no_bandi_id = `${ payrole_no }${ bandi_id }`;
+    }
+
+    try {
+        const [office_bandi_id_res] = await pool.query(
+            `SELECT office_bandi_id FROM bandi_person WHERE id = ?`,
+            [bandi_id]
+        );
+        const office_bandi_id = office_bandi_id_res[0]?.office_bandi_id;
+
+        const [chk_payrole_duplicate] = await pool.query(
+            `SELECT office_bandi_id FROM payroles WHERE office_bandi_id = ?`,
+            [office_bandi_id]
+        );
+
+        if ( chk_payrole_duplicate.length > 0 ) {
+            return res.status( 409 ).json( {
+                Status: false,
+                message: `बन्दी ID ${ office_bandi_id } को प्यारोल सिफारिस अगाडि नै भइसकेको छ।`
+            } );
+        }
+
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            const values = [
+                bandi_id,
+                office_bandi_id,
+                payrole_entry_date,
+                recommended_district,
+                recommended_city,
+                recommended_tole_ward,
+                recommended_court_id,
+                payrole_reason,
+                other_details,
+                payrole_remarks,
+                17, // till court decision
+                payrole_no,
+                0,
+                payrole_rakhan_upayukat,
+                user_role_id,
+                'Pending',
+                user_id,
+                active_office,
+                active_office
+            ];
+
+            const sql = `
+                INSERT INTO payroles (
+                    bandi_id, office_bandi_id, payrole_entry_date, 
+                    recommended_district, recommended_city, recommended_tole_ward, recommended_court_id,
+                    payrole_reason, other_details, remark, status, payrole_no_id, is_checked, pyarole_rakhan_upayukat,
+                    user_role_id, is_completed, created_by, created_office, updated_office
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const [result] = await connection.query( sql, values );
+            await connection.query( `INSERT INTO payrole_decisions 
+                (bandi_id, office_bandi_id, payrole_id, payrole_nos, payrole_granted_court, 
+                payrole_granted_aadesh_date, payrole_granted_letter_no, 
+                payrole_granted_letter_date, payrole_result, payrole_decision_remark, 
+                decision_updated_by, decision_updated_at, decision_updated_office) 
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
+                [bandi_id, office_bandi_id, result.insertId, payrole_no, recommended_court_id,
+                    payrole_granted_aadesh_date, payrole_granted_letter_no,
+                    payrole_granted_letter_date, payrole_result, payrole_decision_remark,
+                    user_id, new Date(), active_office
+                ] );
+            await connection.query( `INSERT INTO payrole_logs
+                    (payrole_id,bandi_id,  office_bandi_id, hajir_date, hajir_status, hajir_office_id)VALUES
+                    (?,?,  ?, ?, ?, ?)`,
+                [result.insertId, bandi_id, office_bandi_id, hajir_miti, 'उपस्थित', recommended_office] );
+            await connection.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, user_id, new Date(), bandi_id] );
+            await connection.commit();
+            return res.json( {
+                Status: true,
+                message: "प्यारोल सफलतापूर्वक सुरक्षित गरियो।"
+            } );
+        } catch ( error ) {
+            await connection.rollback();
+            console.error( "Transaction failed:", error );
+            return res.status( 500 ).json( {
+                Status: false,
+                Error: error.message,
+                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            } );
+        } finally {
+            connection.release();
+        }
+    } catch ( error ) {
+        console.error( "Server error:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो।"
+        } );
+    }
+} );
+
+router.post( '/create_payrole', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const user_role_id = req.user.role_id;
+
+    const {
+        bandi_id,
+        payrole_no,
+        mudda_id,
+        payrole_count_date,
+        payrole_entry_date,
+        recommended_district,
+        recommended_city,
+        recommended_tole_ward,
+        recommended_court_id,
+        other_details,
+        payrole_reason,
+        payrole_remarks,
+        payrole_niranay_no,
+        payrole_decision_date,
+        payrole_granted_letter_no,
+        payrole_granted_letter_date,
+        pyarole_rakhan_upayukat,
+        dopmremark
+    } = req.body;
+
+    let payrole_no_bandi_id = '';
+    if ( bandi_id && payrole_no ) {
+        payrole_no_bandi_id = `${ payrole_no }${ bandi_id }`;
+    }
+
+    try {
+        const [office_bandi_id_res] = await pool.query(
+            `SELECT office_bandi_id FROM bandi_person WHERE id = ?`,
+            [bandi_id]
+        );
+        const office_bandi_id = office_bandi_id_res[0]?.office_bandi_id;
+
+        const [chk_payrole_duplicate] = await pool.query(
+            `SELECT office_bandi_id FROM payroles WHERE office_bandi_id = ?`,
+            [office_bandi_id]
+        );
+
+        if ( chk_payrole_duplicate.length > 0 ) {
+            return res.status( 409 ).json( {
+                Status: false,
+                message: `बन्दी ID ${ office_bandi_id } को प्यारोल सिफारिस अगाडि नै भइसकेको छ।`
+            } );
+        }
+
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            const values = [
+                bandi_id,
+                office_bandi_id,
+                payrole_entry_date,
+                recommended_district,
+                recommended_city,
+                recommended_tole_ward,
+                recommended_court_id,
+                payrole_reason,
+                other_details,
+                payrole_remarks,
+                1, // status
+                payrole_no,
+                0,
+                user_role_id,
+                'Pending',
+                user_id,
+                active_office,
+                active_office
+            ];
+
+            const sql = `
+                INSERT INTO payroles (
+                    bandi_id, office_bandi_id, payrole_entry_date, 
+                    recommended_district, recommended_city, recommended_tole_ward, recommended_court_id,
+                    payrole_reason, other_details, remark, status, payrole_no_id, is_checked,
+                    user_role_id, is_completed, created_by, created_office, updated_office
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+
+            await connection.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=? WHERE id=?`, [1, 1, bandi_id] );
+            const [result] = await connection.query( sql, values );
+            await connection.commit();
+
+            return res.json( {
+                Status: true,
+                message: "प्यारोल सफलतापूर्वक सुरक्षित गरियो।"
+            } );
+        } catch ( error ) {
+            await connection.rollback();
+            console.error( "Transaction failed:", error );
+            return res.status( 500 ).json( {
+                Status: false,
+                Error: error.message,
+                message: "सर्भर त्रुटि भयो, सबै डाटा पूर्वस्थितिमा फर्काइयो।"
+            } );
+        } finally {
+            connection.release();
+        }
+    } catch ( error ) {
+        console.error( "Server error:", error );
+        return res.status( 500 ).json( {
+            Status: false,
+            Error: error.message,
+            message: "सर्भर त्रुटि भयो।"
+        } );
+    }
+} );
+
+router.get( '/get_accepted_payroles', verifyToken, async ( req, res ) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.username;
+
+    try {
+        const baseQuery = `
+      SELECT 
+        p.*, 
+        bp.bandi_name, 
+        bp.id AS bandi_id,
+        m.mudda_name        
+      FROM payroles p
+      LEFT JOIN bandi_person bp ON p.bandi_id = bp.id
+      LEFT JOIN muddas m ON p.payrole_mudda_id = m.id 
+      LEFT JOIN payrole_decisions pd ON p.id= pd.id
+      WHERE p.status = 17 AND pd.payrole_result='पास'
+    `;
+
+        let finalQuery = baseQuery;
+        let queryParams = [];
+
+        // Restrict results for lower-level offices (office_id >= 2)
+        if ( user_office_id > 2 ) {
+            finalQuery += ` AND (p.created_office = '?' OR p.updated_office = '?')`;
+            queryParams = [user_office_id, user_office_id];
+        }
+
+        // console.log(finalQuery)
+
+        const [result] = await pool.query( finalQuery, queryParams );
+        console.log( 'acceptedpayrole', user_office_id );
+        if ( !result.length ) {
+            return res.json( { Status: false, Error: 'No payrole records found' } );
+        }
+
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Error fetching accepted payroles:', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal server error' } );
+    }
+} );
+
+router.put( '/return_payrole/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const payrole_id = req.params.id;
+    const { dopmremark, status } = req.body;
+    const new_status = Number( status ) - 1;
+    console.log( 'status', status, 'new_status', new_status );
+
+    const sql = `UPDATE payroles SET 
+                 status=?, 
+                 can_view_by_office=?, 
+                 is_checked=?, 
+                 dopm_remarks=?, 
+                 updated_by=?, 
+                 updated_at=?, 
+                 updated_office=? 
+               WHERE id=?`;
+
+    const values = [
+        new_status,      // status
+        1,               // can_view_by_office
+        1,               // is_checked
+        dopmremark,      // dopm_remarks
+        user_id,         // updated_by
+        new Date(),      // updated_at
+        active_office,   // updated_office
+        payrole_id       // WHERE id = ?
+    ];
+
+    try {
+        const [result] = await pool.query( sql, values );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
+    }
+} );
+
+router.put( '/update_payrole/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user_id = req.user.username;
+    const active_role = req.user.role_name;
+
+    const reqData = req.body;
+
+    console.log( reqData );
+    const [to_status_role_id] = await pool.query( `
+        SELECT psr.role_id, psr.payrole_status_id
+        FROM payrole_status_roles psr
+        LEFT JOIN payrole_status ps ON psr.payrole_status_id=ps.id        
+        WHERE ps.status_key=?
+        `, [reqData.to_role] );
+    const status_id = to_status_role_id[0].payrole_status_id;
+    const role_id = to_status_role_id[0].role_id;
+
+    let sql;
+    let values;
+
+    if ( reqData.remarks ) {
+        sql = `UPDATE payroles SET user_role_id=?, status=?, remark=?,is_checked=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, reqData.remarks, 0, active_user_id, new Date(), reqData.payrole_id];
+    } else if ( reqData.dopm_remarks ) {
+        sql = `UPDATE payroles SET user_role_id=?, status=?, dopm_remarks=?,is_checked=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, reqData.dopm_remarks, 0, active_user_id, new Date(), reqData.payrole_id];
+    } else {
+        sql = `UPDATE payroles SET user_role_id=?, status=?,is_checked=?, updated_by=?, updated_at=? WHERE id=?`;
+        values = [role_id, status_id, 0, active_user_id, new Date(), reqData.payrole_id];
+    }
+
+    try {
+        const [result] = await pool.query( sql, values );
+
+        res.json( { status: true, message: "Payrole updated successfully", result } );
+    } catch ( error ) {
+        console.log( error );
+        res.status( 500 ).json( { status: false, message: "Server error", error } );
+    }
+} );
+
+router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const payrole_id = req.params.id;
+    const { pyarole_rakhan_upayukat, dopmremark } = req.body;
+    // console.log( req.body );
+    let sql;
+    let values;
+    if ( pyarole_rakhan_upayukat == 'passed' || pyarole_rakhan_upayukat == 'failed' ) {
+        const [board_decision] = await pool.query( `SELECT id FROM payrole_status WHERE status_key=?`, ['board_decision'] );
+        const status_id = board_decision[0].id;
+        sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, status=?, dopm_remarks=? WHERE id=?`;
+        values = [pyarole_rakhan_upayukat, status_id, dopmremark, payrole_id];
+        if ( pyarole_rakhan_upayukat == 'failed' ) {
+            await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [0, 0, user_id, new Date(), bandi_id] );
+        } else {
+            await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, 1, user_id, new Date(), bandi_id] );
+        }
+    } else {
+        sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
+        values = [pyarole_rakhan_upayukat, dopmremark, payrole_id];
+    }
+    // console.log( values );
+    try {
+        const [result] = await pool.query( sql, values );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
+    }
+} );
+
+
+router.put( '/update_is_payrole_checked/:id', verifyToken, async ( req, res ) => {
+    const id = req.params.id;
+    // console.log( 'payrole_id', id );
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.username;
+    const {
+        is_checked
+    } = req.body;
+    // console.log('dopmremark',status)    
+    const updated_by = user_id;
+    const sql = `UPDATE payroles SET is_checked =? WHERE id =?; `;
+    const values = [
+        is_checked, id
+    ];
+    try {
+        const [result] = await pool.query( sql, values );
+        // console.log(result)
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
+    }
+} );
+
+router.put( '/update_payrole_logs/:id', verifyToken, async ( req, res ) => {
+    const user_office_id = req.user.office_id;
+    const user_id = req.user.username;
+    const {
+        payrol_id,
+        hajir_date,
+        hajir_status,
+        next_hajir_date,
+        hajir_office_id,
+        absent_reason,
+        absent_mudda_id,
+        thuna_district,
+        thuna_office_type,
+        thuna_office_id,
+        thuna_office_name,
+        is_reported_to_court,
+        is_court_ordered,
+        court_order,
+        hajir_remarks
+    } = req.body;
+
+    try {
+        let sql = '';
+        let values = [];
+
+        if ( hajir_status == '2' ) {
+            console.log( "अनुपस्थित" );
+        }
+        sql = `INSERT INOT payrole_logs
+                (payrole_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason, 
+                absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id, 
+                thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks, 
+                created_by, created_at, updated_by, updated_at ) VALUES
+                (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        values = [payrole_id, hajir_date, hajir_status, next_hajir_date, hajir_office_id, absent_reason,
+            absent_mudda_id, thuna_district, thuna_office_type, thuna_office_id,
+            thuna_office_name, is_reported_to_court, is_court_ordered, court_order, hajir_remarks,
+            user_id, new Date(), user_id, new Date()
+        ];
+        const [queryResult] = await pool.query( sql, values );
+        return res.json( { Status: true, Result: queryResult } );
+
+    } catch ( err ) {
+        console.error( 'Database error', err );
+        return res.status( 500 ).json( { Status: false, Error: 'Internal Server Error' } );
+    }
+} );
+
+router.post( '/create_payrole_maskebari_count', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const active_user = req.user.username;
+    try {
+        // Add active_user and active_office to the request body
+        req.body.created_by = active_user;
+        req.body.created_office = active_office;
+        const keys = Object.keys( req.body );
+        const values = Object.values( req.body );
+        const placeholders = keys.map( () => '?' ).join( ', ' );
+        const sql = `INSERT INTO payrole_maskebari (${ keys.join( ', ' ) }) VALUES (${ placeholders })`;
+        const [result] = await pool.query( sql, values );
+        // console.log( result );
+        res.status( 201 ).json( { id: result.insertId } );
+    } catch ( err ) {
+        console.log( err );
+        res.status( 500 ).json( { error: err.message } );
+    }
+} );
+
+router.delete( '/delete_payrole_maskebari_count/:id', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+    const user_id = req.user.username;
+    const role_name = req.user.role_name;
+    const role_id = req.user.role_id;
+    const id = req.params.id;
+    console.log( role_name );
+
+    if (
+        !(
+            ( role_id === 2 && role_name === 'office_admin' ) ||
+            ( role_id === 3 && role_name === 'supervisor' ) ||
+            ( role_id === 99 && role_name === 'superadmin' )
+        )
+    ) {
+        console.error( `❌ Unauthorized Delete Attempt for Payrole Maskebari Id ${ id }` );
+        return res.status( 403 ).json( {
+            Status: false,
+            message: `You are not authorized to delete. Please contact the administrator.`
+        } );
+    }
+
+    try {
+        const [result] = await pool.query( `DELETE FROM payrole_maskebari WHERE id=?`, [id] );
+        res.json( {
+            Status: true,
+            message: "बन्दी DELETE गरियो।"
+        } );
+    } catch ( error ) {
+        console.error( error );
+        res.json( {
+            Status: false,
+            message: "Something Wrong!"
+        } );
+    }
+} );
+
+export { router as bandiPostsRouter };

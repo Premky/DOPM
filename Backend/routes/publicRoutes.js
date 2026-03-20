@@ -611,6 +611,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
         FROM prison_blocks pb 
         JOIN offices o ON pb.prison_id = o.id
+        LEFT JOIN np_districts nd ON o.district_Id = nd.district_order_id
 
         LEFT JOIN bandi_person bp 
             ON pb.id = bp.block_no 
@@ -619,7 +620,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
         ${ officeFilterSql }
 
         GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address, o.id
-        ORDER BY o.id, pb.id
+        ORDER BY nd.id, pb.id
     `;
 
     try {
