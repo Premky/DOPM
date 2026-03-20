@@ -116,6 +116,10 @@ const PrisonBlocksForm = () => {
         prison_id: block.prison_id,
         block_name: block.block_name,
         capacity: block.capacity || "",
+        male_count: block.male_count || "",
+        female_count: block.female_count || "",
+        other_count: block.other_count || "",
+        total_count: block.total_bandi || "",
         description: block.description || "",
       } );
     } else {
@@ -196,6 +200,10 @@ const PrisonBlocksForm = () => {
                     <TableRow>
                       <TableCell>ब्लक</TableCell>
                       <TableCell>क्षमता</TableCell>
+                      <TableCell>पुरुष</TableCell>
+                      <TableCell>महिला</TableCell>
+                      <TableCell>अन्य</TableCell>
+                      <TableCell>जम्मा</TableCell>
                       <TableCell>विवरण</TableCell>
                       <TableCell>#</TableCell>
                     </TableRow>
@@ -206,6 +214,10 @@ const PrisonBlocksForm = () => {
                       <TableRow key={block.id}>
                         <TableCell>{block.block_name}</TableCell>
                         <TableCell>{block.capacity}</TableCell>
+                        <TableCell>{block.male_count}</TableCell>
+                        <TableCell>{block.female_count}</TableCell>
+                        <TableCell>{block.other_count}</TableCell>
+                        <TableCell>{block.total_bandi}</TableCell>
                         <TableCell>{block.description}</TableCell>
                         <TableCell>
                           <IconButton onClick={() => handleOpen( block )}>
