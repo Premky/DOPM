@@ -1,6 +1,6 @@
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react';
-import { tableHeadStyle, tableTotalRowStyle } from '../../../../styles/tableheadStyle';
+import { tableHeadStyle, tableTotalRowStyle } from '../../../../styles/tableheadStyle.jsx';
 
 
 
