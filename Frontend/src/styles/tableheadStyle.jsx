@@ -19,7 +19,7 @@ export const tableHead2ndRowStyle =  {
     margin: 0,
     padding: "2px",
     position: 'sticky',
-    top: 51, 
+    top: 30, 
     zIndex: 1
 } ;
 
