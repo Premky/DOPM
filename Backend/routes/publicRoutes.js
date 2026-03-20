@@ -627,7 +627,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
        JOIN offices o ON pb.prison_id = o.id
        JOIN bandi_person bp ON pb.id = bp.block_no       
        ${ officeFilterSql }
-       GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address, o.id`;
+       GROUP BY o.letter_address, o.id, pb.id, pb.block_name, pb.capacity`;
     try {
         const [result] = await pool.query( sql, [params] );
         return res.json( { Status: true, Result: result } );
