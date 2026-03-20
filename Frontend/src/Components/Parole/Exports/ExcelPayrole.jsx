@@ -1,11 +1,11 @@
-import { calculateBSDate, calculateDateDetails } from '../../../../Utils/dateCalculator';
+import { addBSTime, calculateBSDate, calculateDateDetails, convertDaysToBSYMD } from '../../../../Utils/dateCalculator';
 import NepaliDate from 'nepali-datetime';
 import axios from 'axios';
 
 const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetchedNoPunarabedan, filters, BASE_URL ) => {
     const ExcelJS = await import( 'exceljs' );
     const npToday = new NepaliDate();
-    const formattedDateNp = npToday.format( 'YYYY-MM-DD' );
+    const current_date = npToday.format( 'YYYY-MM-DD' );
     const workbook = new ExcelJS.Workbook();
     const { saveAs } = await import( "file-saver" );
 
@@ -108,37 +108,38 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
         const muddaCount = kaidiMuddas.length;
         kaidiMuddas.forEach( ( mudda, mIndex ) => {
-            const kaidDuration = calculateBSDate( d.thuna_date_bs, d.release_date_bs );
-            const bhuktanDuration = calculateBSDate( d.thuna_date_bs, current_date, kaidDuration );
-            const bakiDuration = calculateBSDate( current_date, d.release_date_bs, kaidDuration );
+            const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+            const bhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, kaidDuration );
+            const bakiDuration = calculateBSDate( current_date, data.release_date_bs, kaidDuration );
 
-            const hirasat = {
-                years: d?.hirasat_years || 0,
-                months: d?.hirasat_months || 0,
-                days: d?.hirasat_days || 0
-            };
+            const hirasatDays = data?.hirasat_days || 0;
+            const hirasatMonths = data?.hirasat_months || 0;
+            const hirasatYears = data?.hirasat_years || 0;
 
-            const escapeDurationDays = d?.total_escape_duration_days || 0;
+            const hirasat = { years: hirasatYears, months: hirasatMonths, days: hirasatDays };
+            const dummyHirasat = { years: 0, months: 0, days: 0 };
+            const escapeDurationDays = data?.total_escape_duration_days || 0;
 
-            let totalKaidDuration, totalBhuktanDuration, totalBakiDuration;
-
-            if ( hirasat.years || hirasat.months || hirasat.days || escapeDurationDays ) {
-                totalKaidDuration = calculateBSDate( d.thuna_date_bs, d.release_date_bs, 0, hirasat );
-                totalBhuktanDuration = calculateBSDate( d.thuna_date_bs, current_date, totalKaidDuration, hirasat, escapeDurationDays );
-                totalBakiDuration = calculateBSDate( current_date, d.release_date_bs, totalKaidDuration, {}, -escapeDurationDays );
+            let totalKaidDuration = kaidDuration;
+            let totalBhuktanDuration = bhuktanDuration;
+            let totalBakiDuration = bakiDuration;
+            if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 || escapeDurationDays > 0 ) {
+                totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasat );
+                totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, current_date, totalKaidDuration, hirasat, escapeDurationDays );
+                totalBakiDuration = calculateBSDate( current_date, data.release_date_bs, totalKaidDuration, dummyHirasat, -escapeDurationDays );
             }
 
+            const escapedDuration = convertDaysToBSYMD( escapeDurationDays );
             let updated_release_date = null;
 
-            if ( isValidBSDate( d?.release_date_bs ) && escapeDurationDays > 0 ) {
-                const escapedDuration = convertDaysToBSYMD( escapeDurationDays );
-                try {
-                    updated_release_date = addBSTime( d.release_date_bs, escapedDuration );
-                } catch {
-                    updated_release_date = d.release_date_bs;
-                }
+            // if (isValidBSDate(data?.release_date_bs) && escapeDurationDays > 0) {
+            // const escapedDuration = convertDaysToBSYMD(escapeDurationDays);
+            try {
+                updated_release_date = addBSTime( data.release_date_bs, escapedDuration );
+            } catch ( err ) {
+                console.error( "Invalid BS date calculation:", err );
+                updated_release_date = data.release_date_bs; // fallback
             }
-
             // console.log(mudda.mudda_office)
             const row = worksheet.addRow( [
                 mIndex === 0 ? index + 1 : '',
@@ -172,16 +173,21 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
                             `हिरासत/थुना अवधीः \n ${ data?.hirasat_years || 0 } | ${ data?.hirasat_months || 0 } | ${ data?.hirasat_days || 0 } \n बेरुजु कैदः \n ${ kaidDuration.formattedDuration }` : `${ kaidDuration.formattedDuration }`
                     ].filter( Boolean ).join( '\n\n' )
                     : '',
-                mIndex === 0 ? data.release_date_bs : '',
+                mIndex === 0
+                    ? `${ data.release_date_bs }\n` +
+                    ( data?.total_escape_duration_days > 0
+                        ? `थुना बाहिर रहेको अवधि:\n${ escapeDurationDays } दिन\n${ updated_release_date }`
+                        : '' )
+                    : '',
                 // mIndex === 0 ? `${ bhuktanDuration.formattedDuration }\n${ bhuktanDuration.percentage }%` : '',
                 mIndex === 0 ?
-                    ( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ?
+                    ( data.hirasat_days || data.hirasat_months || data.hirasat_years||escapeDurationDays ) ?
                         `${ totalBhuktanDuration?.formattedDuration } \n ${ totalBhuktanDuration.percentage }%` :
                         `${ bhuktanDuration?.formattedDuration } \n ${ bhuktanDuration.percentage }%`
                     : '',
                 // mIndex === 0 ? `${ bakiDuration.formattedDuration }\n${ bakiDuration.percentage }%` : '',
                 mIndex === 0 ?
-                    ( data.hirasat_days || data.hirasat_months || data.hirasat_years ) ?
+                    ( data.hirasat_days || data.hirasat_months || data.hirasat_years||escapeDurationDays ) ?
                         `${ totalBakiDuration?.formattedDuration } \n ${ totalBakiDuration.percentage }%` :
                         `${ bakiDuration?.formattedDuration } \n ${ bakiDuration.percentage }%`
                     : '',

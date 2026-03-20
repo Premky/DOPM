@@ -46,7 +46,7 @@ const PayroleTableRow = ( {
 
   const hirasat = { years: hirasatYears, months: hirasatMonths, days: hirasatDays };
   const dummyHirasat = { years: 0, months: 0, days: 0 };
-  // const escapeDurationDays = 90;
+  // const escapeDurationDays = 33;
   const escapeDurationDays = data?.total_escape_duration_days || 0;
 
   let totalKaidDuration;
@@ -62,10 +62,10 @@ const PayroleTableRow = ( {
     () => convertDaysToBSYMD( escapeDurationDays ),
     [escapeDurationDays]
   );
-
+// const escapedDuration = convertDaysToBSYMD( escapeDurationDays );
 let updated_release_date = null;
 
-if (isValidBSDate(data?.release_date_bs) && escapeDurationDays > 0) {
+// if (isValidBSDate(data?.release_date_bs) && escapeDurationDays > 0) {
   // const escapedDuration = convertDaysToBSYMD(escapeDurationDays);
   try {
     updated_release_date = addBSTime(data.release_date_bs, escapedDuration);
@@ -73,7 +73,7 @@ if (isValidBSDate(data?.release_date_bs) && escapeDurationDays > 0) {
     console.error("Invalid BS date calculation:", err);
     updated_release_date = data.release_date_bs; // fallback
   }
-}
+// }
   // console.log( 'totalKaidDuration:', totalKaidDuration );
   // console.log( 'totalBhuktanDuration', totalBhuktanDuration );
   // console.log( 'totalBakiDuration', totalBakiDuration );
