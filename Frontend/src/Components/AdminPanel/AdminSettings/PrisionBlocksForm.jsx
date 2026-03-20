@@ -150,6 +150,7 @@ const PrisonBlocksForm = () => {
           <TableCell>{row.total_capacity}</TableCell>
           <TableCell>{row.total_male}</TableCell>
           <TableCell>{row.total_female}</TableCell>
+          <TableCell>{row.total_other}</TableCell>
           <TableCell>{row.total}</TableCell>
         </TableRow>
 
