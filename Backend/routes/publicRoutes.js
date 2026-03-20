@@ -619,8 +619,8 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
         ${ officeFilterSql }
 
-        GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address, o.id, nd.district_order_id
-        ORDER BY nd.district_order_id, pb.id
+        GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address, o.id
+        ORDER BY nd.district_order_id IS NULL, nd.district_order_id, pb.id
     `;
 
     try {
