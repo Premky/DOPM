@@ -1,4 +1,31 @@
 import NepaliDate from 'nepali-datetime';
+
+function normalizeYMD(years = 0, months = 0, days = 0) {
+  // Normalize days
+  while (days < 0) {
+    months--;
+    days += 30;
+  }
+
+  while (days >= 30) {
+    months++;
+    days -= 30;
+  }
+
+  // Normalize months
+  while (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  while (months >= 12) {
+    years++;
+    months -= 12;
+  }
+
+  return { years, months, days };
+}
+
 export function convertDaysToBSYMD( days = 0 ) {
   let remainingDays = days;
   console.log( 'Converting days to BS YMD:', days );
@@ -11,7 +38,8 @@ export function convertDaysToBSYMD( days = 0 ) {
 
   const finalDays = remainingDays;
 
-  return { years, months, days: finalDays };
+  const normalized = normalizeYMD( years, months, finalDays );
+  return { years: normalized.years, months: normalized.months, days: normalized.days };
 }
 
 export function addBSTime(baseDateBS, duration) {
@@ -20,14 +48,32 @@ export function addBSTime(baseDateBS, duration) {
 
     const date = new NepaliDate(baseDateBS);
 
-    if (duration?.years) date.setYear(date.getYear() + duration.years);
-    if (duration?.months) date.setMonth(date.getMonth() + duration.months);
-    if (duration?.days) date.setDate(date.getDate() + duration.days);
+    let year = date.year;
+    let month = date.month + 1; // NepaliDate months are 0-indexed
+    let day = date.day;
 
-    return date.format("YYYY-MM-DD");
+    let { years = 0, months = 0, days = 0 } = duration || {};
+
+    // 🔥 Convert extra days → months manually
+    months += Math.floor(days / 30);
+    days = days % 30;
+
+    // Normalize everything
+    
+    const normalized = normalizeYMD(years, months, days);
+
+    // Apply step-by-step (important)
+    year += normalized.years;
+    month += normalized.months;
+    day += normalized.days;
+
+    // Final normalization after addition
+    const finalNormalized = normalizeYMD(year, month, day);    
+
+    return finalNormalized.years + '-' + String(finalNormalized.months).padStart(2, '0') + '-' + String(finalNormalized.days).padStart(2, '0');
   } catch (err) {
     console.error("addBSTime error:", err);
-    return baseDateBS; // fallback instead of crash
+    return baseDateBS;
   }
 }
 
