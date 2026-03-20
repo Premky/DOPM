@@ -620,7 +620,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
         ${ officeFilterSql }
 
         GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address, o.id
-        ORDER BY nd.id, pb.id
+        ORDER BY nd.district_order_id, pb.id
     `;
 
     try {
