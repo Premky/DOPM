@@ -602,6 +602,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
             pb.capacity, 
             o.letter_address, 
             o.id AS prison_id,
+            nd.district_order_id,
 
             COUNT(bp.id) AS total_bandi,
 
@@ -625,7 +626,47 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
     try {
         const [result] = await pool.query( sql, params );
-        return res.json( { Status: true, Result: result } );
+        const grouped = {};
+
+        result.forEach( ( b ) => {
+            if ( !grouped[b.prison_id] ) {
+                grouped[b.prison_id] = {
+                    prison_id: b.prison_id,
+                    prison_name: b.letter_address,
+                    district_order_id: b.district_order_id,
+                    total_male: 0,
+                    total_female: 0,
+                    total_other: 0,
+                    total: 0,
+                    total_capacity: 0,
+                    blocks: [],
+                };
+            }
+
+            // add block
+            grouped[b.prison_id].blocks.push( {
+                id: b.id,
+                block_name: b.block_name,
+                capacity: Number( b.capacity || 0 ),
+                male_count: Number( b.male_count || 0 ),
+                female_count: Number( b.female_count || 0 ),
+                other_count: Number( b.other_count || 0 ),
+                total_bandi: Number( b.total_bandi || 0 ),
+            } );
+
+            // aggregate totals
+            grouped[b.prison_id].total_capacity += Number( b.capacity || 0 );
+            grouped[b.prison_id].total_male += Number( b.male_count || 0 );
+            grouped[b.prison_id].total_female += Number( b.female_count || 0 );
+            grouped[b.prison_id].total_other += Number( b.other_count || 0 );
+            grouped[b.prison_id].total += Number( b.total_bandi || 0 );
+        } );
+
+        const finalData = Object.values( grouped ).sort(
+            ( a, b ) => ( a.district_order_id || 9999 ) - ( b.district_order_id || 9999 )
+        );
+
+        return res.json( { Status: true, Result: result, GroupedResult: finalData } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
