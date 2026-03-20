@@ -108,37 +108,21 @@ const exportToExcel = async ( filteredKaidi, fetchedMuddas, fetchedFines, fetche
 
         const muddaCount = kaidiMuddas.length;
         kaidiMuddas.forEach( ( mudda, mIndex ) => {
-            const kaidDuration = calculateBSDate( d.thuna_date_bs, d.release_date_bs );
-            const bhuktanDuration = calculateBSDate( d.thuna_date_bs, current_date, kaidDuration );
-            const bakiDuration = calculateBSDate( current_date, d.release_date_bs, kaidDuration );
+            const kaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs );
+            const bhuktanDuration = calculateBSDate( data.thuna_date_bs, formattedDateNp, kaidDuration );
+            const bakiDuration = calculateBSDate( formattedDateNp, data.release_date_bs, kaidDuration );
 
-            const hirasat = {
-                years: d?.hirasat_years || 0,
-                months: d?.hirasat_months || 0,
-                days: d?.hirasat_days || 0
-            };
-
-            const escapeDurationDays = d?.total_escape_duration_days || 0;
-
-            let totalKaidDuration, totalBhuktanDuration, totalBakiDuration;
-
-            if ( hirasat.years || hirasat.months || hirasat.days || escapeDurationDays ) {
-                totalKaidDuration = calculateBSDate( d.thuna_date_bs, d.release_date_bs, 0, hirasat );
-                totalBhuktanDuration = calculateBSDate( d.thuna_date_bs, current_date, totalKaidDuration, hirasat, escapeDurationDays );
-                totalBakiDuration = calculateBSDate( current_date, d.release_date_bs, totalKaidDuration, {}, -escapeDurationDays );
+            const hirasatDays = data?.hirasat_days || 0;
+            const hirasatMonths = data?.hirasat_months || 0;
+            const hirasatYears = data?.hirasat_years || 0;
+            let totalKaidDuration = kaidDuration;
+            let totalBhuktanDuration = bhuktanDuration;
+            let totalBakiDuration = bakiDuration;
+            if ( hirasatDays > 0 || hirasatMonths > 0 || hirasatYears > 0 ) {
+                totalKaidDuration = calculateBSDate( data.thuna_date_bs, data.release_date_bs, 0, hirasatYears, hirasatMonths, hirasatDays );
+                totalBhuktanDuration = calculateBSDate( data.thuna_date_bs, formattedDateNp, totalKaidDuration, hirasatYears, hirasatMonths, hirasatDays );
+                totalBakiDuration = calculateBSDate( formattedDateNp, data.release_date_bs, totalKaidDuration );
             }
-
-            let updated_release_date = null;
-
-            if ( isValidBSDate( d?.release_date_bs ) && escapeDurationDays > 0 ) {
-                const escapedDuration = convertDaysToBSYMD( escapeDurationDays );
-                try {
-                    updated_release_date = addBSTime( d.release_date_bs, escapedDuration );
-                } catch {
-                    updated_release_date = d.release_date_bs;
-                }
-            }
-
             // console.log(mudda.mudda_office)
             const row = worksheet.addRow( [
                 mIndex === 0 ? index + 1 : '',
