@@ -1112,8 +1112,10 @@ router.put( '/update_payrole_status/:id', verifyToken, async ( req, res ) => {
         values = [pyarole_rakhan_upayukat, status_id, dopmremark, payrole_id];
         if ( pyarole_rakhan_upayukat == 'failed' ) {
             await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [0, 0, user_id, new Date(), bandi_id] );
-        } else {
+        } else if ( pyarole_rakhan_upayukat == 'passed' ) {
             await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, 1, user_id, new Date(), bandi_id] );
+        } else {
+            await pool.query( `UPDATE bandi_person SET is_under_facility=?, is_under_payrole=?, updated_by=?, updated_at=? WHERE id=?`, [1, 0, user_id, new Date(), bandi_id] );
         }
     } else {
         sql = `UPDATE payroles SET pyarole_rakhan_upayukat=?, dopm_remarks=? WHERE id=?`;
@@ -1653,4 +1655,5 @@ router.get( '/get_allowed_actions', verifyToken, async ( req, res ) => {
         res.status( 500 ).json( { Status: false, error: err.message } );
     }
 } );
+
 export { router as payroleRouter };
