@@ -26,7 +26,7 @@ export async function bs2ad(bsDateStr) {
 }
 
 
-export async function bs2ad1( bsDateStr ) {
+export async function bs2ad2( bsDateStr ) {
   let dateUTCStr;
   try {
     const [year, month, day] = bsDateStr.split( "-" ).map( Number );

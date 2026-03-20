@@ -1,4 +1,35 @@
 import NepaliDate from 'nepali-datetime';
+export function convertDaysToBSYMD( days = 0 ) {
+  let remainingDays = days;
+  console.log( 'Converting days to BS YMD:', days );
+
+  const years = Math.floor( remainingDays / 365 );
+  remainingDays %= 365;
+
+  const months = Math.floor( remainingDays / 30 );
+  remainingDays %= 30;
+
+  const finalDays = remainingDays;
+
+  return { years, months, days: finalDays };
+}
+
+export function addBSTime(baseDateBS, duration) {
+  try {
+    if (!baseDateBS || baseDateBS === "0000-00-00") return "";
+
+    const date = new NepaliDate(baseDateBS);
+
+    if (duration?.years) date.setYear(date.getYear() + duration.years);
+    if (duration?.months) date.setMonth(date.getMonth() + duration.months);
+    if (duration?.days) date.setDate(date.getDate() + duration.days);
+
+    return date.format("YYYY-MM-DD");
+  } catch (err) {
+    console.error("addBSTime error:", err);
+    return baseDateBS; // fallback instead of crash
+  }
+}
 
 export const calculateBSDate = ( startDate, endDate, referenceDuration = null, hirasat = {}, escapeDurationDays = 0 ) => {
   // console.log( 'calculator: Hirasat Duration', hirasat );
@@ -12,7 +43,7 @@ export const calculateBSDate = ( startDate, endDate, referenceDuration = null, h
   let farar_days = 0;
 
   let farar_total_days = Math.abs( escapeDurationDays );
-// console.log( 'calculator: Absolute Escape Duration Days', escapeDurationDays );
+  // console.log( 'calculator: Absolute Escape Duration Days', escapeDurationDays );
   farar_years = farar_total_days ? Math.floor( farar_total_days / 365 ) : 0;
   farar_months = farar_total_days ? Math.floor( ( farar_total_days % 365 ) / 30 ) : 0;
   farar_days = farar_total_days ? ( farar_total_days % 365 ) % 30 : 0;
