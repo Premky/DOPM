@@ -603,11 +603,9 @@ router.get( '/prison_blocks1/', verifyToken, async ( req, res ) => {
 
 router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
-
-
     let sql;
     let params = [];
-    let officeFilterSql = 'WHERE 1=1';
+    let officeFilterSql = 'WHERE bp.bandi_status=1';
     if ( active_office !== 1 && active_office !== 2 ) {
         params.push( active_office );
         officeFilterSql += ' AND o.id = ?';
@@ -617,10 +615,19 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
     //     officeFilterSql = 'AND o.id = ?';
     // }
 
-    sql = `SELECT pb.*, o.letter_address 
+    sql = `SELECT pb.id, 
+            pb.block_name, 
+            pb.capacity, 
+            o.letter_address, 
+            COUNT(bp.id) AS total_bandi,
+            COUNT(CASE WHEN bp.gender = 'Male' THEN 1 END) AS male_count,
+            COUNT(CASE WHEN bp.gender = 'Female' THEN 1 END) AS female_count,
+            COUNT(CASE WHEN bp.gender = 'Other' OR bp.gender IS NULL OR bp.gender = '' THEN 1 END) AS other_count
        FROM prison_blocks pb 
        JOIN offices o ON pb.prison_id = o.id
-       ${ officeFilterSql }`;
+       JOIN bandi_person bp ON pb.id = bp.block_no       
+       ${ officeFilterSql }
+       GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address`;
     try {
         const [result] = await pool.query( sql, [params] );
         return res.json( { Status: true, Result: result } );
