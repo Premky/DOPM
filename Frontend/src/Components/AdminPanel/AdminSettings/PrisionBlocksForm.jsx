@@ -221,7 +221,7 @@ const PrisonBlocksForm = () => {
         <Paper sx={{ mt: 2 }}>
           <TableContainer
             component={Paper}
-            sx={{ mt: 2, maxHeight: 400, overflow: "auto" }}
+            sx={{ mt: 2, maxHeight: 600, overflow: "auto" }}
           >
             <Table stickyHeader size="small">
               <TableHead>

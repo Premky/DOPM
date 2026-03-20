@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 
-const useFetchAllowedActions = ( payrole_status_id ) => {
+const useFetchAllowedActions = ( status_id ) => {
     // console.log(payrole_status_id)
     const BASE_URL = useBaseURL();
     const [records, setRecords] = useState( [] );
@@ -15,9 +15,9 @@ const useFetchAllowedActions = ( payrole_status_id ) => {
             try {
 
                 // const response = await axios.get( `${ BASE_URL }/public/get_in_process_user_roles`,
-                const response = await axios.get( `${ BASE_URL }/payrole/get_allowed_actions`,
+                const response = await axios.get( `${ BASE_URL }/bandiPosts/get_allowed_actions`,
                     {
-                        params:{payrole_status_id},
+                        params:{status_id},
                         withCredentials: true
                     } );
                 // console.log( response );
@@ -27,7 +27,7 @@ const useFetchAllowedActions = ( payrole_status_id ) => {
                         const resultArray = Object.values( Result );
 
                         const formatted = resultArray.map( ( opt, index ) => ( {
-                            label: `${ opt.id }-${ opt.payrole_status_name }`,
+                            label: `${ opt.id }-${ opt.status_name }`,
                             value: opt.status_key || index,  // fallback for value if id is missing
                             id: opt.id  // fallback for value if id is missing
                         } ) );
@@ -48,7 +48,7 @@ const useFetchAllowedActions = ( payrole_status_id ) => {
         };
 
         fetchRecords();
-    }, [BASE_URL, payrole_status_id] );
+    }, [BASE_URL, status_id] );
 
     return { records, optrecords, loading };
 };

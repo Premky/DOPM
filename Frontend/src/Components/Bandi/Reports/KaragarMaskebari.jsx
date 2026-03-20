@@ -51,11 +51,11 @@ const KaragarMaskebari = () => {
     const to_month_index = parseInt( validEndDate.split( "-" )[1], 10 ) - 1; // months are 0-indexed
     const monthName = monthNamesNp[to_month_index];
     // console.log( to_month_index );
-    const {
-        records: muddawiseCount,
-        muddawisetotal,
-        loading: muddawiseCountLoading
-    } = fetchMuddaGroupWiseCount( { filters } );
+    // const {
+    //     records: muddawiseCount,
+    //     muddawisetotal,
+    //     loading: muddawiseCountLoading
+    // } = fetchMuddaGroupWiseCount( { filters } );
 
     const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
 

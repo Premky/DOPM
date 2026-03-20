@@ -1,34 +1,40 @@
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react';
+import { tableHeadStyle, tableTotalRowStyle } from '../../../../styles/tableheadStyle';
+
+
 
 const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
     return (
         <div>
             <Grid container>
                 <Box sx={{ width: '100%', overflowX: 'auto' }}>
-                    <TableContainer component={Paper}>
-                        <Table size='small' border={1}>
+                    <TableContainer sx={{ maxWidth: "100%", overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }} component={Paper}>
+                        <Table size="small" stickyHeader sx={{ tableLayout: "fixed" }} border={1}>
 
                             <TableHead>
                                 <TableRow>
-                                    <TableCell rowSpan={2}>सि.नं.</TableCell>
-                                    <TableCell rowSpan={2}>मुद्दाको विवरण</TableCell>
-                                    <TableCell rowSpan={2}>कुल जम्मा</TableCell>
-                                    <TableCell colSpan={2}>जम्मा</TableCell>
-                                    <TableCell colSpan={2}>पुरुष</TableCell>
-                                    <TableCell colSpan={2}>महिला</TableCell>
-                                    <TableCell colSpan={2}>६५ वर्ष माथिका</TableCell>
-                                    <TableCell rowSpan={2}>कैफियत</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} rowSpan={2}>सि.नं.</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} rowSpan={2}>मुद्दाको विवरण</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} rowSpan={2}>कुल जम्मा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} colSpan={2}>जम्मा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} colSpan={2}>पुरुष</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} colSpan={2}>महिला</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} colSpan={2}>६५ वर्ष माथिका</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} colSpan={2}>फरार/फिर्ता</TableCell>
+                                    <TableCell sx={{...tableHeadStyle}} rowSpan={2}>कैफियत</TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
-                                    <TableCell>कैदी</TableCell>
-                                    <TableCell>थुनुवा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 1}}>कैदी</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 1}}>थुनुवा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>कैदी</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>थुनुवा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>कैदी</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>थुनुवा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>कैदी</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>थुनुवा</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>फरार</TableCell>
+                                    <TableCell sx={{...tableHeadStyle, position: 'sticky', top: 30, zIndex: 2}}>फिर्ता</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -45,6 +51,8 @@ const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
                                         <TableCell>{item.ThunuwaFemale}</TableCell>
                                         <TableCell>{item.KaidiAgeAbove65}</TableCell>
                                         <TableCell>{item.ThunuwaAgeAbove65}</TableCell>
+                                        <TableCell>{item.totalEscaped}</TableCell>
+                                        <TableCell>{item.totalReturned}</TableCell>
                                         <TableCell>
                                             {item.country_name && !item.country_name.startsWith( "नेपाल" ) && item.country_name}
                                         </TableCell>
@@ -52,16 +60,18 @@ const TotalCountAc2Mudda = ( { muddawiseCount, muddawisetotal } ) => {
                                     </TableRow>
                                 ) )}
                                 <TableRow>
-                                    <TableCell colSpan={2}>जम्मा</TableCell> {/* मुद्दा */}
-                                    <TableCell>{muddawisetotal.Total}</TableCell>
-                                    <TableCell>{muddawisetotal.KaidiTotal}</TableCell>
-                                    <TableCell>{muddawisetotal.ThunuwaTotal}</TableCell>
-                                    <TableCell>{muddawisetotal.KaidiMale}</TableCell>
-                                    <TableCell>{muddawisetotal.ThunuwaMale}</TableCell>
-                                    <TableCell>{muddawisetotal.KaidiFemale}</TableCell>
-                                    <TableCell>{muddawisetotal.ThunuwaFemale}</TableCell>
-                                    <TableCell>{muddawisetotal.KaidiAgeAbove65}</TableCell>
-                                    <TableCell>{muddawisetotal.ThunuwaAgeAbove65}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}} colSpan={2}>जम्मा</TableCell> {/* मुद्दा */}
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.Total}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.KaidiTotal}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.ThunuwaTotal}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.KaidiMale}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.ThunuwaMale}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.KaidiFemale}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.ThunuwaFemale}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.KaidiAgeAbove65}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.ThunuwaAgeAbove65}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.totalEscaped}</TableCell>
+                                    <TableCell sx={{...tableTotalRowStyle}}>{muddawisetotal.totalReturned}</TableCell>
 
                                 </TableRow>
 

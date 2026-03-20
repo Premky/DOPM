@@ -3,7 +3,7 @@ import { Box, Grid, TableContainer, Table, TableHead, TableBody, TableCell, Tabl
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 
 const TotalGenderWiseCount = ({filters}) => {
-    console.log(filters)
+    // console.log(filters)
     const { totals, countLoading } = UseBandiTotalCountACoffice(filters);
     // console.log( totals );
     return (
@@ -48,17 +48,17 @@ const TotalGenderWiseCount = ({filters}) => {
                                 <TableCell><b></b></TableCell>
                                 <TableCell>{totals.aashrit}</TableCell>
                             </TableRow>
-                            <TableRow>
+                            <TableRow >
                                 <TableCell><b>कुल कैदी</b></TableCell>
-                                <TableCell>{totals.total_kaidi}</TableCell>
+                                <TableCell sx={{background:'lightgray'}}><b>{totals.total_kaidi}</b></TableCell>
                                 <TableCell><b>कुल थुनुवा</b></TableCell>
-                                <TableCell>{totals.total_thunuwa}</TableCell>
+                                <TableCell sx={{background:'lightgray'}}><b>{totals.total_thunuwa}</b></TableCell>
                                 <TableCell><b>कुल संख्या</b></TableCell>
-                                <TableCell>{totals.total_kaidi + totals.total_thunuwa}</TableCell>
+                                <TableCell sx={{background:'lightgray'}}><b>{totals.total_kaidi + totals.total_thunuwa}</b></TableCell>
                                 <TableCell><b>विदेशी संख्या</b></TableCell>
-                                <TableCell>{totals.foreign_count}</TableCell>
+                                <TableCell><b>{totals.foreign_count}</b></TableCell>
                                 <TableCell><b>थुनुवा बालक</b></TableCell>
-                                <TableCell>{totals.aashrit}</TableCell>
+                                <TableCell><b>{totals.aashrit}</b></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan={8} sx={{ textAlign: 'center', verticalAlign: 'middle' }}><i>

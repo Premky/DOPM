@@ -63,13 +63,13 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
     'सि.नं.', 'मुद्दाको विवरण', '', '', 'जम्मा', '', 'पुरुष', '', 'महिला', '',
     ...conditionalAashrit, ...( conditionalAashrit.length ? [''] : [] ),
     ...conditionalNabalik, ...( conditionalNabalik.length ? [''] : [] ),
-    '६५ वर्ष माथिका', '', 'कैफियत', ''
+    '६५ वर्ष माथिका', '', 'फरार/फिर्ता', '', 'कैफियत', ''
   ];
   const headerRow2 = [
     '', '', '', '', 'कैदी', 'थुनुवा', 'कैदी', 'थुनुवा', 'कैदी', 'थुनुवा',
     ...( conditionalAashrit.length ? ['नाबालक', 'नाबालिका'] : [] ),
     ...( conditionalNabalik.length ? ['कैदी', 'थुनुवा'] : [] ),
-    'कैदी', 'थुनुवा', '', ''
+    'कैदी', 'थुनुवा', 'फरार', 'फिर्ता', ''
   ];
 
   // Add headerRow1
@@ -89,7 +89,8 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
   worksheet.mergeCells( `G${ row1.number }:H${ row1.number }` );
   worksheet.mergeCells( `I${ row1.number }:J${ row1.number }` );
   worksheet.mergeCells( `K${ row1.number }:L${ row1.number }` );
-  worksheet.mergeCells( `M${ row1.number }:P${ row2.number }` );
+  worksheet.mergeCells( `M${ row1.number }:N${ row1.number }` );
+  worksheet.mergeCells( `O${ row1.number }:P${ row2.number }` );
   // addStyledRow( worksheet, headerRow1, { center: true } );
   // addStyledRow( worksheet, headerRow2, { center: true } );
   // item.country_name!='नेपाल' && item.country_name
@@ -104,13 +105,14 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
       ...( conditionalAashrit.length ? [record.Maashrit, record.Faashrit] : [] ),
       ...( conditionalNabalik.length ? [record.KaidiNabalak, record.ThunuwaNabalak] : [] ),
       record.KaidiAgeAbove65, record.ThunuwaAgeAbove65,
+      record.totalEscaped, record.totalReturned,
       isForeign ? record.country_name && !record.country_name.startsWith( "नेपाल" ) && record.country_name || '' : ( record.Remarks || "" ),      
       ''
     ];
     const dataRow = worksheet.addRow( row );
     dataRow.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
     worksheet.mergeCells( `B${ dataRow.number }:D${ dataRow.number }` );
-    worksheet.mergeCells( `M${ dataRow.number }:P${ dataRow.number }` );
+    worksheet.mergeCells( `O${ dataRow.number }:P${ dataRow.number }` );
   } );
 
   // Totals row
@@ -122,13 +124,14 @@ const addPrisonerTable = ( worksheet, records, totals, conditionalAashrit, condi
     ...( conditionalAashrit.length ? [totals.Maashrit, totals.Faashrit] : [] ),
     ...( conditionalNabalik.length ? [totals.KaidiNabalak, totals.ThunuwaNabalak] : [] ),
     totals.KaidiAgeAbove65, totals.ThunuwaAgeAbove65,
+    totals.totalEscaped, totals.totalReturned,
     '', ''
   ];
   const totalRowAdded = worksheet.addRow( totalRow );
   totalRowAdded.font = { name: "Kalimati", bold: true };
   totalRowAdded.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
   worksheet.mergeCells( `A${ totalRowAdded.number }:D${ totalRowAdded.number }` );
-  worksheet.mergeCells( `M${ totalRowAdded.number }:P${ totalRowAdded.number }` );
+  worksheet.mergeCells( `O${ totalRowAdded.number }:P${ totalRowAdded.number }` );
 
   return totalRowAdded.number;
 };

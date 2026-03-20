@@ -1,11 +1,12 @@
 import React from 'react';
-import { Box, Button, TableContainer, Table, TableHead, TableBody, TableCell, TableRow } from '@mui/material';
+import { Box, Button, TableContainer, Table, TableHead, TableBody, TableCell, TableRow, Paper } from '@mui/material';
 
 import UseBandiTotalCountACoffice from '../../../ReuseableComponents/UseBandiTotalCountACoffice';
 import fetchUserStatus from '../../../ReuseableComponents/fetchUserStatus';
 import { useAuth } from '../../../../Context/AuthContext';
 import exportOfficeWiseMaskebariExcel from '../../Exports/ExportOfficeWiseMaskebariExcel';
 import { Helmet } from 'react-helmet';
+import { tableHead2ndRowStyle, tableHeadStyle, tableTotalRowStyle } from '../../../../styles/tableheadStyle';
 // import exportCombinedGenderAndOfficeCountExcel from '../../Exports/ExportCombinedGenderAndOfficeCountExcel';
 const TotalCountOfficeWise = ( { filters } ) => {
     const { state } = useAuth();
@@ -45,6 +46,8 @@ const TotalCountOfficeWise = ( { filters } ) => {
             acc.totalKaidi65 += ( data.kaidi_male_65plus || 0 ) + ( data.kaidi_female_65plus || 0 );
             acc.totalThunuwa65 += ( data.thunuwa_male_65plus || 0 ) + ( data.thunuwa_female_65plus || 0 );
             acc.totalAashrit += data.total_aashrit || 0;
+            acc.totalEscaped += data.totalEscaped || 0;
+            acc.totalReturned += data.totalReturned || 0;
             acc.totalForeign += data.foreign_count || 0;
             acc.totalAll += ( data.total_male || 0 ) + ( data.total_female || 0 );
             return acc;
@@ -61,6 +64,8 @@ const TotalCountOfficeWise = ( { filters } ) => {
             totalKaidi65: 0,
             totalThunuwa65: 0,
             totalAashrit: 0,
+            totalEscaped: 0,
+            totalReturned: 0,
             totalForeign: 0,
             totalAll: 0,
         }
@@ -82,35 +87,38 @@ const TotalCountOfficeWise = ( { filters } ) => {
                 disabled={countLoading || !count || count.length === 0}>
                 Export to Excel
             </Button>
-            <Box sx={{ width: '100%', overflowX: 'auto' }}>
-                <TableContainer>
-                    <Table size='small' border='1'>
+            <Box>
+                <TableContainer sx={{ maxWidth: "100%", overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }} component={Paper}>
+                    <Table stickyHeader size='small' border='1'>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>प्रदेश</TableCell>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>क्र.सं.</TableCell>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>कारागार</TableCell>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>कुल कैदीबन्दी</TableCell>
-                                <TableCell sx={tableheadstyle} colSpan={2}>कैदी</TableCell>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>कैदी</TableCell>
-                                <TableCell sx={tableheadstyle} colSpan={2}>थुनुवा</TableCell>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>थुनुवा</TableCell>
-                                <TableCell sx={tableheadstyle} colSpan={2}>लिङ्ग अनुसार</TableCell>
-                                <TableCell sx={tableheadstyle} colSpan={2}>६५ वर्ष माथिका</TableCell>
-                                <TableCell sx={tableheadstyle} rowSpan={2}>आश्रित</TableCell>
-                                <TableCell sx={tableheadstyle} colSpan={2}>विदेशी</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>प्रदेश</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>क्र.सं.</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>कारागार</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>कुल कैदीबन्दी</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} colSpan={2}>कैदी</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>कैदी</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} colSpan={2}>थुनुवा</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>थुनुवा</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} colSpan={2}>लिङ्ग अनुसार</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} colSpan={2}>६५ वर्ष माथिका</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} rowSpan={2}>आश्रित</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} colSpan={2}>फरार/फिर्ता</TableCell>
+                                <TableCell sx={{...tableHeadStyle}} colSpan={2}>विदेशी</TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell sx={tableheadstyle}>पुरुष</TableCell>
-                                <TableCell sx={tableheadstyle}>महिला</TableCell>
-                                <TableCell sx={tableheadstyle}>पुरुष</TableCell>
-                                <TableCell sx={tableheadstyle}>महिला</TableCell>
-                                <TableCell sx={tableheadstyle}>पुरुष</TableCell>
-                                <TableCell sx={tableheadstyle}>महिला</TableCell>
-                                <TableCell sx={tableheadstyle}>कैदी</TableCell>
-                                <TableCell sx={tableheadstyle}>थुनुवा</TableCell>
-                                <TableCell sx={tableheadstyle}>संख्या</TableCell>
-                                <TableCell sx={tableheadstyle}>राष्ट्रियता</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>पुरुष</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>महिला</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>पुरुष</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>महिला</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>पुरुष</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>महिला</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>कैदी</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>थुनुवा</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>फरार</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>फिर्ता</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>संख्या</TableCell>
+                                <TableCell sx={{...tableHead2ndRowStyle}}>राष्ट्रियता</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -142,6 +150,8 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                         <TableCell>{data.kaidi_male_65plus + data.kaidi_female_65plus}</TableCell>
                                         <TableCell>{data.thunuwa_male_65plus + data.thunuwa_female_65plus}</TableCell>
                                         <TableCell>{data.total_aashrit}</TableCell>
+                                        <TableCell>{data.totalEscaped}</TableCell>
+                                        <TableCell>{data.totalReturned}</TableCell>
                                         <TableCell>{data.foreign_count}</TableCell>
                                         <TableCell>
                                             {data.foreign_countries
@@ -151,22 +161,25 @@ const TotalCountOfficeWise = ( { filters } ) => {
                                     </>
                                 </TableRow>
                             ) )}
-                            <TableRow sx={{ backgroundColor: '#f0f0f0', fontWeight: 'bold' }}>
-                                <TableCell colSpan={3}>कुल जम्मा</TableCell>
-                                <TableCell>{totals.totalAll}</TableCell>
-                                <TableCell>{totals.totalKaidiMale}</TableCell>
-                                <TableCell>{totals.totalKaidiFemale}</TableCell>
-                                <TableCell>{totals.totalKaidi}</TableCell>
-                                <TableCell>{totals.totalThunuwaMale}</TableCell>
-                                <TableCell>{totals.totalThunuwaFemale}</TableCell>
-                                <TableCell>{totals.totalThunuwa}</TableCell>
-                                <TableCell>{totals.totalMale}</TableCell>
-                                <TableCell>{totals.totalFemale}</TableCell>
-                                <TableCell>{totals.totalKaidi65}</TableCell>
-                                <TableCell>{totals.totalThunuwa65}</TableCell>
-                                <TableCell>{totals.totalAashrit}</TableCell>
-                                <TableCell>{totals.totalForeign}</TableCell>
-                                <TableCell>-</TableCell>
+                            {/* <TableRow sx={{ backgroundColor: '#f0f0f0', fontWeight: 'bold' }}> */}
+                            <TableRow>
+                                <TableCell  sx={{ ...tableTotalRowStyle }} colSpan={3}>कुल जम्मा</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalAll}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalKaidiMale}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalKaidiFemale}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalKaidi}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalThunuwaMale}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalThunuwaFemale}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalThunuwa}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalMale}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }}>{totals.totalFemale}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalKaidi65}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalThunuwa65}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalAashrit}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalEscaped}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalReturned}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} >{totals.totalForeign}</TableCell>
+                                <TableCell sx={{ ...tableTotalRowStyle }} ></TableCell>
                             </TableRow>
 
                         </TableBody>
