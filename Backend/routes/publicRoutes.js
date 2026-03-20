@@ -666,7 +666,25 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
             ( a, b ) => ( a.district_order_id || 9999 ) - ( b.district_order_id || 9999 )
         );
 
-        return res.json( { Status: true, Result: result, GroupedResult: finalData } );
+        const grandTotals = finalData.reduce(
+            ( acc, row ) => {
+                acc.capacity += Number( row.total_capacity || 0 );
+                acc.male += Number( row.total_male || 0 );
+                acc.female += Number( row.total_female || 0 );
+                acc.other += Number( row.total_other || 0 );
+                acc.total += Number( row.total || 0 );
+                return acc;
+            },
+            {
+                capacity: 0,
+                male: 0,
+                female: 0,
+                other: 0,
+                total: 0,
+            }
+        );
+
+        return res.json( { Status: true, Result: result, GroupedResult: finalData, GrandTotals: grandTotals } );
     } catch ( err ) {
         console.error( "Database Query Error:", err );
         res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
