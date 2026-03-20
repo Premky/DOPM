@@ -625,8 +625,8 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
             COUNT(CASE WHEN bp.gender = 'Female' THEN 1 END) AS female_count,
             COUNT(CASE WHEN bp.gender = 'Other' OR bp.gender IS NULL OR bp.gender = '' THEN 1 END) AS other_count
        FROM prison_blocks pb 
-       JOIN offices o ON pb.prison_id = o.id
-       JOIN bandi_person bp ON pb.id = bp.block_no       
+       LEFT JOIN offices o ON pb.prison_id = o.id
+       LEFT JOIN bandi_person bp ON pb.id = bp.block_no       
        ${ officeFilterSql }
        GROUP BY o.letter_address, o.id, pb.id, pb.block_name, pb.capacity`;
     try {
