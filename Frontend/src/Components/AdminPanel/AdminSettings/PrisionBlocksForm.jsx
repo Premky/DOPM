@@ -220,7 +220,7 @@ const PrisonBlocksForm = () => {
       ) : (
         <Paper sx={{ mt: 2 }}>
           <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
+            <Table stickyHeader>
               <TableHead>
                 <TableRow>
                   <TableCell />
