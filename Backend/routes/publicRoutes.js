@@ -611,7 +611,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
 
         FROM prison_blocks pb 
         JOIN offices o ON pb.prison_id = o.id
-        LEFT JOIN np_district nd ON o.district_Id = nd.district_order_id
+        LEFT JOIN np_district nd ON o.district_Id = nd.did
 
         LEFT JOIN bandi_person bp 
             ON pb.id = bp.block_no 
