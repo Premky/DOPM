@@ -50,41 +50,6 @@ const PrisonBlocksForm = () => {
   } );
 
   const [groupedData, setGroupedData] = useState( [] );
-  
-  const groupByPrison = (blocks) => {
-  const grouped = {};
-
-  blocks.forEach((b) => {
-    if (!grouped[b.prison_id]) {
-      grouped[b.prison_id] = {
-        prison_id: b.prison_id,
-        prison_name: b.letter_address,
-        total_male: 0,
-        total_female: 0,
-        total: 0,
-        total_capacity: 0,
-        blocks: [],
-      };
-    }
-
-    // 👉 Add block
-    grouped[b.prison_id].blocks.push(b);
-
-    // 👉 Add capacity
-    grouped[b.prison_id].total_capacity += Number(b.capacity || 0);
-
-    // 👉 Count prisoners inside block (if available)
-    // assuming your API sends male_count / female_count per block
-    const male = Number(b.male_count || 0);
-    const female = Number(b.female_count || 0);
-
-    grouped[b.prison_id].total_male += male;
-    grouped[b.prison_id].total_female += female;
-    grouped[b.prison_id].total += male + female;
-  });
-
-  return Object.values(grouped);
-};
 
   // ✅ Fetch blocks
   const fetchBlocks = async () => {
@@ -94,8 +59,7 @@ const PrisonBlocksForm = () => {
         withCredentials: true,
       } );
       setBlocks( res.data.Result || [] );
-      const grouped = groupByPrison( res.data.Result || [] );
-      setGroupedData( grouped );
+      setGroupedData( res.data.GroupedResult || [] );
       //   console.log(res.data.Result)
     } catch ( err ) {
       console.error( "Fetch error:", err );
@@ -254,10 +218,12 @@ const PrisonBlocksForm = () => {
               <TableHead>
                 <TableRow>
                   <TableCell />
+                  <TableCell>सि.नं.</TableCell>
                   <TableCell>कारागार</TableCell>
                   <TableCell>क्षमता</TableCell>
                   <TableCell>पुरुष</TableCell>
                   <TableCell>महिला</TableCell>
+                  <TableCell>अन्य</TableCell>
                   <TableCell>जम्मा</TableCell>
                 </TableRow>
               </TableHead>
