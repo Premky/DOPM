@@ -59,12 +59,17 @@ const KaragarMaskebari = () => {
 
     const { records: bandiStatus, optrecords: bandiStatusOpt, loading: bandiStatusLoading } = fetchBandiStatus();
 
+    const [appliedFilters, setAppliedFilters] = useState( {} );
+    const onSubmit = () => {
+        setAppliedFilters( filters );
+    };
+
     const swadeshiFilters = useMemo( () => ( {
         startDate: startDate,
         endDate: endDate,
         nationality: 'स्वदेशी',
         selectedOffice: selectedOffice || '',
-        bandi_status: bandi_status || '',
+        bandi_status: bandi_status || '1',
         age_above: age_above || '',
         age_below: age_below || ''
     } ), [startDate, endDate, selectedOffice, bandi_status, age_above, age_below, current_date] );
@@ -74,7 +79,7 @@ const KaragarMaskebari = () => {
         endDate: endDate,
         nationality: 'विदेशी',
         selectedOffice: selectedOffice || '',
-        bandi_status: bandi_status || '',
+        bandi_status: bandi_status || '1',
         age_above: age_above || '',
         age_below: age_below || ''
     } ), [startDate, endDate, selectedOffice, bandi_status, age_above, age_below, current_date] );
@@ -148,9 +153,9 @@ const KaragarMaskebari = () => {
                         {/* Welcome {authState.user} from {authState.office_np} */}
                     </Typography>
 
-                    <form
-                    // onSubmit={handleSubmit( onSubmit )}
-                    >
+                    {/* <form
+                    > */}
+                        {/* // onSubmit={handleSubmit( onSubmit )} */}
                         <Grid container spacing={2}>
                             {/* {authState.office_id} */}
                             {authState.office_id == 1 || authState.office_id == 2 && (
@@ -220,9 +225,10 @@ const KaragarMaskebari = () => {
                                 <Grid container size={{ xs: 12 }} spacing={2}>
                                     <Grid size={{ xs: 12, sm: 4 }}>
                                         <Button
-                                            variant='contained'
-                                            type='submit'
-                                        >Search</Button>
+                                            type="submit" variant="contained" color="primary" sx={{ mt: 2 }}
+                                            onClick={onSubmit}>
+                                            Search
+                                        </Button>
                                     </Grid>
                                     <Grid xs={12}>
                                         {/* <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
@@ -252,7 +258,7 @@ const KaragarMaskebari = () => {
 
 
                         </Grid>
-                    </form>
+                    {/* </form> */}
                 </Box>
             </Grid>
             {/* <Grid container sx={{ marginTop: 1 }}>
