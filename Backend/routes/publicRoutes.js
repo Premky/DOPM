@@ -584,6 +584,55 @@ router.get( '/search_pmis', ( req, res ) => {
 } );
 
 // Get all blocks with office name
+router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
+    const active_office = req.user.office_id;
+
+    let params = [];
+    let officeFilterSql = '';
+
+    if ( active_office !== 1 && active_office !== 2 ) {
+        officeFilterSql = 'WHERE o.id = ?';
+        params.push( active_office );
+    }
+
+    const sql = `
+        SELECT 
+            pb.id, 
+            pb.block_name, 
+            pb.capacity, 
+            o.letter_address, 
+            o.id AS prison_id,
+
+            COUNT(bp.id) AS total_bandi,
+
+            SUM(CASE WHEN bp.gender = 'Male' THEN 1 ELSE 0 END) AS male_count,
+            SUM(CASE WHEN bp.gender = 'Female' THEN 1 ELSE 0 END) AS female_count,
+            SUM(CASE 
+                WHEN bp.gender = 'Other' OR bp.gender IS NULL OR bp.gender = '' 
+                THEN 1 ELSE 0 END) AS other_count
+
+        FROM prison_blocks pb 
+        JOIN offices o ON pb.prison_id = o.id
+
+        LEFT JOIN bandi_person bp 
+            ON pb.id = bp.block_no 
+            AND bp.bandi_status = 1
+
+        ${ officeFilterSql }
+
+        GROUP BY pb.id, pb.block_name, pb.capacity, o.letter_address, o.id
+        ORDER BY o.id, pb.id
+    `;
+
+    try {
+        const [result] = await pool.query( sql, params );
+        return res.json( { Status: true, Result: result } );
+    } catch ( err ) {
+        console.error( "Database Query Error:", err );
+        res.status( 500 ).json( { Status: false, Error: "Internal Server Error" } );
+    }
+} );
+
 router.get( '/prison_blocks1/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     try {
@@ -601,7 +650,7 @@ router.get( '/prison_blocks1/', verifyToken, async ( req, res ) => {
 
 } );
 
-router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
+router.get( '/prison_blocks2/', verifyToken, async ( req, res ) => {
     const active_office = req.user.office_id;
     let sql;
     let params = [];
