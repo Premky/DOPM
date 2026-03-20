@@ -42,7 +42,8 @@ const BandiMaskebari = () => {
     searchKaragarOffice: debounceKaragarOffice,
     searchStartDate: debounceStartDate,
     searchEndDate: deobounceEndDate,
-    bandi_status, age_above, age_below
+    bandi_status: bandi_status || 1,
+    age_above, age_below
   } ), [debounceKaragarOffice, debounceStartDate, deobounceEndDate, bandi_status, age_above, age_below] );
 
   // console.log(filters)
@@ -88,7 +89,7 @@ const BandiMaskebari = () => {
             />
           </Grid>
 
-          <Grid size={{ xs: 3}}>
+          <Grid size={{ xs: 3 }}>
             <ReuseSelect
               name="age_above"
               label='उमेर (माथि)'
