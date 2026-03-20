@@ -611,7 +611,7 @@ router.get( '/prison_blocks/', verifyToken, async ( req, res ) => {
             SUM(CASE WHEN bp.gender = 'Other' OR bp.gender IS NULL OR bp.gender = '' THEN 1 ELSE 0 END) AS other_count
 
         FROM prison_blocks pb 
-        JOIN offices o ON pb.prison_id = o.id
+        LEFT JOIN offices o ON pb.prison_id = o.id
         LEFT JOIN np_district nd ON o.district_Id = nd.did
 
         LEFT JOIN bandi_person bp 
