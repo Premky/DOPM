@@ -157,6 +157,7 @@ const TableFilters = ( { onChange } ) => {
             const defaultOption = roleBasedStatus.find( opt => opt.value === defaultStatus );
             if ( defaultOption ) {
                 setValue( 'searchStatus', defaultOption.value );
+                setValue( 'search_is_completed', 'Pending' );
             }
         }
     }, [roleBasedStatus, authState.role_name, setValue] );
@@ -224,6 +225,7 @@ const TableFilters = ( { onChange } ) => {
                             { value: "Pending", label: "नभएको(प्रक्रयामा रहेको)" },
                             { value: "Completed", label: "भएको" },
                         ]}
+                        defaultValue={'Pending'}
                         control={control}
                         error={errors.search_is_completed}
                     />
