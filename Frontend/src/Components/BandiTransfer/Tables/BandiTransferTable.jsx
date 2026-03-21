@@ -33,7 +33,7 @@ import TableActionMenu from "./TableActionMenu";
 import { useBaseURL } from "../../../Context/BaseURLProvider";
 import useFetchBandiForTransfer from "../Fetch_APIs/useFetchBandiForTransfer";
 import exportToExcel from "../Exports/ExportBandiTransferTable";
-import { tableBodyRowStyle, tableHead2ndRowStyle, tableHeadStyle } from "../../../styles/tableheadStyle";
+import { tableBodyRowStyle, tableHead2ndRowStyle, tableHead3rdRowStyle, tableHeadStyle } from "../../../styles/tableheadStyle";
 
 const BandiTransferTable = () => {
     const BASE_URL = useBaseURL();
@@ -43,11 +43,8 @@ const BandiTransferTable = () => {
     const navigate = useNavigate();
 
     const [filters, setFilters] = useState( {} );
-    const [openEl, setOpenEl] = useState( null );
-    const [anchorEl, setAnchorEl] = useState( null );
     const [page, setPage] = useState( 0 );
     const [rowsPerPage, setRowsPerPage] = useState( 25 );
-    const [refreshKey, setRefreshKey] = useState( 0 );
 
     // const [totalKaidi, setTotalKaidi] = useState( 0 );
 
@@ -136,20 +133,6 @@ const BandiTransferTable = () => {
         }
     };
 
-    const tableHeadColor = 'red';
-    const stickyTableHeadStyle = {
-        background: '#1976d2',
-        textAlign: 'center',
-        position: "sticky",
-        left: 0,
-        zIndex: 3
-    };
-    
-    // const tableHeadStyle = {
-    //     background: '#1976d2',
-    //     textAlign: 'center',
-    // };
-    // console.log( filteredKaidi );
     return (
         <>
             <Helmet>
@@ -182,37 +165,46 @@ const BandiTransferTable = () => {
             </Menu>
             <TableFilters onChange={( newFilters ) => setFilters( newFilters )} />
             <Typography variant="h6">
-                {filteredKaidi.length} { "वटा विवरण भेटियो"}
+                {filteredKaidi.length} {"वटा विवरण भेटियो"}
             </Typography>
             <TableContainer sx={{ maxWidth: "100%", overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }} component={Paper}>
-            {/* <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }} component={Paper}> */}
-                <Table size="small" stickyHeader sx={{tableLayout:"fixed"}} border={1}>
+                {/* <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }} component={Paper}> */}
+                <Table size="small" stickyHeader sx={{ tableLayout: "fixed" }} border={1}>
                     <TableHead>
-                        <TableRow sx={{ backgroundColor: '#1976d2' }}>
+                        <TableRow>
                             {/* <TableCell rowSpan={3} sx={{ position: "sticky", left: 0, zIndex: 3 }}>चेक</TableCell> */}
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>सि.नं.</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>बान्दी (id)</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>कारागार कार्यालय</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>अवस्था</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>बन्दीको नामथर र स्थायी ठेगाना</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}} >मुद्दा</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>जन्म मिति/उमेर</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>थुनामा परेको मिति</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>छुट्ने मिति जरिवाना वापत समेत</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>थुनुवा भएमा सम्बन्धित न्यायिक निकायको स्वीकृती</TableCell>
-                            <TableCell colSpan={3} sx={{...tableHeadStyle}}>जेलमा बसेको विवरण (शुरुदेखि हालसम्म)</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>सरुवा गर्न चाहेको कारागारको नाम र कारण</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>कैफियत</TableCell>
-                            <TableCell rowSpan={3} sx={{...tableHeadStyle}}>#</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>सि.नं.</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>
+                                <div
+                                    style={{
+                                        transform: "rotate(-90deg)",
+                                        whiteSpace: "nowrap",
+                                        display: "inline-block"
+                                    }}
+                                >
+                                    बान्दी आईडी
+                                </div></TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>कारागार कार्यालय</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>अवस्था</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>बन्दीको नामथर र स्थायी ठेगाना</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }} >मुद्दा</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>जन्म मिति/उमेर</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>थुनामा परेको मिति</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>छुट्ने मिति जरिवाना वापत समेत</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>थुनुवा भएमा सम्बन्धित न्यायिक निकायको स्वीकृती</TableCell>
+                            <TableCell colSpan={3} sx={{ ...tableHeadStyle }}>जेलमा बसेको विवरण (शुरुदेखि हालसम्म)</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>सरुवा गर्न चाहेको कारागारको नाम र कारण</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>कैफियत</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>#</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell rowSpan={2} sx={{...tableHead2ndRowStyle}}>कारागारको नाम</TableCell>
-                            <TableCell colSpan={2} sx={{...tableHead2ndRowStyle}}>मिति</TableCell>
+                            <TableCell rowSpan={2} sx={{ ...tableHead2ndRowStyle }}>कारागारको नाम</TableCell>
+                            <TableCell colSpan={2} sx={{ ...tableHead2ndRowStyle }}>मिति</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell sx={{...tableHead2ndRowStyle}}>देखी</TableCell>
-                            <TableCell sx={{...tableHead2ndRowStyle}}>सम्म</TableCell>
+                            <TableCell sx={{ ...tableHead3rdRowStyle }}>देखी</TableCell>
+                            <TableCell sx={{ ...tableHead3rdRowStyle }}>सम्म</TableCell>
                         </TableRow>
                     </TableHead>
 
@@ -226,17 +218,27 @@ const BandiTransferTable = () => {
                                 <Fragment key={`${ data.id }-${ index }`}>
                                     {/* First row */}
                                     <TableRow sx={{ ...tableBodyRowStyle }}>
-                                        <TableCell sx={{...tableBodyRowStyle, background: bgColor( data.status_id )}} rowSpan={rowSpan}>{index + 1} <br/> {data.transfer_id}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle, background: bgColor( data.status_id )}} rowSpan={rowSpan}>{data.office_bandi_id}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle, background: bgColor( data.status_id )}} rowSpan={rowSpan}>{data.current_office_name}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle, background: bgColor( data.status_id )}} rowSpan={rowSpan}>{statusValue( data.status_id )}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>
+                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>{index + 1} <br /> {data.transfer_id}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>
+                                            <div
+                                                style={{
+                                                    transform: "rotate(-90deg)",
+                                                    whiteSpace: "nowrap",
+                                                    display: "inline-block"
+                                                }}
+                                            >
+                                                {data.office_bandi_id}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>{data.current_office_name}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>{statusValue( data.status_id )}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>
                                             {data.bandi_type} <br />
                                             <strong>{data.bandi_name}</strong>
                                             <br />
-                                            <em style={{ fontSize: '0.8em' }}>{data.country_name_np==='नेपाल' ? data.nepali_address : data.bidesh_nagarik_address_details}</em>
+                                            <em style={{ fontSize: '0.8em' }}>{data.country_name_np === 'नेपाल' ? data.nepali_address : data.bidesh_nagarik_address_details}</em>
                                         </TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>
                                             {kaidiMuddas.map( ( m, i ) => (
                                                 <span key={i}>
                                                     {m.mudda_name}
@@ -244,14 +246,14 @@ const BandiTransferTable = () => {
                                                 </span>
                                             ) )}
                                         </TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>{data.dob} <hr /> {data.current_age} वर्ष</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>{data.thuna_date_bs}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>{data.release_date_bs}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}></TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}}>{kaidiTransferHistory[0]?.to_office_name || '-'}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}}>{kaidiTransferHistory[0]?.transfer_from_date || '-'}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}}>{kaidiTransferHistory[0]?.transfer_to_date || '-'}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>{data.dob} <hr /> {data.current_age} वर्ष</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>{data.thuna_date_bs}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>{data.release_date_bs}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}></TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }}>{kaidiTransferHistory[0]?.to_office_name || '-'}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }}>{kaidiTransferHistory[0]?.transfer_from_date || '-'}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }}>{kaidiTransferHistory[0]?.transfer_to_date || '-'}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>
                                             {
                                                 data.final_to_office_name ? ( <>{data.final_to_office_name}</> ) : ( <>{data.recommended_to_office_name || ''}</> )
                                             }<hr />
@@ -264,13 +266,13 @@ const BandiTransferTable = () => {
                                                 <em>{data.transfer_reason}</em>
                                             </> )}
                                         </TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>
                                             {/* पुर्व कारागारबाट प्राप्त आचरण सम्बन्धि विवरण */}
                                             {data.bandi_character || ''}
                                         </TableCell>
-                                        
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>{data.remarks}</TableCell>
-                                        <TableCell sx={{...tableBodyRowStyle}} rowSpan={rowSpan}>
+
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>{data.remarks}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>
                                             <IconButton onClick={( e ) => handleMenuOpen( e, data )}>
                                                 <MoreVertIcon />
                                             </IconButton>
@@ -298,7 +300,7 @@ const BandiTransferTable = () => {
             <TablePagination
                 rowsPerPageOptions={[25, 50, 100, 500]}
                 component="div"
-                count={totalKaidi}
+                count={filteredKaidi.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
