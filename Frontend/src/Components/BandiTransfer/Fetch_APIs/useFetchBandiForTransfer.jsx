@@ -30,8 +30,8 @@ const useFetchBandiForTransfer = (filters, page, rowsPerPage) => {
 
       const res = await axios.get(`${BASE_URL}/bandiTransfer/get_transfer_bandi_ac_status`, {
         params: {
-          // page,
-          // limit: rowsPerPage,
+          page,
+          rowsPerPage,
           searchOffice,
           searchToOffice,
           // nationality,
