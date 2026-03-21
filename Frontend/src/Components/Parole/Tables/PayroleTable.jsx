@@ -25,6 +25,7 @@ import { useAuth } from "../../../Context/AuthContext";
 import axios from "axios";
 import { grey } from "@mui/material/colors";
 import { fontSize, fontStyle, fontWeight } from "@mui/system";
+import { tableHeadStyle } from "../../../styles/tableheadStyle";
 
 const PayroleTable = ( { status } ) => {
     const BASE_URL = useBaseURL();
@@ -120,14 +121,7 @@ const PayroleTable = ( { status } ) => {
         background: "#fff"
     } );
 
-   const tableHeadStyle = ( {
-        background: "#0e227c",
-        color: "#ffffff",
-        fontWeight: "bold",
-        fontSize: "1rem",
-        textAlign: "center",
-        border: "1px solid #ddd"
-    } );
+
 
     return (
         <>
