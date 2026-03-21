@@ -56,7 +56,7 @@ export const groupTransferResult = ( rows ) => {
     const grouped = {};
 
     for ( const row of rows ) {
-        const { bandi_id, mudda_id, mudda_name, bandi_character, 
+        const { bandi_id, mudda_id, mudda_name, bandi_character,
             transfer_id, role_id, status_id,
             transfer_reason_np, transfer_reason,
             recommended_to_office_id, recommended_to_office_name,
@@ -162,7 +162,7 @@ router.get( '/get_transfer_bandi_ac_status2', verifyToken, async ( req, res ) =>
     const {
         searchOffice,
         searchToOffice,
-        search_is_completed,
+        search_is_completed = 'Pending',
         searchStatus: statusKey,
         searchRoles: roleKey,
         searchbandi_name,
@@ -202,7 +202,7 @@ router.get( '/get_transfer_bandi_ac_status2', verifyToken, async ( req, res ) =>
 
         if ( search_is_completed !== undefined && search_is_completed !== '' ) {
             where += ` AND is_completed = ?`;
-            params.push( Number( search_is_completed ) );
+            params.push( search_is_completed );
         }
 
 

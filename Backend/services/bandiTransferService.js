@@ -1,7 +1,7 @@
 import { addFilter } from '../queryUtils/sqlFilterBuilder.js';
 import pool from '../utils/db3.js';
 
-async function insertTransferDetails( bandi_id, transfer_details = [], role_id,InitialStatus, user_id, active_office, connection ) {
+async function insertTransferDetails( bandi_id, transfer_details = [], role_id, InitialStatus, user_id, active_office, connection ) {
     // console.log(transfer_details)
     const values = transfer_details.map( item => [
         bandi_id,
@@ -53,7 +53,7 @@ async function insertFinalTransferDetails( data, InitialStatus, user_id, active_
     // console.log(data)
     const values = [
         data.bandi_id,
-        active_office,  data.proposed_karagar_office,     
+        active_office, data.proposed_karagar_office,
         data.decision_date, data.apply_date,
         // data.nirnay_officer,
         data.reason_id,
@@ -65,13 +65,13 @@ async function insertFinalTransferDetails( data, InitialStatus, user_id, active_
         new Date(),
         new Date(),
         active_office
-    ] ;
+    ];
 
     try {
         if ( !data.bandi_id || !data.proposed_karagar_office || !data.reason_id ) {
-            console.warn( "⚠️ No data provided to insert.",data );
+            console.warn( "⚠️ No data provided to insert.", data );
             return 0;
-        }        
+        }
         const sql = `INSERT INTO bandi_transfer_history (
                 bandi_id,
                 transfer_from_office_id, recommended_to_office_id, 
@@ -90,15 +90,15 @@ async function insertFinalTransferDetails( data, InitialStatus, user_id, active_
     }
 }
 
-async function getAllowedStatusesForRole(role_id) {
-    
+async function getAllowedStatusesForRole( role_id ) {
+
 }
 
 // ✅ Helper Function to build dynamic SQL and values
-async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
+async function buildUpdateData( metadata, statusId, roleId, userId, recordId ) {
     const now = new Date();
 
-    if (metadata.final_to_office_id) {
+    if ( metadata.final_to_office_id ) {
         return {
             sql: `
                 UPDATE bandi_transfer_history 
@@ -108,7 +108,7 @@ async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
         };
     }
 
-    if (metadata.decision_date && metadata.letter_cn && metadata.letter_date) {
+    if ( metadata.decision_date && metadata.letter_cn && metadata.letter_date ) {
         return {
             sql: `
                 UPDATE bandi_transfer_history 
@@ -118,7 +118,7 @@ async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
         };
     }
 
-    if (metadata.recommended_to_office_id && metadata.decision_date) {
+    if ( metadata.recommended_to_office_id && metadata.decision_date ) {
         return {
             sql: `
                 UPDATE bandi_transfer_history 
@@ -128,7 +128,7 @@ async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
         };
     }
 
-    if (metadata.transfer_date) {
+    if ( metadata.transfer_date ) {
         return {
             sql: `
                 UPDATE bandi_transfer_history 
@@ -147,48 +147,48 @@ async function buildUpdateData(metadata, statusId, roleId, userId, recordId) {
     };
 }
 
-export const getTransferBandiByFilters = async ({
+export const getTransferBandiByFilters = async ( {
     connection,
     filters,
     user
-}) => {
+} ) => {
     let where = `WHERE is_active = 1`;
     let params = [];
 
-    const apply = (cond, val) => {
-        ({ where, params } = addFilter(where, params, cond, val));
+    const apply = ( cond, val ) => {
+        ( { where, params } = addFilter( where, params, cond, val ) );
     };
 
     // ------------------
     // Basic filters
     // ------------------
-    apply(`bandi_id = ?`, filters.bandiId);
+    apply( `bandi_id = ?`, filters.bandiId );
 
-    if (filters.bandiName) {
-        apply(`bandi_name LIKE ?`, `%${filters.bandiName}%`);
+    if ( filters.bandiName ) {
+        apply( `bandi_name LIKE ?`, `%${ filters.bandiName }%` );
     }
 
-    apply(`current_office_id = ?`, filters.fromOffice);
-    apply(`final_to_office_id = ?`, filters.toOffice);
-    apply(`is_completed = ?`, filters.isCompleted);
-    apply(`role_id = ?`, filters.roleId);
-    apply(`transfer_reason_id = ?`, filters.transferReason);
+    apply( `current_office_id = ?`, filters.fromOffice );
+    apply( `final_to_office_id = ?`, filters.toOffice );
+    apply( `is_completed = ?`, filters.isCompleted );
+    apply( `role_id = ?`, filters.roleId );
+    apply( `transfer_reason_id = ?`, filters.transferReason );
 
     // ------------------
     // Status resolution
     // ------------------
     let statusId = null;
 
-    if (filters.statusKey) {
+    if ( filters.statusKey ) {
         const [[row]] = await connection.query(
             `SELECT id FROM bandi_transfer_statuses WHERE status_key = ?`,
             [filters.statusKey]
         );
 
-        if (!row) return [];
+        if ( !row ) return [];
 
         statusId = row.id;
-        apply(`status_id = ?`, statusId);
+        apply( `status_id = ?`, statusId );
     }
 
 
@@ -196,13 +196,13 @@ export const getTransferBandiByFilters = async ({
     // ------------------
     // Office visibility rules
     // ------------------
-    const isSuperOffice = [1, 2].includes(user.office_id);
+    const isSuperOffice = [1, 2].includes( user.office_id );
 
-    if (!isSuperOffice) {
-        if (statusId && statusId <= 16) {
-            apply(`final_to_office_id = ?`, user.office_id);
+    if ( !isSuperOffice ) {
+        if ( statusId && statusId <= 16 ) {
+            apply( `final_to_office_id = ?`, user.office_id );
         } else {
-            apply(`current_office_id = ?`, user.office_id);
+            apply( `current_office_id = ?`, user.office_id );
         }
     }
 
@@ -212,11 +212,11 @@ export const getTransferBandiByFilters = async ({
     const sql = `
         SELECT *
         FROM view_full_bandi_transfer
-        ${where}
+        ${ where }
         ORDER BY transfer_id DESC
     `;
 
-    const [rows] = await connection.query(sql, params);
+    const [rows] = await connection.query( sql, params );
     return rows;
 };
 
