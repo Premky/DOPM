@@ -34,6 +34,7 @@ import { useBaseURL } from "../../../Context/BaseURLProvider";
 import useFetchBandiForTransfer from "../Fetch_APIs/useFetchBandiForTransfer";
 import exportToExcel from "../Exports/ExportBandiTransferTable";
 import { tableBodyRowStyle, tableHead2ndRowStyle, tableHead3rdRowStyle, tableHeadStyle } from "../../../styles/tableheadStyle";
+import { textAlign } from "@mui/system";
 
 const BandiTransferTable = () => {
     const BASE_URL = useBaseURL();
@@ -133,6 +134,16 @@ const BandiTransferTable = () => {
         }
     };
 
+    const rotateStyle = {
+        transform: "rotate(-90deg)",
+        whiteSpace: "nowrap",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100%",
+    };
+
     return (
         <>
             <Helmet>
@@ -167,25 +178,16 @@ const BandiTransferTable = () => {
             <Typography variant="h6">
                 {filteredKaidi.length} {"वटा विवरण भेटियो"}
             </Typography>
-            <TableContainer sx={{ maxWidth: "100%", overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }} component={Paper}>
+            <TableContainer sx={{ maxWidth: "100%", overflowX: "auto", maxHeight: "80vh", overflowY: "auto" }} component={Paper}>
                 {/* <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }} component={Paper}> */}
                 <Table size="small" stickyHeader sx={{ tableLayout: "fixed" }} border={1}>
                     <TableHead>
                         <TableRow>
                             {/* <TableCell rowSpan={3} sx={{ position: "sticky", left: 0, zIndex: 3 }}>चेक</TableCell> */}
                             <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>सि.नं.</TableCell>
-                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>
-                                <div
-                                    style={{
-                                        transform: "rotate(-90deg)",
-                                        whiteSpace: "nowrap",
-                                        display: "inline-block"
-                                    }}
-                                >
-                                    बान्दी आईडी
-                                </div></TableCell>
-                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>कारागार कार्यालय</TableCell>
-                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>अवस्था</TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}> <div style={rotateStyle}> बान्दी आईडी </div> </TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}> <div style={rotateStyle}> कारागार कार्यालय</div> </TableCell>
+                            <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}> <div style={rotateStyle}> अवस्था</div> </TableCell>
                             <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>बन्दीको नामथर र स्थायी ठेगाना</TableCell>
                             <TableCell rowSpan={3} sx={{ ...tableHeadStyle }} >मुद्दा</TableCell>
                             <TableCell rowSpan={3} sx={{ ...tableHeadStyle }}>जन्म मिति/उमेर</TableCell>
@@ -220,18 +222,14 @@ const BandiTransferTable = () => {
                                     <TableRow sx={{ ...tableBodyRowStyle }}>
                                         <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>{index + 1} <br /> {data.transfer_id}</TableCell>
                                         <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>
-                                            <div
-                                                style={{
-                                                    transform: "rotate(-90deg)",
-                                                    whiteSpace: "nowrap",
-                                                    display: "inline-block"
-                                                }}
-                                            >
+                                            <div style={rotateStyle}>
                                                 {data.office_bandi_id}
                                             </div>
                                         </TableCell>
-                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>{data.current_office_name}</TableCell>
-                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>{statusValue( data.status_id )}</TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}> <div style={rotateStyle}> {data.current_office_name}</div> </TableCell>
+                                        <TableCell sx={{ ...tableBodyRowStyle, background: bgColor( data.status_id ) }} rowSpan={rowSpan}>
+                                            <div style={rotateStyle}>{statusValue( data.status_id )}</div>
+                                        </TableCell>
                                         <TableCell sx={{ ...tableBodyRowStyle }} rowSpan={rowSpan}>
                                             {data.bandi_type} <br />
                                             <strong>{data.bandi_name}</strong>
