@@ -150,7 +150,9 @@ async function buildUpdateData( metadata, statusId, roleId, userId, recordId ) {
 export const getTransferBandiByFilters = async ( {
     connection,
     filters,
-    user
+    user,
+    page = 0,
+    rowsPerPage = 25
 } ) => {
     let where = `WHERE is_active = 1`;
     let params = [];
@@ -206,18 +208,29 @@ export const getTransferBandiByFilters = async ( {
         }
     }
 
-    // ------------------
-    // Query
-    // ------------------
-    const sql = `
-        SELECT *
-        FROM view_full_bandi_transfer
-        ${ where }
-        ORDER BY transfer_id DESC
-    `;
+    const offset = page * rowsPerPage;
 
-    const [rows] = await connection.query( sql, params );
-    return rows;
+    // 🔹 Total count (for pagination)
+    const countSql = `
+    SELECT COUNT(*) as total
+    FROM view_full_bandi_transfer
+    ${ where }
+`;
+
+    const [[{ total }]] = await connection.query( countSql, params );
+    // 🔹 Paginated data
+    const sql = `
+    SELECT *
+    FROM view_full_bandi_transfer
+    ${ where }
+    ORDER BY transfer_id DESC
+    LIMIT ? OFFSET ?
+`;
+
+    const [rows] = await connection.query( sql, [...params, rowsPerPage, offset] );
+
+    // const [rows] = await connection.query( sql, params );
+    return { rows, total };
 };
 
 export {

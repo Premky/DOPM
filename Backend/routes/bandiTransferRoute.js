@@ -129,10 +129,12 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
 
         const filters = normalizeFilters( req.query );
 
-        const rows = await getTransferBandiByFilters( {
+        const { rows, total } = await getTransferBandiByFilters( {
             connection,
             filters,
             user: req.user,
+            page: parseInt( req.query.page ) || 0,
+            rowsPerPage: parseInt( req.query.rowsPerPage ) || 25
         } );
 
         const result = groupTransferResult( rows );
@@ -140,6 +142,7 @@ router.get( '/get_transfer_bandi_ac_status', verifyToken, async ( req, res ) => 
         return res.json( {
             Status: true,
             Result: result,
+            total,
             message: "बन्दी ट्रान्सफर विवरण सफलतापूर्वक प्राप्त भयो।"
         } );
 
